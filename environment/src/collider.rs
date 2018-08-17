@@ -1,1 +1,3 @@
-pub trait Collider {}
+use traits::CollidableContainer;
+
+pub trait Collider: CollidableContainer {}

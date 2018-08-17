@@ -1,6 +1,6 @@
+pub mod collider;
 pub mod traits;
 pub mod world;
-pub mod collider;
 
 #[cfg(test)]
 mod tests {
