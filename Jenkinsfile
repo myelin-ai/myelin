@@ -11,5 +11,19 @@ pipeline {
         sh 'cargo test'
       }
     }
+    stage('Style checks') {
+      parallel {
+        stage('clippy') {
+          steps {
+            sh 'cargo +nightly clippy'
+          }
+        }
+        stage('rustfmt') {
+          steps {
+            sh 'cargo fmt --all -- --check'
+          }
+        }
+      }
+    }
   }
 }
