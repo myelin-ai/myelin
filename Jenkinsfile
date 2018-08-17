@@ -11,5 +11,10 @@ pipeline {
         sh 'cargo test'
       }
     }
+    stage('rustfmt') {
+      steps {
+        sh 'cargo fmt --all -- --check'
+      }
+    }
   }
 }
