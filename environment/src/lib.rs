@@ -1,12 +1,14 @@
 pub trait Locatable {
-    fn x() -> u32;
-    fn y() -> u32;
+    fn x(&self) -> u32;
+    fn y(&self) -> u32;
 }
 
 pub trait Rectangle {
-    fn height() -> u32;
-    fn width() -> u32;
+    fn height(&self) -> u32;
+    fn width(&self) -> u32;
 }
+
+pub mod world;
 
 #[cfg(test)]
 mod tests {
