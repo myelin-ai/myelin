@@ -1,4 +1,4 @@
-pub mod collider;
+pub mod collision;
 pub mod traits;
 pub mod world;
 
