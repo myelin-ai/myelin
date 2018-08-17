@@ -6,6 +6,11 @@ pipeline {
         sh 'cargo build'
       }
     }
+    stage('clippy') {
+      steps {
+        sh 'cargo +nightly clippy'
+      }
+    }
     stage('Test') {
       steps {
         sh 'cargo test'
@@ -14,11 +19,6 @@ pipeline {
     stage('rustfmt') {
       steps {
         sh 'cargo fmt --all -- --check'
-      }
-    }
-    stage('clippy') {
-      steps {
-        sh 'cargo +nightly clippy'
       }
     }
   }
