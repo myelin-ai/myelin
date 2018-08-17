@@ -16,5 +16,8 @@ pipeline {
         sh 'cargo fmt --all -- --check'
       }
     }
+    stage('clippy') {
+      sh 'cargo +nightly clippy'
+    }
   }
 }
