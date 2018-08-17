@@ -1,12 +1,14 @@
 use traits::*;
 
-pub trait Collidable: Locatable + Rectangle {}
+pub trait Collidable: Locatable + Rectangle {
+    fn on_collision(&mut self, other: &Collidable);
+}
 
 pub trait CollidableContainer {
-    fn collidables() -> Vec<Box<Collidable>>;
-    fn add_collidable(collidable: Box<Collidable>) -> usize;
-    fn remove_collidable(collidable: usize);
-    fn update_collidable(id: usize, collidable: Box<Collidable>);
+    fn collidables(&self) -> Vec<Box<Collidable>>;
+    fn add_collidable(&mut self, collidable: Box<Collidable>) -> usize;
+    fn remove_collidable(&mut self, collidable: usize);
+    fn update_collidable(&mut self, id: usize, collidable: Box<Collidable>);
 }
 
 pub trait CollisionHandler: CollidableContainer {}
@@ -14,16 +16,16 @@ pub trait CollisionHandler: CollidableContainer {}
 pub struct QuadTree {}
 
 impl CollidableContainer for QuadTree {
-    fn collidables() -> Vec<Box<Collidable>> {
+    fn collidables(&self) -> Vec<Box<Collidable>> {
         unimplemented!()
     }
-    fn add_collidable(_collidable: Box<Collidable>) -> usize {
+    fn add_collidable(&mut self, _collidable: Box<Collidable>) -> usize {
         unimplemented!()
     }
-    fn remove_collidable(_collidable: usize) {
+    fn remove_collidable(&mut self, _collidable: usize) {
         unimplemented!()
     }
-    fn update_collidable(_id: usize, _collidable: Box<Collidable>) {
+    fn update_collidable(&mut self, _id: usize, _collidable: Box<Collidable>) {
         unimplemented!()
     }
 }

@@ -19,19 +19,19 @@ impl Rectangle for WorldImpl {
 }
 
 impl CollidableContainer for WorldImpl {
-    fn collidables() -> Vec<Box<Collidable>> {
+    fn collidables(&self) -> Vec<Box<Collidable>> {
         unimplemented!()
     }
 
-    fn add_collidable(_collidable: Box<Collidable>) -> usize {
+    fn add_collidable(&mut self, _collidable: Box<Collidable>) -> usize {
         unimplemented!()
     }
 
-    fn remove_collidable(_collidable: usize) {
+    fn remove_collidable(&mut self, _collidable: usize) {
         unimplemented!()
     }
 
-    fn update_collidable(_id: usize, _collidable: Box<Collidable>) {
+    fn update_collidable(&mut self, _id: usize, _collidable: Box<Collidable>) {
         unimplemented!()
     }
 }
