@@ -20,7 +20,7 @@ pipeline {
         }
         stage('rustfmt') {
           steps {
-            sh 'cargo fmt --all -- --check'
+            sh 'cargo +nightly fmt --all -- --check'
           }
         }
       }
