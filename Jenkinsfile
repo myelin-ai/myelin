@@ -15,7 +15,7 @@ pipeline {
       parallel {
         stage('clippy') {
           steps {
-            sh 'cargo +nightly clippy'
+            sh 'cargo +nightly clippy -- -Dwarnings'
           }
         }
         stage('rustfmt') {
