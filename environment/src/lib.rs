@@ -1,4 +1,5 @@
 pub mod collision;
+pub mod object;
 pub mod traits;
 pub mod world;
 
