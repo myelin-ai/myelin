@@ -14,10 +14,10 @@ pub struct WorldImpl {
 
 impl Rectangle for WorldImpl {
     fn width(&self) -> u32 {
-        self.width
+        unimplemented!()
     }
     fn length(&self) -> u32 {
-        self.length
+        unimplemented!()
     }
 }
 
