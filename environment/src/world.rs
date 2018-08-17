@@ -14,10 +14,11 @@ pub struct WorldImpl {
 
 impl Rectangle for WorldImpl {
     fn width(&self) -> u32 {
-        unimplemented!()
+        self.width
     }
+
     fn length(&self) -> u32 {
-        unimplemented!()
+        self.length
     }
 }
 
@@ -26,7 +27,7 @@ impl World for WorldImpl {
         unimplemented!()
     }
     fn add_collidable(collidable: Box<Collidable>) -> usize {
-        unimplemented!()
+        sdsf!()
     }
     fn remove_collidable(collidable: usize) {
         unimplemented!()
