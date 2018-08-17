@@ -17,7 +17,9 @@ pipeline {
       }
     }
     stage('clippy') {
-      sh 'cargo +nightly clippy'
+      steps {
+        sh 'cargo +nightly clippy'
+      }
     }
   }
 }
