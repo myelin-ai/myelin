@@ -28,7 +28,7 @@ impl World for WorldImpl {
     }
 
     fn add_collidable(collidable: Box<Collidable>) -> usize {
-        sdsf!()
+        unimplemented!()
     }
 
     fn remove_collidable(collidable: usize) {
