@@ -22,15 +22,15 @@ impl CollidableContainer for WorldImpl {
         unimplemented!()
     }
 
-    fn add_collidable(collidable: Box<Collidable>) -> usize {
+    fn add_collidable(_collidable: Box<Collidable>) -> usize {
         unimplemented!()
     }
 
-    fn remove_collidable(collidable: usize) {
+    fn remove_collidable(_collidable: usize) {
         unimplemented!()
     }
 
-    fn update_collidable(id: usize, collidable: Box<Collidable>) {
+    fn update_collidable(_id: usize, _collidable: Box<Collidable>) {
         unimplemented!()
     }
 }
