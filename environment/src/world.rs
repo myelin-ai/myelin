@@ -1,19 +1,25 @@
-use Rectangle;
+use super::traits::*;
 
-pub trait World: Rectangle {}
+pub trait World: Rectangle {
+    fn collidables() -> Vec<Box<Collidable>>;
+}
 
 pub struct WorldImpl {
     width: u32,
-    height: u32,
+    length: u32,
 }
 
 impl Rectangle for WorldImpl {
     fn width(&self) -> u32 {
         self.width
     }
-    fn height(&self) -> u32 {
-        self.height
+    fn length(&self) -> u32 {
+        self.length
     }
 }
 
-impl World for WorldImpl {}
+impl World for WorldImpl {
+    fn collidables() -> Vec<Box<Collidable>> {
+        unimplemented!()
+    }
+}
