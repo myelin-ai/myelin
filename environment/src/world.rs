@@ -1,4 +1,4 @@
-use collision::{Collidable, CollidableContainer};
+use collision::CollidableContainer;
 use traits::*;
 
 pub trait World: Rectangle + CollidableContainer {}
