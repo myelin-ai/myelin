@@ -1,10 +1,10 @@
-use traits::*;
+use crate::traits::*;
 
 pub trait CollidableContainer {
-    fn collidables(&self) -> Vec<Box<Collidable>>;
-    fn add_collidable(&mut self, collidable: Box<Collidable>) -> usize;
+    fn collidables(&self) -> Vec<Box<dyn Collidable>>;
+    fn add_collidable(&mut self, collidable: Box<dyn Collidable>) -> usize;
     fn remove_collidable(&mut self, collidable: usize);
-    fn update_collidable(&mut self, id: usize, collidable: Box<Collidable>);
+    fn update_collidable(&mut self, id: usize, collidable: Box<dyn Collidable>);
 }
 
 pub trait CollisionHandler: CollidableContainer {
@@ -14,16 +14,16 @@ pub trait CollisionHandler: CollidableContainer {
 pub struct QuadTree {}
 
 impl CollidableContainer for QuadTree {
-    fn collidables(&self) -> Vec<Box<Collidable>> {
+    fn collidables(&self) -> Vec<Box<dyn Collidable>> {
         unimplemented!()
     }
-    fn add_collidable(&mut self, _collidable: Box<Collidable>) -> usize {
+    fn add_collidable(&mut self, _collidable: Box<dyn Collidable>) -> usize {
         unimplemented!()
     }
     fn remove_collidable(&mut self, _collidable: usize) {
         unimplemented!()
     }
-    fn update_collidable(&mut self, _id: usize, _collidable: Box<Collidable>) {
+    fn update_collidable(&mut self, _id: usize, _collidable: Box<dyn Collidable>) {
         unimplemented!()
     }
 }

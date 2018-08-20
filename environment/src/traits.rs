@@ -9,5 +9,5 @@ pub trait Rectangle {
 }
 
 pub trait Collidable: Locatable + Rectangle {
-    fn on_collision(&mut self, other: &Collidable);
+    fn on_collision(&mut self, other: &dyn Collidable);
 }
