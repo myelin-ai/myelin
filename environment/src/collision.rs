@@ -1,9 +1,5 @@
 use crate::traits::*;
 
-pub trait Collidable: Locatable + Rectangle {
-    fn on_collision(&mut self, other: &dyn Collidable);
-}
-
 pub trait CollidableContainer {
     fn collidables(&self) -> Vec<Box<dyn Collidable>>;
     fn add_collidable(&mut self, collidable: Box<dyn Collidable>) -> usize;
