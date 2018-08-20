@@ -1,7 +1,7 @@
 #![deny(rust_2018_idioms)]
 
-pub mod collision;
+pub mod collidable_container;
+pub mod collision_handler;
 pub mod object;
-pub mod spawn_list;
 pub mod traits;
 pub mod world;
