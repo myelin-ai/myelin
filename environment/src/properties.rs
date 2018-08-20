@@ -13,7 +13,7 @@ pub struct Vector {
     pub y: i32,
 }
 
-pub enum SpawnJob {
+pub enum SpawnEvent {
     Spawn(Box<dyn Collidable>),
     Despawn(usize),
 }
@@ -23,5 +23,5 @@ pub trait Collidable: Locatable + Rectangle {
         &mut self,
         other: &dyn Collidable,
         movement: Option<Vector>,
-    ) -> Option<SpawnJob>;
+    ) -> Option<SpawnEvent>;
 }
