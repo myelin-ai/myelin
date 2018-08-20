@@ -5,6 +5,7 @@ pub trait CollisionDetector {
     fn are_colliding(&self, first: &dyn Collidable, second: &dyn Collidable) -> bool;
 }
 
+#[derive(Debug)]
 pub struct Collision<'a> {
     pub first: &'a dyn Collidable,
     pub second: &'a dyn Collidable,

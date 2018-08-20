@@ -3,6 +3,7 @@ use crate::properties::*;
 
 pub trait World: Rectangle + CollidableContainer {}
 
+#[derive(Debug)]
 pub struct WorldImpl {
     width: u32,
     length: u32,
