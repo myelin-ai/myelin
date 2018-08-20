@@ -8,6 +8,11 @@ pub trait Rectangle {
     fn width(&self) -> u32;
 }
 
+pub enum SpawnJob {
+    Spawn(Box<dyn Collidable>),
+    DespawnId(usize),
+}
+
 pub trait Collidable: Locatable + Rectangle {
-    fn on_collision(&mut self, other: &dyn Collidable);
+    fn on_collision(&mut self, other: &dyn Collidable) -> Option<SpawnJob>;
 }
