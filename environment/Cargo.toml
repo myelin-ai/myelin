@@ -1,9 +1,14 @@
 cargo-features = ["edition"]
 
 [package]
-name = "environment"
+name = "myelin-environment"
 version = "0.1.0"
-authors = ["Jan Nils Ferner <jan@myelin.ch>"]
+authors = [
+    "Jan Nils Ferner <jan@myelin.ch>",
+    "Mathias Fischler <mathias@myelin.ch>",
+    "Ruben Schmidmeister <ruben@myelin.ch>",
+    "Jeremy Stucki <jeremy@myelin.ch>",
+]
 edition = "2018"
 
 [dependencies]
