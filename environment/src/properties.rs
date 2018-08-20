@@ -23,6 +23,6 @@ pub trait Collidable: Locatable + Rectangle {
     fn on_collision(
         &mut self,
         other: &dyn Collidable,
-        other_vector: Option<Vector>,
+        movement: Option<Vector>,
     ) -> Option<SpawnJob>;
 }
