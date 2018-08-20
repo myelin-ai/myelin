@@ -1,4 +1,4 @@
-use crate::collision::{Collidable, CollidableContainer};
+use crate::collision::CollidableContainer;
 use crate::traits::*;
 
 pub trait World: Rectangle + CollidableContainer {}
