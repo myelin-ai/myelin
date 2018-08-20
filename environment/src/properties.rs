@@ -16,12 +16,14 @@ pub struct Vector {
 pub enum SpawnEvent {
     Spawn(Box<dyn Collidable>),
     Despawn(usize),
+    Move(usize, Vector),
 }
 
 pub trait Collidable: Locatable + Rectangle {
+    fn id(&self) -> usize;
     fn on_collision(
-        &mut self,
+        &self,
         other: &dyn Collidable,
         movement: Option<Vector>,
-    ) -> Option<SpawnEvent>;
+    ) -> Vec<SpawnEvent>;
 }
