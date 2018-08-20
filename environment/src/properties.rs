@@ -15,12 +15,6 @@ pub struct Vector {
     pub y: i32,
 }
 
-pub enum SpawnEvent {
-    Spawn(Box<dyn Fn(CollidableId) -> Box<dyn Collidable>>),
-    Despawn(CollidableId),
-    Move(CollidableId, Vector),
-}
-
 pub trait Collidable: Locatable + Rectangle {
     fn id(&self) -> CollidableId;
 }

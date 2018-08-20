@@ -1,8 +1,12 @@
 use crate::collidable_container::CollidableContainer;
-use crate::properties::SpawnEvent;
+use crate::collision_detector::CollisionIter;
 
 pub trait CollisionHandler {
-    fn resolve_collisions(&self, container: &dyn CollidableContainer) -> Vec<SpawnEvent>;
+    fn handle_collisions<'a>(
+        &self,
+        collisions: Box<CollisionIter<'a>>,
+        container: &mut dyn CollidableContainer,
+    );
 }
 
 #[cfg(test)]

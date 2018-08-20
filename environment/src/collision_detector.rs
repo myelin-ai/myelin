@@ -10,9 +10,11 @@ pub struct Collision<'a> {
     pub second: &'a dyn Collidable,
 }
 
+pub type CollisionIter<'a> = dyn Iterator<Item = Collision<'a>>;
+
 pub trait CollisionGatherer {
     fn gather_collisions<'a>(
         &self,
         container: &'a dyn CollidableContainer,
-    ) -> Box<dyn Iterator<Item = Collision<'a>>>;
+    ) -> Box<CollisionIter<'a>>;
 }
