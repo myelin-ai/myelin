@@ -1,7 +1,8 @@
 use crate::collidable_container::CollidableContainer;
 use crate::properties::Collidable;
+use std::fmt::Debug;
 
-pub trait CollisionDetector {
+pub trait CollisionDetector: Debug {
     fn are_colliding(&self, first: &dyn Collidable, second: &dyn Collidable) -> bool;
 }
 
