@@ -11,7 +11,9 @@ pub trait CollidableContainer {
     fn update_collidable(&mut self, id: usize, collidable: Box<Collidable>);
 }
 
-pub trait CollisionHandler: CollidableContainer {}
+pub trait CollisionHandler: CollidableContainer {
+    fn resolve_collisions(&mut self);
+}
 
 pub struct QuadTree {}
 
@@ -30,7 +32,11 @@ impl CollidableContainer for QuadTree {
     }
 }
 
-impl CollisionHandler for QuadTree {}
+impl CollisionHandler for QuadTree {
+    fn resolve_collisions(&mut self) {
+        unimplemented!()
+    }
+}
 
 #[cfg(test)]
 mod tests {
