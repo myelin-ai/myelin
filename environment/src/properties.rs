@@ -15,7 +15,6 @@ pub struct Vector {
 
 pub enum SpawnJob {
     Spawn(Box<dyn Collidable>),
-    Move(usize),
     Despawn(usize),
 }
 
