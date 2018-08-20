@@ -1,4 +1,4 @@
-use crate::traits::Collidable;
+use crate::properties::Collidable;
 
 pub trait CollidableContainer {
     fn collidables(&self) -> Vec<Box<dyn Collidable>>;

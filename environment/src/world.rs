@@ -1,5 +1,5 @@
 use crate::collidable_container::CollidableContainer;
-use crate::traits::*;
+use crate::properties::*;
 
 pub trait World: Rectangle + CollidableContainer {}
 
