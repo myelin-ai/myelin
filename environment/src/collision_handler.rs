@@ -2,7 +2,7 @@ use crate::collidable_container::CollidableContainer;
 use crate::properties::SpawnEvent;
 
 pub trait CollisionHandler {
-    fn resolve_collisions(&mut self, container: &mut dyn CollidableContainer);
+    fn resolve_collisions(&self, container: &dyn CollidableContainer) -> Vec<SpawnEvent>;
 }
 
 pub struct QuadTree {}
