@@ -1,5 +1,5 @@
-use collision::{Collidable, CollidableContainer};
-use traits::*;
+use crate::collision::{Collidable, CollidableContainer};
+use crate::traits::*;
 
 pub trait World: Rectangle + CollidableContainer {}
 
@@ -19,11 +19,11 @@ impl Rectangle for WorldImpl {
 }
 
 impl CollidableContainer for WorldImpl {
-    fn collidables(&self) -> Vec<Box<Collidable>> {
+    fn collidables(&self) -> Vec<Box<dyn Collidable>> {
         unimplemented!()
     }
 
-    fn add_collidable(&mut self, _collidable: Box<Collidable>) -> usize {
+    fn add_collidable(&mut self, _collidable: Box<dyn Collidable>) -> usize {
         unimplemented!()
     }
 
@@ -31,7 +31,7 @@ impl CollidableContainer for WorldImpl {
         unimplemented!()
     }
 
-    fn update_collidable(&mut self, _id: usize, _collidable: Box<Collidable>) {
+    fn update_collidable(&mut self, _id: usize, _collidable: Box<dyn Collidable>) {
         unimplemented!()
     }
 }
