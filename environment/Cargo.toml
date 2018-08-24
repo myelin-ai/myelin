@@ -12,3 +12,4 @@ authors = [
 edition = "2018"
 
 [dependencies]
+slab = "0.4"
