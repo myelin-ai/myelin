@@ -29,14 +29,14 @@ pub enum Kind {
 }
 
 pub trait Object: Debug {
-    fn location(&self) -> Location;
-    fn set_location(&mut self, location: Location);
+    fn location(&self) -> &Location;
+    fn location_mut(&mut self) -> &mut Location;
 
-    fn rectangle(&self) -> Rectangle;
-    fn set_rectangle(&mut self, rectangle: Rectangle);
+    fn rectangle(&self) -> &Rectangle;
+    fn rectangle_mut(&mut self) -> &mut Rectangle;
 
-    fn movement_vector(&self) -> MovementVector;
-    fn set_movement_vector(&mut self, movement_vector: MovementVector);
+    fn movement_vector(&self) -> &MovementVector;
+    fn movement_vector_mut(&mut self) -> &mut MovementVector;
 
-    fn kind(&self) -> Kind;
+    fn kind(&self) -> &Kind;
 }
