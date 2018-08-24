@@ -1,6 +1,4 @@
-[package]
-name = "myelin"
-version = "0.1.0"
-authors = ["Jan Nils Ferner <jn_ferner@hotmail.de>"]
-
-[dependencies]
+[workspace]
+members = [
+    "neural_network"
+]
