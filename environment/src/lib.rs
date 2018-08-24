@@ -5,4 +5,5 @@ pub mod collision_detector;
 pub mod collision_handler;
 pub mod object;
 pub mod properties;
+pub mod quadtree;
 pub mod world;
