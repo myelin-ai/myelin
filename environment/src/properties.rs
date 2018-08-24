@@ -1,4 +1,3 @@
-use crate::collidable_container::CollidableId;
 use std::fmt::Debug;
 
 pub trait Locatable {
@@ -17,6 +16,18 @@ pub struct Vector {
     pub y: i32,
 }
 
-pub trait Collidable: Locatable + Rectangle + Debug {
-    fn id(&self) -> CollidableId;
+pub type Id = usize;
+
+pub trait Identifiable {
+    fn id(&self) -> Id;
+}
+
+#[derive(Debug)]
+pub enum Kind {
+    Organism,
+    Wall,
+}
+
+pub trait Object: Locatable + Rectangle + Identifiable + Debug {
+    fn kind(&self) -> Kind;
 }

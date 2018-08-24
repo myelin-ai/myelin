@@ -1,7 +1,6 @@
-use crate::collidable_container::CollidableContainer;
 use crate::properties::*;
 
-pub trait World: Rectangle + CollidableContainer {}
+pub trait World: Rectangle {}
 
 #[derive(Debug)]
 pub struct WorldImpl {
@@ -16,24 +15,6 @@ impl Rectangle for WorldImpl {
 
     fn length(&self) -> u32 {
         self.length
-    }
-}
-
-impl CollidableContainer for WorldImpl {
-    fn collidables(&self) -> Vec<Box<dyn Collidable>> {
-        unimplemented!()
-    }
-
-    fn add_collidable(&mut self, _collidable: Box<dyn Collidable>) -> usize {
-        unimplemented!()
-    }
-
-    fn remove_collidable(&mut self, _collidable: usize) {
-        unimplemented!()
-    }
-
-    fn update_collidable(&mut self, _id: usize, _collidable: Box<dyn Collidable>) {
-        unimplemented!()
     }
 }
 
