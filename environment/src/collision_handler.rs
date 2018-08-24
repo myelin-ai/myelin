@@ -1,11 +1,12 @@
 use crate::collision_detector::CollisionIter;
-use crate::object_container::ObjectContainer;
+use crate::properties::Object;
+use slab::Slab;
 
 pub trait CollisionHandler {
     fn handle_collisions<'a>(
         &self,
         collisions: Box<CollisionIter<'a>>,
-        container: &mut dyn ObjectContainer,
+        container: &mut Slab<Box<dyn Object>>,
     );
 }
 
