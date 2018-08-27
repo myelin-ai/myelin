@@ -4,8 +4,8 @@ pub type ObjectContainer = Slab<Object>;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Location {
-    x: u32,
-    y: u32,
+    pub x: u32,
+    pub y: u32,
 }
 
 impl Location {
@@ -17,9 +17,9 @@ impl Location {
 #[derive(Debug, Eq, PartialEq)]
 pub struct Rectangle {
     /// Corresponds to x
-    width: u32,
+    pub width: u32,
     /// Corresponds to y
-    length: u32,
+    pub length: u32,
 }
 
 impl Rectangle {
