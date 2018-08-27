@@ -34,7 +34,7 @@ pipeline {
         }
         stage('tslint') {
           steps {
-            sh '(cp visualization && tslint --project tsconfig.json \'src/**/*.ts\')'
+            sh '(cd visualization && tslint --project tsconfig.json \'src/**/*.ts\')'
           }
         }
       }
