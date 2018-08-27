@@ -1,5 +1,3 @@
-use std::fmt::Debug;
-
 #[derive(Debug)]
 pub struct Location {
     x: u32,
@@ -28,15 +26,10 @@ pub enum Kind {
     Water,
 }
 
-pub trait Object: Debug {
-    fn location(&self) -> &Location;
-    fn location_mut(&mut self) -> &mut Location;
-
-    fn rectangle(&self) -> &Rectangle;
-    fn rectangle_mut(&mut self) -> &mut Rectangle;
-
-    fn movement_vector(&self) -> &MovementVector;
-    fn movement_vector_mut(&mut self) -> &mut MovementVector;
-
-    fn kind(&self) -> &Kind;
+#[derive(Debug)]
+pub struct Object {
+    location: Location,
+    rectangle: Rectangle,
+    movement_vector: MovementVector,
+    kind: Kind,
 }
