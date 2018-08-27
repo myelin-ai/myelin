@@ -1,3 +1,4 @@
+#![allow(unknown_lints)]
 #![allow(drop_ref)]
 use wasm_bindgen::prelude::*;
 
