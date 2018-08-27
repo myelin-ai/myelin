@@ -4,6 +4,7 @@ pipeline {
     stage('Build') {
       steps {
         sh 'cargo build'
+        sh 'bash visualization/scripts/build.sh'
       }
     }
     stage('Test') {
