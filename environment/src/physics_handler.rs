@@ -6,10 +6,10 @@ pub trait PhysicsHandler {
     fn handle_collisions<'a>(
         &self,
         collisions: Box<CollisionIter<'a>>,
-        container: &mut Slab<Box<dyn Object>>,
+        container: &mut Slab<Object>,
     );
 
-    fn apply_movement(container: &mut Slab<Box<dyn Object>>);
+    fn apply_movement(container: &mut Slab<Object>);
 }
 
 #[cfg(test)]
