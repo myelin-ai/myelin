@@ -1,3 +1,7 @@
+use slab::Slab;
+
+pub type ObjectContainer = Slab<Object>;
+
 #[derive(Debug)]
 pub struct Location {
     x: u32,
@@ -6,11 +10,13 @@ pub struct Location {
 
 #[derive(Debug)]
 pub struct Rectangle {
-    length: u32,
+    /// Corresponds to x
     width: u32,
+    /// Corresponds to y
+    length: u32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct MovementVector {
     pub x: i32,
     pub y: i32,
