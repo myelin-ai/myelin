@@ -1,0 +1,10 @@
+cargo-features = ["edition"]
+
+[package]
+name = "slablit"
+version = "0.1.0"
+authors = ["Ruben Schmidmeister <ruben@myelin.ch>"]
+edition = "2018"
+
+[dependencies]
+slab = "0.4"
