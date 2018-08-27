@@ -2,8 +2,17 @@ pipeline {
   agent any
   stages {
     stage('Build') {
-      steps {
-        sh 'cargo build'
+      parallel {
+        stage('cargo') {
+          steps {
+            sh 'cargo build'
+          }
+        }
+        stage('wasm') {
+          steps {
+            sh 'bash visualization/scripts/build.sh'
+          }
+        }
       }
     }
     stage('Test') {
@@ -15,7 +24,7 @@ pipeline {
       parallel {
         stage('clippy') {
           steps {
-            sh 'cargo +nightly clippy -- -Dwarnings'
+            sh 'cargo clippy -- -Dwarnings'
           }
         }
         stage('rustfmt') {
