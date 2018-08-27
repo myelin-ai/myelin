@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('Build') {
       parallel {
-        stage('cargo build') {
+        stage('cargo') {
           steps {
             sh 'cargo build'
           }
@@ -24,7 +24,7 @@ pipeline {
       parallel {
         stage('clippy') {
           steps {
-            sh 'cargo +nightly clippy -- -Dwarnings'
+            sh 'cargo clippy -- -Dwarnings'
           }
         }
         stage('rustfmt') {
