@@ -1,13 +1,13 @@
 #[derive(Debug)]
 pub struct Location {
-    x: u32,
-    y: u32,
+    pub x: u32,
+    pub y: u32,
 }
 
 #[derive(Debug)]
 pub struct Rectangle {
-    length: u32,
-    width: u32,
+    pub length: u32,
+    pub width: u32,
 }
 
 #[derive(Debug)]
