@@ -1,21 +1,13 @@
 use crate::properties::*;
 
-pub trait World: Rectangle {}
+pub trait World {
+    fn rectangle(&self) -> Rectangle;
+}
 
 #[derive(Debug)]
 pub struct WorldImpl {
     width: u32,
     length: u32,
-}
-
-impl Rectangle for WorldImpl {
-    fn width(&self) -> u32 {
-        self.width
-    }
-
-    fn length(&self) -> u32 {
-        self.length
-    }
 }
 
 #[cfg(test)]
