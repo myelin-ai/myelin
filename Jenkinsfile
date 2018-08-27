@@ -32,6 +32,11 @@ pipeline {
             sh 'cargo fmt --all -- --check'
           }
         }
+        stage('tslint') {
+          steps {
+            sh 'tslint -c tslint.json \'visualization/src/**/*.ts\''
+          }
+        }
       }
     }
   }
