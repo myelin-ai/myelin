@@ -10,7 +10,7 @@ pub struct EntryPoint {
 
 #[wasm_bindgen]
 impl EntryPoint {
-    pub fn new(canvas: js::HTMLCanvasElement) -> Self {
+    pub fn new(canvas: &js::HTMLCanvasElement) -> Self {
         Self {
             context: canvas.get_context("2d"),
         }
