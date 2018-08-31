@@ -60,8 +60,8 @@ mod tests {
     fn applies_movement() {
         let original_object = Object {
             rectangle: Rectangle {
+                width: 6,
                 length: 5,
-                width: 4,
             },
             location: Location {
                 x: 10,
@@ -96,8 +96,8 @@ mod tests {
     fn applies_movement_to_all_objects() {
         let original_object_one = Object {
             rectangle: Rectangle {
-                length: 5,
                 width: 4,
+                length: 5,
             },
             location: Location {
                 x: 10,
@@ -112,8 +112,8 @@ mod tests {
 
         let original_object_two = Object {
             rectangle: Rectangle {
-                length: 6,
                 width: 2,
+                length: 6,
             },
             location: Location {
                 x: 120,
@@ -160,8 +160,8 @@ mod tests {
     fn panics_when_moving_out_of_bounds() {
         let original_object = Object {
             rectangle: Rectangle {
-                length: 5,
                 width: 4,
+                length: 5,
             },
             location: Location {
                 x: 10,
@@ -186,8 +186,8 @@ mod tests {
     fn panics_when_rectangle_clips_into_negative_position() {
         let original_object = Object {
             rectangle: Rectangle {
-                length: 6,
                 width: 4,
+                length: 6,
             },
             location: Location {
                 x: 3,
@@ -211,8 +211,8 @@ mod tests {
     fn allows_object_on_exact_origin() {
         let original_object = Object {
             rectangle: Rectangle {
-                length: 6,
-                width: 4,
+                width: 6,
+                length: 4,
             },
             location: Location {
                 x: 4,
@@ -247,8 +247,8 @@ mod tests {
     fn ignores_zeroed_movement_vector() {
         let expected_object = Object {
             rectangle: Rectangle {
-                length: 6,
                 width: 4,
+                length: 6,
             },
             location: Location {
                 x: 40,
