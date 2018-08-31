@@ -181,34 +181,6 @@ mod tests {
         physics_handler.apply_movement(&mut container);
     }
 
-
-    #[test]
-    #[should_panic]
-    fn panics_when_rectangle_clips_into_negative_position_without_movement() {
-        let original_object = Object {
-            rectangle: Rectangle {
-                width: 4,
-                length: 6,
-            },
-            location: Location {
-                x: 3,
-                y: 2
-            },
-            movement: MovementVector {
-                x: 0,
-                y: 0
-            },
-            kind: Kind::Undefined
-        };
-        let mut container = vec![
-            original_object.clone()
-        ];
-
-        let physics_handler = PhysicsHandlerImpl::new();
-        physics_handler.apply_movement(&mut container);
-    }
-
-
     #[test]
     #[should_panic]
     fn panics_when_rectangle_clips_into_negative_position() {
@@ -235,6 +207,31 @@ mod tests {
         physics_handler.apply_movement(&mut container);
     }
 
+    #[test]
+    #[should_panic]
+    fn panics_when_rectangle_clips_into_negative_position_without_movement() {
+        let original_object = Object {
+            rectangle: Rectangle {
+                width: 4,
+                length: 6,
+            },
+            location: Location {
+                x: 3,
+                y: 2
+            },
+            movement: MovementVector {
+                x: 0,
+                y: 0
+            },
+            kind: Kind::Undefined
+        };
+        let mut container = vec![
+            original_object.clone()
+        ];
+
+        let physics_handler = PhysicsHandlerImpl::new();
+        physics_handler.apply_movement(&mut container);
+    }
 
     #[test]
     fn panics_when_rectangle_clips_into_negative_position_by_rounding_up() {
