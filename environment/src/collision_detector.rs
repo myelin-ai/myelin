@@ -12,19 +12,21 @@ pub struct Collision<'a> {
 }
 
 #[allow(missing_debug_implementations)]
-pub struct CollisionIter<'a>(pub(crate) Box<dyn Iterator<Item = Collision<'a>>>);
+pub struct CollisionIter<'a>(pub(crate) Box<dyn Iterator<Item = Collision<'a>> + 'a>);
 
-pub fn gather_collisions<'a, 'b>(
+pub fn gather_collisions<'a, 'b: 'a, 'c: 'a>(
     container: &'a [Object],
     potential_collision_gatherer: &'b dyn PotentialCollisionGatherer,
-    collision_detector: &'b dyn CollisionDetector,
+    collision_detector: &'c dyn CollisionDetector,
 ) -> CollisionIter<'a> {
     let potential_collisions = potential_collision_gatherer
         .possible_collisions(container)
         .0;
-    let collisions = potential_collisions.filter(|potential_collision| {
+
+    let collisions = potential_collisions.filter(move |potential_collision| {
         collision_detector.are_colliding(&potential_collision.first, &potential_collision.second)
     });
+
     CollisionIter(Box::new(collisions))
 }
 
