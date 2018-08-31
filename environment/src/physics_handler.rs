@@ -1,5 +1,5 @@
 use crate::collision_detector::CollisionIter;
-use crate::properties::{Object, Location};
+use crate::properties::{Object, Location, Rectangle};
 
 pub trait PhysicsHandler {
     fn handle_collisions<'a>(
@@ -33,7 +33,8 @@ impl PhysicsHandler for PhysicsHandlerImpl {
         for object in container {
             let new_x = object.location.x as i32 + object.movement.x;
             let new_y = object.location.y as i32 + object.movement.y;
-            if new_x < 0 || new_y < 0 {
+
+            if !is_valid_movement(new_x, new_y, &object.rectangle) {
                 panic!(format!("Object moving out of bounds: {:#?}", object));
             }
             object.location = Location {
@@ -42,6 +43,12 @@ impl PhysicsHandler for PhysicsHandlerImpl {
             };
         }
     }
+}
+
+fn is_valid_movement(new_x: i32, new_y: i32, rectangle: &Rectangle) -> bool {
+    let left_edge = new_x - (rectangle.width as f32 / 2.0).ceil() as i32;
+    let top_edge = new_y - (rectangle.length as f32 / 2.0).ceil() as i32;
+    left_edge >= 0 && top_edge >= 0
 }
 
 #[cfg(test)]
