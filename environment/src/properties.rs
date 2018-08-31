@@ -16,7 +16,7 @@ pub struct MovementVector {
     pub y: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Kind {
     Organism,
     Wall,
@@ -24,7 +24,7 @@ pub enum Kind {
     Water,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Object {
     pub location: Location,
     pub rectangle: Rectangle,
