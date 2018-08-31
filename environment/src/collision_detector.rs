@@ -157,4 +157,30 @@ mod test {
         assert_eq!(expected, quad_tree.root_bucket);
     }
 
+    #[test]
+    fn test_quadtree_doesnt_split_on_max_capacity_minus_1() {
+        const WORLD_SIZE: u32 = 100;
+
+        let obj1 = object_in_quadrant_one();
+        let obj2 = object_in_quadrant_two();
+        let obj3 = object_in_quadrant_three();
+
+        let expected = Bucket {
+            rectangle: Rectangle::new(WORLD_SIZE, WORLD_SIZE),
+            location: Location::new(0, 0),
+            objects: vec![&obj1, &obj2, &obj3],
+            buckets: vec![],
+        };
+
+        let container = slab![
+            object_in_quadrant_one(),
+            object_in_quadrant_two(),
+            object_in_quadrant_three()
+        ];
+
+        let quad_tree = QuadTreeBuilder::default().max_capacity(4).build(&container);
+
+        assert_eq!(expected, quad_tree.root_bucket);
+    }
+
 }
