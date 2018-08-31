@@ -14,12 +14,20 @@ pub struct Collision<'a> {
 #[allow(missing_debug_implementations)]
 pub struct CollisionIter<'a>(pub(crate) Box<dyn Iterator<Item = Collision<'a>>>);
 
-pub fn gather_collisions<'a>(
-    _container: &'a [Object],
-    _potential_collision_gatherer: &'a dyn PotentialCollisionGatherer,
-    _collision_detector: &'a dyn CollisionDetector,
-) -> Box<CollisionIter<'a>> {
-    unimplemented!()
+pub fn gather_collisions<'a, 'b>(
+    container: &'a [Object],
+    potential_collision_gatherer: &'b dyn PotentialCollisionGatherer,
+    collision_detector: &'b dyn CollisionDetector,
+) -> CollisionIter<'a> {
+    let potential_collisions = potential_collision_gatherer
+        .possible_collisions(container)
+        .0;
+    CollisionIter(Box::new(potential_collisions.filter(
+        |potential_collision| {
+            collision_detector
+                .are_colliding(&potential_collision.first, &potential_collision.second)
+        },
+    )))
 }
 
 ///
@@ -28,5 +36,5 @@ pub fn gather_collisions<'a>(
 /// [`CollisionGatherer`]: ./trait.CollisionGatherer.html
 ///
 pub trait PotentialCollisionGatherer {
-    fn possible_collisions<'a>(&self, container: &'a [Object]) -> Box<CollisionIter<'a>>;
+    fn possible_collisions<'a>(&self, container: &'a [Object]) -> CollisionIter<'a>;
 }

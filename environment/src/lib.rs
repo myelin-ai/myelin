@@ -1,3 +1,4 @@
+#![feature(generators, generator_trait)]
 #![deny(rust_2018_idioms, missing_debug_implementations)]
 
 pub mod collision_detector;
