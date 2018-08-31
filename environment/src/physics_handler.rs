@@ -1,5 +1,5 @@
 use crate::collision_detector::CollisionIter;
-use crate::properties::Object;
+use crate::properties::{Object, Location};
 
 pub trait PhysicsHandler {
     fn handle_collisions<'a>(
@@ -11,7 +11,7 @@ pub trait PhysicsHandler {
     fn apply_movement(&self, container: &mut [Object]);
 }
 
-
+#[derive(Debug)]
 pub struct PhysicsHandlerImpl;
 
 impl PhysicsHandlerImpl {
@@ -29,8 +29,14 @@ impl PhysicsHandler for PhysicsHandlerImpl {
         unimplemented!()
     }
 
-    fn apply_movement(&self, _container: &mut [Object]) {
-        unimplemented!()
+    fn apply_movement(&self, container: &mut [Object]) {
+        for object in container {
+            let new_location = Location {
+                x: (object.location.x as i32 + object.movement.x) as u32,
+                y: (object.location.y as i32 + object.movement.y) as u32,
+            };
+            object.location = new_location;
+        }
     }
 }
 
@@ -140,7 +146,7 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn out_of_bounds_movement_panics() {
+    fn panics_when_moving_out_of_bounds() {
         let original_object = Object {
             rectangle: Rectangle {
                 length: 5,
