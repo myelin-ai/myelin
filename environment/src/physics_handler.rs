@@ -31,11 +31,15 @@ impl PhysicsHandler for PhysicsHandlerImpl {
 
     fn apply_movement(&self, container: &mut [Object]) {
         for object in container {
-            let new_location = Location {
-                x: (object.location.x as i32 + object.movement.x) as u32,
-                y: (object.location.y as i32 + object.movement.y) as u32,
+            let new_x = object.location.x as i32 + object.movement.x;
+            let new_y = object.location.y as i32 + object.movement.y;
+            if new_x < 0 || new_y < 0 {
+                panic!(format!("Object moving out of bounds: {:#?}", object));
+            }
+            object.location = Location {
+                x: new_x as u32,
+                y: new_y as u32,
             };
-            object.location = new_location;
         }
     }
 }
