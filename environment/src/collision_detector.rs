@@ -1,4 +1,4 @@
-use crate::properties::{Location, Object, ObjectContainer, Rectangle};
+use crate::properties::{Location, Object, Rectangle};
 use std::fmt::Debug;
 
 pub trait CollisionDetector: Debug {
@@ -14,7 +14,8 @@ pub struct Collision<'a> {
 pub type CollisionIter<'a> = dyn Iterator<Item = Collision<'a>>;
 
 pub trait CollisionGatherer {
-    fn gather_collisions<'a>(&self, container: &'a ObjectContainer) -> Box<CollisionIter<'a>>;
+
+    fn gather_collisions<'a>(&self, container: &'a [Object]) -> Box<CollisionIter<'a>>;
 }
 
 ///
@@ -23,7 +24,7 @@ pub trait CollisionGatherer {
 /// [`CollisionGatherer`]: ./trait.CollisionGatherer.html
 ///
 pub trait PotentialCollisionGatherer {
-    fn possible_collisions<'a>(&self, container: &'a ObjectContainer) -> Box<CollisionIter<'a>>;
+    fn possible_collisions<'a>(&self, container: &'a [Object]) -> Box<CollisionIter<'a>>;
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -49,7 +50,7 @@ impl QuadTreeBuilder {
         unimplemented!();
     }
 
-    fn build<'a>(self, objects: &'a ObjectContainer) -> QuadTree<'a> {
+    fn build<'a>(self, objects: &'a [Object]) -> QuadTree<'a> {
         unimplemented!();
     }
 }
@@ -64,43 +65,41 @@ impl Default for QuadTreeBuilder {
 mod test {
     use super::*;
     use crate::properties::{Kind, Location, MovementVector, Rectangle};
-    use slab::Slab;
-    use slablit::slab;
 
     fn object_in_quadrant_one() -> Object {
-        Object::new(
-            Location::new(10, 10),
-            Rectangle::new(14, 14),
-            MovementVector::default(),
-            Kind::Organism,
-        )
+        Object {
+            location: Location::new(10, 10),
+            rectangle: Rectangle::new(14, 14),
+            movement: MovementVector::default(),
+            kind: Kind::Organism,
+        }
     }
 
     fn object_in_quadrant_two() -> Object {
-        Object::new(
-            Location::new(80, 30),
-            Rectangle::new(12, 12),
-            MovementVector::default(),
-            Kind::Organism,
-        )
+        Object {
+            location: Location::new(80, 30),
+            rectangle: Rectangle::new(12, 12),
+            movement:  MovementVector::default(),
+            kind: Kind::Organism,
+        }
     }
 
     fn object_in_quadrant_three() -> Object {
-        Object::new(
-            Location::new(10, 60),
-            Rectangle::new(14, 14),
-            MovementVector::default(),
-            Kind::Organism,
-        )
+        Object {
+            location: Location::new(10, 60),
+            rectangle: Rectangle::new(14, 14),
+            movement: MovementVector::default(),
+            kind: Kind::Organism,
+        }
     }
 
     fn object_in_quadrant_four() -> Object {
-        Object::new(
-            Location::new(70, 70),
-            Rectangle::new(14, 14),
-            MovementVector::default(),
-            Kind::Organism,
-        )
+        Object {
+            location: Location::new(70, 70),
+            rectangle: Rectangle::new(14, 14),
+            movement: MovementVector::default(),
+            kind: Kind::Organism,
+        }
     }
 
     #[test]
@@ -145,7 +144,7 @@ mod test {
             ],
         };
 
-        let container = slab![
+        let container = vec![
             object_in_quadrant_one(),
             object_in_quadrant_two(),
             object_in_quadrant_three(),
@@ -172,7 +171,7 @@ mod test {
             buckets: vec![],
         };
 
-        let container = slab![
+        let container = vec![
             object_in_quadrant_one(),
             object_in_quadrant_two(),
             object_in_quadrant_three()

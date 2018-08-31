@@ -1,7 +1,3 @@
-use slab::Slab;
-
-pub type ObjectContainer = Slab<Object>;
-
 #[derive(Debug, Eq, PartialEq)]
 pub struct Location {
     pub x: u32,
@@ -34,8 +30,6 @@ pub struct MovementVector {
     pub y: i32,
 }
 
-pub type Id = usize;
-
 #[derive(Debug, Eq, PartialEq)]
 pub enum Kind {
     Organism,
@@ -46,24 +40,8 @@ pub enum Kind {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Object {
-    location: Location,
-    rectangle: Rectangle,
-    movement_vector: MovementVector,
-    kind: Kind,
-}
-
-impl Object {
-    pub fn new(
-        location: Location,
-        rectangle: Rectangle,
-        movement_vector: MovementVector,
-        kind: Kind,
-    ) -> Self {
-        Self {
-            location,
-            rectangle,
-            movement_vector,
-            kind,
-        }
-    }
+    pub location: Location,
+    pub rectangle: Rectangle,
+    pub movement: MovementVector,
+    pub kind: Kind,
 }
