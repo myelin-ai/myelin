@@ -234,6 +234,7 @@ mod tests {
     }
 
     #[test]
+    #[should_panic]
     fn panics_when_rectangle_clips_into_negative_position_by_rounding_up() {
         let original_object = Object {
             rectangle: Rectangle {
