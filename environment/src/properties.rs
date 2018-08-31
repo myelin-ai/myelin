@@ -1,22 +1,20 @@
-#[derive(Debug)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Location {
     pub x: u32,
     pub y: u32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Rectangle {
     pub length: u32,
     pub width: u32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct MovementVector {
     pub x: i32,
     pub y: i32,
 }
-
-pub type Id = usize;
 
 #[derive(Debug)]
 pub enum Kind {
