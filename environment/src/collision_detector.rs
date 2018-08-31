@@ -182,5 +182,4 @@ mod test {
 
         assert_eq!(expected, quad_tree.root_bucket);
     }
-
 }
