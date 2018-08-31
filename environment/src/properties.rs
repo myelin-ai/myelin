@@ -28,8 +28,8 @@ pub enum Kind {
 
 #[derive(Debug)]
 pub struct Object {
-    location: Location,
-    rectangle: Rectangle,
-    movement_vector: MovementVector,
-    kind: Kind,
+    pub location: Location,
+    pub rectangle: Rectangle,
+    pub movement: MovementVector,
+    pub kind: Kind,
 }

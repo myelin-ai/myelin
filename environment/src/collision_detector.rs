@@ -1,5 +1,4 @@
 use crate::properties::Object;
-use slab::Slab;
 use std::fmt::Debug;
 
 pub trait CollisionDetector: Debug {
@@ -15,5 +14,5 @@ pub struct Collision<'a> {
 pub type CollisionIter<'a> = dyn Iterator<Item = Collision<'a>>;
 
 pub trait CollisionGatherer {
-    fn gather_collisions<'a>(&self, container: &'a Slab<Object>) -> Box<CollisionIter<'a>>;
+    fn gather_collisions<'a>(&self, container: &'a [Object]) -> Box<CollisionIter<'a>>;
 }

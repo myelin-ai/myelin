@@ -1,16 +1,14 @@
 use crate::collision_detector::CollisionIter;
 use crate::properties::Object;
-use slab::Slab;
-use myelin_slablit::slab;
 
 pub trait PhysicsHandler {
     fn handle_collisions<'a>(
         &self,
         collisions: Box<CollisionIter<'a>>,
-        container: &mut Slab<Object>,
+        container: &mut [Object],
     );
 
-    fn apply_movement(container: &mut Slab<Object>);
+    fn apply_movement(&self, container: &mut [Object]);
 }
 
 struct PhysicsHandlerImpl;
@@ -25,24 +23,44 @@ impl PhysicsHandler for PhysicsHandlerImpl {
     fn handle_collisions<'a>(
         &self,
         collisions: Box<CollisionIter<'a>>,
-        container: &mut Slab<Object>,
+        container: &mut [Object],
     ) {
         unimplemented!()
     }
 
-    fn apply_movement(container: &mut Slab<Object>) {
+    fn apply_movement(&self, container: &mut [Object]) {
         unimplemented!()
     }
 }
 
 #[cfg(test)]
 mod tests {
-    fn test_container() -> Slab<Object> {
-
-    }
+    use super::*;
+    use crate::properties::*;
 
     #[test]
-    fn applies_movement_to_all_objects() {
-        assert_eq!("quad_tree", "quad_tree")
+    fn applies_movement() {
+        let mut container = vec![
+            Object {
+                location: Location {
+                    x: 10,
+                    y: 20
+                },
+                rectangle: Rectangle {
+                    length: 5,
+                    width: 4,
+                },
+                movement: MovementVector {
+                    x: 6,
+                    y: 7
+                },
+                kind: Kind::Organism,
+            }
+        ];
+        let physics_handler = PhysicsHandlerImpl::new();
+        physics_handler.apply_movement(&mut container);
+
+        assert_eq!(1, container.len());
+        let object = &container[0];
     }
 }
