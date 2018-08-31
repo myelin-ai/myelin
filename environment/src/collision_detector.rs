@@ -42,11 +42,11 @@ struct QuadTree<'a> {
 
 #[derive(Debug, Eq, PartialEq)]
 struct QuadTreeBuilder {
-    max_capacity: u32,
+    bucket_capacity: u32,
 }
 
 impl QuadTreeBuilder {
-    fn max_capacity(self, value: u32) -> Self {
+    fn split_at(self, bucket_capacity: u32) -> Self {
         unimplemented!();
     }
 
@@ -57,7 +57,7 @@ impl QuadTreeBuilder {
 
 impl Default for QuadTreeBuilder {
     fn default() -> Self {
-        QuadTreeBuilder { max_capacity: 4 }
+        QuadTreeBuilder { bucket_capacity: 4 }
     }
 }
 
@@ -151,7 +151,7 @@ mod test {
             object_in_quadrant_four()
         ];
 
-        let quad_tree = QuadTreeBuilder::default().max_capacity(4).build(&container);
+        let quad_tree = QuadTreeBuilder::default().split_at(4).build(&container);
 
         assert_eq!(expected, quad_tree.root_bucket);
     }
@@ -177,7 +177,7 @@ mod test {
             object_in_quadrant_three()
         ];
 
-        let quad_tree = QuadTreeBuilder::default().max_capacity(4).build(&container);
+        let quad_tree = QuadTreeBuilder::default().split_at(4).build(&container);
 
         assert_eq!(expected, quad_tree.root_bucket);
     }
