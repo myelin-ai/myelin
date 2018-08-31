@@ -41,36 +41,39 @@ mod tests {
 
     #[test]
     fn applies_movement() {
-        let originalRectangle = Rectangle {
-            length: 5,
-            width: 4,
-        };
-        let originalMovement = MovementVector {
-            x: 6,
-            y: 7
+        let originalObject = Object {
+            rectangle: Rectangle {
+                length: 5,
+                width: 4,
+            },
+            location: Location {
+                x: 10,
+                y: 20
+            },
+            movement: MovementVector {
+                x: 6,
+                y: 7
+            },
+            kind: Kind::Undefined
         };
         let mut container = vec![
-            Object {
-                location: Location {
-                    x: 10,
-                    y: 20
-                },
-                rectangle: originalRectangle.clone(),
-                movement: originalMovement.clone(),
-                kind: Kind::Organism,
-            }
+            originalObject.clone()
         ];
+
         let physics_handler = PhysicsHandlerImpl::new();
         physics_handler.apply_movement(&mut container);
 
         assert_eq!(1, container.len());
-        let object = &container[0];
-        let expectedLocation = Location {
-            x: 16,
-            y: 27,
+
+        let expectedObject = Object {
+            location: Location {
+                x: 16,
+                y: 27
+            }, ..originalObject
         };
-        assert_eq!(expectedLocation, object.location);
-        assert_eq!(originalRectangle, object.rectangle);
-        assert_eq!(originalMovement, object.movement);
+        let actual_object = &container[0];
+        assert_eq!(expectedObject, actual_object);
     }
+
+    
 }
