@@ -46,8 +46,8 @@ impl PhysicsHandler for PhysicsHandlerImpl {
 }
 
 fn is_valid_movement(new_x: i32, new_y: i32, rectangle: &Rectangle) -> bool {
-    let left_edge = new_x - (rectangle.width as f32 / 2.0).ceil() as i32;
-    let top_edge = new_y - (rectangle.length as f32 / 2.0).ceil() as i32;
+    let left_edge = new_x - (rectangle.width as f32 / 2.0).round() as i32;
+    let top_edge = new_y - (rectangle.length as f32 / 2.0).round() as i32;
     left_edge >= 0 && top_edge >= 0
 }
 
@@ -181,9 +181,10 @@ mod tests {
         physics_handler.apply_movement(&mut container);
     }
 
+
     #[test]
     #[should_panic]
-    fn panics_when_rectangle_clips_into_negative_position() {
+    fn panics_when_rectangle_clips_into_negative_position_without_movement() {
         let original_object = Object {
             rectangle: Rectangle {
                 width: 4,
@@ -195,7 +196,60 @@ mod tests {
             },
             movement: MovementVector {
                 x: 0,
-                y: -1
+                y: 0
+            },
+            kind: Kind::Undefined
+        };
+        let mut container = vec![
+            original_object.clone()
+        ];
+
+        let physics_handler = PhysicsHandlerImpl::new();
+        physics_handler.apply_movement(&mut container);
+    }
+
+
+    #[test]
+    #[should_panic]
+    fn panics_when_rectangle_clips_into_negative_position() {
+        let original_object = Object {
+            rectangle: Rectangle {
+                width: 6,
+                length: 4,
+            },
+            location: Location {
+                x: 4,
+                y: 2
+            },
+            movement: MovementVector {
+                x: -2,
+                y: 0,
+            },
+            kind: Kind::Undefined
+        };
+        let mut container = vec![
+            original_object.clone()
+        ];
+
+        let physics_handler = PhysicsHandlerImpl::new();
+        physics_handler.apply_movement(&mut container);
+    }
+
+
+    #[test]
+    fn panics_when_rectangle_clips_into_negative_position_by_rounding_up() {
+        let original_object = Object {
+            rectangle: Rectangle {
+                width: 7,
+                length: 4,
+            },
+            location: Location {
+                x: 4,
+                y: 2
+            },
+            movement: MovementVector {
+                x: -1,
+                y: 0,
             },
             kind: Kind::Undefined
         };
@@ -212,6 +266,42 @@ mod tests {
         let original_object = Object {
             rectangle: Rectangle {
                 width: 6,
+                length: 4,
+            },
+            location: Location {
+                x: 4,
+                y: 2
+            },
+            movement: MovementVector {
+                x: -1,
+                y: 0,
+            },
+            kind: Kind::Undefined
+        };
+        let mut container = vec![
+            original_object.clone()
+        ];
+
+        let physics_handler = PhysicsHandlerImpl::new();
+        physics_handler.apply_movement(&mut container);
+
+        assert_eq!(1, container.len());
+
+        let expected_object = Object {
+            location: Location {
+                x: 3,
+                y: 2
+            }, ..original_object
+        };
+        let actual_object = &container[0];
+        assert_eq!(expected_object, *actual_object);
+    }
+
+    #[test]
+    fn allows_object_on_exact_origin_by_rounding_down() {
+        let original_object = Object {
+            rectangle: Rectangle {
+                width: 5,
                 length: 4,
             },
             location: Location {
@@ -271,7 +361,6 @@ mod tests {
         let actual_object = &container[0];
         assert_eq!(expected_object, *actual_object);
     }
-
 
     #[test]
     fn ignores_empty_container() {

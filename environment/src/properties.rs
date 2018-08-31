@@ -6,8 +6,8 @@ pub struct Location {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Rectangle {
-    pub length: u32,
     pub width: u32,
+    pub length: u32,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
