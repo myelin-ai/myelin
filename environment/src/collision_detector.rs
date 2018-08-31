@@ -22,12 +22,10 @@ pub fn gather_collisions<'a, 'b>(
     let potential_collisions = potential_collision_gatherer
         .possible_collisions(container)
         .0;
-    CollisionIter(Box::new(potential_collisions.filter(
-        |potential_collision| {
-            collision_detector
-                .are_colliding(&potential_collision.first, &potential_collision.second)
-        },
-    )))
+    let collisions = potential_collisions.filter(|potential_collision| {
+        collision_detector.are_colliding(&potential_collision.first, &potential_collision.second)
+    });
+    CollisionIter(Box::new(collisions))
 }
 
 ///
