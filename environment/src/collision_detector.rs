@@ -1,4 +1,4 @@
-use crate::properties::{Location, Object, Rectangle};
+use crate::properties::Object;
 use std::fmt::Debug;
 
 pub trait CollisionDetector: Debug {
