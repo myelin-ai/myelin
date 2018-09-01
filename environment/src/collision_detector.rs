@@ -5,7 +5,7 @@ pub trait CollisionDetector: Debug {
     fn are_colliding(&self, first: &Object, second: &Object) -> bool;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Collision<'a> {
     pub first: &'a Object,
     pub second: &'a Object,
