@@ -4,6 +4,12 @@ use crate::properties::{Location, Object, Rectangle};
 #[derive(Debug, Default)]
 pub struct MovementApplierImpl;
 
+impl MovementApplierImpl {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 impl MovementApplier for MovementApplierImpl {
     fn apply_movement(&self, container: &mut [Object]) {
         for object in container {
@@ -45,7 +51,7 @@ mod tests {
         };
         let mut container = vec![original_object.clone()];
 
-        let physics_handler = MovementApplierImpl::default();
+        let physics_handler = MovementApplierImpl::new();
         physics_handler.apply_movement(&mut container);
 
         assert_eq!(1, container.len());
@@ -81,7 +87,7 @@ mod tests {
         };
         let mut container = vec![original_object_one.clone(), original_object_two.clone()];
 
-        let physics_handler = MovementApplierImpl::default();
+        let physics_handler = MovementApplierImpl::new();
         physics_handler.apply_movement(&mut container);
 
         assert_eq!(2, container.len());
@@ -115,7 +121,7 @@ mod tests {
         };
         let mut container = vec![original_object.clone()];
 
-        let physics_handler = MovementApplierImpl::default();
+        let physics_handler = MovementApplierImpl::new();
         physics_handler.apply_movement(&mut container);
     }
 
@@ -133,7 +139,7 @@ mod tests {
         };
         let mut container = vec![original_object.clone()];
 
-        let physics_handler = MovementApplierImpl::default();
+        let physics_handler = MovementApplierImpl::new();
         physics_handler.apply_movement(&mut container);
     }
 
@@ -151,7 +157,7 @@ mod tests {
         };
         let mut container = vec![original_object.clone()];
 
-        let physics_handler = MovementApplierImpl::default();
+        let physics_handler = MovementApplierImpl::new();
         physics_handler.apply_movement(&mut container);
     }
 
@@ -169,7 +175,7 @@ mod tests {
         };
         let mut container = vec![original_object.clone()];
 
-        let physics_handler = MovementApplierImpl::default();
+        let physics_handler = MovementApplierImpl::new();
         physics_handler.apply_movement(&mut container);
     }
 
@@ -186,7 +192,7 @@ mod tests {
         };
         let mut container = vec![original_object.clone()];
 
-        let physics_handler = MovementApplierImpl::default();
+        let physics_handler = MovementApplierImpl::new();
         physics_handler.apply_movement(&mut container);
 
         assert_eq!(1, container.len());
@@ -212,7 +218,7 @@ mod tests {
         };
         let mut container = vec![original_object.clone()];
 
-        let physics_handler = MovementApplierImpl::default();
+        let physics_handler = MovementApplierImpl::new();
         physics_handler.apply_movement(&mut container);
 
         assert_eq!(1, container.len());
@@ -238,7 +244,7 @@ mod tests {
         };
         let mut container = vec![expected_object.clone()];
 
-        let physics_handler = MovementApplierImpl::default();
+        let physics_handler = MovementApplierImpl::new();
         physics_handler.apply_movement(&mut container);
 
         assert_eq!(1, container.len());
@@ -250,7 +256,7 @@ mod tests {
     fn ignores_empty_container() {
         let mut container = vec![];
 
-        let physics_handler = MovementApplierImpl::default();
+        let physics_handler = MovementApplierImpl::new();
         physics_handler.apply_movement(&mut container);
 
         assert!(container.is_empty());
