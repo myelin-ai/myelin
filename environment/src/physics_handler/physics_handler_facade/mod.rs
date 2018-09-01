@@ -1,26 +1,26 @@
+use super::PhysicsHandler;
 use crate::collision_detector::CollisionIter;
-use crate::properties::{Object, Location, Rectangle};
+use crate::properties::{Location, Object, Rectangle};
 
-pub trait PhysicsHandler {
-    fn handle_collisions<'a>(
-        &self,
-        collisions: Box<CollisionIter<'a>>,
-        container: &mut [Object],
-    );
+use std::fmt::Debug;
+mod movement_applier_impl;
 
+pub trait MovementApplier: Debug {
     fn apply_movement(&self, container: &mut [Object]);
 }
 
 #[derive(Debug)]
-pub struct PhysicsHandlerImpl;
+pub struct PhysicsHandlerFacade {
+    movement_applier: Box<dyn MovementApplier>,
+}
 
-impl PhysicsHandlerImpl {
-    pub fn new() -> Self {
-        Self {}
+impl PhysicsHandlerFacade {
+    pub fn new(movement_applier: Box<dyn MovementApplier>) -> Self {
+        Self { movement_applier }
     }
 }
 
-impl PhysicsHandler for PhysicsHandlerImpl {
+impl PhysicsHandler for PhysicsHandlerFacade {
     fn handle_collisions<'a>(
         &self,
         _collisions: Box<CollisionIter<'a>>,
@@ -63,30 +63,20 @@ mod tests {
                 width: 6,
                 length: 5,
             },
-            location: Location {
-                x: 10,
-                y: 20
-            },
-            movement: MovementVector {
-                x: 6,
-                y: 7
-            },
-            kind: Kind::Undefined
+            location: Location { x: 10, y: 20 },
+            movement: MovementVector { x: 6, y: 7 },
+            kind: Kind::Undefined,
         };
-        let mut container = vec![
-            original_object.clone()
-        ];
+        let mut container = vec![original_object.clone()];
 
-        let physics_handler = PhysicsHandlerImpl::new();
+        let physics_handler = PhysicsHandlerFacade::new();
         physics_handler.apply_movement(&mut container);
 
         assert_eq!(1, container.len());
 
         let expected_object = Object {
-            location: Location {
-                x: 16,
-                y: 27
-            }, ..original_object
+            location: Location { x: 16, y: 27 },
+            ..original_object
         };
         let actual_object = &container[0];
         assert_eq!(expected_object, *actual_object);
@@ -99,15 +89,9 @@ mod tests {
                 width: 4,
                 length: 5,
             },
-            location: Location {
-                x: 10,
-                y: 20
-            },
-            movement: MovementVector {
-                x: 6,
-                y: 7
-            },
-            kind: Kind::Undefined
+            location: Location { x: 10, y: 20 },
+            movement: MovementVector { x: 6, y: 7 },
+            kind: Kind::Undefined,
         };
 
         let original_object_two = Object {
@@ -115,41 +99,27 @@ mod tests {
                 width: 2,
                 length: 6,
             },
-            location: Location {
-                x: 120,
-                y: 70
-            },
-            movement: MovementVector {
-                x: -52,
-                y: 2
-            },
-            kind: Kind::Undefined
+            location: Location { x: 120, y: 70 },
+            movement: MovementVector { x: -52, y: 2 },
+            kind: Kind::Undefined,
         };
-        let mut container = vec![
-            original_object_one.clone(),
-            original_object_two.clone()
-        ];
+        let mut container = vec![original_object_one.clone(), original_object_two.clone()];
 
-        let physics_handler = PhysicsHandlerImpl::new();
+        let physics_handler = PhysicsHandlerFacade::new();
         physics_handler.apply_movement(&mut container);
 
         assert_eq!(2, container.len());
 
         let expected_object_one = Object {
-            location: Location {
-                x: 16,
-                y: 27
-            }, ..original_object_one
+            location: Location { x: 16, y: 27 },
+            ..original_object_one
         };
         let actual_object_one = &container[0];
         assert_eq!(expected_object_one, *actual_object_one);
 
-    
         let expected_object_two = Object {
-            location: Location {
-                x: 68,
-                y: 72
-            }, ..original_object_two
+            location: Location { x: 68, y: 72 },
+            ..original_object_two
         };
         let actual_object_two = &container[1];
         assert_eq!(expected_object_two, *actual_object_two);
@@ -163,21 +133,13 @@ mod tests {
                 width: 4,
                 length: 5,
             },
-            location: Location {
-                x: 10,
-                y: 20
-            },
-            movement: MovementVector {
-                x: -30,
-                y: -20
-            },
-            kind: Kind::Undefined
+            location: Location { x: 10, y: 20 },
+            movement: MovementVector { x: -30, y: -20 },
+            kind: Kind::Undefined,
         };
-        let mut container = vec![
-            original_object.clone()
-        ];
+        let mut container = vec![original_object.clone()];
 
-        let physics_handler = PhysicsHandlerImpl::new();
+        let physics_handler = PhysicsHandlerFacade::new();
         physics_handler.apply_movement(&mut container);
     }
 
@@ -189,21 +151,13 @@ mod tests {
                 width: 6,
                 length: 4,
             },
-            location: Location {
-                x: 4,
-                y: 2
-            },
-            movement: MovementVector {
-                x: -2,
-                y: 0,
-            },
-            kind: Kind::Undefined
+            location: Location { x: 4, y: 2 },
+            movement: MovementVector { x: -2, y: 0 },
+            kind: Kind::Undefined,
         };
-        let mut container = vec![
-            original_object.clone()
-        ];
+        let mut container = vec![original_object.clone()];
 
-        let physics_handler = PhysicsHandlerImpl::new();
+        let physics_handler = PhysicsHandlerFacade::new();
         physics_handler.apply_movement(&mut container);
     }
 
@@ -215,21 +169,13 @@ mod tests {
                 width: 4,
                 length: 6,
             },
-            location: Location {
-                x: 3,
-                y: 2
-            },
-            movement: MovementVector {
-                x: 0,
-                y: 0
-            },
-            kind: Kind::Undefined
+            location: Location { x: 3, y: 2 },
+            movement: MovementVector { x: 0, y: 0 },
+            kind: Kind::Undefined,
         };
-        let mut container = vec![
-            original_object.clone()
-        ];
+        let mut container = vec![original_object.clone()];
 
-        let physics_handler = PhysicsHandlerImpl::new();
+        let physics_handler = PhysicsHandlerFacade::new();
         physics_handler.apply_movement(&mut container);
     }
 
@@ -241,21 +187,13 @@ mod tests {
                 width: 7,
                 length: 4,
             },
-            location: Location {
-                x: 4,
-                y: 2
-            },
-            movement: MovementVector {
-                x: -1,
-                y: 0,
-            },
-            kind: Kind::Undefined
+            location: Location { x: 4, y: 2 },
+            movement: MovementVector { x: -1, y: 0 },
+            kind: Kind::Undefined,
         };
-        let mut container = vec![
-            original_object.clone()
-        ];
+        let mut container = vec![original_object.clone()];
 
-        let physics_handler = PhysicsHandlerImpl::new();
+        let physics_handler = PhysicsHandlerFacade::new();
         physics_handler.apply_movement(&mut container);
     }
 
@@ -266,30 +204,20 @@ mod tests {
                 width: 6,
                 length: 4,
             },
-            location: Location {
-                x: 4,
-                y: 2
-            },
-            movement: MovementVector {
-                x: -1,
-                y: 0,
-            },
-            kind: Kind::Undefined
+            location: Location { x: 4, y: 2 },
+            movement: MovementVector { x: -1, y: 0 },
+            kind: Kind::Undefined,
         };
-        let mut container = vec![
-            original_object.clone()
-        ];
+        let mut container = vec![original_object.clone()];
 
-        let physics_handler = PhysicsHandlerImpl::new();
+        let physics_handler = PhysicsHandlerFacade::new();
         physics_handler.apply_movement(&mut container);
 
         assert_eq!(1, container.len());
 
         let expected_object = Object {
-            location: Location {
-                x: 3,
-                y: 2
-            }, ..original_object
+            location: Location { x: 3, y: 2 },
+            ..original_object
         };
         let actual_object = &container[0];
         assert_eq!(expected_object, *actual_object);
@@ -302,30 +230,20 @@ mod tests {
                 width: 5,
                 length: 4,
             },
-            location: Location {
-                x: 4,
-                y: 2
-            },
-            movement: MovementVector {
-                x: -1,
-                y: 0,
-            },
-            kind: Kind::Undefined
+            location: Location { x: 4, y: 2 },
+            movement: MovementVector { x: -1, y: 0 },
+            kind: Kind::Undefined,
         };
-        let mut container = vec![
-            original_object.clone()
-        ];
+        let mut container = vec![original_object.clone()];
 
-        let physics_handler = PhysicsHandlerImpl::new();
+        let physics_handler = PhysicsHandlerFacade::new();
         physics_handler.apply_movement(&mut container);
 
         assert_eq!(1, container.len());
 
         let expected_object = Object {
-            location: Location {
-                x: 3,
-                y: 2
-            }, ..original_object
+            location: Location { x: 3, y: 2 },
+            ..original_object
         };
         let actual_object = &container[0];
         assert_eq!(expected_object, *actual_object);
@@ -338,21 +256,13 @@ mod tests {
                 width: 4,
                 length: 6,
             },
-            location: Location {
-                x: 40,
-                y: 22
-            },
-            movement: MovementVector {
-                x: 0,
-                y: 0,
-            },
-            kind: Kind::Undefined
+            location: Location { x: 40, y: 22 },
+            movement: MovementVector { x: 0, y: 0 },
+            kind: Kind::Undefined,
         };
-        let mut container = vec![
-            expected_object.clone()
-        ];
+        let mut container = vec![expected_object.clone()];
 
-        let physics_handler = PhysicsHandlerImpl::new();
+        let physics_handler = PhysicsHandlerFacade::new();
         physics_handler.apply_movement(&mut container);
 
         assert_eq!(1, container.len());
@@ -364,10 +274,10 @@ mod tests {
     fn ignores_empty_container() {
         let mut container = vec![];
 
-        let physics_handler = PhysicsHandlerImpl::new();
+        let physics_handler = PhysicsHandlerFacade::new();
         physics_handler.apply_movement(&mut container);
 
         assert!(container.is_empty());
     }
-    
+
 }
