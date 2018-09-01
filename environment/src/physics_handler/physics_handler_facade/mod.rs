@@ -3,8 +3,8 @@ use crate::collision_detector::CollisionIter;
 use crate::properties::Object;
 
 use std::fmt::Debug;
-mod collision_handler_impl;
-mod movement_applier_impl;
+pub mod collision_handler_impl;
+pub mod movement_applier_impl;
 
 #[derive(Debug)]
 pub struct PhysicsHandlerFacade {

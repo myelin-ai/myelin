@@ -3,11 +3,6 @@ use crate::properties::{Location, Object, Rectangle};
 
 #[derive(Debug)]
 pub struct MovementApplierImpl;
-impl MovementApplierImpl {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
 
 impl MovementApplier for MovementApplierImpl {
     fn apply_movement(&self, container: &mut [Object]) {

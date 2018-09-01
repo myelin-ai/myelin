@@ -22,7 +22,7 @@ pub enum Kind {
     Wall,
     Plant,
     Water,
-    Undefined
+    Undefined,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
