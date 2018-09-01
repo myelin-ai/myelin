@@ -11,8 +11,9 @@ pub struct Collision<'a> {
     pub second: &'a Object,
 }
 
-pub type CollisionIter<'a> = dyn Iterator<Item = Collision<'a>>;
+#[allow(missing_debug_implementations)]
+pub struct CollisionIter<'a>(pub(crate) Box<dyn Iterator<Item = Collision<'a>> + 'a>);
 
 pub trait CollisionGatherer {
-    fn gather_collisions<'a>(&self, container: &'a [Object]) -> Box<CollisionIter<'a>>;
+    fn gather_collisions<'a>(&self, container: &'a [Object]) -> CollisionIter<'a>;
 }

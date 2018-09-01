@@ -25,7 +25,7 @@ impl PhysicsHandlerFacade {
 }
 
 impl PhysicsHandler for PhysicsHandlerFacade {
-    fn handle_collisions<'a>(&self, collisions: Box<CollisionIter<'a>>, container: &mut [Object]) {
+    fn handle_collisions<'a>(&self, collisions: CollisionIter<'a>, container: &mut [Object]) {
         self.collision_handler
             .handle_collisions(collisions, container)
     }
@@ -39,7 +39,7 @@ pub trait MovementApplier: Debug {
 }
 
 pub trait CollisionHandler: Debug {
-    fn handle_collisions<'a>(&self, collisions: Box<CollisionIter<'a>>, _container: &mut [Object]);
+    fn handle_collisions<'a>(&self, collisions: CollisionIter<'a>, _container: &mut [Object]);
 }
 
 #[cfg(test)]
@@ -98,7 +98,7 @@ mod tests {
     impl CollisionHandler for CollisionHandlerMock {
         fn handle_collisions<'a>(
             &'a self,
-            collisions: Box<CollisionIter<'a>>,
+            collisions: CollisionIter<'a>,
             container: &mut [Object],
         ) {
             let collisions_as_tuple: Vec<_> = collisions

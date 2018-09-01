@@ -12,11 +12,7 @@ impl CollisionHandlerImpl {
 }
 
 impl CollisionHandler for CollisionHandlerImpl {
-    fn handle_collisions<'a>(
-        &self,
-        _collisions: Box<CollisionIter<'a>>,
-        _container: &mut [Object],
-    ) {
+    fn handle_collisions<'a>(&self, _collisions: CollisionIter<'a>, _container: &mut [Object]) {
         unimplemented!()
     }
 }
