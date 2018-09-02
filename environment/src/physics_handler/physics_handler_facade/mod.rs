@@ -1,5 +1,5 @@
 use super::PhysicsHandler;
-use crate::collision_detector::CollisionIter;
+use crate::physics_handler::CollisionIterMut;
 use crate::properties::Object;
 
 use std::fmt::Debug;
@@ -25,7 +25,7 @@ impl PhysicsHandlerFacade {
 }
 
 impl PhysicsHandler for PhysicsHandlerFacade {
-    fn handle_collisions<'a>(&self, collisions: CollisionIter<'a>) {
+    fn handle_collisions<'a>(&self, collisions: CollisionIterMut<'a>) {
         self.collision_handler.handle_collisions(collisions)
     }
     fn apply_movement(&self, container: &mut [Object]) {
@@ -38,13 +38,13 @@ pub trait MovementApplier: Debug {
 }
 
 pub trait CollisionHandler: Debug {
-    fn handle_collisions<'a>(&self, collisions: CollisionIter<'a>);
+    fn handle_collisions<'a>(&self, collisions: CollisionIterMut<'a>);
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::collision_detector::Collision;
+    use crate::physics_handler::CollisionMut;
     use crate::properties::{Kind, Location, MovementVector, Object, Rectangle};
 
     #[derive(Debug)]
@@ -95,8 +95,9 @@ mod tests {
         }
     }
     impl CollisionHandler for CollisionHandlerMock {
-        fn handle_collisions(&self, collisions: CollisionIter<'_>) {
+        fn handle_collisions(&self, collisions: CollisionIterMut<'_>) {
             let collisions_as_tuple: Vec<_> = collisions
+                .0
                 .map(|collision| (collision.first.clone(), collision.second.clone()))
                 .collect();
             self.passed_collisions
@@ -156,15 +157,17 @@ mod tests {
     fn passes_collider_and_container_to_collision_handler() {
         let movement_applier = Box::new(MovementApplierMock::new());
         let mut collision_handler = Box::new(CollisionHandlerMock::new());
-        let container = container();
+        let mut container = container();
         let expected_collisions = vec![(container[0].clone(), container[1].clone())];
         collision_handler.expect_handle_collisions(&expected_collisions, &container);
 
         let physics_handler_facade = PhysicsHandlerFacade::new(movement_applier, collision_handler);
-        let collisions = vec![Collision {
-            first: &container[0],
-            second: &container[1],
+        let (container_a, container_b) = container.split_at_mut(1);
+        let collisions = vec![CollisionMut {
+            first: &mut container_a[0],
+            second: &mut container_b[0],
         }];
-        physics_handler_facade.handle_collisions(CollisionIter(Box::new(collisions.into_iter())));
+        physics_handler_facade
+            .handle_collisions(CollisionIterMut(Box::new(collisions.into_iter())));
     }
 }
