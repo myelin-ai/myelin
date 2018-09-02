@@ -96,7 +96,7 @@ mod tests {
         }
     }
     impl CollisionHandler for CollisionHandlerMock {
-        fn handle_collisions<'a>(&self, collisions: CollisionIter<'a>, container: &mut [Object]) {
+        fn handle_collisions(&self, collisions: CollisionIter<'_>, container: &mut [Object]) {
             let collisions_as_tuple: Vec<_> = collisions
                 .map(|collision| (collision.first.clone(), collision.second.clone()))
                 .collect();
@@ -173,6 +173,9 @@ mod tests {
             first: &container[0],
             second: &container[1],
         }];
-        // physics_handler_facade.handle_collisions(Box::new(collisions.iter()), &mut container);
+        physics_handler_facade.handle_collisions(
+            CollisionIter(Box::new(collisions.into_iter())),
+            &mut container,
+        );
     }
 }
