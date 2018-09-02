@@ -164,18 +164,18 @@ mod tests {
     fn passes_collider_and_container_to_collision_handler() {
         let movement_applier = Box::new(MovementApplierMock::new());
         let mut collision_handler = Box::new(CollisionHandlerMock::new());
-        let mut container = container();
+        let container = container();
         let expected_collisions = vec![(container[0].clone(), container[1].clone())];
         collision_handler.expect_handle_collisions(&expected_collisions, &container);
 
         let physics_handler_facade = PhysicsHandlerFacade::new(movement_applier, collision_handler);
-        let collisions = [Collision {
+        let collisions = vec![Collision {
             first: &container[0],
             second: &container[1],
         }];
         physics_handler_facade.handle_collisions(
             CollisionIter(Box::new(collisions.into_iter())),
-            &mut container,
+            &mut container.clone(),
         );
     }
 }
