@@ -17,3 +17,11 @@ pub struct CollisionIter<'a>(pub(crate) Box<dyn Iterator<Item = Collision<'a>> +
 pub trait CollisionGatherer {
     fn gather_collisions<'a>(&self, container: &'a [Object]) -> CollisionIter<'a>;
 }
+
+impl<'a> Iterator for CollisionIter<'a> {
+    type Item = Collision<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next()
+    }
+}
