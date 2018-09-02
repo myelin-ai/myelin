@@ -96,11 +96,7 @@ mod tests {
         }
     }
     impl CollisionHandler for CollisionHandlerMock {
-        fn handle_collisions<'a>(
-            &'a self,
-            collisions: CollisionIter<'a>,
-            container: &mut [Object],
-        ) {
+        fn handle_collisions<'a>(&self, collisions: CollisionIter<'a>, container: &mut [Object]) {
             let collisions_as_tuple: Vec<_> = collisions
                 .map(|collision| (collision.first.clone(), collision.second.clone()))
                 .collect();
