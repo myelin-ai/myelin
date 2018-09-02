@@ -25,9 +25,8 @@ impl PhysicsHandlerFacade {
 }
 
 impl PhysicsHandler for PhysicsHandlerFacade {
-    fn handle_collisions<'a>(&self, collisions: CollisionIter<'a>, container: &mut [Object]) {
-        self.collision_handler
-            .handle_collisions(collisions, container)
+    fn handle_collisions<'a>(&self, collisions: CollisionIter<'a>) {
+        self.collision_handler.handle_collisions(collisions)
     }
     fn apply_movement(&self, container: &mut [Object]) {
         self.movement_applier.apply_movement(container)
@@ -39,7 +38,7 @@ pub trait MovementApplier: Debug {
 }
 
 pub trait CollisionHandler: Debug {
-    fn handle_collisions<'a>(&self, collisions: CollisionIter<'a>, _container: &mut [Object]);
+    fn handle_collisions<'a>(&self, collisions: CollisionIter<'a>);
 }
 
 #[cfg(test)]
@@ -96,7 +95,7 @@ mod tests {
         }
     }
     impl CollisionHandler for CollisionHandlerMock {
-        fn handle_collisions(&self, collisions: CollisionIter<'_>, container: &mut [Object]) {
+        fn handle_collisions(&self, collisions: CollisionIter<'_>) {
             let collisions_as_tuple: Vec<_> = collisions
                 .map(|collision| (collision.first.clone(), collision.second.clone()))
                 .collect();
@@ -106,13 +105,6 @@ mod tests {
                 .for_each(|(expected, actual)| {
                     assert_eq!(expected.0, actual.0);
                     assert_eq!(expected.1, actual.1);
-                });
-
-            self.passed_container
-                .iter()
-                .zip(container)
-                .for_each(|(expected, actual)| {
-                    assert_eq!(expected, actual);
                 });
         }
     }
@@ -173,9 +165,6 @@ mod tests {
             first: &container[0],
             second: &container[1],
         }];
-        physics_handler_facade.handle_collisions(
-            CollisionIter(Box::new(collisions.into_iter())),
-            &mut container.clone(),
-        );
+        physics_handler_facade.handle_collisions(CollisionIter(Box::new(collisions.into_iter())));
     }
 }
