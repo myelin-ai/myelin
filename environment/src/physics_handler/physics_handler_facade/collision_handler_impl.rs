@@ -64,8 +64,7 @@ mod tests {
             .for_each(|(expected, actual)| assert_eq!(expected, actual));
     }
 
-    #[test]
-    fn handles_collision_with_stationary_object() {
+    fn handles_collision_when_walking_into_stationary_object(moving: Kind, stationary: Kind) {
         let mut original_container = vec![
             Object {
                 rectangle: Rectangle {
@@ -74,7 +73,7 @@ mod tests {
                 },
                 location: Location { x: 5, y: 5 },
                 movement: MovementVector { x: 0, y: 5 },
-                kind: Kind::Undefined,
+                kind: moving,
             },
             Object {
                 rectangle: Rectangle {
@@ -83,12 +82,48 @@ mod tests {
                 },
                 location: Location { x: 5, y: 10 },
                 movement: MovementVector { x: 0, y: 0 },
-                kind: Kind::Undefined,
+                kind: stationary,
             },
         ];
 
         let mut expected_container = original_container.clone();
         expected_container[0].location = Location { x: 5, y: 7 };
+
+        let collisions = vec![collision_mut_from_container_at(&mut original_container, 0, 1)];
+
+        let collision_handler = CollisionHandlerImpl::new();
+        collision_handler.handle_collisions(CollisionIterMut(Box::new(collisions.into_iter())));
+
+        original_container
+            .into_iter()
+            .zip(expected_container)
+            .for_each(|(expected, actual)| assert_eq!(expected, actual));
+    }
+
+    fn ignores_walking_into_stationary_object(moving: Kind, stationary: Kind) {
+        let mut original_container = vec![
+            Object {
+                rectangle: Rectangle {
+                    width: 3,
+                    length: 4,
+                },
+                location: Location { x: 5, y: 5 },
+                movement: MovementVector { x: 0, y: 5 },
+                kind: moving,
+            },
+            Object {
+                rectangle: Rectangle {
+                    width: 2,
+                    length: 2,
+                },
+                location: Location { x: 5, y: 10 },
+                movement: MovementVector { x: 0, y: 0 },
+                kind: stationary,
+            },
+        ];
+
+        let mut expected_container = original_container.clone();
+        expected_container[0].location = Location { x: 5, y: 10 };
 
         let collisions = vec![collision_mut_from_container_at(&mut original_container, 0, 1)];
 
@@ -102,7 +137,26 @@ mod tests {
     }
 
     #[test]
-    fn handles_collision_when_walking_through_stationary_object() {
+    fn handles_collision_when_walking_into_organism() {
+        handles_collision_when_walking_into_stationary_object(Kind::Undefined, Kind::Organism);
+    }
+
+    #[test]
+    fn handles_collision_when_walking_into_wall() {
+        handles_collision_when_walking_into_stationary_object(Kind::Undefined, Kind::Wall);
+    }
+
+    #[test]
+    fn handles_collision_when_walking_into_plant() {
+        ignores_walking_into_stationary_object(Kind::Undefined, Kind::Plant);
+    }
+
+    #[test]
+    fn handles_collision_when_walking_into_water() {
+        handles_collision_when_walking_into_stationary_object(Kind::Undefined, Kind::Water);
+    }
+
+    fn handles_collision_when_walking_through_stationary_object(moving: Kind, stationary: Kind) {
         let mut original_container = vec![
             Object {
                 rectangle: Rectangle {
@@ -111,7 +165,7 @@ mod tests {
                 },
                 location: Location { x: 5, y: 5 },
                 movement: MovementVector { x: 0, y: 15 },
-                kind: Kind::Undefined,
+                kind: moving,
             },
             Object {
                 rectangle: Rectangle {
@@ -120,7 +174,7 @@ mod tests {
                 },
                 location: Location { x: 5, y: 10 },
                 movement: MovementVector { x: 0, y: 0 },
-                kind: Kind::Undefined,
+                kind: stationary,
             },
         ];
 
@@ -137,4 +191,61 @@ mod tests {
             .zip(expected_container)
             .for_each(|(expected, actual)| assert_eq!(expected, actual));
     }
+
+    fn ignores_walking_through_stationary_object(moving: Kind, stationary: Kind) {
+        let mut original_container = vec![
+            Object {
+                rectangle: Rectangle {
+                    width: 3,
+                    length: 4,
+                },
+                location: Location { x: 5, y: 5 },
+                movement: MovementVector { x: 0, y: 15 },
+                kind: moving,
+            },
+            Object {
+                rectangle: Rectangle {
+                    width: 2,
+                    length: 2,
+                },
+                location: Location { x: 5, y: 10 },
+                movement: MovementVector { x: 0, y: 0 },
+                kind: stationary,
+            },
+        ];
+
+        let mut expected_container = original_container.clone();
+        expected_container[0].location = Location { x: 5, y: 20 };
+
+        let collisions = vec![collision_mut_from_container_at(&mut original_container, 0, 1)];
+
+        let collision_handler = CollisionHandlerImpl::new();
+        collision_handler.handle_collisions(CollisionIterMut(Box::new(collisions.into_iter())));
+
+        original_container
+            .into_iter()
+            .zip(expected_container)
+            .for_each(|(expected, actual)| assert_eq!(expected, actual));
+    }
+
+    #[test]
+    fn handles_collision_when_walking_through_organism {
+        ignores_walking_through_stationary_object(Kind::Undefined, Kind::Organism);
+    }
+
+    #[test]
+    fn handles_collision_when_walking_through_wall() {
+        handles_collision_when_walking_through_stationary_object(Kind::Undefined, Kind::Wall);
+    }
+
+    #[test]
+    fn handles_collision_when_walking_through_wall() {
+        ignores_walking_through_stationary_object(Kind::Undefined, Kind::Plant);
+    }
+
+    #[test]
+    fn handles_collision_when_walking_through_water() {
+        handles_collision_when_walking_through_stationary_object(Kind::Undefined, Kind::Water);
+    }
+
 }
