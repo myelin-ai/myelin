@@ -31,3 +31,6 @@ pub struct Object {
     pub movement: MovementVector,
     pub kind: Kind,
 }
+
+#[derive(Debug, Copy, Clone)]
+pub struct ObjectId(pub(crate) usize);
