@@ -229,7 +229,7 @@ mod tests {
     }
 
     #[test]
-    fn handles_collision_when_walking_through_organism {
+    fn handles_collision_when_walking_through_organism() {
         ignores_walking_through_stationary_object(Kind::Undefined, Kind::Organism);
     }
 
