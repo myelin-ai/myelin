@@ -1,4 +1,15 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
+pub struct Object {
+    pub location: Location,
+    pub rectangle: Rectangle,
+    pub movement: MovementVector,
+    pub kind: Kind,
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub struct Id(pub(crate) usize);
+
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Location {
     pub x: u32,
     pub y: u32,
@@ -23,14 +34,3 @@ pub enum Kind {
     Plant,
     Water,
 }
-
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct Object {
-    pub location: Location,
-    pub rectangle: Rectangle,
-    pub movement: MovementVector,
-    pub kind: Kind,
-}
-
-#[derive(Debug, Copy, Clone)]
-pub struct Id(pub(crate) usize);
