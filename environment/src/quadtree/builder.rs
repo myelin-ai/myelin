@@ -1,22 +1,22 @@
-use super::{Object, QuadTree};
+use super::{Object, Quadtree};
 
 #[derive(Debug, Eq, PartialEq)]
-pub struct QuadTreeBuilder {
+pub struct QuadtreeBuilder {
     bucket_capacity: u32,
 }
 
-impl QuadTreeBuilder {
+impl QuadtreeBuilder {
     pub fn split_at(self, _bucket_capacity: u32) -> Self {
         unimplemented!();
     }
 
-    pub fn build<'a>(self, _objects: &'a [Object]) -> QuadTree<'a> {
+    pub fn build<'a>(self, _objects: &'a [Object]) -> Quadtree<'a> {
         unimplemented!();
     }
 }
 
-impl Default for QuadTreeBuilder {
+impl Default for QuadtreeBuilder {
     fn default() -> Self {
-        QuadTreeBuilder { bucket_capacity: 4 }
+        QuadtreeBuilder { bucket_capacity: 4 }
     }
 }

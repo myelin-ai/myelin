@@ -11,13 +11,13 @@ struct Bucket<'a> {
 }
 
 #[derive(Debug)]
-pub struct QuadTree<'a> {
+pub struct Quadtree<'a> {
     root_bucket: Bucket<'a>,
 }
 
 #[cfg(test)]
 mod test {
-    use super::{builder::QuadTreeBuilder, Bucket, Object};
+    use super::{builder::QuadtreeBuilder, Bucket, Object};
     use crate::properties::{Kind, Location, MovementVector, Rectangle};
 
     const WORLD_SIZE: u32 = 100;
@@ -106,7 +106,7 @@ mod test {
             object_in_quadrant_four(),
         ];
 
-        let quad_tree = QuadTreeBuilder::default().split_at(4).build(&container);
+        let quad_tree = QuadtreeBuilder::default().split_at(4).build(&container);
 
         assert_eq!(expected, quad_tree.root_bucket);
     }
@@ -130,7 +130,7 @@ mod test {
             object_in_quadrant_three(),
         ];
 
-        let quad_tree = QuadTreeBuilder::default().split_at(4).build(&container);
+        let quad_tree = QuadtreeBuilder::default().split_at(4).build(&container);
 
         assert_eq!(expected, quad_tree.root_bucket);
     }
@@ -139,7 +139,7 @@ mod test {
     fn test_quadtree_only_splits_container_with_contents() {
         let container = vec![];
 
-        let quad_tree = QuadTreeBuilder::default().split_at(4).build(&container);
+        let quad_tree = QuadtreeBuilder::default().split_at(4).build(&container);
 
         assert_eq!(
             Bucket {
