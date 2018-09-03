@@ -1,12 +1,25 @@
+#![feature(tool_lints)]
+
 extern crate wasm_bindgen;
 use wasm_bindgen::prelude::*;
 
+pub mod js;
+
 #[wasm_bindgen]
-extern "C" {
-    fn alert(s: &str);
+pub struct EntryPoint {
+    context: js::CanvasRenderingContext2D,
 }
 
 #[wasm_bindgen]
-pub fn greet(name: &str) {
-    alert(&format!("Hello, {}!", name));
+impl EntryPoint {
+    pub fn new(canvas: &js::HTMLCanvasElement) -> Self {
+        Self {
+            context: canvas.get_context("2d"),
+        }
+    }
+
+    pub fn start(&self) {
+        self.context.set_fill_style("aquamarine");
+        self.context.fill_rect(0, 0, 20, 20);
+    }
 }

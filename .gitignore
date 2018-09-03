@@ -17,3 +17,6 @@ visualization/out
 
 # Webpack generated
 **/dist
+
+# Yarn error logs
+**/yarn-error.log

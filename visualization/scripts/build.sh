@@ -1,13 +1,11 @@
-#!/usr/bin/env bash
-set -e
+#!/usr/bin/env bash -e
 
 application_name=myelin_visualization
 target_dir=visualization/out
 
-
 cargo build --target wasm32-unknown-unknown
 
-rm -r $target_dir || true
+rm -rf $target_dir
 mkdir $target_dir
 wasm-bindgen target/wasm32-unknown-unknown/debug/$application_name.wasm --out-dir $target_dir
 
