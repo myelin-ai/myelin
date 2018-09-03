@@ -239,7 +239,7 @@ mod tests {
     }
 
     #[test]
-    fn handles_collision_when_walking_through_wall() {
+    fn handles_collision_when_walking_through_plant() {
         ignores_walking_through_stationary_object(Kind::Undefined, Kind::Plant);
     }
 
