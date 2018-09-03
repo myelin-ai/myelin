@@ -33,4 +33,4 @@ pub struct Object {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct ObjectId(pub(crate) usize);
+pub struct Id(pub(crate) usize);
