@@ -19,8 +19,9 @@ impl CollisionHandler for CollisionHandlerImpl {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::physics_handler::{CollisionIterMut, CollisionMut};
+    use crate::physics_handler::CollisionIterMut;
     use crate::properties::{Kind, Location, MovementVector, Object, Rectangle};
+    use crate::util::collision_mut_from_container_at;
 
     #[test]
     fn ignores_empty_iterator() {
@@ -52,16 +53,11 @@ mod tests {
             },
         ];
         let mut container = original_container.clone();
-        let (container_a, container_b) = container.split_at_mut(1);
-        {
-            let collisions = vec![CollisionMut {
-                first: &mut container_a[0],
-                second: &mut container_b[0],
-            }];
-            let iter = CollisionIterMut(Box::new(collisions.into_iter()));
-            let collision_handler = CollisionHandlerImpl::new();
-            collision_handler.handle_collisions(iter);
-        }
+        let collisions = vec![collision_mut_from_container_at(&mut container, 0, 1)];
+        let iter = CollisionIterMut(Box::new(collisions.into_iter()));
+        let collision_handler = CollisionHandlerImpl::new();
+        collision_handler.handle_collisions(iter);
+
         original_container
             .into_iter()
             .zip(container)
