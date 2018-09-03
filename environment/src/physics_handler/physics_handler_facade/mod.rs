@@ -2,8 +2,8 @@ use super::PhysicsHandler;
 use crate::object::Object;
 
 use std::fmt::Debug;
-pub mod collision_handler_impl;
-pub mod movement_applier_impl;
+//pub mod collision_handler_impl;
+//pub mod movement_applier_impl;
 
 #[derive(Debug)]
 pub struct PhysicsHandlerFacade {
@@ -71,8 +71,11 @@ mod tests {
     }
     impl MovementApplier for MovementApplierMock {
         fn apply_movement(&self, object: &Object) -> Object {
-            self.apply_movement_fn
-                .expect("apply_movement has been called unexpectedly")(object)
+            if let Some(apply_movement_fn) = &self.apply_movement_fn {
+                apply_movement_fn(object)
+            } else {
+                panic!("apply_movement has been called unexpectedly")
+            }
         }
     }
 
@@ -103,69 +106,98 @@ mod tests {
             self.handle_collisions_fn = Some(handle_collisions_fn);
         }
     }
+
     impl CollisionHandler for CollisionHandlerMock {
         fn handle_collisions<'a>(&self, object: &Object, collisions: &[&Object]) -> Object {
-            self.handle_collisions_fn
-                .expect("handle_collisions has been called unexpectedly")(
-                object, collisions
-            )
+            if let Some(handle_collisions_fn) = &self.handle_collisions_fn {
+                handle_collisions_fn(object, collisions)
+            } else {
+                panic!("handle_collisions_fn has been called unexpectedly")
+            }
         }
     }
 
-    fn container() -> Vec<Object> {
-        vec![
-            Object {
-                rectangle: Rectangle {
-                    width: 6,
-                    length: 5,
-                },
-                location: Location { x: 10, y: 20 },
-                movement: MovementVector { x: 6, y: 7 },
-                kind: Kind::Undefined,
+    fn expected_object() -> Object {
+        Object {
+            rectangle: Rectangle {
+                width: 1,
+                length: 2,
             },
-            Object {
-                rectangle: Rectangle {
-                    width: 3,
-                    length: 4,
-                },
-                location: Location { x: 17, y: 23 },
-                movement: MovementVector { x: -4, y: -3 },
-                kind: Kind::Undefined,
+            location: Location { x: 3, y: 5 },
+            movement: MovementVector { x: 1, y: 32 },
+            kind: Kind::Undefined,
+        }
+    }
+
+    fn any_object() -> Object {
+        Object {
+            rectangle: Rectangle {
+                width: 3,
+                length: 4,
             },
-            Object {
-                rectangle: Rectangle {
-                    width: 4,
-                    length: 4,
-                },
-                location: Location { x: 42, y: 11 },
-                movement: MovementVector { x: 0, y: -3 },
-                kind: Kind::Undefined,
-            },
-        ]
+            location: Location { x: 17, y: 23 },
+            movement: MovementVector { x: -4, y: -3 },
+            kind: Kind::Undefined,
+        }
     }
 
     #[test]
     fn passes_container_to_movement_applier() {
         let mut movement_applier = Box::new(MovementApplierMock::new());
-        let mut container = container();
-        movement_applier.expect_apply_movement(&container);
+        let expected_object = expected_object();
+        let passed_object = any_object();
+        {
+            let passed_object = passed_object.clone();
+            let expected_object = expected_object.clone();
+            movement_applier.expect_apply_movement(Box::new(move |object| {
+                assert_eq!(passed_object, *object);
+                expected_object.clone()
+            }));
+        }
         let collision_handler = Box::new(CollisionHandlerMock::new());
 
         let physics_handler_facade = PhysicsHandlerFacade::new(movement_applier, collision_handler);
-        physics_handler_facade.apply_movement(&mut container);
+        let actual_object = physics_handler_facade.apply_movement(&any_object());
+        assert_eq!(expected_object, actual_object);
     }
 
     #[test]
     fn passes_collider_and_container_to_collision_handler() {
         let movement_applier = Box::new(MovementApplierMock::new());
         let mut collision_handler = Box::new(CollisionHandlerMock::new());
-        let mut container = container();
-        let expected_collisions = vec![(container[0].clone(), container[1].clone())];
-        collision_handler.expect_handle_collisions(&expected_collisions, &container);
+        let passed_object = any_object();
+        let first_collision = Object {
+            rectangle: Rectangle {
+                length: 12,
+                width: 4,
+            },
+            ..passed_object.clone()
+        };
+        let second_collision = Object {
+            location: Location { y: 12, x: 4 },
+            ..passed_object.clone()
+        };
+        let collisions = vec![&first_collision, &second_collision];
+        let expected_object = expected_object();
+        {
+            let expected_object = expected_object.clone();
+            let passed_object = passed_object.clone();
+            let collisions = collisions.clone();
+            collision_handler.expect_handle_collisions(Box::new(
+                move |actual_object, actual_collisions| {
+                    assert_eq!(passed_object, *actual_object);
+                    collisions
+                        .iter()
+                        .zip(actual_collisions)
+                        .for_each(|(&expected, &actual)| assert_eq!(*expected, *actual));
+
+                    expected_object.clone()
+                },
+            ));
+        }
 
         let physics_handler_facade = PhysicsHandlerFacade::new(movement_applier, collision_handler);
-        let collisions = vec![collision_mut_from_container_at(&mut container, 0, 0)];
-        physics_handler_facade
-            .handle_collisions(CollisionIterMut(Box::new(collisions.into_iter())));
+        let actual_object = physics_handler_facade.handle_collisions(&passed_object, &collisions);
+        assert_eq!(expected_object, actual_object);
     }
 }
