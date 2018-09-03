@@ -10,11 +10,3 @@ pub struct WorldImpl {
     length: u32,
     object_ids: Vec<ObjectId>,
 }
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(true, true);
-    }
-}
