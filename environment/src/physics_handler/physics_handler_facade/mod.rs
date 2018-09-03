@@ -44,8 +44,8 @@ pub trait CollisionHandler: Debug {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::physics_handler::CollisionMut;
     use crate::properties::{Kind, Location, MovementVector, Object, Rectangle};
+    use crate::util::collision_mut_from_container_at;
 
     #[derive(Debug)]
     struct MovementApplierMock {
@@ -162,11 +162,7 @@ mod tests {
         collision_handler.expect_handle_collisions(&expected_collisions, &container);
 
         let physics_handler_facade = PhysicsHandlerFacade::new(movement_applier, collision_handler);
-        let (container_a, container_b) = container.split_at_mut(1);
-        let collisions = vec![CollisionMut {
-            first: &mut container_a[0],
-            second: &mut container_b[0],
-        }];
+        let collisions = vec![collision_mut_from_container_at(&mut container, 0, 0)];
         physics_handler_facade
             .handle_collisions(CollisionIterMut(Box::new(collisions.into_iter())));
     }
