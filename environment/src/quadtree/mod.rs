@@ -20,6 +20,8 @@ mod test {
     use super::{builder::QuadTreeBuilder, Bucket, Object};
     use crate::properties::{Kind, Location, MovementVector, Rectangle};
 
+    const WORLD_SIZE: u32 = 100;
+
     fn object_in_quadrant_one() -> Object {
         Object {
             location: Location::new(10, 10),
@@ -58,7 +60,6 @@ mod test {
 
     #[test]
     fn test_quadtree_splits_on_bucket_capacity() {
-        const WORLD_SIZE: u32 = 100;
         const FIRST_SUBBUCKET_SIZE: u32 = 50;
 
         let obj1 = object_in_quadrant_one();
@@ -112,8 +113,6 @@ mod test {
 
     #[test]
     fn test_quadtree_doesnt_split_on_bucket_capacity_minus_one() {
-        const WORLD_SIZE: u32 = 100;
-
         let obj1 = object_in_quadrant_one();
         let obj2 = object_in_quadrant_two();
         let obj3 = object_in_quadrant_three();
