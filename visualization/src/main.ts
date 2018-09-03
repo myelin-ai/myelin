@@ -1,5 +1,5 @@
 import('../out/myelin_visualization').then((rust) => {
-    const canvas = document.getElementById('myelin-visualization') as HTMLCanvasElement
+    const canvas = document.getElementById('visualization') as HTMLCanvasElement
     const entryPoint = rust.EntryPoint.new(canvas)
     entryPoint.start()
 }).catch((reason) => {
