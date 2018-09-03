@@ -6,7 +6,7 @@ use crate::properties::{Location, Object, Rectangle};
 struct Bucket<'a> {
     rectangle: Rectangle,
     location: Location,
-    objects: Vec<&'a Object>,
+    objects: Vec<&'a mut Object>,
     buckets: Vec<Bucket<'a>>,
 }
 
@@ -62,10 +62,10 @@ mod test {
     fn test_quadtree_splits_on_bucket_capacity() {
         const FIRST_SUBBUCKET_SIZE: u32 = 50;
 
-        let obj1 = object_in_quadrant_one();
-        let obj2 = object_in_quadrant_two();
-        let obj3 = object_in_quadrant_three();
-        let obj4 = object_in_quadrant_four();
+        let mut obj1 = object_in_quadrant_one();
+        let mut obj2 = object_in_quadrant_two();
+        let mut obj3 = object_in_quadrant_three();
+        let mut obj4 = object_in_quadrant_four();
 
         let expected = Bucket {
             rectangle: Rectangle::new(WORLD_SIZE, WORLD_SIZE),
@@ -75,25 +75,25 @@ mod test {
                 Bucket {
                     rectangle: Rectangle::new(FIRST_SUBBUCKET_SIZE, FIRST_SUBBUCKET_SIZE),
                     location: Location::new(0, 0),
-                    objects: vec![&obj1],
+                    objects: vec![&mut obj1],
                     buckets: vec![],
                 },
                 Bucket {
                     rectangle: Rectangle::new(FIRST_SUBBUCKET_SIZE, FIRST_SUBBUCKET_SIZE),
                     location: Location::new(FIRST_SUBBUCKET_SIZE, 0),
-                    objects: vec![&obj2],
+                    objects: vec![&mut obj2],
                     buckets: vec![],
                 },
                 Bucket {
                     rectangle: Rectangle::new(FIRST_SUBBUCKET_SIZE, FIRST_SUBBUCKET_SIZE),
                     location: Location::new(0, FIRST_SUBBUCKET_SIZE),
-                    objects: vec![&obj3],
+                    objects: vec![&mut obj3],
                     buckets: vec![],
                 },
                 Bucket {
                     rectangle: Rectangle::new(FIRST_SUBBUCKET_SIZE, FIRST_SUBBUCKET_SIZE),
                     location: Location::new(FIRST_SUBBUCKET_SIZE, FIRST_SUBBUCKET_SIZE),
-                    objects: vec![&obj4],
+                    objects: vec![&mut obj4],
                     buckets: vec![],
                 },
             ],
@@ -113,14 +113,14 @@ mod test {
 
     #[test]
     fn test_quadtree_doesnt_split_on_bucket_capacity_minus_one() {
-        let obj1 = object_in_quadrant_one();
-        let obj2 = object_in_quadrant_two();
-        let obj3 = object_in_quadrant_three();
+        let mut obj1 = object_in_quadrant_one();
+        let mut obj2 = object_in_quadrant_two();
+        let mut obj3 = object_in_quadrant_three();
 
         let expected = Bucket {
             rectangle: Rectangle::new(WORLD_SIZE, WORLD_SIZE),
             location: Location::new(0, 0),
-            objects: vec![&obj1, &obj2, &obj3],
+            objects: vec![&mut obj1, &mut obj2, &mut obj3],
             buckets: vec![],
         };
 
