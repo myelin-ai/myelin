@@ -21,6 +21,7 @@ mod tests {
     use super::*;
     use crate::physics_handler::{CollisionIterMut, CollisionMut};
     use crate::properties::{Kind, Location, MovementVector, Object, Rectangle};
+    use crate::util::collision_mut_from_container_at;
 
     #[test]
     fn ignores_empty_iterator() {
@@ -65,6 +66,80 @@ mod tests {
         original_container
             .into_iter()
             .zip(container)
+            .for_each(|(expected, actual)| assert_eq!(expected, actual));
+    }
+
+    #[test]
+    fn handles_collision_with_stationary_object() {
+        let mut original_container = vec![
+            Object {
+                rectangle: Rectangle {
+                    width: 3,
+                    length: 4,
+                },
+                location: Location { x: 5, y: 5 },
+                movement: MovementVector { x: 0, y: 5 },
+                kind: Kind::Undefined,
+            },
+            Object {
+                rectangle: Rectangle {
+                    width: 2,
+                    length: 2,
+                },
+                location: Location { x: 5, y: 10 },
+                movement: MovementVector { x: 0, y: 0 },
+                kind: Kind::Undefined,
+            },
+        ];
+
+        let mut expected_container = original_container.clone();
+        expected_container[0].location = Location { x: 5, y: 7 };
+
+        let collisions = vec![collision_mut_from_container_at(&mut original_container, 0, 1)];
+
+        let collision_handler = CollisionHandlerImpl::new();
+        collision_handler.handle_collisions(CollisionIterMut(Box::new(collisions.into_iter())));
+
+        original_container
+            .into_iter()
+            .zip(expected_container)
+            .for_each(|(expected, actual)| assert_eq!(expected, actual));
+    }
+
+    #[test]
+    fn handles_collision_when_walking_through_stationary_object() {
+        let mut original_container = vec![
+            Object {
+                rectangle: Rectangle {
+                    width: 3,
+                    length: 4,
+                },
+                location: Location { x: 5, y: 5 },
+                movement: MovementVector { x: 0, y: 15 },
+                kind: Kind::Undefined,
+            },
+            Object {
+                rectangle: Rectangle {
+                    width: 2,
+                    length: 2,
+                },
+                location: Location { x: 5, y: 10 },
+                movement: MovementVector { x: 0, y: 0 },
+                kind: Kind::Undefined,
+            },
+        ];
+
+        let mut expected_container = original_container.clone();
+        expected_container[0].location = Location { x: 5, y: 7 };
+
+        let collisions = vec![collision_mut_from_container_at(&mut original_container, 0, 1)];
+
+        let collision_handler = CollisionHandlerImpl::new();
+        collision_handler.handle_collisions(CollisionIterMut(Box::new(collisions.into_iter())));
+
+        original_container
+            .into_iter()
+            .zip(expected_container)
             .for_each(|(expected, actual)| assert_eq!(expected, actual));
     }
 }
