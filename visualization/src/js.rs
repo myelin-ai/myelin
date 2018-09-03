@@ -1,5 +1,5 @@
 #![allow(unknown_lints)]
-#![allow(drop_ref)]
+#![allow(clippy::drop_ref)]
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
