@@ -121,7 +121,7 @@ mod tests {
     ) where
         F: Fn(&[Object]) -> Vec<Object>,
     {
-        let mut container = vec![
+        let container = vec![
             Object {
                 rectangle: Rectangle {
                     width: 3,
