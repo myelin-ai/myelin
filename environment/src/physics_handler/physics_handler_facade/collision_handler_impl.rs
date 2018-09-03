@@ -224,4 +224,46 @@ mod tests {
         handles_collision_when_walking_through_stationary_object(Kind::Undefined, Kind::Water);
     }
 
+    #[test]
+    fn ignores_collision_when_organisms_cross_each_other() {
+        let mut original_container = vec![
+            Object {
+                rectangle: Rectangle {
+                    width: 3,
+                    length: 4,
+                },
+                location: Location { x: 5, y: 0 },
+                movement: MovementVector { x: 0, y: 15 },
+                kind: Kind::Organism,
+            },
+            Object {
+                rectangle: Rectangle {
+                    width: 2,
+                    length: 2,
+                },
+                location: Location { x: 5, y: 10 },
+                movement: MovementVector { x: 0, y: -5 },
+                kind: Kind::Organism,
+            },
+        ];
+
+        let mut expected_container = original_container.clone();
+        expected_container[0].location = Location { x: 5, y: 15 };
+        expected_container[1].location = Location { x: 5, y: 5 };
+
+        let collisions = vec![collision_mut_from_container_at(
+            &mut original_container,
+            0,
+            1,
+        )];
+
+        let collision_handler = CollisionHandlerImpl::new();
+        collision_handler.handle_collisions(CollisionIterMut(Box::new(collisions.into_iter())));
+
+        original_container
+            .into_iter()
+            .zip(expected_container)
+            .for_each(|(expected, actual)| assert_eq!(expected, actual));
+    }
+
 }
