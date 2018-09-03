@@ -64,7 +64,13 @@ mod tests {
             .for_each(|(expected, actual)| assert_eq!(expected, actual));
     }
 
-    fn handles_collision_when_walking_into_stationary_object(moving: Kind, stationary: Kind) {
+    fn collision_when_walking_into_stationary_object_behaves_as_expected<F>(
+        moving: Kind,
+        stationary: Kind,
+        original_to_expected_fn: F,
+    ) where
+        F: Fn(&[Object]) -> Vec<Object>,
+    {
         let mut original_container = vec![
             Object {
                 rectangle: Rectangle {
@@ -86,8 +92,7 @@ mod tests {
             },
         ];
 
-        let mut expected_container = original_container.clone();
-        expected_container[0].location = Location { x: 5, y: 7 };
+        let expected_container = original_to_expected_fn(&original_container);
 
         let collisions = vec![collision_mut_from_container_at(
             &mut original_container,
@@ -105,43 +110,23 @@ mod tests {
     }
 
     fn ignores_walking_into_stationary_object(moving: Kind, stationary: Kind) {
-        let mut original_container = vec![
-            Object {
-                rectangle: Rectangle {
-                    width: 3,
-                    length: 4,
-                },
-                location: Location { x: 5, y: 5 },
-                movement: MovementVector { x: 0, y: 5 },
-                kind: moving,
+        collision_when_walking_into_stationary_object_behaves_as_expected(
+            moving,
+            stationary,
+            |original_collisions| original_collisions.to_vec(),
+        )
+    }
+
+    fn handles_collision_when_walking_into_stationary_object(moving: Kind, stationary: Kind) {
+        collision_when_walking_into_stationary_object_behaves_as_expected(
+            moving,
+            stationary,
+            |original_collisions| {
+                let mut expected_collisions = original_collisions.to_vec();
+                expected_collisions[0].location = Location { x: 5, y: 7 };
+                expected_collisions
             },
-            Object {
-                rectangle: Rectangle {
-                    width: 2,
-                    length: 2,
-                },
-                location: Location { x: 5, y: 10 },
-                movement: MovementVector { x: 0, y: 0 },
-                kind: stationary,
-            },
-        ];
-
-        let mut expected_container = original_container.clone();
-        expected_container[0].location = Location { x: 5, y: 10 };
-
-        let collisions = vec![collision_mut_from_container_at(
-            &mut original_container,
-            0,
-            1,
-        )];
-
-        let collision_handler = CollisionHandlerImpl::new();
-        collision_handler.handle_collisions(CollisionIterMut(Box::new(collisions.into_iter())));
-
-        original_container
-            .into_iter()
-            .zip(expected_container)
-            .for_each(|(expected, actual)| assert_eq!(expected, actual));
+        )
     }
 
     #[test]
