@@ -8,6 +8,7 @@ pub trait World {
 pub struct WorldImpl {
     width: u32,
     length: u32,
+    object_ids: Vec<ObjectId>,
 }
 
 #[cfg(test)]
