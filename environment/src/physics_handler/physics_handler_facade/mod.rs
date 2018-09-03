@@ -44,67 +44,71 @@ pub trait MovementApplier: Debug {
 mod tests {
     use super::*;
     use crate::object::{Kind, Location, MovementVector, Object, Rectangle};
+    use std::fmt;
 
-    #[derive(Debug)]
     struct MovementApplierMock {
-        pub passed_container: Vec<Object>,
+        apply_movement_fn: Option<Box<dyn Fn(&Object) -> Object>>,
     }
+    impl fmt::Debug for MovementApplierMock {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            if self.apply_movement_fn.is_some() {
+                write!(f, "apply_movement_fn has been set")
+            } else {
+                write!(f, "apply_movement_fn has not been set")
+            }
+        }
+    }
+
     impl MovementApplierMock {
         fn new() -> Self {
             Self {
-                passed_container: Vec::new(),
+                apply_movement_fn: None,
             }
         }
-        fn expect_apply_movement(&mut self, container: &[Object]) {
-            self.passed_container.extend_from_slice(container);
+        fn expect_apply_movement(&mut self, apply_movement_fn: Box<dyn Fn(&Object) -> Object>) {
+            self.apply_movement_fn = Some(apply_movement_fn);
         }
     }
     impl MovementApplier for MovementApplierMock {
         fn apply_movement(&self, object: &Object) -> Object {
-            self.passed_container
-                .iter()
-                .zip(container)
-                .for_each(|(expected, actual)| {
-                    assert_eq!(expected, actual);
-                });
+            self.apply_movement_fn
+                .expect("apply_movement has been called unexpectedly")(object)
         }
     }
 
-    #[derive(Debug)]
     struct CollisionHandlerMock {
-        pub passed_collisions: Vec<(Object, Object)>,
-        pub passed_container: Vec<Object>,
+        handle_collisions_fn: Option<Box<dyn Fn(&Object, &[&Object]) -> Object>>,
     }
+    impl fmt::Debug for CollisionHandlerMock {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            if self.handle_collisions_fn.is_some() {
+                write!(f, "apply_movement_fn has been set")
+            } else {
+                write!(f, "apply_movement_fn has not been set")
+            }
+        }
+    }
+
     impl CollisionHandlerMock {
         fn new() -> Self {
             Self {
-                passed_collisions: Vec::new(),
-                passed_container: Vec::new(),
+                handle_collisions_fn: None,
             }
         }
 
         fn expect_handle_collisions(
             &mut self,
-            collisions: &[(Object, Object)],
-            container: &[Object],
+            handle_collisions_fn: Box<dyn Fn(&Object, &[&Object]) -> Object>,
         ) {
-            self.passed_collisions.extend_from_slice(collisions);
-            self.passed_container.extend_from_slice(container);
+            self.handle_collisions_fn = Some(handle_collisions_fn);
         }
     }
     impl CollisionHandler for CollisionHandlerMock {
         fn handle_collisions<'a>(&self, object: &Object, collisions: &[&Object]) -> Object {
-            let collisions_as_tuple: Vec<_> = collisions
-                .0
-                .map(|collision| (collision.first.clone(), collision.second.clone()))
-                .collect();
-            self.passed_collisions
-                .iter()
-                .zip(collisions_as_tuple)
-                .for_each(|(expected, actual)| {
-                    assert_eq!(expected.0, actual.0);
-                    assert_eq!(expected.1, actual.1);
-                });
+            self.handle_collisions_fn
+                .expect("handle_collisions has been called unexpectedly")(
+                object, collisions
+            )
         }
     }
 
