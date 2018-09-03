@@ -1,4 +1,4 @@
-use crate::properties::{Object, ObjectId};
+use crate::object::{Object, ObjectId};
 use std::fmt::Debug;
 
 pub trait CollisionChecker {

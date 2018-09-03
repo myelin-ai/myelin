@@ -1,4 +1,4 @@
-use crate::properties::*;
+use crate::object::*;
 
 pub trait World {
     fn rectangle(&self) -> Rectangle;

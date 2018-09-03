@@ -1,4 +1,4 @@
-use crate::properties::Object;
+use crate::object::Object;
 
 pub trait PhysicsHandler {
     fn handle_collisions(&self, object: &Object, collisions: &[&Object]) -> Object;
