@@ -1,4 +1,5 @@
-use super::{Object, Quadtree};
+use super::Quadtree;
+use crate::object::Object;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct QuadtreeBuilder {

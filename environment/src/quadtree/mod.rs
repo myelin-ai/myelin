@@ -1,6 +1,6 @@
 pub mod builder;
 
-use crate::properties::{Location, Object, Rectangle};
+use crate::object::{Location, Object, Rectangle};
 
 #[derive(Debug, Eq, PartialEq)]
 struct Bucket<'a> {
@@ -18,7 +18,7 @@ pub struct Quadtree<'a> {
 #[cfg(test)]
 mod test {
     use super::{builder::QuadtreeBuilder, Bucket, Object};
-    use crate::properties::{Kind, Location, MovementVector, Rectangle};
+    use crate::object::{Kind, Location, MovementVector, Rectangle};
 
     const WORLD_SIZE: u32 = 100;
 
