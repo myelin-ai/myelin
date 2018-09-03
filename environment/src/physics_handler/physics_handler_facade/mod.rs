@@ -1,6 +1,5 @@
 use super::PhysicsHandler;
-use crate::physics_handler::CollisionIterMut;
-use crate::properties::Object;
+use crate::object::Object;
 
 use std::fmt::Debug;
 pub mod collision_handler_impl;
@@ -25,27 +24,26 @@ impl PhysicsHandlerFacade {
 }
 
 impl PhysicsHandler for PhysicsHandlerFacade {
-    fn handle_collisions<'a>(&self, collisions: CollisionIterMut<'a>) {
-        self.collision_handler.handle_collisions(collisions)
+    fn handle_collisions<'a>(&self, object: &Object, collisions: &[&Object]) -> Object {
+        self.collision_handler.handle_collisions(object, collisions)
     }
-    fn apply_movement(&self, container: &mut [Object]) {
-        self.movement_applier.apply_movement(container)
+    fn apply_movement(&self, object: &Object) -> Object {
+        self.movement_applier.apply_movement(object)
     }
-}
-
-pub trait MovementApplier: Debug {
-    fn apply_movement(&self, container: &mut [Object]);
 }
 
 pub trait CollisionHandler: Debug {
-    fn handle_collisions<'a>(&self, collisions: CollisionIterMut<'a>);
+    fn handle_collisions<'a>(&self, object: &Object, collisions: &[&Object]) -> Object;
+}
+
+pub trait MovementApplier: Debug {
+    fn apply_movement(&self, object: &Object) -> Object;
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::properties::{Kind, Location, MovementVector, Object, Rectangle};
-    use crate::util::collision_mut_from_container_at;
+    use crate::object::{Kind, Location, MovementVector, Object, Rectangle};
 
     #[derive(Debug)]
     struct MovementApplierMock {
@@ -62,7 +60,7 @@ mod tests {
         }
     }
     impl MovementApplier for MovementApplierMock {
-        fn apply_movement(&self, container: &mut [Object]) {
+        fn apply_movement(&self, object: &Object) -> Object {
             self.passed_container
                 .iter()
                 .zip(container)
@@ -95,7 +93,7 @@ mod tests {
         }
     }
     impl CollisionHandler for CollisionHandlerMock {
-        fn handle_collisions(&self, collisions: CollisionIterMut<'_>) {
+        fn handle_collisions<'a>(&self, object: &Object, collisions: &[&Object]) -> Object {
             let collisions_as_tuple: Vec<_> = collisions
                 .0
                 .map(|collision| (collision.first.clone(), collision.second.clone()))

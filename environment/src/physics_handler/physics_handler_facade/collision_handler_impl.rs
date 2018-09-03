@@ -1,5 +1,5 @@
 use super::CollisionHandler;
-use crate::physics_handler::CollisionIterMut;
+use crate::object::Object;
 
 #[derive(Debug, Default)]
 pub struct CollisionHandlerImpl;
@@ -11,7 +11,7 @@ impl CollisionHandlerImpl {
 }
 
 impl CollisionHandler for CollisionHandlerImpl {
-    fn handle_collisions<'a>(&self, _collisions: CollisionIterMut<'a>) {
+    fn handle_collisions<'a>(&self, object: &Object, collisions: &[&Object]) -> Object {
         unimplemented!()
     }
 }
@@ -19,9 +19,7 @@ impl CollisionHandler for CollisionHandlerImpl {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::physics_handler::CollisionIterMut;
-    use crate::properties::{Kind, Location, MovementVector, Object, Rectangle};
-    use crate::util::collision_mut_from_container_at;
+    use crate::object::{Kind, Location, MovementVector, Object, Rectangle};
 
     #[test]
     fn ignores_empty_iterator() {

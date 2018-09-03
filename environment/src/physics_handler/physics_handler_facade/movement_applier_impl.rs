@@ -1,5 +1,5 @@
 use super::MovementApplier;
-use crate::properties::{Location, Object, Rectangle};
+use crate::object::{Location, Object, Rectangle};
 
 #[derive(Debug, Default)]
 pub struct MovementApplierImpl;
@@ -11,7 +11,7 @@ impl MovementApplierImpl {
 }
 
 impl MovementApplier for MovementApplierImpl {
-    fn apply_movement(&self, container: &mut [Object]) {
+    fn apply_movement(&self, object: &Object) -> Object {
         for object in container {
             let new_x = object.location.x as i32 + object.movement.x;
             let new_y = object.location.y as i32 + object.movement.y;
@@ -36,7 +36,7 @@ fn is_valid_movement(new_x: i32, new_y: i32, rectangle: &Rectangle) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::properties::*;
+    use crate::object::*;
 
     #[test]
     fn applies_movement() {
