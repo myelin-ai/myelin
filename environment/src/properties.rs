@@ -1,4 +1,4 @@
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Location {
     pub x: u32,
     pub y: u32,
@@ -10,7 +10,7 @@ impl Location {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Rectangle {
     /// Corresponds to x
     pub width: u32,
@@ -24,13 +24,13 @@ impl Rectangle {
     }
 }
 
-#[derive(Debug, Default, Eq, PartialEq)]
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct MovementVector {
     pub x: i32,
     pub y: i32,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Kind {
     Organism,
     Wall,
@@ -38,7 +38,7 @@ pub enum Kind {
     Water,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Object {
     pub location: Location,
     pub rectangle: Rectangle,
