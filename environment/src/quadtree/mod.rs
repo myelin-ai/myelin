@@ -51,7 +51,7 @@ mod test {
 
     fn object_in_quadrant_four() -> Object {
         Object {
-            location: Location::new(70, 70),
+            location: Location::new(100, 100),
             rectangle: Rectangle::new(14, 14),
             movement: MovementVector::default(),
             kind: Kind::Organism,
