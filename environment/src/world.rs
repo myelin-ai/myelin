@@ -1,4 +1,4 @@
-use crate::properties::*;
+use crate::object::{Id, Rectangle};
 
 pub trait World {
     fn rectangle(&self) -> Rectangle;
@@ -8,13 +8,5 @@ pub trait World {
 pub struct WorldImpl {
     width: u32,
     length: u32,
-    object_ids: Vec<ObjectId>,
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(true, true);
-    }
+    object_ids: Vec<Id>,
 }
