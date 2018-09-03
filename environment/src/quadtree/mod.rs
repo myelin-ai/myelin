@@ -136,5 +136,19 @@ mod test {
     }
 
     #[test]
-    fn test_quadtree_only_splits_container_with_contents() {}
+    fn test_quadtree_only_splits_container_with_contents() {
+        let container = vec![];
+
+        let quad_tree = QuadTreeBuilder::default().split_at(4).build(&container);
+
+        assert_eq!(
+            Bucket {
+                rectangle: Rectangle::new(0, 0),
+                location: Location::new(0, 0),
+                objects: vec![],
+                buckets: vec![],
+            },
+            quad_tree.root_bucket
+        );
+    }
 }
