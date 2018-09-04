@@ -2,8 +2,8 @@ use super::PhysicsHandler;
 use crate::object::Object;
 
 use std::fmt::Debug;
-//pub mod collision_handler_impl;
-//pub mod movement_applier_impl;
+pub mod collision_handler_impl;
+pub mod movement_applier_impl;
 
 #[derive(Debug)]
 pub struct PhysicsHandlerFacade {

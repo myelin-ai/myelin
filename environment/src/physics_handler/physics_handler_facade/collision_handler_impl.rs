@@ -21,22 +21,35 @@ mod tests {
     use super::*;
     use crate::object::{Kind, Location, MovementVector, Object, Rectangle};
 
+    fn any_object() -> Object {
+        Object {
+            rectangle: Rectangle {
+                width: 3,
+                length: 4,
+            },
+            location: Location { x: 17, y: 23 },
+            movement: MovementVector { x: -4, y: -3 },
+            kind: Kind::Undefined,
+        }
+    }
+
     #[test]
     fn ignores_empty_iterator() {
-        let iter = CollisionIterMut(Box::new(vec![].into_iter()));
         let collision_handler = CollisionHandlerImpl::new();
-        collision_handler.handle_collisions(iter);
+        let expected_object = any_object();
+        let actual_object = collision_handler.handle_collisions(&expected_object, &[]);
+        assert_eq!(expected_object, actual_object);
     }
 
     #[test]
     fn ignores_incorrect_collisions() {
-        let original_container = vec![
+        let container = vec![
             Object {
                 rectangle: Rectangle {
                     width: 3,
                     length: 4,
                 },
-                location: Location { x: 17, y: 23 },
+                location: Location { x: 174, y: 213 },
                 movement: MovementVector { x: -4, y: -3 },
                 kind: Kind::Undefined,
             },
@@ -50,16 +63,13 @@ mod tests {
                 kind: Kind::Undefined,
             },
         ];
-        let mut container = original_container.clone();
-        let collisions = vec![collision_mut_from_container_at(&mut container, 0, 1)];
-        let iter = CollisionIterMut(Box::new(collisions.into_iter()));
-        let collision_handler = CollisionHandlerImpl::new();
-        collision_handler.handle_collisions(iter);
+        let collisions = vec![&container[0], &container[1]];
+        let expected_object = any_object();
 
-        original_container
-            .into_iter()
-            .zip(container)
-            .for_each(|(expected, actual)| assert_eq!(expected, actual));
+        let collision_handler = CollisionHandlerImpl::new();
+        let actual_object = collision_handler.handle_collisions(&expected_object, &collisions);
+
+        assert_eq!(expected_object, actual_object)
     }
 
     fn generate_test_for_objects<F>(objects: Vec<Object>) -> impl FnOnce(F)
