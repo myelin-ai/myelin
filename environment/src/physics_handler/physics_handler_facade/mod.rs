@@ -177,14 +177,16 @@ mod tests {
             location: Location { y: 12, x: 4 },
             ..passed_object.clone()
         };
-        let collisions = vec![&first_collision, &second_collision];
         let expected_object = expected_object();
+        let collisions = vec![&first_collision, &second_collision];
         {
+            let first_collision = first_collision.clone();
+            let second_collision = second_collision.clone();
             let expected_object = expected_object.clone();
             let passed_object = passed_object.clone();
-            let collisions = collisions.clone();
             collision_handler.expect_handle_collisions(Box::new(
                 move |actual_object, actual_collisions| {
+                    let collisions = vec![&first_collision, &second_collision];
                     assert_eq!(passed_object, *actual_object);
                     collisions
                         .iter()
@@ -195,7 +197,6 @@ mod tests {
                 },
             ));
         }
-
         let physics_handler_facade = PhysicsHandlerFacade::new(movement_applier, collision_handler);
         let actual_object = physics_handler_facade.handle_collisions(&passed_object, &collisions);
         assert_eq!(expected_object, actual_object);
