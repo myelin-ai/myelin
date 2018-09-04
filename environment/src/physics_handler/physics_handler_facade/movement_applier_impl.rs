@@ -61,6 +61,69 @@ mod tests {
     }
 
     #[test]
+    fn allows_object_on_exact_origin() {
+        let original_object = Object {
+            rectangle: Rectangle {
+                width: 6,
+                length: 4,
+            },
+            location: Location { x: 4, y: 2 },
+            movement: MovementVector { x: -1, y: 0 },
+            kind: Kind::Undefined,
+        };
+
+        let physics_handler = MovementApplierImpl::new();
+        let actual_object = physics_handler.apply_movement(&original_object);
+
+        let expected_object = Object {
+            location: Location { x: 3, y: 2 },
+            ..original_object
+        };
+        assert_eq!(expected_object, actual_object);
+    }
+
+    #[test]
+    fn allows_object_on_exact_origin_by_rounding_down() {
+        let original_object = Object {
+            rectangle: Rectangle {
+                width: 5,
+                length: 4,
+            },
+            location: Location { x: 4, y: 2 },
+            movement: MovementVector { x: -1, y: 0 },
+            kind: Kind::Undefined,
+        };
+
+        let physics_handler = MovementApplierImpl::new();
+        let actual_object = physics_handler.apply_movement(&original_object);
+
+        let expected_object = Object {
+            location: Location { x: 3, y: 2 },
+            ..original_object
+        };
+
+        assert_eq!(expected_object, actual_object);
+    }
+
+    #[test]
+    fn ignores_zeroed_movement_vector() {
+        let expected_object = Object {
+            rectangle: Rectangle {
+                width: 4,
+                length: 6,
+            },
+            location: Location { x: 40, y: 22 },
+            movement: MovementVector { x: 0, y: 0 },
+            kind: Kind::Undefined,
+        };
+
+        let physics_handler = MovementApplierImpl::new();
+        let actual_object = physics_handler.apply_movement(&expected_object);
+
+        assert_eq!(expected_object, actual_object);
+    }
+
+    #[test]
     #[should_panic]
     fn panics_when_moving_out_of_bounds() {
         let original_object = Object {
@@ -126,68 +189,5 @@ mod tests {
 
         let physics_handler = MovementApplierImpl::new();
         physics_handler.apply_movement(&original_object);
-    }
-
-    #[test]
-    fn allows_object_on_exact_origin() {
-        let original_object = Object {
-            rectangle: Rectangle {
-                width: 6,
-                length: 4,
-            },
-            location: Location { x: 4, y: 2 },
-            movement: MovementVector { x: -1, y: 0 },
-            kind: Kind::Undefined,
-        };
-
-        let physics_handler = MovementApplierImpl::new();
-        let actual_object = physics_handler.apply_movement(&original_object);
-
-        let expected_object = Object {
-            location: Location { x: 3, y: 2 },
-            ..original_object
-        };
-        assert_eq!(expected_object, actual_object);
-    }
-
-    #[test]
-    fn allows_object_on_exact_origin_by_rounding_down() {
-        let original_object = Object {
-            rectangle: Rectangle {
-                width: 5,
-                length: 4,
-            },
-            location: Location { x: 4, y: 2 },
-            movement: MovementVector { x: -1, y: 0 },
-            kind: Kind::Undefined,
-        };
-
-        let physics_handler = MovementApplierImpl::new();
-        let actual_object = physics_handler.apply_movement(&original_object);
-
-        let expected_object = Object {
-            location: Location { x: 3, y: 2 },
-            ..original_object
-        };
-
-        assert_eq!(expected_object, actual_object);
-    }
-
-    #[test]
-    fn ignores_zeroed_movement_vector() {
-        let expected_object = Object {
-            rectangle: Rectangle {
-                width: 4,
-                length: 6,
-            },
-            location: Location { x: 40, y: 22 },
-            movement: MovementVector { x: 0, y: 0 },
-            kind: Kind::Undefined,
-        };
-
-        let physics_handler = MovementApplierImpl::new();
-        let actual_object = physics_handler.apply_movement(&expected_object);
-
-        assert_eq!(expected_object, actual_object);
     }
 }
