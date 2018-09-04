@@ -11,7 +11,7 @@ impl CollisionHandlerImpl {
 }
 
 impl CollisionHandler for CollisionHandlerImpl {
-    fn handle_collisions<'a>(&self, object: &Object, collisions: &[&Object]) -> Object {
+    fn handle_collisions<'a>(&self, _object: &Object, _collisions: &[&Object]) -> Object {
         unimplemented!()
     }
 }
