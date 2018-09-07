@@ -27,9 +27,3 @@ pub(crate) enum Kind {
     Water,
     Terrain,
 }
-
-#[derive(Debug)]
-pub(crate) struct RectangleShape {
-    pub(crate) width: u32,
-    pub(crate) length: u32,
-}
