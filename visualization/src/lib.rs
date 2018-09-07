@@ -6,3 +6,4 @@ pub mod js;
 mod presenter;
 mod simulation;
 mod view;
+mod view_model;
