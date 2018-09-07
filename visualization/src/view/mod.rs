@@ -4,7 +4,7 @@ pub mod js;
 use crate::presenter::View;
 use crate::view_model::{Kind, Object, ViewModel};
 
-pub(crate) struct CanvasView {
+pub struct CanvasView {
     context: js::CanvasRenderingContext2D,
 }
 
@@ -17,7 +17,7 @@ impl View for CanvasView {
 }
 
 impl CanvasView {
-    pub(crate) fn new(canvas: &js::HTMLCanvasElement) -> Self {
+    pub fn new(canvas: &js::HTMLCanvasElement) -> Self {
         Self {
             context: canvas.get_context("2d"),
         }
