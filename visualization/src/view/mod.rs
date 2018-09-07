@@ -32,14 +32,17 @@ impl CanvasView {
             self.context.move_to(vertex.x, vertex.y);
         }
 
-        let color = match object.kind {
-            Kind::Organism => "orange",
-            Kind::Plant => "green",
-            Kind::Water => "blue",
-            Kind::Terrain => "brown",
-        };
-
+        let color = map_kind_to_color(&object.kind);
         self.context.set_fill_style(color);
         self.context.fill();
+    }
+}
+
+fn map_kind_to_color(kind: &Kind) -> &'static str {
+    match kind {
+        Kind::Organism => constant::color::ORANGE,
+        Kind::Plant => constant::color::GREEN,
+        Kind::Water => constant::color::BLUE,
+        Kind::Terrain => constant::color::BROWN,
     }
 }
