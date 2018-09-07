@@ -19,7 +19,7 @@ impl View for CanvasView {
 impl CanvasView {
     pub fn new(canvas: &js::HTMLCanvasElement) -> Self {
         Self {
-            context: canvas.get_context("2d"),
+            context: canvas.get_context(constant::CONTEXT_TYPE),
         }
     }
 
