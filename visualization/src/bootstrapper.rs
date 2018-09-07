@@ -1,7 +1,7 @@
 use crate::input_handler::InputHandler;
-use crate::js;
 use crate::presenter::CanvasPresenter;
 use crate::simulation::SimulationImpl;
+use crate::view::js;
 use crate::view::CanvasView;
 use wasm_bindgen::prelude::*;
 

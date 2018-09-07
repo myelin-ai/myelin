@@ -1,6 +1,8 @@
-use crate::js;
+pub(crate) mod constant;
+pub mod js;
+
 use crate::presenter::View;
-use crate::view_model::{Object, ViewModel, Kind};
+use crate::view_model::{Kind, Object, ViewModel};
 
 pub(crate) struct CanvasView {
     context: js::CanvasRenderingContext2D,
@@ -22,7 +24,8 @@ impl CanvasView {
     }
 
     fn draw_object(&self, object: &Object) {
-        self.context.move_to(object.body.vertices[0].x, object.body.vertices[0].y);
+        self.context
+            .move_to(object.body.vertices[0].x, object.body.vertices[0].y);
         self.context.begin_path();
 
         for vertex in &object.body.vertices[1..] {
