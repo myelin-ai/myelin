@@ -16,10 +16,10 @@ impl Presenter for CanvasPresenter {
                 Object {
                     body: Polygon {
                         vertices: vec![
-                            Vertex { x: 7, y: 8 },
-                            Vertex { x: 5, y: 7 },
-                            Vertex { x: 3, y: 5 },
-                            Vertex { x: 8, y: 6 },
+                            Vertex { x: 70, y: 80 },
+                            Vertex { x: 50, y: 70 },
+                            Vertex { x: 30, y: 50 },
+                            Vertex { x: 80, y: 60 },
                         ],
                     },
                     kind: Kind::Organism,
@@ -27,10 +27,10 @@ impl Presenter for CanvasPresenter {
                 Object {
                     body: Polygon {
                         vertices: vec![
-                            Vertex { x: 13, y: 11 },
-                            Vertex { x: 9, y: 8 },
-                            Vertex { x: 5, y: 5 },
-                            Vertex { x: 9, y: 7 },
+                            Vertex { x: 130, y: 110 },
+                            Vertex { x: 90, y: 80 },
+                            Vertex { x: 50, y: 50 },
+                            Vertex { x: 90, y: 70 },
                         ],
                     },
                     kind: Kind::Plant,
@@ -39,9 +39,9 @@ impl Presenter for CanvasPresenter {
                     body: Polygon {
                         vertices: vec![
                             Vertex { x: 0, y: 0 },
-                            Vertex { x: 10, y: 0 },
-                            Vertex { x: 10, y: 4 },
-                            Vertex { x: 0, y: 4 },
+                            Vertex { x: 100, y: 0 },
+                            Vertex { x: 100, y: 40 },
+                            Vertex { x: 0, y: 40 },
                         ],
                     },
                     kind: Kind::Terrain,
@@ -49,10 +49,10 @@ impl Presenter for CanvasPresenter {
                 Object {
                     body: Polygon {
                         vertices: vec![
-                            Vertex { x: 30, y: 30 },
-                            Vertex { x: 35, y: 35 },
-                            Vertex { x: 30, y: 40 },
-                            Vertex { x: 25, y: 35 },
+                            Vertex { x: 300, y: 300 },
+                            Vertex { x: 350, y: 350 },
+                            Vertex { x: 300, y: 400 },
+                            Vertex { x: 250, y: 350 },
                         ],
                     },
                     kind: Kind::Water,
