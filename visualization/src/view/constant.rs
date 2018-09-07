@@ -5,4 +5,4 @@ pub(crate) mod color {
     pub(crate) const BROWN: &str = "brown";
 }
 
-pub(crate) const CONTEXT_TYPE: &str = "webgl";
+pub(crate) const CONTEXT_TYPE: &str = "2d";
