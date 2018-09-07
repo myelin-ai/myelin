@@ -29,8 +29,10 @@ impl CanvasView {
         self.context.begin_path();
 
         for vertex in &object.body.vertices[1..] {
-            self.context.move_to(vertex.x, vertex.y);
+            self.context.line_to(vertex.x, vertex.y);
         }
+
+        self.context.close_path();
 
         let color = map_kind_to_color(&object.kind);
         self.context.set_fill_style(color);
