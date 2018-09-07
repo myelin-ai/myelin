@@ -6,6 +6,7 @@ pub struct InputHandler {
     simulation: Box<Simulation>,
 }
 
+#[wasm_bindgen]
 impl InputHandler {
     pub(crate) fn new(simulation: Box<Simulation>) -> Self {
         Self { simulation }
