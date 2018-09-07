@@ -1,6 +1,6 @@
 import('../out/myelin_visualization').then((rust) => {
     const canvas = document.getElementById('myelin-visualization') as HTMLCanvasElement
-    const inputHandler = rust.bootstrapper.init(canvas)
+    const inputHandler = rust.init(canvas)
     inputHandler.on_timer()
 }).catch((reason) => {
     console.error(reason)
