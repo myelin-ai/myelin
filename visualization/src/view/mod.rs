@@ -24,9 +24,10 @@ impl CanvasView {
     }
 
     fn draw_object(&self, object: &Object) {
-        self.context
-            .move_to(object.body.vertices[0].x, object.body.vertices[0].y);
         self.context.begin_path();
+
+        let first_vertex = &object.body.vertices[0];
+        self.context.move_to(first_vertex.x, first_vertex.y);
 
         for vertex in &object.body.vertices[1..] {
             self.context.line_to(vertex.x, vertex.y);
