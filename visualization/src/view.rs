@@ -1,6 +1,6 @@
 use crate::js;
 use crate::presenter::View;
-use crate::view_model::ViewModel;
+use crate::view_model::{Object, ViewModel};
 
 pub(crate) struct CanvasView {
     context: js::CanvasRenderingContext2D,
@@ -8,9 +8,9 @@ pub(crate) struct CanvasView {
 
 impl View for CanvasView {
     fn draw_objects(&self, view_model: &ViewModel) {
-        self.context.set_fill_style("aquamarine");
-        self.context.fill_rect(0, 0, 20, 20);
-        println!("{:#?}", view_model)
+        for object in &view_model.objects {
+            self.draw_object(object);
+        }
     }
 }
 
@@ -19,5 +19,10 @@ impl CanvasView {
         Self {
             context: canvas.get_context("2d"),
         }
+    }
+
+    fn draw_object(&self, object: &Object) {
+        self.context.set_fill_style("aquamarine");
+        self.context.fill_rect(0, 0, 20, 20);
     }
 }
