@@ -1,21 +1,17 @@
 use crate::simulation::Simulation;
+use wasm_bindgen::prelude::*;
 
-pub trait InputHandler {
-    fn on_timer(&mut self);
-}
-
-pub(crate) struct InputHandlerImpl {
+#[wasm_bindgen]
+pub struct InputHandler {
     simulation: Box<Simulation>,
 }
 
-impl InputHandlerImpl {
+impl InputHandler {
     pub(crate) fn new(simulation: Box<Simulation>) -> Self {
         Self { simulation }
     }
-}
 
-impl InputHandler for InputHandlerImpl {
-    fn on_timer(&mut self) {
+    pub fn on_timer(&mut self) {
         self.simulation.step();
     }
 }
