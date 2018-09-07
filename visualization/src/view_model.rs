@@ -5,26 +5,19 @@ pub(crate) struct ViewModel {
 
 #[derive(Debug)]
 pub(crate) struct Object {
-    pub(crate) location: Location,
-    pub(crate) orientation: Orietation,
-    pub(crate) shape: Shape,
+    pub(crate) body: Polygon,
     pub(crate) kind: Kind,
 }
 
 #[derive(Debug)]
-pub(crate) struct Location {
+pub(crate) struct Polygon {
+    pub(crate) vertices: Vec<Vertex>,
+}
+
+#[derive(Debug)]
+pub(crate) struct Vertex {
     pub(crate) x: u32,
     pub(crate) y: u32,
-}
-
-#[derive(Debug)]
-pub(crate) struct Orietation {
-    pub(crate) radians: f64,
-}
-
-#[derive(Debug)]
-pub(crate) enum Shape {
-    Rectangle(RectangleShape),
 }
 
 #[derive(Debug)]

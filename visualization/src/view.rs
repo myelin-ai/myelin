@@ -21,7 +21,7 @@ impl CanvasView {
         }
     }
 
-    fn draw_object(&self, object: &Object) {
+    fn draw_object(&self, _object: &Object) {
         self.context.set_fill_style("aquamarine");
         self.context.fill_rect(0, 0, 20, 20);
     }
