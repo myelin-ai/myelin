@@ -1,4 +1,4 @@
-#![allow(unknown_lints)]
+#![allow(unknown_lints, clippy::drop_ref)]
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
