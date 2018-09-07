@@ -1,6 +1,6 @@
 use crate::simulation::Simulation;
 
-pub(crate) trait InputHandler {
+pub trait InputHandler {
     fn on_timer(&mut self);
 }
 
