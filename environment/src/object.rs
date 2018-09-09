@@ -1,13 +1,10 @@
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Object {
     pub location: Location,
-    pub rectangle: Rectangle,
-    pub movement: MovementVector,
+    pub shape: Polygon,
+    pub velocity: Velocity,
     pub kind: Kind,
 }
-
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub struct Id(pub(crate) usize);
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Location {
@@ -16,13 +13,18 @@ pub struct Location {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct Rectangle {
-    pub length: u32,
-    pub width: u32,
+pub struct Polygon {
+    pub vertices: Vec<Vertex>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct MovementVector {
+pub struct Vertex {
+    pub x: u32,
+    pub y: u32,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct Velocity {
     pub x: i32,
     pub y: i32,
 }
