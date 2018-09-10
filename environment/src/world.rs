@@ -78,7 +78,7 @@ impl World for WorldImpl {
     }
 
     fn objects(&self) -> Vec<Object> {
-        vec![]
+        unimplemented!()
     }
 }
 
