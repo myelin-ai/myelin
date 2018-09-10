@@ -2,7 +2,7 @@ use crate::object::{Kind, Location, Object, Polygon, Velocity, Vertex};
 
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct ObjectBuilderError {
-    pub missing_polygon: bool,
+    pub missing_body: bool,
     pub missing_velocity: bool,
     pub missing_location: bool,
     pub missing_kind: bool,
@@ -10,15 +10,15 @@ pub struct ObjectBuilderError {
 
 #[derive(Default, Debug)]
 pub struct ObjectBuilder {
-    polygon: Option<Polygon>,
+    body: Option<Polygon>,
     velocity: Option<Velocity>,
     location: Option<Location>,
     kind: Option<Kind>,
 }
 
 impl ObjectBuilder {
-    pub fn polygon(mut self, polygon: Polygon) -> Self {
-        self.polygon = Some(polygon);
+    pub fn body(mut self, polygon: Polygon) -> Self {
+        self.body = Some(polygon);
         self
     }
 
@@ -39,21 +39,21 @@ impl ObjectBuilder {
 
     pub fn build(self) -> Result<Object, ObjectBuilderError> {
         let Self {
-            polygon,
+            body,
             velocity,
             location,
             kind,
         } = self;
 
         let error = ObjectBuilderError {
-            missing_polygon: polygon.is_none(),
+            missing_body: body.is_none(),
             missing_velocity: velocity.is_none(),
             missing_location: location.is_none(),
             missing_kind: kind.is_none(),
         };
 
         let object = Object {
-            body: polygon.ok_or_else(|| error.clone())?,
+            body: body.ok_or_else(|| error.clone())?,
             velocity: velocity.ok_or_else(|| error.clone())?,
             location: location.ok_or_else(|| error.clone())?,
             kind: kind.ok_or(error)?,
@@ -109,7 +109,7 @@ mod test {
     #[test]
     fn test_object_builder_should_error_for_missing_kind() {
         let result = ObjectBuilder::default()
-            .polygon(
+            .body(
                 PolygonBuilder::default()
                     .vertex(0, 0)
                     .vertex(0, 1)
