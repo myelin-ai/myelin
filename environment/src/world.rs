@@ -8,7 +8,7 @@ use std::fmt;
 
 use nalgebra as na;
 
-use crate::object::{Object, Polygon};
+use crate::object::Object;
 
 pub trait World: fmt::Debug {
     fn step(&mut self);
