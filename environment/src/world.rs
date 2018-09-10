@@ -89,7 +89,12 @@ impl World for WorldImpl {
     }
 
     fn global_vertices(&self, object: &Object) -> Polygon {
-        let vertices: Vec<_> = object.shape.vertices.iter().map(|vertex| *vertex).collect();
+        let vertices: Vec<_> = object
+            .shape
+            .vertices
+            .iter()
+            .map(|vertex| vertex.clone())
+            .collect();
         Polygon { vertices }
     }
 }

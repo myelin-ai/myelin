@@ -2,7 +2,7 @@ use crate::object::{Kind, Location, Object, Polygon, Velocity, Vertex};
 
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct ObjectBuilderError {
-    pub missing_body: bool,
+    pub missing_shape: bool,
     pub missing_velocity: bool,
     pub missing_location: bool,
     pub missing_kind: bool,
@@ -10,15 +10,15 @@ pub struct ObjectBuilderError {
 
 #[derive(Default, Debug)]
 pub struct ObjectBuilder {
-    body: Option<Polygon>,
+    shape: Option<Polygon>,
     velocity: Option<Velocity>,
     location: Option<Location>,
     kind: Option<Kind>,
 }
 
 impl ObjectBuilder {
-    pub fn body(&mut self, polygon: Polygon) -> &mut Self {
-        self.body = Some(polygon);
+    pub fn shape(&mut self, polygon: Polygon) -> &mut Self {
+        self.shape = Some(polygon);
         self
     }
 
@@ -39,14 +39,14 @@ impl ObjectBuilder {
 
     pub fn build(&mut self) -> Result<Object, ObjectBuilderError> {
         let error = ObjectBuilderError {
-            missing_body: self.body.is_none(),
+            missing_shape: self.shape.is_none(),
             missing_velocity: self.velocity.is_none(),
             missing_location: self.location.is_none(),
             missing_kind: self.kind.is_none(),
         };
 
         let object = Object {
-            body: self.body.take().ok_or_else(|| error.clone())?,
+            shape: self.shape.take().ok_or_else(|| error.clone())?,
             velocity: self.velocity.take().ok_or_else(|| error.clone())?,
             location: self.location.take().ok_or_else(|| error.clone())?,
             kind: self.kind.take().ok_or(error)?,
@@ -127,7 +127,7 @@ mod test {
     #[test]
     fn test_object_builder_should_error_for_missing_kind() {
         let result = ObjectBuilder::default()
-            .body(
+            .shape(
                 PolygonBuilder::default()
                     .vertex(0, 0)
                     .vertex(0, 1)
@@ -149,7 +149,7 @@ mod test {
     }
 
     #[test]
-    fn test_object_builder_should_error_for_missing_body() {
+    fn test_object_builder_should_error_for_missing_shape() {
         let result = ObjectBuilder::default()
             .velocity(10, 10)
             .location(10, 10)
@@ -158,7 +158,7 @@ mod test {
 
         assert_eq!(
             Err(ObjectBuilderError {
-                missing_body: true,
+                missing_shape: true,
                 ..Default::default()
             }),
             result
@@ -168,7 +168,7 @@ mod test {
     #[test]
     fn test_object_builder_should_error_for_missing_velocity() {
         let result = ObjectBuilder::default()
-            .body(
+            .shape(
                 PolygonBuilder::default()
                     .vertex(0, 0)
                     .vertex(0, 1)
@@ -192,7 +192,7 @@ mod test {
     #[test]
     fn test_object_builder_should_error_for_missing_location() {
         let result = ObjectBuilder::default()
-            .body(
+            .shape(
                 PolygonBuilder::default()
                     .vertex(0, 0)
                     .vertex(0, 1)
@@ -219,7 +219,7 @@ mod test {
 
         assert_eq!(
             Err(ObjectBuilderError {
-                missing_body: true,
+                missing_shape: true,
                 missing_velocity: true,
                 missing_location: true,
                 missing_kind: true,
@@ -232,7 +232,7 @@ mod test {
     #[test]
     fn test_object_builder_should_build_object() {
         let result = ObjectBuilder::default()
-            .body(
+            .shape(
                 PolygonBuilder::default()
                     .vertex(0, 0)
                     .vertex(0, 1)
@@ -246,7 +246,7 @@ mod test {
             .build();
 
         let expected = Object {
-            body: Polygon {
+            shape: Polygon {
                 vertices: vec![
                     Vertex { x: 0, y: 0 },
                     Vertex { x: 0, y: 1 },
