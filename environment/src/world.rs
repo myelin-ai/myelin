@@ -1,9 +1,11 @@
+use crate::object::Kind;
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
 use nphysics2d::math::{Isometry, Point, Vector};
 use nphysics2d::object::ColliderHandle;
 use nphysics2d::object::Material;
 use nphysics2d::volumetric::Volumetric;
 use nphysics2d::world::World as PhysicsWorld;
+use std::collections::HashMap;
 use std::fmt;
 
 use nalgebra as na;
@@ -19,14 +21,14 @@ pub trait World: fmt::Debug {
 #[derive(Default)]
 pub struct WorldImpl {
     physics_world: PhysicsWorld<f64>,
-    collider_handles: Vec<ColliderHandle>,
+    collider_handles: HashMap<ColliderHandle, Kind>,
 }
 
 impl WorldImpl {
     pub fn new() -> Self {
         Self {
             physics_world: PhysicsWorld::new(),
-            collider_handles: Vec::new(),
+            collider_handles: HashMap::new(),
         }
     }
 }
@@ -38,7 +40,7 @@ impl World for WorldImpl {
         for collider_handle in &self.collider_handles {
             let collider = self
                 .physics_world
-                .collider(*collider_handle)
+                .collider(*collider_handle.0)
                 .expect("Attempted to access invalid collider handle");
             let rigid_body_handle = collider.data().body();
             let rigid_body = self
@@ -80,7 +82,7 @@ impl World for WorldImpl {
             material,
         );
 
-        self.collider_handles.push(collider_handle);
+        self.collider_handles.insert(collider_handle, object.kind);
     }
 
     fn objects(&self) -> Vec<Object> {
