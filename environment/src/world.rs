@@ -7,13 +7,21 @@ use nphysics2d::world::World as PhysicsWorld;
 
 use nalgebra as na;
 
+use crate::object::Object;
+
+pub trait World {
+    fn step(&mut self);
+    fn objects(&self) -> Vec<Object>;
+}
+
 #[allow(missing_debug_implementations)]
-pub struct World {
+#[derive(Default)]
+pub struct WorldImpl {
     physics_world: PhysicsWorld<f64>,
     bodies: Vec<BodyHandle>,
 }
 
-impl World {
+impl WorldImpl {
     pub fn new() -> Self {
         let mut physics_world = PhysicsWorld::new();
         let mut bodies = Vec::new();
@@ -40,8 +48,10 @@ impl World {
             bodies,
         }
     }
+}
 
-    pub fn step(&mut self) {
+impl World for WorldImpl {
+    fn step(&mut self) {
         self.physics_world.step();
         for body in &self.bodies {
             let rigid_body = self
@@ -50,5 +60,9 @@ impl World {
                 .expect("Attempted to access invalid rigid body handle");
             print!("{}", rigid_body.position());
         }
+    }
+
+    fn objects(&self) -> Vec<Object> {
+        vec![]
     }
 }
