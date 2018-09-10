@@ -100,6 +100,24 @@ mod test {
     }
 
     #[test]
+    #[should_panic]
+    fn test_polygon_builder_panicks_for_no_vertices() {
+        let _polygon = PolygonBuilder::default().build();
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_polygon_builder_panicks_for_one_vertex() {
+        let _polygon = PolygonBuilder::default().vertex(1, 1).build();
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_polygon_builder_panicks_for_two_vertices() {
+        let _polygon = PolygonBuilder::default().vertex(0, 0).vertex(1, 1).build();
+    }
+
+    #[test]
     fn test_object_builder_should_error_for_missing_kind() {
         let result = ObjectBuilder::default()
             .body(
