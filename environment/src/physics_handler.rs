@@ -1,7 +1,6 @@
-use crate::collision_detector::CollisionIter;
-use crate::properties::Object;
+use crate::object::Object;
 
 pub trait PhysicsHandler {
-    fn handle_collisions<'a>(&self, collisions: Box<CollisionIter<'a>>, container: &mut [Object]);
-    fn apply_movement(&self, container: &mut [Object]);
+    fn handle_collisions(&self, object: &Object, collisions: &[&Object]) -> Object;
+    fn apply_movement(&self, object: &Object) -> Object;
 }
