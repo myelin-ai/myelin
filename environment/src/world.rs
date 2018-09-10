@@ -19,14 +19,14 @@ pub trait World: fmt::Debug {
 #[derive(Default)]
 pub struct WorldImpl {
     physics_world: PhysicsWorld<f64>,
-    bodies: Vec<BodyHandle>,
+    body_handles: Vec<BodyHandle>,
 }
 
 impl WorldImpl {
     pub fn new() -> Self {
         Self {
             physics_world: PhysicsWorld::new(),
-            bodies: Vec::new(),
+            body_handles: Vec::new(),
         }
     }
 }
@@ -34,10 +34,10 @@ impl WorldImpl {
 impl World for WorldImpl {
     fn step(&mut self) {
         self.physics_world.step();
-        for body in &self.bodies {
+        for body_handle in &self.body_handles {
             let rigid_body = self
                 .physics_world
-                .rigid_body(*body)
+                .rigid_body(*body_handle)
                 .expect("Attempted to access invalid rigid body handle");
             print!("{}", rigid_body.position());
         }
@@ -82,7 +82,7 @@ impl World for WorldImpl {
 impl fmt::Debug for WorldImpl {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("WorldImpl")
-            .field("bodies", &self.bodies)
+            .field("body_handles", &self.body_handles)
             .field("physics", &DebugPhysicsWorld(&self.physics_world))
             .finish()
     }
