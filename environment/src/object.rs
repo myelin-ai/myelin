@@ -1,6 +1,7 @@
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Object {
     pub shape: Polygon,
+    pub orientation_in_radians: f32,
     pub location: Location,
     pub velocity: Velocity,
     pub kind: Kind,
