@@ -1,36 +1,38 @@
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug)]
 pub struct Object {
+    pub body: Polygon,
     pub location: Location,
-    pub rectangle: Rectangle,
-    pub movement: MovementVector,
+    pub velocity: Velocity,
     pub kind: Kind,
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub struct Id(pub(crate) usize);
+#[derive(Debug)]
+pub struct Polygon {
+    pub vertices: Vec<Vertex>,
+}
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug)]
 pub struct Location {
     pub x: u32,
     pub y: u32,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct Rectangle {
-    pub length: u32,
-    pub width: u32,
+#[derive(Debug)]
+pub struct Vertex {
+    pub x: u32,
+    pub y: u32,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct MovementVector {
+#[derive(Debug)]
+pub struct Velocity {
     pub x: i32,
     pub y: i32,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum Kind {
     Organism,
-    Wall,
     Plant,
     Water,
+    Terrain,
 }

@@ -10,3 +10,6 @@ authors = [
 edition = "2018"
 
 [dependencies]
+nalgebra = "0.16"
+ncollide2d = "0.17"
+nphysics2d = "0.9"
