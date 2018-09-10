@@ -1,6 +1,7 @@
 #[derive(Debug)]
 pub struct Object {
     pub body: Polygon,
+    pub location: Location,
     pub velocity: Velocity,
     pub kind: Kind,
 }
@@ -8,6 +9,12 @@ pub struct Object {
 #[derive(Debug)]
 pub struct Polygon {
     pub vertices: Vec<Vertex>,
+}
+
+#[derive(Debug)]
+pub struct Location {
+    pub x: u32,
+    pub y: u32,
 }
 
 #[derive(Debug)]
