@@ -68,7 +68,9 @@ impl PolygonBuilder {
     }
 
     pub fn build(self) -> Result<Polygon, ()> {
-        if self.vertices.len() < 3 {
+        const MINIMUM_VERTICES_IN_A_POLYGON: usize = 3;
+
+        if self.vertices.len() < MINIMUM_VERTICES_IN_A_POLYGON {
             return Err(());
         }
 
