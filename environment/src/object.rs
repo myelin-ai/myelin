@@ -1,6 +1,6 @@
 #[derive(Debug)]
 pub struct Object {
-    pub body: Polygon,
+    pub shape: Polygon,
     pub location: Location,
     pub velocity: Velocity,
     pub kind: Kind,

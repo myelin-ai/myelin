@@ -8,12 +8,13 @@ use std::fmt;
 
 use nalgebra as na;
 
-use crate::object::Object;
+use crate::object::{Object, Polygon};
 
 pub trait World: fmt::Debug {
     fn step(&mut self);
     fn add_object(&mut self, object: Object);
     fn objects(&self) -> Vec<Object>;
+    fn global_vertices(&self, object: &Object) -> Polygon;
 }
 
 #[derive(Default)]
@@ -52,7 +53,7 @@ impl World for WorldImpl {
 
     fn add_object(&mut self, object: Object) {
         let points: Vec<_> = object
-            .body
+            .shape
             .vertices
             .iter()
             .map(|vertex| Point::new(f64::from(vertex.x), f64::from(vertex.y)))
@@ -85,6 +86,11 @@ impl World for WorldImpl {
 
     fn objects(&self) -> Vec<Object> {
         unimplemented!()
+    }
+
+    fn global_vertices(&self, object: &Object) -> Polygon {
+        let vertices: Vec<_> = object.shape.vertices.iter().map(|vertex| *vertex).collect();
+        Polygon { vertices }
     }
 }
 
