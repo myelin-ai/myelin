@@ -1,5 +1,5 @@
 [package]
-name = "myelin-visualization"
+name = "myelin-environment"
 version = "0.1.0"
 authors = [
     "Jan Nils Ferner <jan@myelin.ch>",
@@ -9,8 +9,4 @@ authors = [
 ]
 edition = "2018"
 
-[lib]
-crate-type = ["cdylib"]
-
 [dependencies]
-wasm-bindgen = "0.2.17"
