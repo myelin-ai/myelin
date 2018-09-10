@@ -17,46 +17,39 @@ pub struct ObjectBuilder {
 }
 
 impl ObjectBuilder {
-    pub fn body(mut self, polygon: Polygon) -> Self {
+    pub fn body(&mut self, polygon: Polygon) -> &mut Self {
         self.body = Some(polygon);
         self
     }
 
-    pub fn velocity(mut self, x: i32, y: i32) -> Self {
+    pub fn velocity(&mut self, x: i32, y: i32) -> &mut Self {
         self.velocity = Some(Velocity { x, y });
         self
     }
 
-    pub fn location(mut self, x: u32, y: u32) -> Self {
+    pub fn location(&mut self, x: u32, y: u32) -> &mut Self {
         self.location = Some(Location { x, y });
         self
     }
 
-    pub fn kind(mut self, kind: Kind) -> Self {
+    pub fn kind(&mut self, kind: Kind) -> &mut Self {
         self.kind = Some(kind);
         self
     }
 
-    pub fn build(self) -> Result<Object, ObjectBuilderError> {
-        let Self {
-            body,
-            velocity,
-            location,
-            kind,
-        } = self;
-
+    pub fn build(&mut self) -> Result<Object, ObjectBuilderError> {
         let error = ObjectBuilderError {
-            missing_body: body.is_none(),
-            missing_velocity: velocity.is_none(),
-            missing_location: location.is_none(),
-            missing_kind: kind.is_none(),
+            missing_body: self.body.is_none(),
+            missing_velocity: self.velocity.is_none(),
+            missing_location: self.location.is_none(),
+            missing_kind: self.kind.is_none(),
         };
 
         let object = Object {
-            body: body.ok_or_else(|| error.clone())?,
-            velocity: velocity.ok_or_else(|| error.clone())?,
-            location: location.ok_or_else(|| error.clone())?,
-            kind: kind.ok_or(error)?,
+            body: self.body.take().ok_or_else(|| error.clone())?,
+            velocity: self.velocity.take().ok_or_else(|| error.clone())?,
+            location: self.location.take().ok_or_else(|| error.clone())?,
+            kind: self.kind.take().ok_or(error)?,
         };
 
         Ok(object)
