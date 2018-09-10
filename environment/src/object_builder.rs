@@ -67,10 +67,14 @@ impl PolygonBuilder {
         self
     }
 
-    pub fn build(self) -> Polygon {
-        Polygon {
-            vertices: self.vertices,
+    pub fn build(self) -> Result<Polygon, ()> {
+        if self.vertices.len() < 3 {
+            return Err(());
         }
+
+        Ok(Polygon {
+            vertices: self.vertices,
+        })
     }
 }
 
@@ -85,7 +89,8 @@ mod test {
             .vertex(0, 1)
             .vertex(1, 0)
             .vertex(1, 1)
-            .build();
+            .build()
+            .unwrap();
 
         let expected = Polygon {
             vertices: vec![
@@ -100,21 +105,21 @@ mod test {
     }
 
     #[test]
-    #[should_panic]
-    fn test_polygon_builder_panicks_for_no_vertices() {
-        let _polygon = PolygonBuilder::default().build();
+    fn test_polygon_builder_errors_for_no_vertices() {
+        assert_eq!(Err(()), PolygonBuilder::default().build());
     }
 
     #[test]
-    #[should_panic]
-    fn test_polygon_builder_panicks_for_one_vertex() {
-        let _polygon = PolygonBuilder::default().vertex(1, 1).build();
+    fn test_polygon_builder_errors_for_one_vertex() {
+        assert_eq!(Err(()), PolygonBuilder::default().vertex(1, 1).build());
     }
 
     #[test]
-    #[should_panic]
     fn test_polygon_builder_panicks_for_two_vertices() {
-        let _polygon = PolygonBuilder::default().vertex(0, 0).vertex(1, 1).build();
+        assert_eq!(
+            Err(()),
+            PolygonBuilder::default().vertex(0, 0).vertex(1, 1).build()
+        );
     }
 
     #[test]
@@ -126,7 +131,8 @@ mod test {
                     .vertex(0, 1)
                     .vertex(1, 0)
                     .vertex(1, 1)
-                    .build(),
+                    .build()
+                    .unwrap(),
             ).velocity(10, 10)
             .location(10, 10)
             .build();
@@ -166,7 +172,8 @@ mod test {
                     .vertex(0, 1)
                     .vertex(1, 0)
                     .vertex(1, 1)
-                    .build(),
+                    .build()
+                    .unwrap(),
             ).location(10, 10)
             .kind(Kind::Organism)
             .build();
@@ -189,7 +196,8 @@ mod test {
                     .vertex(0, 1)
                     .vertex(1, 0)
                     .vertex(1, 1)
-                    .build(),
+                    .build()
+                    .unwrap(),
             ).velocity(10, 10)
             .kind(Kind::Organism)
             .build();
@@ -228,7 +236,8 @@ mod test {
                     .vertex(0, 1)
                     .vertex(1, 0)
                     .vertex(1, 1)
-                    .build(),
+                    .build()
+                    .unwrap(),
             ).velocity(10, 20)
             .location(30, 40)
             .kind(Kind::Organism)
