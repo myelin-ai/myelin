@@ -1,5 +1,6 @@
 use crate::simulation::Presenter;
-use crate::view_model::*;
+use crate::view_model::{self, ViewModel};
+use myelin_environment::object as business_object;
 
 pub(crate) trait View {
     fn draw_objects(&self, view_model: &ViewModel);
@@ -10,57 +11,31 @@ pub(crate) struct CanvasPresenter {
 }
 
 impl Presenter for CanvasPresenter {
-    fn present_bollocks(&self) {
+    fn present_objects(&self, objects: &[business_object::Object]) {
         let view_model = ViewModel {
-            objects: vec![
-                Object {
-                    body: Polygon {
-                        vertices: vec![
-                            Vertex { x: 70, y: 80 },
-                            Vertex { x: 50, y: 70 },
-                            Vertex { x: 30, y: 50 },
-                            Vertex { x: 80, y: 60 },
-                        ],
-                    },
-                    kind: Kind::Organism,
-                },
-                Object {
-                    body: Polygon {
-                        vertices: vec![
-                            Vertex { x: 130, y: 110 },
-                            Vertex { x: 90, y: 80 },
-                            Vertex { x: 50, y: 50 },
-                            Vertex { x: 90, y: 70 },
-                        ],
-                    },
-                    kind: Kind::Plant,
-                },
-                Object {
-                    body: Polygon {
-                        vertices: vec![
-                            Vertex { x: 0, y: 0 },
-                            Vertex { x: 100, y: 0 },
-                            Vertex { x: 100, y: 40 },
-                            Vertex { x: 0, y: 40 },
-                        ],
-                    },
-                    kind: Kind::Terrain,
-                },
-                Object {
-                    body: Polygon {
-                        vertices: vec![
-                            Vertex { x: 300, y: 300 },
-                            Vertex { x: 350, y: 350 },
-                            Vertex { x: 300, y: 400 },
-                            Vertex { x: 250, y: 350 },
-                        ],
-                    },
-                    kind: Kind::Water,
-                },
-            ],
+            objects: objects
+                .iter()
+                .map(|object| business_objects_to_view_model_object(object))
+                .collect(),
         };
 
         self.view.draw_objects(&view_model);
+    }
+}
+
+fn business_objects_to_view_model_object(object: &business_object::Object) -> view_model::Object {
+    view_model::Object {
+        body: view_model::Polygon { vertices: vec![] },
+        kind: map_kind(&object.kind),
+    }
+}
+
+fn map_kind(kind: &business_object::Kind) -> view_model::Kind {
+    match *kind {
+        business_object::Kind::Organism => view_model::Kind::Organism,
+        business_object::Kind::Plant => view_model::Kind::Plant,
+        business_object::Kind::Water => view_model::Kind::Water,
+        business_object::Kind::Terrain => view_model::Kind::Terrain,
     }
 }
 

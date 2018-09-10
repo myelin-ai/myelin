@@ -1,8 +1,10 @@
+use myelin_environment::object::Object;
+
 pub(crate) trait Simulation {
     fn step(&mut self);
 }
 pub(crate) trait Presenter {
-    fn present_bollocks(&self);
+    fn present_objects(&self, objects: &[Object]);
 }
 
 pub(crate) struct SimulationImpl {
@@ -11,7 +13,7 @@ pub(crate) struct SimulationImpl {
 
 impl Simulation for SimulationImpl {
     fn step(&mut self) {
-        self.presenter.present_bollocks();
+        self.presenter.present_objects(&[]);
     }
 }
 
