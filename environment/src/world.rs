@@ -14,7 +14,6 @@ pub trait World: fmt::Debug {
     fn step(&mut self);
     fn add_object(&mut self, object: Object);
     fn objects(&self) -> Vec<Object>;
-    fn global_vertices(&self, object: &Object) -> Polygon;
 }
 
 #[derive(Default)]
@@ -86,16 +85,6 @@ impl World for WorldImpl {
 
     fn objects(&self) -> Vec<Object> {
         unimplemented!()
-    }
-
-    fn global_vertices(&self, object: &Object) -> Polygon {
-        let vertices: Vec<_> = object
-            .shape
-            .vertices
-            .iter()
-            .map(|vertex| vertex.clone())
-            .collect();
-        Polygon { vertices }
     }
 }
 
