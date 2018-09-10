@@ -48,7 +48,7 @@ impl World for WorldImpl {
             .body
             .vertices
             .iter()
-            .map(|vertex| Point::new(vertex.x as f64, vertex.y as f64))
+            .map(|vertex| Point::new(f64::from(vertex.x), f64::from(vertex.y)))
             .collect();
 
         let shape =
@@ -57,7 +57,7 @@ impl World for WorldImpl {
         let local_center_of_mass = shape.center_of_mass();
         let rigid_body_handle = self.physics_world.add_rigid_body(
             Isometry::new(
-                Vector::new(object.location.x as f64, object.location.y as f64),
+                Vector::new(f64::from(object.location.x), f64::from(object.location.y)),
                 na::zero(),
             ),
             local_inertia,
