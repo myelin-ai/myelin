@@ -36,9 +36,15 @@ impl World for WorldImpl {
         self.physics_world.step();
 
         for collider_handle in &self.collider_handles {
-            let collider = self.physics_world.collider(*collider_handle).expect("Attempted to access invalid collider handle");
+            let collider = self
+                .physics_world
+                .collider(*collider_handle)
+                .expect("Attempted to access invalid collider handle");
             let rigid_body_handle = collider.data().body();
-            let rigid_body = self.physics_world.rigid_body(rigid_body_handle).expect("Attempted to access invalid rigid body handle");
+            let rigid_body = self
+                .physics_world
+                .rigid_body(rigid_body_handle)
+                .expect("Attempted to access invalid rigid body handle");
 
             print!("{}", rigid_body.position());
         }
