@@ -1,6 +1,6 @@
-import('../out/myelin_visualization').then((rust) => {
+import('../out/myelin_visualization').then((wasm) => {
     const canvas = document.getElementById('visualization') as HTMLCanvasElement
-    const inputHandler = rust.init(canvas)
+    const inputHandler = wasm.init(canvas)
     inputHandler.on_timer()
 }).catch((reason) => {
     console.error(reason)
