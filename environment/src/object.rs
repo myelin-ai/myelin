@@ -7,7 +7,7 @@ pub struct Object {
     pub kind: Kind,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Copy, Clone, Default)]
 pub struct Radians(pub f32);
 
 #[derive(Debug, Eq, PartialEq, Clone)]

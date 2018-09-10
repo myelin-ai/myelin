@@ -1,4 +1,4 @@
-use crate::object::{Kind, Location, Object, Polygon, Velocity, Vertex};
+use crate::object::{Kind, Location, Object, Polygon, Radians, Velocity, Vertex};
 
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct ObjectBuilderError {
@@ -14,6 +14,7 @@ pub struct ObjectBuilder {
     velocity: Option<Velocity>,
     location: Option<Location>,
     kind: Option<Kind>,
+    orientation: Option<Radians>,
 }
 
 impl ObjectBuilder {
@@ -37,6 +38,11 @@ impl ObjectBuilder {
         self
     }
 
+    pub fn orientation(&mut self, orientation: Radians) -> &mut Self {
+        self.orientation = Some(orientation);
+        self
+    }
+
     pub fn build(&mut self) -> Result<Object, ObjectBuilderError> {
         let error = ObjectBuilderError {
             missing_shape: self.shape.is_none(),
@@ -50,6 +56,10 @@ impl ObjectBuilder {
             velocity: self.velocity.take().ok_or_else(|| error.clone())?,
             location: self.location.take().ok_or_else(|| error.clone())?,
             kind: self.kind.take().ok_or(error)?,
+            orientation: self
+                .orientation
+                .take()
+                .unwrap_or_else(|| Default::default()),
         };
 
         Ok(object)
@@ -137,6 +147,7 @@ mod test {
                     .unwrap(),
             ).velocity(10, 10)
             .location(10, 10)
+            .orientation(Radians(0.0))
             .build();
 
         assert_eq!(
@@ -154,6 +165,7 @@ mod test {
             .velocity(10, 10)
             .location(10, 10)
             .kind(Kind::Organism)
+            .orientation(Radians(0.0))
             .build();
 
         assert_eq!(
@@ -178,6 +190,7 @@ mod test {
                     .unwrap(),
             ).location(10, 10)
             .kind(Kind::Organism)
+            .orientation(Radians(0.0))
             .build();
 
         assert_eq!(
@@ -202,6 +215,7 @@ mod test {
                     .unwrap(),
             ).velocity(10, 10)
             .kind(Kind::Organism)
+            .orientation(Radians(0.0))
             .build();
 
         assert_eq!(
@@ -211,6 +225,40 @@ mod test {
             }),
             result
         );
+    }
+
+    #[test]
+    fn test_object_builder_should_use_default_orientation() {
+        let result = ObjectBuilder::default()
+            .shape(
+                PolygonBuilder::default()
+                    .vertex(0, 0)
+                    .vertex(0, 1)
+                    .vertex(1, 0)
+                    .vertex(1, 1)
+                    .build()
+                    .unwrap(),
+            ).velocity(10, 20)
+            .location(30, 40)
+            .kind(Kind::Organism)
+            .build();
+
+        let expected = Object {
+            orientation: Radians(0.0),
+            shape: Polygon {
+                vertices: vec![
+                    Vertex { x: 0, y: 0 },
+                    Vertex { x: 0, y: 1 },
+                    Vertex { x: 1, y: 0 },
+                    Vertex { x: 1, y: 1 },
+                ],
+            },
+            velocity: Velocity { x: 10, y: 20 },
+            location: Location { x: 30, y: 40 },
+            kind: Kind::Organism,
+        };
+
+        assert_eq!(Ok(expected), result);
     }
 
     #[test]
@@ -243,9 +291,11 @@ mod test {
             ).velocity(10, 20)
             .location(30, 40)
             .kind(Kind::Organism)
+            .orientation(Radians(1.1))
             .build();
 
         let expected = Object {
+            orientation: Radians(1.1),
             shape: Polygon {
                 vertices: vec![
                     Vertex { x: 0, y: 0 },
