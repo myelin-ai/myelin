@@ -1,11 +1,14 @@
 #[derive(Debug, PartialEq, Clone)]
 pub struct Object {
     pub shape: Polygon,
-    pub orientation_in_radians: f32,
+    pub orientation: Radians,
     pub location: Location,
     pub velocity: Velocity,
     pub kind: Kind,
 }
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Radians(pub f32);
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Polygon {
