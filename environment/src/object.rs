@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Object {
     pub shape: Polygon,
     pub location: Location,
@@ -6,30 +6,30 @@ pub struct Object {
     pub kind: Kind,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Polygon {
     pub vertices: Vec<Vertex>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Location {
     pub x: u32,
     pub y: u32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Vertex {
     pub x: u32,
     pub y: u32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Velocity {
     pub x: i32,
     pub y: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum Kind {
     Organism,
     Plant,
