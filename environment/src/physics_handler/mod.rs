@@ -1,3 +1,5 @@
+pub mod physics_handler_facade;
+
 use crate::object::Object;
 
 pub trait PhysicsHandler {
