@@ -4,18 +4,18 @@ use nphysics2d::object::BodyHandle;
 use nphysics2d::object::Material;
 use nphysics2d::volumetric::Volumetric;
 use nphysics2d::world::World as PhysicsWorld;
+use std::fmt;
 
 use nalgebra as na;
 
 use crate::object::Object;
 
-pub trait World {
+pub trait World: fmt::Debug {
     fn step(&mut self);
     fn add_object(&mut self, object: Object);
     fn objects(&self) -> Vec<Object>;
 }
 
-#[allow(missing_debug_implementations)]
 #[derive(Default)]
 pub struct WorldImpl {
     physics_world: PhysicsWorld<f64>,
@@ -76,5 +76,22 @@ impl World for WorldImpl {
 
     fn objects(&self) -> Vec<Object> {
         vec![]
+    }
+}
+
+impl fmt::Debug for WorldImpl {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("WorldImpl")
+            .field("bodies", &self.bodies)
+            .field("physics", &DebugPhysicsWorld(&self.physics_world))
+            .finish()
+    }
+}
+
+pub struct DebugPhysicsWorld<'a>(&'a PhysicsWorld<f64>);
+
+impl<'a> fmt::Debug for DebugPhysicsWorld<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("PhysicsWorld").finish()
     }
 }
