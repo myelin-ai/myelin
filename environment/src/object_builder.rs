@@ -128,4 +128,115 @@ mod test {
             result
         );
     }
+
+    #[test]
+    fn test_object_builder_should_error_for_missing_body() {
+        let result = ObjectBuilder::default()
+            .velocity(10, 10)
+            .location(10, 10)
+            .kind(Kind::Organism)
+            .build();
+
+        assert_eq!(
+            Err(ObjectBuilderError {
+                missing_body: true,
+                ..Default::default()
+            }),
+            result
+        );
+    }
+
+    #[test]
+    fn test_object_builder_should_error_for_missing_velocity() {
+        let result = ObjectBuilder::default()
+            .body(
+                PolygonBuilder::default()
+                    .vertex(0, 0)
+                    .vertex(0, 1)
+                    .vertex(1, 0)
+                    .vertex(1, 1)
+                    .build(),
+            ).location(10, 10)
+            .kind(Kind::Organism)
+            .build();
+
+        assert_eq!(
+            Err(ObjectBuilderError {
+                missing_velocity: true,
+                ..Default::default()
+            }),
+            result
+        );
+    }
+
+    #[test]
+    fn test_object_builder_should_error_for_missing_location() {
+        let result = ObjectBuilder::default()
+            .body(
+                PolygonBuilder::default()
+                    .vertex(0, 0)
+                    .vertex(0, 1)
+                    .vertex(1, 0)
+                    .vertex(1, 1)
+                    .build(),
+            ).velocity(10, 10)
+            .kind(Kind::Organism)
+            .build();
+
+        assert_eq!(
+            Err(ObjectBuilderError {
+                missing_location: true,
+                ..Default::default()
+            }),
+            result
+        );
+    }
+
+    #[test]
+    fn test_object_builder_should_error_with_everything_missing() {
+        let result = ObjectBuilder::default().build();
+
+        assert_eq!(
+            Err(ObjectBuilderError {
+                missing_body: true,
+                missing_velocity: true,
+                missing_location: true,
+                missing_kind: true,
+                ..Default::default()
+            }),
+            result
+        );
+    }
+
+    #[test]
+    fn test_object_builder_should_build_object() {
+        let result = ObjectBuilder::default()
+            .body(
+                PolygonBuilder::default()
+                    .vertex(0, 0)
+                    .vertex(0, 1)
+                    .vertex(1, 0)
+                    .vertex(1, 1)
+                    .build(),
+            ).velocity(10, 20)
+            .location(30, 40)
+            .kind(Kind::Organism)
+            .build();
+
+        let expected = Object {
+            body: Polygon {
+                vertices: vec![
+                    Vertex { x: 0, y: 0 },
+                    Vertex { x: 0, y: 1 },
+                    Vertex { x: 1, y: 0 },
+                    Vertex { x: 1, y: 1 },
+                ],
+            },
+            velocity: Velocity { x: 10, y: 20 },
+            location: Location { x: 30, y: 40 },
+            kind: Kind::Organism,
+        };
+
+        assert_eq!(Ok(expected), result);
+    }
 }
