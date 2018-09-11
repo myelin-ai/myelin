@@ -15,7 +15,7 @@ impl Presenter for CanvasPresenter {
         let view_model = ViewModel {
             objects: objects
                 .iter()
-                .map(|object| self.business_objects_to_view_model_object(object))
+                .map(|object| self.business_object_to_view_model_object(object))
                 .collect(),
         };
 
@@ -37,7 +37,7 @@ impl CanvasPresenter {
         Self { view }
     }
 
-    fn business_objects_to_view_model_object(
+    fn business_object_to_view_model_object(
         &self,
         object: &business_object::GlobalObject,
     ) -> view_model::Object {
