@@ -1,7 +1,7 @@
-import('../out/myelin_visualization').then((rust) => {
+import('../out/myelin_visualization').then((wasm) => {
     const canvas = document.getElementById('visualization') as HTMLCanvasElement
-    const entryPoint = rust.EntryPoint.new(canvas)
-    entryPoint.start()
+    const inputHandler = wasm.init(canvas)
+    inputHandler.on_timer()
 }).catch((reason) => {
     console.error(reason)
     document.body.appendChild(document.createTextNode('Failed to load WASM'))
