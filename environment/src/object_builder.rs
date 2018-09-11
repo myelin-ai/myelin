@@ -72,7 +72,7 @@ pub struct PolygonBuilder {
 }
 
 impl PolygonBuilder {
-    pub fn vertex(mut self, x: u32, y: u32) -> Self {
+    pub fn vertex(mut self, x: i32, y: i32) -> Self {
         self.vertices.push(Vertex { x, y });
         self
     }
