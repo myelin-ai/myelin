@@ -4,6 +4,7 @@ pub trait PolygonTranslator {
     fn global_vertices(&self, object: &Object) -> Polygon;
 }
 
+#[derive(Debug)]
 pub struct NAlgebraPolygonTranslator;
 
 impl PolygonTranslator for NAlgebraPolygonTranslator {
