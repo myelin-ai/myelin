@@ -2,5 +2,4 @@
 
 pub mod object;
 pub mod object_builder;
-pub mod polygon_translator;
 pub mod world;

@@ -8,12 +8,12 @@ use std::fmt;
 
 use nalgebra as na;
 
-use crate::object::Object;
+use crate::object::{GlobalObject, LocalObject};
 
 pub trait World: fmt::Debug {
     fn step(&mut self);
-    fn add_object(&mut self, object: Object);
-    fn objects(&self) -> Vec<Object>;
+    fn add_object(&mut self, object: LocalObject);
+    fn objects(&self) -> Vec<GlobalObject>;
 }
 
 #[derive(Default)]
@@ -50,7 +50,7 @@ impl World for WorldImpl {
         }
     }
 
-    fn add_object(&mut self, object: Object) {
+    fn add_object(&mut self, object: LocalObject) {
         let points: Vec<_> = object
             .shape
             .vertices
@@ -83,7 +83,7 @@ impl World for WorldImpl {
         self.collider_handles.push(collider_handle);
     }
 
-    fn objects(&self) -> Vec<Object> {
+    fn objects(&self) -> Vec<GlobalObject> {
         unimplemented!()
     }
 }

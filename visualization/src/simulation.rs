@@ -1,10 +1,10 @@
-use myelin_environment::object::Object;
+use myelin_environment::object::GlobalObject;
 
 pub(crate) trait Simulation {
     fn step(&mut self);
 }
 pub(crate) trait Presenter {
-    fn present_objects(&self, objects: &[Object]);
+    fn present_objects(&self, objects: &[GlobalObject]);
 }
 
 pub(crate) struct SimulationImpl {

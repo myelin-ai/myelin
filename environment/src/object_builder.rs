@@ -1,4 +1,4 @@
-use crate::object::{Kind, Location, Object, Polygon, Radians, Velocity, Vertex};
+use crate::object::{Kind, LocalObject, LocalPolygon, LocalVertex, Location, Radians, Velocity};
 
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct ObjectBuilderError {
@@ -10,7 +10,7 @@ pub struct ObjectBuilderError {
 
 #[derive(Default, Debug)]
 pub struct ObjectBuilder {
-    shape: Option<Polygon>,
+    shape: Option<LocalPolygon>,
     velocity: Option<Velocity>,
     location: Option<Location>,
     kind: Option<Kind>,
@@ -18,7 +18,7 @@ pub struct ObjectBuilder {
 }
 
 impl ObjectBuilder {
-    pub fn shape(&mut self, polygon: Polygon) -> &mut Self {
+    pub fn shape(&mut self, polygon: LocalPolygon) -> &mut Self {
         self.shape = Some(polygon);
         self
     }
@@ -43,7 +43,7 @@ impl ObjectBuilder {
         self
     }
 
-    pub fn build(&mut self) -> Result<Object, ObjectBuilderError> {
+    pub fn build(&mut self) -> Result<LocalObject, ObjectBuilderError> {
         let error = ObjectBuilderError {
             missing_shape: self.shape.is_none(),
             missing_velocity: self.velocity.is_none(),
@@ -51,7 +51,7 @@ impl ObjectBuilder {
             missing_kind: self.kind.is_none(),
         };
 
-        let object = Object {
+        let object = LocalObject {
             shape: self.shape.take().ok_or_else(|| error.clone())?,
             velocity: self.velocity.take().ok_or_else(|| error.clone())?,
             location: self.location.take().ok_or_else(|| error.clone())?,
@@ -68,23 +68,23 @@ impl ObjectBuilder {
 
 #[derive(Default, Debug)]
 pub struct PolygonBuilder {
-    vertices: Vec<Vertex>,
+    vertices: Vec<LocalVertex>,
 }
 
 impl PolygonBuilder {
     pub fn vertex(mut self, x: i32, y: i32) -> Self {
-        self.vertices.push(Vertex { x, y });
+        self.vertices.push(LocalVertex { x, y });
         self
     }
 
-    pub fn build(self) -> Result<Polygon, ()> {
+    pub fn build(self) -> Result<LocalPolygon, ()> {
         const MINIMUM_VERTICES_IN_A_POLYGON: usize = 3;
 
         if self.vertices.len() < MINIMUM_VERTICES_IN_A_POLYGON {
             return Err(());
         }
 
-        Ok(Polygon {
+        Ok(LocalPolygon {
             vertices: self.vertices,
         })
     }
@@ -104,12 +104,12 @@ mod test {
             .build()
             .unwrap();
 
-        let expected = Polygon {
+        let expected = LocalPolygon {
             vertices: vec![
-                Vertex { x: 0, y: 0 },
-                Vertex { x: 0, y: 1 },
-                Vertex { x: 1, y: 0 },
-                Vertex { x: 1, y: 1 },
+                LocalVertex { x: 0, y: 0 },
+                LocalVertex { x: 0, y: 1 },
+                LocalVertex { x: 1, y: 0 },
+                LocalVertex { x: 1, y: 1 },
             ],
         };
 
@@ -243,14 +243,14 @@ mod test {
             .kind(Kind::Organism)
             .build();
 
-        let expected = Object {
+        let expected = LocalObject {
             orientation: Radians(0.0),
-            shape: Polygon {
+            shape: LocalPolygon {
                 vertices: vec![
-                    Vertex { x: 0, y: 0 },
-                    Vertex { x: 0, y: 1 },
-                    Vertex { x: 1, y: 0 },
-                    Vertex { x: 1, y: 1 },
+                    LocalVertex { x: 0, y: 0 },
+                    LocalVertex { x: 0, y: 1 },
+                    LocalVertex { x: 1, y: 0 },
+                    LocalVertex { x: 1, y: 1 },
                 ],
             },
             velocity: Velocity { x: 10, y: 20 },
@@ -294,14 +294,14 @@ mod test {
             .orientation(Radians(1.1))
             .build();
 
-        let expected = Object {
+        let expected = LocalObject {
             orientation: Radians(1.1),
-            shape: Polygon {
+            shape: LocalPolygon {
                 vertices: vec![
-                    Vertex { x: 0, y: 0 },
-                    Vertex { x: 0, y: 1 },
-                    Vertex { x: 1, y: 0 },
-                    Vertex { x: 1, y: 1 },
+                    LocalVertex { x: 0, y: 0 },
+                    LocalVertex { x: 0, y: 1 },
+                    LocalVertex { x: 1, y: 0 },
+                    LocalVertex { x: 1, y: 1 },
                 ],
             },
             velocity: Velocity { x: 10, y: 20 },
