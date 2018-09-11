@@ -42,7 +42,7 @@ impl CanvasPresenter {
         object: &business_object::GlobalObject,
     ) -> view_model::Object {
         view_model::Object {
-            body: view_model::Polygon {
+            shape: view_model::Polygon {
                 vertices: object
                     .shape
                     .vertices
@@ -76,6 +76,31 @@ mod tests {
         let objects = Vec::new();
         let expected_view_model = ViewModel {
             objects: Vec::new(),
+        };
+        let view_mock = ViewMock {
+            expected_view_model,
+        };
+        let presenter = CanvasPresenter::new(Box::new(view_mock));
+        presenter.present_objects(&objects);
+    }
+
+    #[test]
+    fn maps_to_correct_view_model() {
+        let objects = vec![business_object::GlobalObject {
+            shape: business_object::GlobalPolygon {
+                vertices: vec![business_object::GlobalVertex { x: 3, y: 15 }],
+            },
+            orientation: business_object::Radians(3.14),
+            velocity: business_object::Velocity { x: -1, y: 34 },
+            kind: business_object::Kind::Organism,
+        }];
+        let expected_view_model = ViewModel {
+            objects: vec![view_model::Object {
+                shape: view_model::Polygon {
+                    vertices: vec![view_model::Vertex { x: 3, y: 15 }],
+                },
+                kind: view_model::Kind::Organism,
+            }],
         };
         let view_mock = ViewMock {
             expected_view_model,

@@ -5,7 +5,7 @@ pub(crate) struct ViewModel {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) struct Object {
-    pub(crate) body: Polygon,
+    pub(crate) shape: Polygon,
     pub(crate) kind: Kind,
 }
 
