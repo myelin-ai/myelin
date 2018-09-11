@@ -56,3 +56,31 @@ impl CanvasPresenter {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct ViewMock {
+        pub expected_view_model: ViewModel,
+    }
+
+    impl View for ViewMock {
+        fn draw_objects(&self, view_model: &ViewModel) {
+            assert_eq!(self.expected_view_model, *view_model);
+        }
+    }
+
+    #[test]
+    fn maps_to_empty_view_model() {
+        let objects = Vec::new();
+        let expected_view_model = ViewModel {
+            objects: Vec::new(),
+        };
+        let view_mock = ViewMock {
+            expected_view_model,
+        };
+        let presenter = CanvasPresenter::new(Box::new(view_mock));
+        presenter.present_objects(&objects);
+    }
+}
