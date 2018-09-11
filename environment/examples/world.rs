@@ -6,9 +6,9 @@ fn main() {
     let mut world = WorldImpl::new();
 
     world.add_object(
-        ObjectBuilder::default()
+        ObjectBuilder::new()
             .shape(
-                PolygonBuilder::default()
+                PolygonBuilder::new()
                     .vertex(0, 0)
                     .vertex(10, 0)
                     .vertex(0, 10)

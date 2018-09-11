@@ -18,6 +18,10 @@ pub struct ObjectBuilder {
 }
 
 impl ObjectBuilder {
+    pub fn new() -> Self {
+        Default::default()
+    }
+
     pub fn shape(&mut self, polygon: LocalPolygon) -> &mut Self {
         self.shape = Some(polygon);
         self
@@ -56,10 +60,7 @@ impl ObjectBuilder {
             velocity: self.velocity.take().ok_or_else(|| error.clone())?,
             location: self.location.take().ok_or_else(|| error.clone())?,
             kind: self.kind.take().ok_or(error)?,
-            orientation: self
-                .orientation
-                .take()
-                .unwrap_or_else(|| Default::default()),
+            orientation: self.orientation.take().unwrap_or_else(Default::default),
         };
 
         Ok(object)
@@ -72,6 +73,10 @@ pub struct PolygonBuilder {
 }
 
 impl PolygonBuilder {
+    pub fn new() -> Self {
+        Default::default()
+    }
+
     pub fn vertex(mut self, x: i32, y: i32) -> Self {
         self.vertices.push(LocalVertex { x, y });
         self
@@ -96,7 +101,7 @@ mod test {
 
     #[test]
     fn test_polygon_builder_works() {
-        let polygon = PolygonBuilder::default()
+        let polygon = PolygonBuilder::new()
             .vertex(0, 0)
             .vertex(0, 1)
             .vertex(1, 0)
@@ -118,27 +123,27 @@ mod test {
 
     #[test]
     fn test_polygon_builder_errors_for_no_vertices() {
-        assert_eq!(Err(()), PolygonBuilder::default().build());
+        assert_eq!(Err(()), PolygonBuilder::new().build());
     }
 
     #[test]
     fn test_polygon_builder_errors_for_one_vertex() {
-        assert_eq!(Err(()), PolygonBuilder::default().vertex(1, 1).build());
+        assert_eq!(Err(()), PolygonBuilder::new().vertex(1, 1).build());
     }
 
     #[test]
     fn test_polygon_builder_panicks_for_two_vertices() {
         assert_eq!(
             Err(()),
-            PolygonBuilder::default().vertex(0, 0).vertex(1, 1).build()
+            PolygonBuilder::new().vertex(0, 0).vertex(1, 1).build()
         );
     }
 
     #[test]
     fn test_object_builder_should_error_for_missing_kind() {
-        let result = ObjectBuilder::default()
+        let result = ObjectBuilder::new()
             .shape(
-                PolygonBuilder::default()
+                PolygonBuilder::new()
                     .vertex(0, 0)
                     .vertex(0, 1)
                     .vertex(1, 0)
@@ -161,7 +166,7 @@ mod test {
 
     #[test]
     fn test_object_builder_should_error_for_missing_shape() {
-        let result = ObjectBuilder::default()
+        let result = ObjectBuilder::new()
             .velocity(10, 10)
             .location(10, 10)
             .kind(Kind::Organism)
@@ -179,9 +184,9 @@ mod test {
 
     #[test]
     fn test_object_builder_should_error_for_missing_velocity() {
-        let result = ObjectBuilder::default()
+        let result = ObjectBuilder::new()
             .shape(
-                PolygonBuilder::default()
+                PolygonBuilder::new()
                     .vertex(0, 0)
                     .vertex(0, 1)
                     .vertex(1, 0)
@@ -204,9 +209,9 @@ mod test {
 
     #[test]
     fn test_object_builder_should_error_for_missing_location() {
-        let result = ObjectBuilder::default()
+        let result = ObjectBuilder::new()
             .shape(
-                PolygonBuilder::default()
+                PolygonBuilder::new()
                     .vertex(0, 0)
                     .vertex(0, 1)
                     .vertex(1, 0)
@@ -229,9 +234,9 @@ mod test {
 
     #[test]
     fn test_object_builder_should_use_default_orientation() {
-        let result = ObjectBuilder::default()
+        let result = ObjectBuilder::new()
             .shape(
-                PolygonBuilder::default()
+                PolygonBuilder::new()
                     .vertex(0, 0)
                     .vertex(0, 1)
                     .vertex(1, 0)
@@ -263,7 +268,7 @@ mod test {
 
     #[test]
     fn test_object_builder_should_error_with_everything_missing() {
-        let result = ObjectBuilder::default().build();
+        let result = ObjectBuilder::new().build();
 
         assert_eq!(
             Err(ObjectBuilderError {
@@ -279,9 +284,9 @@ mod test {
 
     #[test]
     fn test_object_builder_should_build_object() {
-        let result = ObjectBuilder::default()
+        let result = ObjectBuilder::new()
             .shape(
-                PolygonBuilder::default()
+                PolygonBuilder::new()
                     .vertex(0, 0)
                     .vertex(0, 1)
                     .vertex(1, 0)
