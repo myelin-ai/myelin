@@ -1,18 +1,41 @@
 use crate::WorldGenerator;
+use myelin_environment::object::Kind;
+use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
 use myelin_environment::world::World;
 
-#[derive(Debug, Default)]
-pub struct HardcodedGenerator;
+type WorldFactory = Box<dyn Fn() -> Box<dyn World>>;
+
+pub struct HardcodedGenerator {
+    world_factory: WorldFactory,
+}
 
 impl HardcodedGenerator {
-    pub fn new(_world_factory: Box<dyn Fn() -> Box<dyn World>>) -> Self {
-        Self {}
+    pub fn new(world_factory: WorldFactory) -> Self {
+        Self { world_factory }
     }
 }
 
 impl WorldGenerator for HardcodedGenerator {
     fn generate(&self) -> Box<dyn World> {
-        unimplemented!()
+        let mut world = (self.world_factory)();
+
+        world.add_object(
+            ObjectBuilder::new()
+                .shape(
+                    PolygonBuilder::new()
+                        .vertex(0, 0)
+                        .vertex(10, 0)
+                        .vertex(0, 10)
+                        .vertex(10, 10)
+                        .build()
+                        .expect("Generated an invalid vertex"),
+                ).location(30, 40)
+                .velocity(4, 5)
+                .kind(Kind::Organism)
+                .build()
+                .expect("Generated an invalid object"),
+        );
+        world
     }
 }
 
