@@ -12,4 +12,8 @@ edition = "2018"
 [dependencies]
 nalgebra = "0.16"
 ncollide2d = "0.17"
-nphysics2d = "0.9"
+
+[dependencies.nphysics2d]
+git = "https://github.com/myelin-ai/nphysics"
+default-features = false
+features = ["use-wasm-bindgen"]
