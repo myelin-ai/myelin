@@ -1,4 +1,5 @@
-#!/usr/bin/env bash -e
+#!/usr/bin/env bash
+set -e
 
 application_name=myelin_visualization
 target_dir=visualization/out

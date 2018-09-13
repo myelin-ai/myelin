@@ -18,6 +18,9 @@ extern "C" {
     #[wasm_bindgen(method, js_name = beginPath)]
     pub fn begin_path(this: &CanvasRenderingContext2D);
 
+    #[wasm_bindgen(method, js_name = closePath)]
+    pub fn close_path(this: &CanvasRenderingContext2D);
+
     #[wasm_bindgen(method, js_name = moveTo)]
     pub fn move_to(this: &CanvasRenderingContext2D, x: u32, y: u32);
 
