@@ -5,13 +5,13 @@ use myelin_environment::world::World;
 pub struct HardcodedGenerator;
 
 impl HardcodedGenerator {
-    pub fn new() -> Self {
+    pub fn new(_world_factory: Box<dyn Fn() -> Box<dyn World>>) -> Self {
         Self {}
     }
 }
 
 impl WorldGenerator for HardcodedGenerator {
-    fn generate(&self, _world: &mut dyn World) {
+    fn generate(&self) -> Box<dyn World> {
         unimplemented!()
     }
 }
@@ -23,7 +23,7 @@ mod tests {
 
     #[derive(Debug, Default)]
     struct WorldMock {
-        pub objects: Vec<LocalObject>,
+        objects: Vec<LocalObject>,
     }
 
     impl World for WorldMock {
@@ -37,15 +37,17 @@ mod tests {
             panic!("objects() called unexpectedly")
         }
     }
+    impl Drop for WorldMock {
+        fn drop(&mut self) {
+            assert!(self.objects.len() > 0);
+        }
+    }
 
     #[test]
     fn generates_world() {
-        let mut world = WorldMock::default();
-        let generator = HardcodedGenerator::new();
+        let world_factory = || -> Box<dyn World> { Box::new(WorldMock::default()) };
+        let generator = HardcodedGenerator::new(Box::new(world_factory));
 
-        generator.generate(&mut world);
-
-        let passed_objects = world.objects;
-        assert!(passed_objects.len() > 0);
+        let _world = generator.generate();
     }
 }

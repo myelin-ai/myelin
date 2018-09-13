@@ -5,5 +5,5 @@ use myelin_environment::world::World;
 pub mod generator;
 
 pub trait WorldGenerator: std::fmt::Debug {
-    fn generate(&self, world: &mut dyn World);
+    fn generate(&self) -> Box<dyn World>;
 }
