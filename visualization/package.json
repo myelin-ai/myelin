@@ -4,15 +4,14 @@
         "serve": "webpack-dev-server"
     },
     "devDependencies": {
-        "file-loader": "^2.0.0",
         "ts-loader": "^4.4.2",
-        "tslint": "^5.5.0",
-        "tslint-config-standard": "^7.1.0",
-        "tslint-consistent-codestyle": "^1.6.0",
-        "tslint-immutable": "^4.0.2",
         "typescript": "^2.9.2",
         "webpack": "^4.0.1",
         "webpack-cli": "^2.0.10",
-        "webpack-dev-server": "^3.1.0"
+        "webpack-dev-server": "^3.1.0",
+        "tslint": "^5.5.0",
+        "tslint-config-standard": "^7.1.0",
+        "tslint-consistent-codestyle": "^1.6.0",
+        "tslint-immutable": "^4.0.2"
     }
 }
