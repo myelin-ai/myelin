@@ -70,28 +70,50 @@ pub struct LocalObject {
 /// the world as their origin.
 #[derive(Debug, PartialEq, Clone)]
 pub struct GlobalObject {
+    /// The global vertices defining the shape of the object
+    /// in relation to the upper left corner of the world
     pub shape: GlobalPolygon,
+    /// The orientation of the object, measured in
+    /// radians within the range [0.0; 2π).
+    /// An orientation of 0.0 means that the
+    /// object is facing right.
     pub orientation: Radians,
+    /// The current velocity of the object, defined
+    /// as a two dimensional vector relative to the
+    /// objects center
     pub velocity: Velocity,
+    /// The kind of object we are dealing with
     pub kind: Kind,
 }
 
+/// This type holds the vertices of an object
+/// in relation to its center, i.e. [0; 0] means
+/// the exact center of the object.
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct LocalPolygon {
+    /// The vertices defining the shape of the object
     pub vertices: Vec<LocalVertex>,
 }
 
+/// This type holds the vertices of an object
+/// in relation to the world, i.e. [0; 0] means
+/// the upper left corner of the world.
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct GlobalPolygon {
+    /// The vertices defining the shape of the object
     pub vertices: Vec<GlobalVertex>,
 }
 
+/// The coordinates representing a corner
+/// of a polygon in relation to its center
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct LocalVertex {
     pub x: i32,
     pub y: i32,
 }
 
+/// The coordinates representing a corner
+/// of a polygon in relation to the world origin
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct GlobalVertex {
     pub x: u32,
