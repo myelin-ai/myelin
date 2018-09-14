@@ -1,7 +1,8 @@
 use crate::WorldGenerator;
-use myelin_environment::object::Kind;
+use myelin_environment::object::{Kind, Radians};
 use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
 use myelin_environment::world::World;
+use std::f32::consts::FRAC_PI_2;
 
 type WorldFactory = Box<dyn Fn() -> Box<dyn World>>;
 
@@ -18,25 +19,87 @@ impl HardcodedGenerator {
 impl WorldGenerator for HardcodedGenerator {
     fn generate(&self) -> Box<dyn World> {
         let mut world = (self.world_factory)();
-
-        world.add_object(
-            ObjectBuilder::new()
-                .shape(
-                    PolygonBuilder::new()
-                        .vertex(0, 0)
-                        .vertex(10, 0)
-                        .vertex(0, 10)
-                        .vertex(10, 10)
-                        .build()
-                        .expect("Generated an invalid vertex"),
-                ).location(30, 40)
-                .velocity(4, 5)
-                .kind(Kind::Organism)
-                .build()
-                .expect("Generated an invalid object"),
-        );
+        populate_with_terrain(&mut *world);
+        populate_with_water(&mut *world);
+        populate_with_plants(&mut *world);
+        populate_with_organisms(&mut *world);
         world
     }
+}
+
+fn populate_with_terrain(world: &mut dyn World) {
+    world.add_object(
+        ObjectBuilder::new()
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(-50, -500)
+                    .vertex(50, -500)
+                    .vertex(50, 500)
+                    .vertex(-50, 500)
+                    .build()
+                    .expect("Generated an invalid vertex"),
+            ).location(50, 500)
+            .velocity(0, 0)
+            .kind(Kind::Terrain)
+            .build()
+            .expect("Generated an invalid object"),
+    );
+}
+fn populate_with_water(world: &mut dyn World) {
+    world.add_object(
+        ObjectBuilder::new()
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(-200, 100)
+                    .vertex(0, 200)
+                    .vertex(200, 100)
+                    .vertex(100, -200)
+                    .vertex(-100, -200)
+                    .build()
+                    .expect("Generated an invalid vertex"),
+            ).location(500, 500)
+            .velocity(0, 0)
+            .kind(Kind::Water)
+            .build()
+            .expect("Generated an invalid object"),
+    );
+}
+fn populate_with_plants(world: &mut dyn World) {
+    world.add_object(
+        ObjectBuilder::new()
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(-150, -100)
+                    .vertex(100, -100)
+                    .vertex(100, 300)
+                    .vertex(-150, 300)
+                    .build()
+                    .expect("Generated an invalid vertex"),
+            ).location(800, 100)
+            .velocity(0, 0)
+            .kind(Kind::Plant)
+            .build()
+            .expect("Generated an invalid object"),
+    );
+}
+fn populate_with_organisms(world: &mut dyn World) {
+    world.add_object(
+        ObjectBuilder::new()
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(-100, -100)
+                    .vertex(100, -100)
+                    .vertex(100, 100)
+                    .vertex(-100, 100)
+                    .build()
+                    .expect("Generated an invalid vertex"),
+            ).location(700, 700)
+            .orientation(Radians(FRAC_PI_2))
+            .velocity(4, 5)
+            .kind(Kind::Organism)
+            .build()
+            .expect("Generated an invalid object"),
+    );
 }
 
 #[cfg(test)]
