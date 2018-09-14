@@ -1,4 +1,5 @@
-use crate::object::Kind;
+use crate::object::*;
+use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
 use nphysics2d::math::{Isometry, Point, Vector};
 use nphysics2d::object::ColliderHandle;
@@ -6,6 +7,7 @@ use nphysics2d::object::Material;
 use nphysics2d::volumetric::Volumetric;
 use nphysics2d::world::World as PhysicsWorld;
 use std::collections::HashMap;
+use std::f32::consts::PI;
 use std::fmt;
 
 use nalgebra as na;
@@ -31,6 +33,54 @@ impl WorldImpl {
             collider_handles: HashMap::new(),
         }
     }
+
+    fn convert_to_object(&self, collider_handle: ColliderHandle, kind: &Kind) -> GlobalObject {
+        let collider = self
+            .physics_world
+            .collider(collider_handle)
+            .expect("Collider handle was invalid");
+        let convex_polygon: &ConvexPolygon<_> = collider
+            .shape()
+            .as_shape()
+            .expect("Failed to cast shape to a ConvexPolygon");
+        let position_isometry = collider.position();
+        let global_vertices: Vec<_> = convex_polygon
+            .points()
+            .iter()
+            .map(|vertex| position_isometry * vertex)
+            .map(|vertex| GlobalVertex {
+                x: vertex.x as u32,
+                y: vertex.y as u32,
+            }).collect();
+        let rotation = position_isometry.rotation.angle() as f32 + PI;
+        let body_handle = collider.data().body();
+        let body = self
+            .physics_world
+            .rigid_body(body_handle)
+            .expect("Body handle was invalid");
+        let linear_velocity = body.velocity().linear;
+
+        let (x, y) = get_elements(&linear_velocity);
+
+        GlobalObject {
+            shape: GlobalPolygon {
+                vertices: global_vertices,
+            },
+            orientation: Radians(rotation),
+            velocity: Velocity {
+                x: x as i32,
+                y: y as i32,
+            },
+            kind: kind.clone(),
+        }
+    }
+}
+
+fn get_elements<N>(vector: &Vector2<N>) -> (N, N)
+where
+    N: Scalar,
+{
+    unsafe { (*vector.get_unchecked(0, 0), *vector.get_unchecked(0, 1)) }
 }
 
 impl World for WorldImpl {
@@ -86,7 +136,10 @@ impl World for WorldImpl {
     }
 
     fn objects(&self) -> Vec<GlobalObject> {
-        unimplemented!()
+        self.collider_handles
+            .iter()
+            .map(|(&handle, kind)| self.convert_to_object(handle, kind))
+            .collect()
     }
 }
 
