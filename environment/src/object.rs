@@ -6,22 +6,22 @@
 /// the object, which is determined by the `location`
 /// The following would define a stationary square terrain:
 /// ```
-///use myelin_environment::object::*;
+/// use myelin_environment::object::*;
 ///
-///let square = LocalObject {
-///    shape: LocalPolygon {
-///        vertices: vec![
-///            LocalVertex { x: -50, y: -50 },
-///            LocalVertex { x: -50, y: 50 },
-///            LocalVertex { x: 50, y: 50 },
-///            LocalVertex { x: 50, y: -50 },
-///        ],
-///    },
-///    orientation: Radians(0.0),
-///    location: Location { x: 100, y: 100 },
-///    velocity: Velocity { x: 0, y: 0 },
-///    kind: Kind::Terrain,
-///};
+/// let square = LocalObject {
+///     shape: LocalPolygon {
+///         vertices: vec![
+///             LocalVertex { x: -50, y: -50 },
+///             LocalVertex { x: -50, y: 50 },
+///             LocalVertex { x: 50, y: 50 },
+///             LocalVertex { x: 50, y: -50 },
+///         ],
+///     },
+///     orientation: Radians(0.0),
+///     location: Location { x: 100, y: 100 },
+///     velocity: Velocity { x: 0, y: 0 },
+///     kind: Kind::Terrain,
+/// };
 /// ```
 /// The prefered way of constructing these however
 /// is by using an ObjectBuilder
@@ -45,6 +45,29 @@ pub struct LocalObject {
     pub kind: Kind,
 }
 
+/// An objects that has already been placed in the world.
+/// Its coordinates are global, using the upper left corner of
+/// the world as their origin.
+/// The following would define a stationary square terrain and
+/// represents the analog to the example shown in the documentation
+/// of LocalObject:
+/// ```
+/// use myelin_environment::object::*;
+///
+/// let square = GlobalObject {
+///     shape: GlobalPolygon {
+///         vertices: vec![
+///             GlobalVertex { x: 50, y: 50 },
+///             GlobalVertex { x: 150, y: 50 },
+///             GlobalVertex { x: 150, y: 150 },
+///             GlobalVertex { x: 50, y: 150 },
+///         ],
+///     },
+///     orientation: Radians(0.0),
+///     velocity: Velocity { x: 0, y: 0 },
+///     kind: Kind::Terrain,
+/// };
+/// ```
 #[derive(Debug, PartialEq, Clone)]
 pub struct GlobalObject {
     pub shape: GlobalPolygon,
