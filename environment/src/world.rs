@@ -87,11 +87,9 @@ fn elements<N>(vector: &Vector2<N>) -> (N, N)
 where
     N: Scalar,
 {
-    // This is safe, as Vector2 is defined as a column vector
-    // Rust's type system will make sure that no invalid type will come through
-    // I bet there's a better way to do this, but I didn't find any
-    // See http://nalgebra.org/rustdoc/nalgebra/base/type.Vector2.html
-    unsafe { (*vector.get_unchecked(0, 0), *vector.get_unchecked(1, 0)) }
+    let mut iter = vector.iter();
+
+    (*iter.next().unwrap(), *iter.next().unwrap())
 }
 
 impl World for WorldImpl {
