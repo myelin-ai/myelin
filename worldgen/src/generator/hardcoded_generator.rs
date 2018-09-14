@@ -58,11 +58,11 @@ fn populate_with_water(world: &mut dyn World) {
         ObjectBuilder::new()
             .shape(
                 PolygonBuilder::new()
-                    .vertex(-200, 100)
+                    .vertex(-180, 60)
                     .vertex(0, 200)
-                    .vertex(200, 100)
-                    .vertex(100, -200)
-                    .vertex(-100, -200)
+                    .vertex(180, 60)
+                    .vertex(100, -150)
+                    .vertex(-100, -150)
                     .build()
                     .expect("Generated an invalid vertex"),
             ).location(500, 500)
