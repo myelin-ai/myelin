@@ -20,6 +20,11 @@ pub trait World: fmt::Debug {
 
 type PhysicsType = f64;
 
+// The offset needed because we define orientation as [0; 2π)
+// and nphysics defines rotation as (-π; π]
+// See http://nalgebra.org/rustdoc/nalgebra/geometry/type.UnitComplex.html#method.angle
+const NPHYSICS_ROTATION_OFFSET: f32 = PI;
+
 #[derive(Default)]
 pub struct WorldImpl {
     physics_world: PhysicsWorld<PhysicsType>,
@@ -53,7 +58,7 @@ impl WorldImpl {
                 y: vertex.y as u32,
             }).collect();
 
-        let rotation = position_isometry.rotation.angle() as f32 + PI;
+        let rotation = position_isometry.rotation.angle() as f32 + NPHYSICS_ROTATION_OFFSET;
 
         let body_handle = collider.data().body();
         let body = self
@@ -126,7 +131,7 @@ impl World for WorldImpl {
                     PhysicsType::from(object.location.x),
                     PhysicsType::from(object.location.y),
                 ),
-                PhysicsType::from(object.orientation.0 - PI),
+                PhysicsType::from(object.orientation.0 - NPHYSICS_ROTATION_OFFSET),
             ),
             local_inertia,
             local_center_of_mass,
