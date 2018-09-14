@@ -10,8 +10,6 @@ use std::collections::HashMap;
 use std::f32::consts::PI;
 use std::fmt;
 
-use nalgebra as na;
-
 use crate::object::{GlobalObject, LocalObject};
 
 pub trait World: fmt::Debug {
@@ -123,7 +121,7 @@ impl World for WorldImpl {
         let rigid_body_handle = self.physics_world.add_rigid_body(
             Isometry::new(
                 Vector::new(f64::from(object.location.x), f64::from(object.location.y)),
-                na::zero(),
+                (object.orientation.0 - PI) as f64,
             ),
             local_inertia,
             local_center_of_mass,
