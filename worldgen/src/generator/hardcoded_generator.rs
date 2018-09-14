@@ -35,8 +35,9 @@ fn populate_with_terrain(world: &mut dyn World) {
 }
 
 fn build_terrain(location: (u32, u32), width: i32, length: i32) -> LocalObject {
-    let x_offset = width / 2;
-    let y_offset = length / 2;
+    // We add two pixels because of https://github.com/myelin-ai/myelin/issues/60
+    let x_offset = width / 2 + 2;
+    let y_offset = length / 2 + 2;
     ObjectBuilder::new()
         .shape(
             PolygonBuilder::new()
