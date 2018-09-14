@@ -72,24 +72,32 @@ fn populate_with_water(world: &mut dyn World) {
             .expect("Generated an invalid object"),
     );
 }
+
 fn populate_with_plants(world: &mut dyn World) {
-    world.add_object(
-        ObjectBuilder::new()
-            .shape(
-                PolygonBuilder::new()
-                    .vertex(-150, -100)
-                    .vertex(100, -100)
-                    .vertex(100, 300)
-                    .vertex(-150, 300)
-                    .build()
-                    .expect("Generated an invalid vertex"),
-            ).location(800, 100)
-            .velocity(0, 0)
-            .kind(Kind::Plant)
-            .build()
-            .expect("Generated an invalid object"),
-    );
+    world.add_object(build_plant(300, 400));
+    world.add_object(build_plant(800, 400));
+    world.add_object(build_plant(650, 300));
+    world.add_object(build_plant(450, 250));
+    world.add_object(build_plant(400, 300));
 }
+
+fn build_plant(x: u32, y: u32) -> LocalObject {
+    ObjectBuilder::new()
+        .shape(
+            PolygonBuilder::new()
+                .vertex(-25, -25)
+                .vertex(25, -25)
+                .vertex(25, 25)
+                .vertex(-25, 25)
+                .build()
+                .expect("Generated an invalid vertex"),
+        ).location(x, y)
+        .velocity(0, 0)
+        .kind(Kind::Plant)
+        .build()
+        .expect("Generated an invalid object")
+}
+
 fn populate_with_organisms(world: &mut dyn World) {
     world.add_object(
         ObjectBuilder::new()
