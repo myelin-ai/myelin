@@ -124,7 +124,7 @@ fn build_organism(x: u32, y: u32) -> LocalObject {
                 .expect("Generated an invalid vertex"),
         ).location(x, y)
         .orientation(Radians(FRAC_PI_2))
-        .velocity(4, 5)
+        .velocity(0, 0)
         .kind(Kind::Organism)
         .build()
         .expect("Generated an invalid object")
