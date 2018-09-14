@@ -99,23 +99,29 @@ fn build_plant(x: u32, y: u32) -> LocalObject {
 }
 
 fn populate_with_organisms(world: &mut dyn World) {
-    world.add_object(
-        ObjectBuilder::new()
-            .shape(
-                PolygonBuilder::new()
-                    .vertex(-100, -100)
-                    .vertex(100, -100)
-                    .vertex(100, 100)
-                    .vertex(-100, 100)
-                    .build()
-                    .expect("Generated an invalid vertex"),
-            ).location(700, 700)
-            .orientation(Radians(FRAC_PI_2))
-            .velocity(4, 5)
-            .kind(Kind::Organism)
-            .build()
-            .expect("Generated an invalid object"),
-    );
+    world.add_object(build_organism(300, 800));
+    world.add_object(build_organism(400, 800));
+    world.add_object(build_organism(500, 800));
+    world.add_object(build_organism(600, 800));
+    world.add_object(build_organism(700, 800));
+}
+
+fn build_organism(x: u32, y: u32) -> LocalObject {
+    ObjectBuilder::new()
+        .shape(
+            PolygonBuilder::new()
+                .vertex(25, 0)
+                .vertex(-25, 20)
+                .vertex(-5, 0)
+                .vertex(-25, -20)
+                .build()
+                .expect("Generated an invalid vertex"),
+        ).location(x, y)
+        .orientation(Radians(FRAC_PI_2))
+        .velocity(4, 5)
+        .kind(Kind::Organism)
+        .build()
+        .expect("Generated an invalid object")
 }
 
 #[cfg(test)]
