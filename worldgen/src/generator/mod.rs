@@ -1,1 +1,2 @@
-pub mod hardcoded_generator;
+mod hardcoded_generator;
+pub use self::hardcoded_generator::HardcodedGenerator;
