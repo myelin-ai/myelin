@@ -23,10 +23,7 @@ impl Simulation for SimulationImpl {
 }
 
 impl SimulationImpl {
-    pub(crate) fn new(
-        presenter: Box<dyn Presenter>,
-        world_generator: Box<dyn WorldGenerator>,
-    ) -> Self {
+    pub(crate) fn new(presenter: Box<dyn Presenter>, world_generator: &dyn WorldGenerator) -> Self {
         Self {
             presenter,
             world: world_generator.generate(),
@@ -132,7 +129,7 @@ mod tests {
         let expected_objects = vec![];
         let world_generator = WorldGeneratorMock::new(expected_objects.clone());
         let presenter = PresenterMock::new(expected_objects);
-        let mut simulation = SimulationImpl::new(Box::new(presenter), Box::new(world_generator));
+        let mut simulation = SimulationImpl::new(Box::new(presenter), &world_generator);
         simulation.step();
     }
 
@@ -152,7 +149,7 @@ mod tests {
         }];
         let world_generator = WorldGeneratorMock::new(expected_objects.clone());
         let presenter = PresenterMock::new(expected_objects);
-        let mut simulation = SimulationImpl::new(Box::new(presenter), Box::new(world_generator));
+        let mut simulation = SimulationImpl::new(Box::new(presenter), &world_generator);
         simulation.step();
     }
 }
