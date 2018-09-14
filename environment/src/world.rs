@@ -18,9 +18,11 @@ pub trait World: fmt::Debug {
     fn objects(&self) -> Vec<GlobalObject>;
 }
 
+type PhysicsType = f64;
+
 #[derive(Default)]
 pub struct WorldImpl {
-    physics_world: PhysicsWorld<f64>,
+    physics_world: PhysicsWorld<PhysicsType>,
     collider_handles: HashMap<ColliderHandle, Kind>,
 }
 
@@ -111,7 +113,7 @@ impl World for WorldImpl {
             .shape
             .vertices
             .iter()
-            .map(|vertex| Point::new(f64::from(vertex.x), f64::from(vertex.y)))
+            .map(|vertex| Point::new(PhysicsType::from(vertex.x), PhysicsType::from(vertex.y)))
             .collect();
 
         let shape =
@@ -120,14 +122,20 @@ impl World for WorldImpl {
         let local_center_of_mass = shape.center_of_mass();
         let rigid_body_handle = self.physics_world.add_rigid_body(
             Isometry::new(
-                Vector::new(f64::from(object.location.x), f64::from(object.location.y)),
-                (object.orientation.0 - PI) as f64,
+                Vector::new(
+                    PhysicsType::from(object.location.x),
+                    PhysicsType::from(object.location.y),
+                ),
+                (object.orientation.0 - PI) as PhysicsType,
             ),
             local_inertia,
             local_center_of_mass,
         );
 
-        let linear_velocity = Vector2::new(object.velocity.x as f64, object.velocity.y as f64);
+        let linear_velocity = Vector2::new(
+            object.velocity.x as PhysicsType,
+            object.velocity.y as PhysicsType,
+        );
         let rigid_body = self
             .physics_world
             .rigid_body_mut(rigid_body_handle)
@@ -163,7 +171,7 @@ impl fmt::Debug for WorldImpl {
     }
 }
 
-pub struct DebugPhysicsWorld<'a>(&'a PhysicsWorld<f64>);
+pub struct DebugPhysicsWorld<'a>(&'a PhysicsWorld<PhysicsType>);
 
 impl<'a> fmt::Debug for DebugPhysicsWorld<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
