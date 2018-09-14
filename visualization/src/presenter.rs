@@ -7,7 +7,7 @@ pub(crate) trait View {
 }
 
 pub(crate) struct CanvasPresenter {
-    view: Box<View>,
+    view: Box<dyn View>,
 }
 
 impl Presenter for CanvasPresenter {
@@ -33,7 +33,7 @@ fn map_kind(kind: &business_object::Kind) -> view_model::Kind {
 }
 
 impl CanvasPresenter {
-    pub(crate) fn new(view: Box<View>) -> Self {
+    pub(crate) fn new(view: Box<dyn View>) -> Self {
         Self { view }
     }
 

@@ -9,8 +9,8 @@ pub(crate) trait Presenter {
 }
 
 pub(crate) struct SimulationImpl {
-    presenter: Box<Presenter>,
-    world: Box<World>,
+    presenter: Box<dyn Presenter>,
+    world: Box<dyn World>,
 }
 
 impl Simulation for SimulationImpl {
@@ -22,7 +22,7 @@ impl Simulation for SimulationImpl {
 }
 
 impl SimulationImpl {
-    pub(crate) fn new(presenter: Box<Presenter>, world: Box<World>) -> Self {
+    pub(crate) fn new(presenter: Box<dyn Presenter>, world: Box<dyn World>) -> Self {
         Self { presenter, world }
     }
 }
