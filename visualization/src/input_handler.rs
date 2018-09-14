@@ -8,7 +8,7 @@ pub struct InputHandler {
 
 #[wasm_bindgen]
 impl InputHandler {
-    pub(crate) fn new(simulation: Box<Simulation>) -> Self {
+    pub(crate) fn new(simulation: Box<dyn Simulation>) -> Self {
         Self { simulation }
     }
 
