@@ -1,3 +1,4 @@
+#![deny(rust_2018_idioms)]
 #![feature(tool_lints)]
 
 pub mod bootstrapper;
