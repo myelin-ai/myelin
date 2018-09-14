@@ -1,3 +1,25 @@
+//! A convenient builder for `LocalObject` and `LocalPolygon`
+//! # Examples
+//! ```
+//! use myelin_environment::object::Kind;
+//! use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+//!
+//! let object = ObjectBuilder::new()
+//!     .shape(
+//!         PolygonBuilder::new()
+//!             .vertex(-50, -50)
+//!             .vertex(50, -50)
+//!             .vertex(50, 50)
+//!             .vertex(-50, 50)
+//!             .build()
+//!             .unwrap(),
+//!     ).location(300, 450)
+//!     .velocity(4, 5)
+//!     .kind(Kind::Organism)
+//!     .build()
+//!     .unwrap();
+//! ```
+
 use crate::object::{Kind, LocalObject, LocalPolygon, LocalVertex, Location, Radians, Velocity};
 
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
