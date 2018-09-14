@@ -1,8 +1,9 @@
-//! A convenient builder for `LocalObject` and `LocalPolygon`
+//! Convenient builders for `LocalObject` and `LocalPolygon`
 //! # Examples
 //! ```
-//! use myelin_environment::object::Kind;
+//! use myelin_environment::object::{Kind, Radians};
 //! use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+//! use std::f32::consts::FRAC_PI_2;
 //!
 //! let object = ObjectBuilder::new()
 //!     .shape(
@@ -15,6 +16,7 @@
 //!             .unwrap(),
 //!     ).location(300, 450)
 //!     .velocity(4, 5)
+//!     .orientation(Radians(FRAC_PI_2))
 //!     .kind(Kind::Organism)
 //!     .build()
 //!     .unwrap();
@@ -22,14 +24,21 @@
 
 use crate::object::{Kind, LocalObject, LocalPolygon, LocalVertex, Location, Radians, Velocity};
 
+/// An error representing the values that have
+/// wrongly been ommited when building finished
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct ObjectBuilderError {
+    /// Flag signaling that .shape(...) was never called
     pub missing_shape: bool,
+    /// Flag signaling that .velocity(...) was never called
     pub missing_velocity: bool,
+    /// Flag signaling that .location(...) was never called
     pub missing_location: bool,
+    /// Flag signaling that .kind(...) was never called
     pub missing_kind: bool,
 }
 
+/// Convenience builder for `LocalObject`
 #[derive(Default, Debug)]
 pub struct ObjectBuilder {
     shape: Option<LocalPolygon>,
@@ -44,31 +53,98 @@ impl ObjectBuilder {
         Default::default()
     }
 
+    /// # Example
+    /// ```
+    /// # use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+    /// ObjectBuilder::new()
+    ///     .shape(
+    ///         PolygonBuilder::new()
+    ///             .vertex(-50, -50)
+    ///             .vertex(50, -50)
+    ///             .vertex(50, 50)
+    ///             .vertex(-50, 50)
+    ///             .build()
+    ///             .unwrap(),
+    ///     );
+    /// ```
     pub fn shape(&mut self, polygon: LocalPolygon) -> &mut Self {
         self.shape = Some(polygon);
         self
     }
 
+    /// # Example
+    /// ```
+    /// # use myelin_environment::object_builder::ObjectBuilder;
+    /// ObjectBuilder::new()
+    ///     .velocity(-12, 2);
+    /// ```
     pub fn velocity(&mut self, x: i32, y: i32) -> &mut Self {
         self.velocity = Some(Velocity { x, y });
         self
     }
 
+    /// # Example
+    /// ```
+    /// # use myelin_environment::object_builder::ObjectBuilder;
+    /// ObjectBuilder::new()
+    ///     .location(3, 2);
+    /// ```
     pub fn location(&mut self, x: u32, y: u32) -> &mut Self {
         self.location = Some(Location { x, y });
         self
     }
 
+    /// # Example
+    /// ```
+    /// # use myelin_environment::object_builder::ObjectBuilder;
+    /// # use myelin_environment::object::Kind;
+    /// ObjectBuilder::new()
+    ///     .kind(Kind::Plant);
+    /// ```
     pub fn kind(&mut self, kind: Kind) -> &mut Self {
         self.kind = Some(kind);
         self
     }
 
+    /// # Example
+    /// ```
+    /// # use myelin_environment::object_builder::ObjectBuilder;
+    /// # use myelin_environment::object::Radians;
+    /// ObjectBuilder::new()
+    ///     .orientation(Radians(4.5));
+    /// ```
     pub fn orientation(&mut self, orientation: Radians) -> &mut Self {
         self.orientation = Some(orientation);
         self
     }
 
+    /// Build the `LocalObject` with all specified settings
+    /// # Errors
+    /// If a non-optional member has not specified while building
+    /// an error is returned, containing flags specifying which
+    /// setting has been omitted
+    /// # Examples
+    /// ```
+    /// use myelin_environment::object::{Kind, Radians};
+    /// use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+    /// use std::f32::consts::FRAC_PI_2;
+    ///
+    /// let object = ObjectBuilder::new()
+    ///     .shape(
+    ///         PolygonBuilder::new()
+    ///             .vertex(-50, -50)
+    ///             .vertex(50, -50)
+    ///             .vertex(50, 50)
+    ///             .vertex(-50, 50)
+    ///             .build()
+    ///             .unwrap(),
+    ///     ).location(300, 450)
+    ///     .velocity(4, 5)
+    ///     .orientation(Radians(FRAC_PI_2))
+    ///     .kind(Kind::Organism)
+    ///     .build()
+    ///     .unwrap();
+    /// ```
     pub fn build(&mut self) -> Result<LocalObject, ObjectBuilderError> {
         let error = ObjectBuilderError {
             missing_shape: self.shape.is_none(),
