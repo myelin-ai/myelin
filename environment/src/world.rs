@@ -127,6 +127,13 @@ impl World for WorldImpl {
             local_center_of_mass,
         );
 
+        let linear_velocity = Vector2::new(object.velocity.x as f64, object.velocity.y as f64);
+        let rigid_body = self
+            .physics_world
+            .rigid_body_mut(rigid_body_handle)
+            .expect("add_rigid_body() returned invalid handle");
+        rigid_body.set_linear_velocity(linear_velocity);
+
         let material = Material::default();
         let collider_handle = self.physics_world.add_collider(
             0.04,
