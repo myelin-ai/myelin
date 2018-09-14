@@ -52,14 +52,16 @@ impl WorldImpl {
                 x: vertex.x as u32,
                 y: vertex.y as u32,
             }).collect();
+
         let rotation = position_isometry.rotation.angle() as f32 + PI;
+
         let body_handle = collider.data().body();
         let body = self
             .physics_world
             .rigid_body(body_handle)
             .expect("Body handle was invalid");
-        let linear_velocity = body.velocity().linear;
 
+        let linear_velocity = body.velocity().linear;
         let (x, y) = get_elements(&linear_velocity);
 
         GlobalObject {
