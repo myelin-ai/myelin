@@ -1,5 +1,6 @@
 [workspace]
 members = [
     "environment",
-    "visualization"
+    "visualization",
+    "worldgen"
 ]

@@ -115,7 +115,15 @@ name = "myelin-visualization"
 version = "0.1.0"
 dependencies = [
  "myelin-environment 0.1.0",
+ "myelin-worldgen 0.1.0",
  "wasm-bindgen 0.2.21 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "myelin-worldgen"
+version = "0.1.0"
+dependencies = [
+ "myelin-environment 0.1.0",
 ]
 
 [[package]]
