@@ -1,5 +1,5 @@
 use crate::WorldGenerator;
-use myelin_environment::object::{Kind, Radians};
+use myelin_environment::object::{Kind, LocalObject, Radians};
 use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
 use myelin_environment::world::World;
 use std::f32::consts::FRAC_PI_2;
@@ -28,23 +28,31 @@ impl WorldGenerator for HardcodedGenerator {
 }
 
 fn populate_with_terrain(world: &mut dyn World) {
-    world.add_object(
-        ObjectBuilder::new()
-            .shape(
-                PolygonBuilder::new()
-                    .vertex(-50, -500)
-                    .vertex(50, -500)
-                    .vertex(50, 500)
-                    .vertex(-50, 500)
-                    .build()
-                    .expect("Generated an invalid vertex"),
-            ).location(50, 500)
-            .velocity(0, 0)
-            .kind(Kind::Terrain)
-            .build()
-            .expect("Generated an invalid object"),
-    );
+    world.add_object(build_terrain((25, 500), 50, 1000));
+    world.add_object(build_terrain((500, 25), 1000, 50));
+    world.add_object(build_terrain((975, 500), 50, 1000));
+    world.add_object(build_terrain((500, 975), 1000, 50));
 }
+
+fn build_terrain(location: (u32, u32), width: i32, length: i32) -> LocalObject {
+    let x_offset = width / 2;
+    let y_offset = length / 2;
+    ObjectBuilder::new()
+        .shape(
+            PolygonBuilder::new()
+                .vertex(-x_offset, -y_offset)
+                .vertex(x_offset, -y_offset)
+                .vertex(x_offset, y_offset)
+                .vertex(-x_offset, y_offset)
+                .build()
+                .expect("Generated an invalid vertex"),
+        ).location(location.0, location.1)
+        .velocity(0, 0)
+        .kind(Kind::Terrain)
+        .build()
+        .expect("Generated an invalid object")
+}
+
 fn populate_with_water(world: &mut dyn World) {
     world.add_object(
         ObjectBuilder::new()
