@@ -126,15 +126,15 @@ impl World for WorldImpl {
                     PhysicsType::from(object.location.x),
                     PhysicsType::from(object.location.y),
                 ),
-                (object.orientation.0 - PI) as PhysicsType,
+                PhysicsType::from(object.orientation.0 - PI),
             ),
             local_inertia,
             local_center_of_mass,
         );
 
         let linear_velocity = Vector2::new(
-            object.velocity.x as PhysicsType,
-            object.velocity.y as PhysicsType,
+            PhysicsType::from(object.velocity.x),
+            PhysicsType::from(object.velocity.y),
         );
         let rigid_body = self
             .physics_world
