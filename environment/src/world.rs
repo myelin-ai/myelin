@@ -18,11 +18,6 @@ pub trait World: fmt::Debug {
 
 type PhysicsType = f64;
 
-// The offset needed because we define orientation as [0; 2π)
-// and nphysics defines rotation as (-π; π]
-// See http://nalgebra.org/rustdoc/nalgebra/geometry/type.UnitComplex.html#method.angle
-const NPHYSICS_ROTATION_OFFSET: f32 = PI;
-
 #[derive(Default)]
 pub struct WorldImpl {
     physics_world: PhysicsWorld<PhysicsType>,
@@ -56,8 +51,6 @@ impl WorldImpl {
                 y: vertex.y as u32,
             }).collect();
 
-        let rotation = position_isometry.rotation.angle() as f32 + NPHYSICS_ROTATION_OFFSET;
-
         let body_handle = collider.data().body();
         let body = self
             .physics_world
@@ -71,7 +64,7 @@ impl WorldImpl {
             shape: GlobalPolygon {
                 vertices: global_vertices,
             },
-            orientation: Radians(rotation),
+            orientation: to_orientation(position_isometry.rotation.angle()),
             velocity: Velocity {
                 x: x as i32,
                 y: y as i32,
@@ -79,6 +72,19 @@ impl WorldImpl {
             kind: kind.clone(),
         }
     }
+}
+
+// The offset needed because we define orientation as [0; 2π)
+// and nphysics defines rotation as (-π; π]
+// See http://nalgebra.org/rustdoc/nalgebra/geometry/type.UnitComplex.html#method.angle
+const NPHYSICS_ROTATION_OFFSET: f32 = PI;
+
+fn to_nphysics_rotation(orientation: Radians) -> f64 {
+    PhysicsType::from(orientation.0 - NPHYSICS_ROTATION_OFFSET)
+}
+
+fn to_orientation(nphysics_rotation: f64) -> Radians {
+    Radians(nphysics_rotation as f32 + NPHYSICS_ROTATION_OFFSET)
 }
 
 fn elements<N>(vector: &Vector2<N>) -> (N, N)
@@ -127,7 +133,7 @@ impl World for WorldImpl {
                     PhysicsType::from(object.location.x),
                     PhysicsType::from(object.location.y),
                 ),
-                PhysicsType::from(object.orientation.0 - NPHYSICS_ROTATION_OFFSET),
+                to_nphysics_rotation(object.orientation),
             ),
             local_inertia,
             local_center_of_mass,
