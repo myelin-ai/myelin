@@ -159,3 +159,76 @@ impl<'a> fmt::Debug for DebugPhysicsWorld<'a> {
         f.debug_struct("PhysicsWorld").finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::object_builder::{ObjectBuilder, PolygonBuilder};
+
+    fn local_object() -> LocalObject {
+        ObjectBuilder::new()
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(-10, -10)
+                    .vertex(10, -10)
+                    .vertex(10, 10)
+                    .vertex(-10, 10)
+                    .build()
+                    .unwrap(),
+            ).location(30, 40)
+            .orientation(Radians(3.0))
+            .velocity(4, 5)
+            .kind(Kind::Organism)
+            .build()
+            .unwrap()
+    }
+
+    #[test]
+    fn returns_empty_world() {
+        let world = WorldImpl::new();
+        let objects = world.objects();
+        assert!(objects.is_empty())
+    }
+
+    #[test]
+    fn returns_empty_world_after_step() {
+        let mut world = WorldImpl::new();
+        world.step();
+        let objects = world.objects();
+        assert!(objects.is_empty())
+    }
+
+    #[test]
+    fn returns_correct_number_of_objects() {
+        let mut world = WorldImpl::new();
+        let local_object = local_object();
+        world.add_object(local_object.clone());
+        world.add_object(local_object);
+
+        let objects = world.objects();
+        assert_eq!(2, objects.len());
+    }
+
+    #[test]
+    fn converts_to_global_object() {
+        let mut world = WorldImpl::new();
+        let local_object = local_object();
+        world.add_object(local_object);
+        let objects = world.objects();
+
+        let expected_global_object = GlobalObject {
+            shape: GlobalPolygon {
+                vertices: vec![
+                    GlobalVertex { x: 20, y: 30 },
+                    GlobalVertex { x: 40, y: 30 },
+                    GlobalVertex { x: 40, y: 50 },
+                    GlobalVertex { x: 20, y: 50 },
+                ],
+            },
+            orientation: Radians(3.0),
+            velocity: Velocity { x: 4, y: 5 },
+            kind: Kind::Organism,
+        };
+        assert_eq!(expected_global_object, objects[0])
+    }
+}
