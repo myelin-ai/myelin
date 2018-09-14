@@ -74,21 +74,26 @@ fn populate_with_water(world: &mut dyn World) {
 }
 
 fn populate_with_plants(world: &mut dyn World) {
-    world.add_object(build_plant(300, 400));
-    world.add_object(build_plant(800, 400));
-    world.add_object(build_plant(650, 300));
-    world.add_object(build_plant(450, 250));
-    world.add_object(build_plant(400, 300));
+    for i in 0..=10 {
+        for j in 0..=7 {
+            world.add_object(build_plant(100 + i * 30, 100 + j * 30));
+        }
+    }
+    for i in 0..=10 {
+        for j in 0..=7 {
+            world.add_object(build_plant(600 + i * 30, 100 + j * 30));
+        }
+    }
 }
 
 fn build_plant(x: u32, y: u32) -> LocalObject {
     ObjectBuilder::new()
         .shape(
             PolygonBuilder::new()
-                .vertex(-25, -25)
-                .vertex(25, -25)
-                .vertex(25, 25)
-                .vertex(-25, 25)
+                .vertex(-10, -10)
+                .vertex(10, -10)
+                .vertex(10, 10)
+                .vertex(-10, 10)
                 .build()
                 .expect("Generated an invalid vertex"),
         ).location(x, y)
