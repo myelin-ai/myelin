@@ -3,7 +3,7 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 pub struct InputHandler {
-    simulation: Box<Simulation>,
+    simulation: Box<dyn Simulation>,
 }
 
 #[wasm_bindgen]
