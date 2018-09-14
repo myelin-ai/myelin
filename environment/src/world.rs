@@ -10,8 +10,6 @@ use std::collections::HashMap;
 use std::f32::consts::PI;
 use std::fmt;
 
-use crate::object::{GlobalObject, LocalObject};
-
 pub trait World: fmt::Debug {
     fn step(&mut self);
     fn add_object(&mut self, object: LocalObject);
