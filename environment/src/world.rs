@@ -62,7 +62,7 @@ impl WorldImpl {
             .expect("Body handle was invalid");
 
         let linear_velocity = body.velocity().linear;
-        let (x, y) = get_elements(&linear_velocity);
+        let (x, y) = elements(&linear_velocity);
 
         GlobalObject {
             shape: GlobalPolygon {
@@ -78,7 +78,7 @@ impl WorldImpl {
     }
 }
 
-fn get_elements<N>(vector: &Vector2<N>) -> (N, N)
+fn elements<N>(vector: &Vector2<N>) -> (N, N)
 where
     N: Scalar,
 {
