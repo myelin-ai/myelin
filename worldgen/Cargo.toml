@@ -10,4 +10,4 @@ authors = [
 edition = "2018"
 
 [dependencies]
-myelin-environment = {path = "../environment"}
+myelin-environment = { path = "../environment" }
