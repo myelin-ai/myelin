@@ -4,21 +4,6 @@ use crate::presenter::View;
 use crate::view_model::{Kind, Object, ViewModel};
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
-
-fn get_2d_context(canvas: &HtmlCanvasElement) -> CanvasRenderingContext2d {
-    const CONTEXT_ID: &str = "2d";
-    const ERROR_MESSAGE: &str = "unable to get 2d context";
-
-    let context = canvas
-        .get_context(CONTEXT_ID)
-        .expect(ERROR_MESSAGE)
-        .expect(ERROR_MESSAGE);
-
-    // This is safe because get_context() always returns `CanvasRenderingContext2d`
-    // when the context id '2d' is passed.
-    unsafe { std::mem::transmute(context) }
-}
-
 pub struct CanvasView {
     context: CanvasRenderingContext2d,
 }
@@ -56,6 +41,20 @@ impl CanvasView {
         self.context.set_fill_style(&JsValue::from_str(color));
         self.context.fill();
     }
+}
+
+fn get_2d_context(canvas: &HtmlCanvasElement) -> CanvasRenderingContext2d {
+    const CONTEXT_ID: &str = "2d";
+    const ERROR_MESSAGE: &str = "unable to get 2d context";
+
+    let context = canvas
+        .get_context(CONTEXT_ID)
+        .expect(ERROR_MESSAGE)
+        .expect(ERROR_MESSAGE);
+
+    // This is safe because get_context() always returns `CanvasRenderingContext2d`
+    // when the context id '2d' is passed.
+    unsafe { std::mem::transmute(context) }
 }
 
 fn map_kind_to_color(kind: &Kind) -> &'static str {
