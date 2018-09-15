@@ -13,7 +13,7 @@ pub mod generator;
 ///
 /// [`World`]: ../myelin_environment/world/trait.World.html
 pub trait WorldGenerator {
-    /// Generate a new [`World`] and populate it with [`Objects`]
+    /// Generate a new [`World`] and populates it with [`Objects`]
     ///
     /// [`World`]: ../myelin_environment/world/trait.World.html
     /// [`Objects`]: ../myelin_environment/object/struct.LocalObject.html
