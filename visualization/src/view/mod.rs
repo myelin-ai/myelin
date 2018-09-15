@@ -3,7 +3,9 @@ pub(crate) mod constant;
 use crate::presenter::View;
 use crate::view_model::{Kind, Object, ViewModel};
 use wasm_bindgen::JsValue;
-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
+use web_sys::Window;
+use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement};
+
 pub struct CanvasView {
     context: CanvasRenderingContext2d,
 }
@@ -18,9 +20,30 @@ impl View for CanvasView {
 
 impl CanvasView {
     pub fn new(canvas: &HtmlCanvasElement) -> Self {
-        Self {
-            context: get_2d_context(canvas),
-        }
+        let width = canvas.width();
+        let height = canvas.height();
+        let pixel_ratio_float = Window::device_pixel_ratio();
+        let pixel_ratio = pixel_ratio_float.round() as u32;
+        let context = get_2d_context(canvas);
+
+        canvas.set_width(width * pixel_ratio);
+        canvas.set_height(height * pixel_ratio);
+
+        context.scale(pixel_ratio_float, pixel_ratio_float).unwrap();
+
+        let element: &HtmlElement = canvas.as_ref();
+
+        element
+            .style()
+            .set_property("width", &format!("{}px", width))
+            .unwrap();
+
+        element
+            .style()
+            .set_property("height", &format!("{}px", height))
+            .unwrap();
+
+        Self { context }
     }
 
     fn draw_object(&self, object: &Object) {
