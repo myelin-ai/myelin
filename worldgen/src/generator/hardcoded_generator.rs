@@ -1,16 +1,36 @@
+//! A generator for a hardcoded world
+
 use crate::WorldGenerator;
 use myelin_environment::object::{Kind, LocalObject, Radians};
 use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
 use myelin_environment::world::World;
 use std::f32::consts::FRAC_PI_2;
 
-type WorldFactory = Box<dyn Fn() -> Box<dyn World>>;
-
+/// World generation algorithm that creates a fixed world
+/// inhabited by two forests, a large central lake and
+/// a row of organisms. The world is framed by terrain.
 pub struct HardcodedGenerator {
     world_factory: WorldFactory,
 }
 
+pub type WorldFactory = Box<dyn Fn() -> Box<dyn World>>;
+
 impl HardcodedGenerator {
+    /// Creates a new generator, injecting a world factory, i.e.
+    /// a function that returns a specific [`World`] that
+    /// is going to be populated by the world generator.
+    ///
+    /// [`World`]: ../../myelin_environment/world/trait.World.html
+    ///
+    /// # Examples
+    /// ```
+    /// use myelin_environment::world::{World, WorldImpl};
+    /// use myelin_worldgen::WorldGenerator;
+    /// use myelin_worldgen::generator::HardcodedGenerator;
+    ///
+    /// let world_factory = Box::new(|| -> Box<dyn World> { Box::new(WorldImpl::new()) });
+    /// let worldgen = HardcodedGenerator::new(world_factory);
+    /// let generated_world = worldgen.generate();
     pub fn new(world_factory: WorldFactory) -> Self {
         Self { world_factory }
     }
