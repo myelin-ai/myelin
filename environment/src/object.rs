@@ -50,7 +50,7 @@ pub struct LocalObject {
     /// The vertices defining the shape of the object
     /// in relation to its locaion
     pub shape: LocalPolygon,
-    /// The global position of center of the object
+    /// The global position of the center of the object
     pub location: Location,
     /// The orientation of the object, measured in
     /// radians within the range [0.0; 2π).
@@ -59,13 +59,13 @@ pub struct LocalObject {
     pub orientation: Radians,
     /// The initial velocity of the object, defined
     /// as a two dimensional vector relative to the
-    /// objects center
+    /// object's center
     pub velocity: Velocity,
     /// The kind of object we are dealing with
     pub kind: Kind,
 }
 
-/// An objects that has already been placed in the world.
+/// An object that has already been placed in the world.
 /// Its coordinates are global, using the upper left corner of
 /// the world as their origin.
 #[derive(Debug, PartialEq, Clone)]
