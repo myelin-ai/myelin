@@ -66,17 +66,16 @@ fn adjust_canvas_to_device_pixel_ratio(
     context: &CanvasRenderingContext2d,
 ) {
     let native_pixel_ratio = Window::device_pixel_ratio();
-
-    context
-        .scale(native_pixel_ratio, native_pixel_ratio)
-        .expect("Failed to scale canvas");
-
     let pixel_ratio = native_pixel_ratio.round() as u32;
     let width = canvas.width();
     let height = canvas.height();
 
     canvas.set_width(width * pixel_ratio);
     canvas.set_height(height * pixel_ratio);
+
+    context
+        .scale(native_pixel_ratio, native_pixel_ratio)
+        .expect("Failed to scale canvas");
 
     let element: &HtmlElement = canvas.as_ref();
 
