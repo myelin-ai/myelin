@@ -1,5 +1,12 @@
 [workspace]
 members = [
     "environment",
-    "visualization"
+    "visualization",
+    "worldgen"
 ]
+
+[patch.crates-io]
+# We're using our fork until https://github.com/rustwasm/wasm-bindgen/issues/817 is resolved.
+wasm-bindgen = { git = "https://github.com/myelin-ai/wasm-bindgen" }
+js-sys = { git = "https://github.com/myelin-ai/wasm-bindgen" }
+web-sys = { git = "https://github.com/myelin-ai/wasm-bindgen" }

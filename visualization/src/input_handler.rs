@@ -3,12 +3,12 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 pub struct InputHandler {
-    simulation: Box<Simulation>,
+    simulation: Box<dyn Simulation>,
 }
 
 #[wasm_bindgen]
 impl InputHandler {
-    pub(crate) fn new(simulation: Box<Simulation>) -> Self {
+    pub(crate) fn new(simulation: Box<dyn Simulation>) -> Self {
         Self { simulation }
     }
 

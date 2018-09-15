@@ -1,5 +1,6 @@
 use myelin_environment::object::GlobalObject;
 use myelin_environment::world::World;
+use myelin_worldgen::WorldGenerator;
 
 pub(crate) trait Simulation {
     fn step(&mut self);
@@ -9,8 +10,8 @@ pub(crate) trait Presenter {
 }
 
 pub(crate) struct SimulationImpl {
-    presenter: Box<Presenter>,
-    world: Box<World>,
+    presenter: Box<dyn Presenter>,
+    world: Box<dyn World>,
 }
 
 impl Simulation for SimulationImpl {
@@ -22,8 +23,11 @@ impl Simulation for SimulationImpl {
 }
 
 impl SimulationImpl {
-    pub(crate) fn new(presenter: Box<Presenter>, world: Box<World>) -> Self {
-        Self { presenter, world }
+    pub(crate) fn new(presenter: Box<dyn Presenter>, world_generator: &dyn WorldGenerator) -> Self {
+        Self {
+            presenter,
+            world: world_generator.generate(),
+        }
     }
 }
 
@@ -94,12 +98,38 @@ mod tests {
         }
     }
 
+    #[derive(Debug)]
+    struct WorldGeneratorMock {
+        expected_objects: Vec<GlobalObject>,
+        generate_was_called: RefCell<bool>,
+    }
+    impl WorldGeneratorMock {
+        fn new(expected_objects: Vec<GlobalObject>) -> Self {
+            Self {
+                generate_was_called: RefCell::new(false),
+                expected_objects,
+            }
+        }
+    }
+    impl WorldGenerator for WorldGeneratorMock {
+        fn generate(&self) -> Box<dyn World> {
+            *self.generate_was_called.borrow_mut() = true;
+            Box::new(WorldMock::new(self.expected_objects.clone()))
+        }
+    }
+
+    impl Drop for WorldGeneratorMock {
+        fn drop(&mut self) {
+            assert!(*self.generate_was_called.borrow());
+        }
+    }
+
     #[test]
     fn propagates_empty_step() {
         let expected_objects = vec![];
-        let world = WorldMock::new(expected_objects.clone());
+        let world_generator = WorldGeneratorMock::new(expected_objects.clone());
         let presenter = PresenterMock::new(expected_objects);
-        let mut simulation = SimulationImpl::new(Box::new(presenter), Box::new(world));
+        let mut simulation = SimulationImpl::new(Box::new(presenter), &world_generator);
         simulation.step();
     }
 
@@ -117,9 +147,9 @@ mod tests {
             velocity: Velocity { x: 0, y: -1 },
             kind: Kind::Plant,
         }];
-        let world = WorldMock::new(expected_objects.clone());
+        let world_generator = WorldGeneratorMock::new(expected_objects.clone());
         let presenter = PresenterMock::new(expected_objects);
-        let mut simulation = SimulationImpl::new(Box::new(presenter), Box::new(world));
+        let mut simulation = SimulationImpl::new(Box::new(presenter), &world_generator);
         simulation.step();
     }
 }
