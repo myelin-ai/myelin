@@ -30,13 +30,14 @@ impl CanvasView {
 
         let first_vertex = &object.shape.vertices[0];
         self.context
-            .move_to(first_vertex.x as f64, first_vertex.y as f64);
+            .move_to(f64::from(first_vertex.x), f64::from(first_vertex.y));
 
         for vertex in &object.shape.vertices[1..] {
-            self.context.line_to(vertex.x as f64, vertex.y as f64);
+            self.context
+                .line_to(f64::from(vertex.x), f64::from(vertex.y));
         }
 
-        self.context.close_path();
+        self.context.close_path();g
 
         let color = map_kind_to_color(&object.kind);
         self.context.set_fill_style(&JsValue::from_str(color));
