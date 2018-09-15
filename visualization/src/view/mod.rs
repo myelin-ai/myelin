@@ -2,8 +2,10 @@ pub(crate) mod constant;
 
 use crate::presenter::View;
 use crate::view_model::{Kind, Object, ViewModel};
+use std::fmt;
 use wasm_bindgen::JsValue;
-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
+use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement, Window};
+
 pub struct CanvasView {
     context: CanvasRenderingContext2d,
 }
@@ -18,9 +20,11 @@ impl View for CanvasView {
 
 impl CanvasView {
     pub fn new(canvas: &HtmlCanvasElement) -> Self {
-        Self {
-            context: get_2d_context(canvas),
-        }
+        let context = get_2d_context(canvas);
+
+        adjust_canvas_to_device_pixel_ratio(canvas, &context);
+
+        Self { context }
     }
 
     fn draw_object(&self, object: &Object) {
@@ -55,6 +59,43 @@ fn get_2d_context(canvas: &HtmlCanvasElement) -> CanvasRenderingContext2d {
     // This is safe because get_context() always returns `CanvasRenderingContext2d`
     // when the context id '2d' is passed.
     unsafe { std::mem::transmute(context) }
+}
+
+fn adjust_canvas_to_device_pixel_ratio(
+    canvas: &HtmlCanvasElement,
+    context: &CanvasRenderingContext2d,
+) {
+    let native_pixel_ratio = Window::device_pixel_ratio();
+    let pixel_ratio = native_pixel_ratio.round() as u32;
+    let width = canvas.width();
+    let height = canvas.height();
+
+    canvas.set_width(width * pixel_ratio);
+    canvas.set_height(height * pixel_ratio);
+
+    context
+        .scale(native_pixel_ratio, native_pixel_ratio)
+        .expect("Failed to scale canvas");
+
+    let element: &HtmlElement = canvas.as_ref();
+
+    element
+        .style()
+        .set_property("width", &format!("{}", Pixels(width)))
+        .expect("Failed to set css width");
+
+    element
+        .style()
+        .set_property("height", &format!("{}", Pixels(height)))
+        .expect("Failed to set css height");
+}
+
+struct Pixels(u32);
+
+impl fmt::Display for Pixels {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}px", self.0)
+    }
 }
 
 fn map_kind_to_color(kind: &Kind) -> &'static str {
