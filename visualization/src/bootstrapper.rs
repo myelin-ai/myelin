@@ -1,4 +1,5 @@
-//! Entrypoint for the WASM module
+//! Entrypoint for the crate,
+//! used to setup the entire visualization
 
 use crate::input_handler::InputHandler;
 use crate::presenter::CanvasPresenter;
