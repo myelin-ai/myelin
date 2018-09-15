@@ -6,7 +6,7 @@ members = [
 ]
 
 [patch.crates-io]
-# We're using our own for until https://github.com/rustwasm/wasm-bindgen/issues/817 is resolved.
+# We're using our fork until https://github.com/rustwasm/wasm-bindgen/issues/817 is resolved.
 wasm-bindgen = { git = "https://github.com/myelin-ai/wasm-bindgen" }
 js-sys = { git = "https://github.com/myelin-ai/wasm-bindgen" }
 web-sys = { git = "https://github.com/myelin-ai/wasm-bindgen" }
