@@ -17,7 +17,7 @@ use std::f32::consts::PI;
 use std::fmt;
 
 /// A world running a simulation that can be filled with [`Objects`] on
-/// which it will apply physical rules when calling [`step`]
+/// which it will apply physical rules when calling [`step`].
 /// This trait represents our API.
 ///
 /// [`Objects`]: ../object/struct.LocalObject.html
