@@ -21,10 +21,5 @@ fn main() {
             .build()
             .unwrap(),
     );
-    let unfinished_builder = PolygonBuilder::new()
-        .vertex(-50, -50)
-        .vertex(50, -50)
-        .vertex(50, 50)
-        .vertex(-50, 50);
     println!("{:#?}", world);
 }
