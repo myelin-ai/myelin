@@ -47,6 +47,20 @@ impl CanvasView {
     }
 }
 
+fn get_2d_context(canvas: &HtmlCanvasElement) -> CanvasRenderingContext2d {
+    const CONTEXT_ID: &str = "2d";
+    const ERROR_MESSAGE: &str = "unable to get 2d context";
+
+    let context = canvas
+        .get_context(CONTEXT_ID)
+        .expect(ERROR_MESSAGE)
+        .expect(ERROR_MESSAGE);
+
+    // This is safe because get_context() always returns `CanvasRenderingContext2d`
+    // when the context id '2d' is passed.
+    unsafe { std::mem::transmute(context) }
+}
+
 fn adjust_canvas_to_device_pixel_ratio(
     canvas: &HtmlCanvasElement,
     context: &CanvasRenderingContext2d,
@@ -75,20 +89,6 @@ fn adjust_canvas_to_device_pixel_ratio(
         .style()
         .set_property("height", &format!("{}", Pixels(height)))
         .expect("Failed to set css height");
-}
-
-fn get_2d_context(canvas: &HtmlCanvasElement) -> CanvasRenderingContext2d {
-    const CONTEXT_ID: &str = "2d";
-    const ERROR_MESSAGE: &str = "unable to get 2d context";
-
-    let context = canvas
-        .get_context(CONTEXT_ID)
-        .expect(ERROR_MESSAGE)
-        .expect(ERROR_MESSAGE);
-
-    // This is safe because get_context() always returns `CanvasRenderingContext2d`
-    // when the context id '2d' is passed.
-    unsafe { std::mem::transmute(context) }
 }
 
 struct Pixels(u32);
