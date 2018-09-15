@@ -37,7 +37,6 @@ impl HardcodedGenerator {
 }
 
 impl WorldGenerator for HardcodedGenerator {
-    /// Foo
     fn generate(&self) -> Box<dyn World> {
         let mut world = (self.world_factory)();
         populate_with_terrain(&mut *world);
