@@ -38,7 +38,9 @@ pub struct ObjectBuilderError {
     pub missing_kind: bool,
 }
 
-/// Convenience builder for `LocalObject`
+/// `LocalObject` factory, which can be used in order to configure
+/// the properties of a new object.
+/// Methods can be chained on it in order to configure it.
 #[derive(Default, Debug)]
 pub struct ObjectBuilder {
     shape: Option<LocalPolygon>,
@@ -49,6 +51,13 @@ pub struct ObjectBuilder {
 }
 
 impl ObjectBuilder {
+    /// Generates the base configuration for creating a `LocalObject`,
+    /// from which configuration methods can be chained.
+    /// # Example
+    /// ```
+    /// # use myelin_environment::object_builder::ObjectBuilder;
+    /// let builder = ObjectBuilder::new();
+    /// ```
     pub fn new() -> Self {
         Default::default()
     }
@@ -165,21 +174,57 @@ impl ObjectBuilder {
     }
 }
 
+/// `LocalPolygon` factory, which can be used in order to configure
+/// the properties of a new polygon.
+/// Methods can be chained on it in order to configure it.
 #[derive(Default, Debug)]
 pub struct PolygonBuilder {
     vertices: Vec<LocalVertex>,
 }
 
 impl PolygonBuilder {
+    /// Generates the base configuration for creating a `LocalPolygon`,
+    /// from which configuration methods can be chained.
+    /// # Examples
+    /// ```
+    /// # use myelin_environment::object_builder::PolygonBuilder;
+    /// let builder = PolygonBuilder::new();
+    /// ```
     pub fn new() -> Self {
         Default::default()
     }
 
+    /// Adds a vertex to the polygon
+    /// # Examples
+    /// ```
+    /// # use myelin_environment::object_builder::PolygonBuilder;
+    /// let unfinished_builder = PolygonBuilder::new()
+    ///     .vertex(-50, -50)
+    ///     .vertex(50, -50)
+    ///     .vertex(50, 50)
+    ///     .vertex(-50, 50);
+    /// ```
     pub fn vertex(mut self, x: i32, y: i32) -> Self {
         self.vertices.push(LocalVertex { x, y });
         self
     }
 
+    /// Finishes building the `LocalPolygon` with all
+    /// vertices that have been configured up to this point
+    /// # Errors
+    /// This method will return an error if the number of configured
+    /// vertices is less than three, as the resulting `LocalPolygon`
+    /// would not be two-dimensional.
+    /// # Examples
+    /// ```
+    /// let square = PolygonBuilder::new()
+    ///     .vertex(-50, -50)
+    ///     .vertex(50, -50)
+    ///     .vertex(50, 50)
+    ///     .vertex(-50, 50);
+    ///     .build()
+    ///     .unwrap();
+    /// ```
     pub fn build(self) -> Result<LocalPolygon, ()> {
         const MINIMUM_VERTICES_IN_A_POLYGON: usize = 3;
 
