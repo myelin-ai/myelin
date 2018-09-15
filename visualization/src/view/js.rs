@@ -1,77 +1,13 @@
-#![allow(unknown_lints)]
-#![allow(clippy::drop_ref)]
-use wasm_bindgen::prelude::*;
+use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
-#[wasm_bindgen]
-extern "C" {
-    pub type CanvasRenderingContext2D;
+pub(crate) fn get_2d_context(canvas: &HtmlCanvasElement) -> CanvasRenderingContext2d {
+    const CONTEXT_TYPE: &str = "2d";
+    const ERROR_MESSAGE: &str = "unable to get 2d context";
 
-    #[wasm_bindgen(method, setter = fillStyle)]
-    pub fn set_fill_style(this: &CanvasRenderingContext2D, fill_style: &str);
+    let context = canvas
+        .get_context(CONTEXT_TYPE)
+        .expect(ERROR_MESSAGE)
+        .expect(ERROR_MESSAGE);
 
-    #[wasm_bindgen(method, js_name = fillRect)]
-    pub fn fill_rect(this: &CanvasRenderingContext2D, x: u32, y: u32, width: u32, height: u32);
-
-    #[wasm_bindgen(method, js_name = clearRect)]
-    pub fn clear_rect(this: &CanvasRenderingContext2D, x: u32, y: u32, width: u32, height: u32);
-
-    #[wasm_bindgen(method, js_name = beginPath)]
-    pub fn begin_path(this: &CanvasRenderingContext2D);
-
-    #[wasm_bindgen(method, js_name = closePath)]
-    pub fn close_path(this: &CanvasRenderingContext2D);
-
-    #[wasm_bindgen(method, js_name = moveTo)]
-    pub fn move_to(this: &CanvasRenderingContext2D, x: u32, y: u32);
-
-    #[wasm_bindgen(method, js_name = lineTo)]
-    pub fn line_to(this: &CanvasRenderingContext2D, x: u32, y: u32);
-
-    #[wasm_bindgen(method)]
-    pub fn fill(this: &CanvasRenderingContext2D);
-
-    #[wasm_bindgen(method)]
-    pub fn stroke(this: &CanvasRenderingContext2D);
-
-    pub type HTMLCanvasElement;
-
-    #[wasm_bindgen(method, js_name = getContext)]
-    pub fn get_context(this: &HTMLCanvasElement, contextType: &str) -> CanvasRenderingContext2D;
-
-    #[wasm_bindgen(method, getter, structural)]
-    pub fn width(this: &HTMLCanvasElement) -> i32;
-
-    #[wasm_bindgen(method, getter, structural)]
-    pub fn height(this: &HTMLCanvasElement) -> i32;
-
-    pub type DOMRect;
-
-    #[wasm_bindgen(method, getter, structural)]
-    pub fn x(this: &DOMRect) -> i32;
-
-    #[wasm_bindgen(method, getter, structural)]
-    pub fn y(this: &DOMRect) -> i32;
-
-    #[wasm_bindgen(method, getter, structural)]
-    pub fn width(this: &DOMRect) -> i32;
-
-    #[wasm_bindgen(method, getter, structural)]
-    pub fn height(this: &DOMRect) -> i32;
-
-    #[wasm_bindgen(method, getter, structural)]
-    pub fn top(this: &DOMRect) -> i32;
-
-    #[wasm_bindgen(method, getter, structural)]
-    pub fn right(this: &DOMRect) -> i32;
-
-    #[wasm_bindgen(method, getter, structural)]
-    pub fn bottom(this: &DOMRect) -> i32;
-
-    #[wasm_bindgen(method, getter, structural)]
-    pub fn left(this: &DOMRect) -> i32;
-
-    #[wasm_bindgen(method, js_name = getBoundingClientRect)]
-    pub fn get_bounding_client_rect(this: &HTMLCanvasElement) -> DOMRect;
-
-    pub fn alert(s: &str);
+    unsafe { std::mem::transmute(context) }
 }
