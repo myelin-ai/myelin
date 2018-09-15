@@ -53,7 +53,7 @@ pub struct ObjectBuilder {
 impl ObjectBuilder {
     /// Generates the base configuration for creating a `LocalObject`,
     /// from which configuration methods can be chained.
-    /// # Example
+    /// # Examples
     /// ```
     /// # use myelin_environment::object_builder::ObjectBuilder;
     /// let builder = ObjectBuilder::new();
@@ -62,7 +62,7 @@ impl ObjectBuilder {
         Default::default()
     }
 
-    /// # Example
+    /// # Examples
     /// ```
     /// # use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
     /// ObjectBuilder::new()
@@ -81,7 +81,7 @@ impl ObjectBuilder {
         self
     }
 
-    /// # Example
+    /// # Examples
     /// ```
     /// # use myelin_environment::object_builder::ObjectBuilder;
     /// ObjectBuilder::new()
@@ -92,7 +92,7 @@ impl ObjectBuilder {
         self
     }
 
-    /// # Example
+    /// # Examples
     /// ```
     /// # use myelin_environment::object_builder::ObjectBuilder;
     /// ObjectBuilder::new()
@@ -103,7 +103,7 @@ impl ObjectBuilder {
         self
     }
 
-    /// # Example
+    /// # Examples
     /// ```
     /// # use myelin_environment::object_builder::ObjectBuilder;
     /// # use myelin_environment::object::Kind;
@@ -115,7 +115,7 @@ impl ObjectBuilder {
         self
     }
 
-    /// # Example
+    /// # Examples
     /// ```
     /// # use myelin_environment::object_builder::ObjectBuilder;
     /// # use myelin_environment::object::Radians;
