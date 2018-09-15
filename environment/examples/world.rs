@@ -21,6 +21,5 @@ fn main() {
             .build()
             .unwrap(),
     );
-
     println!("{:#?}", world);
 }

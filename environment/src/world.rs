@@ -1,3 +1,9 @@
+//! This module contains a simulated [`World`] and its implementations,
+//! in which one can place [`Objects`] in order for them to be influenced
+//! by physics.
+//!
+//! [`World`]: ./trait.World.html
+//! [`Objects`]: ../object/struct.LocalObject.html
 use crate::object::*;
 use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
@@ -10,14 +16,28 @@ use std::collections::HashMap;
 use std::f32::consts::PI;
 use std::fmt;
 
+/// A world running a simulation that can be filled with [`Objects`] on
+/// which it will apply physical rules when calling [`step`]
+/// This trait represents our API.
+///
+/// [`Objects`]: ../object/struct.LocalObject.html
+/// [`step`]: ./trait.World.html#structfield.location#tymethod.step
 pub trait World: fmt::Debug {
+    /// Advance the simulation by one tick. This will apply
+    /// forces to the objects, handle collisions and move them.
     fn step(&mut self);
+    /// Add a new object to the world
     fn add_object(&mut self, object: LocalObject);
+    /// Returns all objects currently inhabiting the simulation
     fn objects(&self) -> Vec<GlobalObject>;
 }
 
 type PhysicsType = f64;
 
+/// An implementation of [`World`] that uses nphysics
+/// in the background.
+///
+/// [`World`]: ./trait.World.html
 #[derive(Default)]
 pub struct WorldImpl {
     physics_world: PhysicsWorld<PhysicsType>,
@@ -25,6 +45,12 @@ pub struct WorldImpl {
 }
 
 impl WorldImpl {
+    /// Instantiates a new empty world
+    /// # Examples
+    /// ```
+    /// use myelin_environment::world::WorldImpl;
+    /// let mut world = WorldImpl::new();
+    /// ```
     pub fn new() -> Self {
         Self {
             physics_world: PhysicsWorld::new(),
@@ -74,9 +100,9 @@ impl WorldImpl {
     }
 }
 
-// The offset needed because we define orientation as [0; 2π)
-// and nphysics defines rotation as (-π; π]
-// See http://nalgebra.org/rustdoc/nalgebra/geometry/type.UnitComplex.html#method.angle
+/// The offset needed because we define orientation as [0; 2π)
+/// and nphysics defines rotation as (-π; π]
+/// See http://nalgebra.org/rustdoc/nalgebra/geometry/type.UnitComplex.html#method.angle
 const NPHYSICS_ROTATION_OFFSET: f32 = PI;
 
 fn to_nphysics_rotation(orientation: Radians) -> f64 {
@@ -178,7 +204,12 @@ impl fmt::Debug for WorldImpl {
     }
 }
 
-pub struct DebugPhysicsWorld<'a>(&'a PhysicsWorld<PhysicsType>);
+/// A helper struct used to implement [`std::fmt::Debug`]
+/// for [`WorldImpl`]
+///
+/// [`std::fmt::Debug`]: https://doc.rust-lang.org/nightly/std/fmt/trait.Debug.html
+/// [`WorldImpl`]: ./struct.WorldImpl.html
+struct DebugPhysicsWorld<'a>(&'a PhysicsWorld<PhysicsType>);
 
 impl<'a> fmt::Debug for DebugPhysicsWorld<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
