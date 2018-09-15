@@ -20,7 +20,7 @@ impl HardcodedGenerator {
     /// a function that returns a specific [`World`] that
     /// is going to be populated by the world generator.
     ///
-    /// [`World`]: ../myelin_environment/world/trait.World.html
+    /// [`World`]: ../../myelin_environment/world/trait.World.html
     ///
     /// # Examples
     /// ```
@@ -37,6 +37,7 @@ impl HardcodedGenerator {
 }
 
 impl WorldGenerator for HardcodedGenerator {
+    /// Foo
     fn generate(&self) -> Box<dyn World> {
         let mut world = (self.world_factory)();
         populate_with_terrain(&mut *world);
