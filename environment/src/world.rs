@@ -11,8 +11,10 @@ use std::f32::consts::PI;
 use std::fmt;
 
 /// A world running a simulation that can be filled with objects on
-/// which it will apply physical rules when calling `step`
+/// which it will apply physical rules when calling [`step`]
 /// This trait represents our API.
+///
+/// [`step`]: ./struct.LocalObject.html#structfield.location#tymethod.step
 pub trait World: fmt::Debug {
     /// Advance the simulation by one tick. This will apply
     /// forces to the objects, handle collisions and move them.
@@ -25,8 +27,10 @@ pub trait World: fmt::Debug {
 
 type PhysicsType = f64;
 
-/// An implementation of `World` that uses nphysics
+/// An implementation of [`World`] that uses nphysics
 /// in the background.
+///
+/// [`World`]: ./trait.World.html
 #[derive(Default)]
 pub struct WorldImpl {
     physics_world: PhysicsWorld<PhysicsType>,
@@ -193,8 +197,11 @@ impl fmt::Debug for WorldImpl {
     }
 }
 
-/// A helper struct used to implement `std::fmt::Debug`
-/// for `WorldImpl`
+/// A helper struct used to implement [`std::fmt::Debug`]
+/// for [`WorldImpl`]
+///
+/// [`std::fmt::Debug`]: https://doc.rust-lang.org/std/fmt/trait.Debug.html
+/// [`WorldImpl`]: ./struct.WorldImpl.html
 struct DebugPhysicsWorld<'a>(&'a PhysicsWorld<PhysicsType>);
 
 impl<'a> fmt::Debug for DebugPhysicsWorld<'a> {
