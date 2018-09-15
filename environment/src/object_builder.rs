@@ -217,11 +217,13 @@ impl PolygonBuilder {
     /// would not be two-dimensional.
     /// # Examples
     /// ```
+    /// # use myelin_environment::object_builder::PolygonBuilder;
+    ///
     /// let square = PolygonBuilder::new()
     ///     .vertex(-50, -50)
     ///     .vertex(50, -50)
     ///     .vertex(50, 50)
-    ///     .vertex(-50, 50);
+    ///     .vertex(-50, 50)
     ///     .build()
     ///     .unwrap();
     /// ```
