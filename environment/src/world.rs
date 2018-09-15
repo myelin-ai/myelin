@@ -1,3 +1,9 @@
+//! This module contains a simulated [`World`] and its implementations,
+//! in which one can place [`Objects`] in order for them to be influenced
+//! by physics.
+//!
+//! [`World`]: ./trait.World.html
+//! [`Objects`]: ../object/struct.LocalObject.html
 use crate::object::*;
 use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
@@ -10,11 +16,12 @@ use std::collections::HashMap;
 use std::f32::consts::PI;
 use std::fmt;
 
-/// A world running a simulation that can be filled with objects on
+/// A world running a simulation that can be filled with [`Objects`] on
 /// which it will apply physical rules when calling [`step`]
 /// This trait represents our API.
 ///
-/// [`step`]: ./struct.LocalObject.html#structfield.location#tymethod.step
+/// [`Objects`]: ../object/struct.LocalObject.html
+/// [`step`]: ./trait.World.html#structfield.location#tymethod.step
 pub trait World: fmt::Debug {
     /// Advance the simulation by one tick. This will apply
     /// forces to the objects, handle collisions and move them.
