@@ -20,28 +20,9 @@ impl View for CanvasView {
 
 impl CanvasView {
     pub fn new(canvas: &HtmlCanvasElement) -> Self {
-        let width = canvas.width();
-        let height = canvas.height();
-        let pixel_ratio_float = Window::device_pixel_ratio();
-        let pixel_ratio = pixel_ratio_float.round() as u32;
         let context = get_2d_context(canvas);
 
-        canvas.set_width(width * pixel_ratio);
-        canvas.set_height(height * pixel_ratio);
-
-        context.scale(pixel_ratio_float, pixel_ratio_float).unwrap();
-
-        let element: &HtmlElement = canvas.as_ref();
-
-        element
-            .style()
-            .set_property("width", &format!("{}", Pixels(width)))
-            .unwrap();
-
-        element
-            .style()
-            .set_property("height", &format!("{}", Pixels(height)))
-            .unwrap();
+        adjust_canvas_to_device_pixel_ratio(canvas, &context);
 
         Self { context }
     }
@@ -64,6 +45,33 @@ impl CanvasView {
         self.context.set_fill_style(&JsValue::from_str(color));
         self.context.fill();
     }
+}
+
+fn adjust_canvas_to_device_pixel_ratio(
+    canvas: &HtmlCanvasElement,
+    context: &CanvasRenderingContext2d,
+) {
+    let pixel_ratio_float = Window::device_pixel_ratio();
+    let pixel_ratio = pixel_ratio_float.round() as u32;
+    let width = canvas.width();
+    let height = canvas.height();
+
+    canvas.set_width(width * pixel_ratio);
+    canvas.set_height(height * pixel_ratio);
+
+    context.scale(pixel_ratio_float, pixel_ratio_float).unwrap();
+
+    let element: &HtmlElement = canvas.as_ref();
+
+    element
+        .style()
+        .set_property("width", &format!("{}", Pixels(width)))
+        .unwrap();
+
+    element
+        .style()
+        .set_property("height", &format!("{}", Pixels(height)))
+        .unwrap();
 }
 
 fn get_2d_context(canvas: &HtmlCanvasElement) -> CanvasRenderingContext2d {
