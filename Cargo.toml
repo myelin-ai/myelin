@@ -1,7 +1,8 @@
 [workspace]
 members = [
     "environment",
-    "visualization"
+    "visualization",
+    "worldgen"
 ]
 
 [patch.crates-io]
