@@ -3,8 +3,7 @@ pub(crate) mod constant;
 use crate::presenter::View;
 use crate::view_model::{Kind, Object, ViewModel};
 use wasm_bindgen::JsValue;
-use web_sys::Window;
-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement};
+use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement, Window};
 
 pub struct CanvasView {
     context: CanvasRenderingContext2d,
