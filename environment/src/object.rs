@@ -47,11 +47,15 @@
 
 /// An objects that can be placed in the world.
 /// Its coordinates are relative to the center of
-/// the object, which is determined by the location
+/// the object, which is determined by the [`location`]
+///
+/// [`location`]: ./struct.LocalObject.html#structfield.location
 #[derive(Debug, PartialEq, Clone)]
 pub struct LocalObject {
     /// The vertices defining the shape of the object
-    /// in relation to its location
+    /// in relation to its [`location`]
+    ///
+    /// [`location`]: ./struct.LocalObject.html#structfield.location
     pub shape: LocalPolygon,
     /// The global position of the center of the object
     pub location: Location,
