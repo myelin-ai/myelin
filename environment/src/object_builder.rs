@@ -55,7 +55,7 @@ impl ObjectBuilder {
     /// from which configuration methods can be chained.
     /// # Examples
     /// ```
-    /// # use myelin_environment::object_builder::ObjectBuilder;
+    /// use myelin_environment::object_builder::ObjectBuilder;
     /// let builder = ObjectBuilder::new();
     /// ```
     pub fn new() -> Self {
@@ -64,7 +64,7 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
-    /// # use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+    /// use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
     /// ObjectBuilder::new()
     ///     .shape(
     ///         PolygonBuilder::new()
@@ -83,7 +83,7 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
-    /// # use myelin_environment::object_builder::ObjectBuilder;
+    /// use myelin_environment::object_builder::ObjectBuilder;
     /// ObjectBuilder::new()
     ///     .velocity(-12, 2);
     /// ```
@@ -94,7 +94,7 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
-    /// # use myelin_environment::object_builder::ObjectBuilder;
+    /// use myelin_environment::object_builder::ObjectBuilder;
     /// ObjectBuilder::new()
     ///     .location(3, 2);
     /// ```
@@ -105,8 +105,8 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
-    /// # use myelin_environment::object_builder::ObjectBuilder;
-    /// # use myelin_environment::object::Kind;
+    /// use myelin_environment::object_builder::ObjectBuilder;
+    /// use myelin_environment::object::Kind;
     /// ObjectBuilder::new()
     ///     .kind(Kind::Plant);
     /// ```
@@ -117,8 +117,8 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
-    /// # use myelin_environment::object_builder::ObjectBuilder;
-    /// # use myelin_environment::object::Radians;
+    /// use myelin_environment::object_builder::ObjectBuilder;
+    /// use myelin_environment::object::Radians;
     /// ObjectBuilder::new()
     ///     .orientation(Radians(4.5));
     /// ```
@@ -187,7 +187,7 @@ impl PolygonBuilder {
     /// from which configuration methods can be chained.
     /// # Examples
     /// ```
-    /// # use myelin_environment::object_builder::PolygonBuilder;
+    /// use myelin_environment::object_builder::PolygonBuilder;
     /// let builder = PolygonBuilder::new();
     /// ```
     pub fn new() -> Self {
@@ -197,7 +197,7 @@ impl PolygonBuilder {
     /// Adds a vertex to the polygon
     /// # Examples
     /// ```
-    /// # use myelin_environment::object_builder::PolygonBuilder;
+    /// use myelin_environment::object_builder::PolygonBuilder;
     /// let unfinished_builder = PolygonBuilder::new()
     ///     .vertex(-50, -50)
     ///     .vertex(50, -50)
@@ -217,7 +217,7 @@ impl PolygonBuilder {
     /// would not be two-dimensional.
     /// # Examples
     /// ```
-    /// # use myelin_environment::object_builder::PolygonBuilder;
+    /// use myelin_environment::object_builder::PolygonBuilder;
     ///
     /// let square = PolygonBuilder::new()
     ///     .vertex(-50, -50)
