@@ -37,7 +37,7 @@ impl CanvasView {
                 .line_to(f64::from(vertex.x), f64::from(vertex.y));
         }
 
-        self.context.close_path();g
+        self.context.close_path();
 
         let color = map_kind_to_color(&object.kind);
         self.context.set_fill_style(&JsValue::from_str(color));
