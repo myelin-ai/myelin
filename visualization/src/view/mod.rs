@@ -55,7 +55,7 @@ fn adjust_canvas_to_device_pixel_ratio(
 
     context
         .scale(native_pixel_ratio, native_pixel_ratio)
-        .unwrap();
+        .expect("Failed to scale canvas");
 
     let pixel_ratio = native_pixel_ratio.round() as u32;
     let width = canvas.width();
@@ -69,12 +69,12 @@ fn adjust_canvas_to_device_pixel_ratio(
     element
         .style()
         .set_property("width", &format!("{}", Pixels(width)))
-        .unwrap();
+        .expect("Failed to set css width");
 
     element
         .style()
         .set_property("height", &format!("{}", Pixels(height)))
-        .unwrap();
+        .expect("Failed to set css height");
 }
 
 fn get_2d_context(canvas: &HtmlCanvasElement) -> CanvasRenderingContext2d {
