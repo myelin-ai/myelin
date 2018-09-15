@@ -1,4 +1,4 @@
-//! This module containes all objects that can be
+//! This module contains all objects that can be
 //! placed in a world and their components.
 //! # Examples
 //! The following defines a stationary square terrain:

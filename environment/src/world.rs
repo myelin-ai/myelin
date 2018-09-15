@@ -207,7 +207,7 @@ impl fmt::Debug for WorldImpl {
 /// A helper struct used to implement [`std::fmt::Debug`]
 /// for [`WorldImpl`]
 ///
-/// [`std::fmt::Debug`]: https://doc.rust-lang.org/std/fmt/trait.Debug.html
+/// [`std::fmt::Debug`]: https://doc.rust-lang.org/nightly/std/fmt/trait.Debug.html
 /// [`WorldImpl`]: ./struct.WorldImpl.html
 struct DebugPhysicsWorld<'a>(&'a PhysicsWorld<PhysicsType>);
 
