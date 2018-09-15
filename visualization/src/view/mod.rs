@@ -2,6 +2,7 @@ pub(crate) mod constant;
 
 use crate::presenter::View;
 use crate::view_model::{Kind, Object, ViewModel};
+use std::fmt;
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement, Window};
 
@@ -34,12 +35,12 @@ impl CanvasView {
 
         element
             .style()
-            .set_property("width", &format!("{}px", width))
+            .set_property("width", &format!("{}", Pixels(width)))
             .unwrap();
 
         element
             .style()
-            .set_property("height", &format!("{}px", height))
+            .set_property("height", &format!("{}", Pixels(height)))
             .unwrap();
 
         Self { context }
@@ -77,6 +78,14 @@ fn get_2d_context(canvas: &HtmlCanvasElement) -> CanvasRenderingContext2d {
     // This is safe because get_context() always returns `CanvasRenderingContext2d`
     // when the context id '2d' is passed.
     unsafe { std::mem::transmute(context) }
+}
+
+struct Pixels(u32);
+
+impl fmt::Display for Pixels {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}px", self.0)
+    }
 }
 
 fn map_kind_to_color(kind: &Kind) -> &'static str {
