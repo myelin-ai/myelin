@@ -1,3 +1,6 @@
+//! Internal module containing the DOM manipulation.
+/// This module is not meant to be accessed directly and
+/// is only published because `wasm_bindgen` requires it to be so.
 pub(crate) mod constant;
 
 use crate::presenter::View;
@@ -9,9 +12,11 @@ use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement, Window};
 /// The view object component that manipulates the DOM.
 /// This structure is not meant to be constructed directly and
 /// is only published because `wasm_bindgen` requires it to be so.
-/// Instead, use [`bootstrapper::init()`]
+///
+/// If you want to setup the visualization, use [`bootstrapper::init()`] instead
 ///
 /// [`bootstrapper::init()`]: ../bootstrapper/fn.init.html
+#[doc(hidden)]
 pub struct CanvasView {
     context: CanvasRenderingContext2d,
 }
