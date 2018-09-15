@@ -6,6 +6,12 @@ use std::fmt;
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement, Window};
 
+/// The view object component that manipulates the DOM.
+/// This structure is not meant to be constructed directly and
+/// is only published because `wasm_bindgen` requires it to be so.
+/// Instead, use [`bootstrapper::init()`]
+///
+/// [`bootstrapper::init()`]: ../bootstrapper/fn.init.html
 pub struct CanvasView {
     context: CanvasRenderingContext2d,
 }

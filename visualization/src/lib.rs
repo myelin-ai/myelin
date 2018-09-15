@@ -1,3 +1,5 @@
+//! In-browser visualization for myelin using a canvas with WASM
+
 #![feature(tool_lints)]
 #![deny(rust_2018_idioms)]
 
