@@ -7,7 +7,7 @@ use myelin_environment::world::World;
 use std::f32::consts::FRAC_PI_2;
 
 /// World generation algorithm that creates a fixed world
-/// inhabited by two forrests, a large central lake and
+/// inhabited by two forests, a large central lake and
 /// a row of organisms. The world is framed by terrain.
 pub struct HardcodedGenerator {
     world_factory: WorldFactory,
