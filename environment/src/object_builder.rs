@@ -1,4 +1,4 @@
-//! Convenient builders for `LocalObject` and `LocalPolygon`
+//! Convenient builders for [`LocalObject`] and [`LocalPolygon`]
 //! # Examples
 //! ```
 //! use myelin_environment::object::{Kind, Radians};
@@ -21,6 +21,9 @@
 //!     .build()
 //!     .unwrap();
 //! ```
+//!
+//! [`LocalObject`]: ../object/struct.LocalObject.html
+//! [`LocalPolygon`]: ../object/struct.LocalPolygon.html
 
 use crate::object::{Kind, LocalObject, LocalPolygon, LocalVertex, Location, Radians, Velocity};
 
@@ -38,9 +41,11 @@ pub struct ObjectBuilderError {
     pub missing_kind: bool,
 }
 
-/// `LocalObject` factory, which can be used in order to configure
+/// [`LocalObject`] factory, which can be used in order to configure
 /// the properties of a new object.
 /// Methods can be chained on it in order to configure it.
+///
+/// [`LocalObject`]: ../object/struct.LocalObject.html
 #[derive(Default, Debug)]
 pub struct ObjectBuilder {
     shape: Option<LocalPolygon>,
@@ -51,13 +56,15 @@ pub struct ObjectBuilder {
 }
 
 impl ObjectBuilder {
-    /// Generates the base configuration for creating a `LocalObject`,
+    /// Generates the base configuration for creating a [`LocalObject`],
     /// from which configuration methods can be chained.
     /// # Examples
     /// ```
     /// use myelin_environment::object_builder::ObjectBuilder;
     /// let builder = ObjectBuilder::new();
     /// ```
+    ///
+    /// [`LocalObject`]: ../object/struct.LocalObject.html
     pub fn new() -> Self {
         Default::default()
     }
@@ -127,7 +134,7 @@ impl ObjectBuilder {
         self
     }
 
-    /// Build the `LocalObject` with all specified settings
+    /// Build the [`LocalObject`] with all specified settings
     /// # Errors
     /// If a non-optional member has not specified while building
     /// an error is returned, containing flags specifying which
@@ -154,6 +161,8 @@ impl ObjectBuilder {
     ///     .build()
     ///     .unwrap();
     /// ```
+    ///
+    /// [`LocalObject`]: ../object/struct.LocalObject.html
     pub fn build(&mut self) -> Result<LocalObject, ObjectBuilderError> {
         let error = ObjectBuilderError {
             missing_shape: self.shape.is_none(),
@@ -174,22 +183,26 @@ impl ObjectBuilder {
     }
 }
 
-/// `LocalPolygon` factory, which can be used in order to configure
+/// [`LocalPolygon`] factory, which can be used in order to configure
 /// the properties of a new polygon.
 /// Methods can be chained on it in order to configure it.
+///
+/// [`LocalPolygon`]: ../object/struct.LocalPolygon.html
 #[derive(Default, Debug)]
 pub struct PolygonBuilder {
     vertices: Vec<LocalVertex>,
 }
 
 impl PolygonBuilder {
-    /// Generates the base configuration for creating a `LocalPolygon`,
+    /// Generates the base configuration for creating a [`LocalPolygon`],
     /// from which configuration methods can be chained.
     /// # Examples
     /// ```
     /// use myelin_environment::object_builder::PolygonBuilder;
     /// let builder = PolygonBuilder::new();
     /// ```
+    ///
+    /// [`LocalPolygon`]: ../object/struct.LocalPolygon.html
     pub fn new() -> Self {
         Default::default()
     }
@@ -209,11 +222,11 @@ impl PolygonBuilder {
         self
     }
 
-    /// Finishes building the `LocalPolygon` with all
+    /// Finishes building the [`LocalPolygon`] with all
     /// vertices that have been configured up to this point
     /// # Errors
     /// This method will return an error if the number of configured
-    /// vertices is less than three, as the resulting `LocalPolygon`
+    /// vertices is less than three, as the resulting [`LocalPolygon`]
     /// would not be two-dimensional.
     /// # Examples
     /// ```
@@ -227,6 +240,8 @@ impl PolygonBuilder {
     ///     .build()
     ///     .unwrap();
     /// ```
+    ///
+    /// [`LocalPolygon`]: ../object/struct.LocalPolygon.html
     pub fn build(self) -> Result<LocalPolygon, ()> {
         const MINIMUM_VERTICES_IN_A_POLYGON: usize = 3;
 

@@ -20,8 +20,8 @@
 //!     kind: Kind::Terrain,
 //! };
 //! ```
-//! The prefered way of constructing these however
-//! is by using an ObjectBuilder.
+//! The prefered way of constructing a [`LocalObject`] however
+//! is by using an [`ObjectBuilder`].
 //!
 //! The global analog to the last example looks like this:
 //! ```
@@ -41,14 +41,17 @@
 //!     kind: Kind::Terrain,
 //! };
 //! ```
+//!
+//! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
+//! [`LocalObject`]: ./struct.LocalObject.html
 
 /// An objects that can be placed in the world.
 /// Its coordinates are relative to the center of
-/// the object, which is determined by the `location`
+/// the object, which is determined by the location
 #[derive(Debug, PartialEq, Clone)]
 pub struct LocalObject {
     /// The vertices defining the shape of the object
-    /// in relation to its locaion
+    /// in relation to its location
     pub shape: LocalPolygon,
     /// The global position of the center of the object
     pub location: Location,
