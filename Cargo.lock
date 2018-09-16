@@ -215,7 +215,7 @@ version = "0.1.0"
 dependencies = [
  "nalgebra 0.16.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "ncollide2d 0.17.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "nphysics2d 0.9.1 (git+https://github.com/myelin-ai/nphysics)",
+ "nphysics2d 0.9.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -275,8 +275,8 @@ dependencies = [
 
 [[package]]
 name = "nphysics2d"
-version = "0.9.1"
-source = "git+https://github.com/myelin-ai/nphysics#7d4ab21ff4fd49edad26459146238e1937308303"
+version = "0.9.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "alga 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "approx 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -697,7 +697,7 @@ dependencies = [
 "checksum nalgebra 0.16.1 (registry+https://github.com/rust-lang/crates.io-index)" = "93499be6c6ac5a8f3315a682e8e43cabd748f73c5f3ffde936b8588ccc1c2f03"
 "checksum ncollide2d 0.17.1 (registry+https://github.com/rust-lang/crates.io-index)" = "425882363e3630b61ec2462d0d4ad650e692bcff1bd199a8d085226a9dc0f79e"
 "checksum nom 4.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "898696750eb5c3ce5eb5afbfbe46e7f7c4e1936e19d3e97be4b7937da7b6d114"
-"checksum nphysics2d 0.9.1 (git+https://github.com/myelin-ai/nphysics)" = "<none>"
+"checksum nphysics2d 0.9.2 (registry+https://github.com/rust-lang/crates.io-index)" = "72e59f037c360ccbefba54fc54077213bf0a10cddcd3e8b83f34503666759b16"
 "checksum num-complex 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "68de83578789e0fbda3fa923035be83cf8bfd3b30ccfdecd5aa89bf8601f408e"
 "checksum num-traits 0.2.6 (registry+https://github.com/rust-lang/crates.io-index)" = "0b3a5d7cc97d6d30d8b9bc8fa19bf45349ffe46241e8816f50f62f6d6aaabee1"
 "checksum proc-macro2 0.4.19 (registry+https://github.com/rust-lang/crates.io-index)" = "ffe022fb8c8bd254524b0b3305906c1921fa37a84a644e29079a9e62200c3901"
