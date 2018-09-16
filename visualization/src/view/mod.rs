@@ -14,7 +14,6 @@ use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement, Window};
 /// If you want to setup the visualization, use [`bootstrapper::init()`] instead
 ///
 /// [`bootstrapper::init()`]: ../bootstrapper/fn.init.html
-#[doc(hidden)]
 pub(crate) struct CanvasView {
     context: CanvasRenderingContext2d,
 }
