@@ -68,7 +68,6 @@ fn build_terrain(location: (u32, u32), width: i32, length: i32) -> LocalObject {
                 .build()
                 .expect("Generated an invalid vertex"),
         ).location(location.0, location.1)
-        .velocity(0, 0)
         .kind(Kind::Terrain)
         .build()
         .expect("Generated an invalid object")
@@ -87,7 +86,6 @@ fn populate_with_water(world: &mut dyn World) {
                     .build()
                     .expect("Generated an invalid vertex"),
             ).location(500, 500)
-            .velocity(0, 0)
             .kind(Kind::Water)
             .build()
             .expect("Generated an invalid object"),
@@ -118,7 +116,6 @@ fn build_plant(x: u32, y: u32) -> LocalObject {
                 .build()
                 .expect("Generated an invalid vertex"),
         ).location(x, y)
-        .velocity(0, 0)
         .kind(Kind::Plant)
         .build()
         .expect("Generated an invalid object")
@@ -144,7 +141,6 @@ fn build_organism(x: u32, y: u32) -> LocalObject {
                 .expect("Generated an invalid vertex"),
         ).location(x, y)
         .orientation(Radians(FRAC_PI_2))
-        .velocity(0, 0)
         .kind(Kind::Organism)
         .build()
         .expect("Generated an invalid object")
