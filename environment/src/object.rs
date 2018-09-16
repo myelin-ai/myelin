@@ -140,7 +140,7 @@ pub struct Location {
 
 /// The velocity of an object, measured as
 /// a two dimensional vector
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct Velocity {
     pub x: i32,
     pub y: i32,
