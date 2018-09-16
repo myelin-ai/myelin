@@ -5,8 +5,7 @@
 
 pub mod bootstrapper;
 pub mod input_handler;
-mod presenter;
-mod simulation;
-#[doc(hidden)]
-pub mod view;
-mod view_model;
+pub(crate) mod presenter;
+pub(crate) mod simulation;
+pub(crate) mod view;
+pub(crate) mod view_model;

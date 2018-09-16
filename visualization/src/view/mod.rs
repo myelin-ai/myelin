@@ -1,7 +1,5 @@
 //! Internal module containing the DOM manipulation.
-/// This module is not meant to be accessed directly and
-/// is only published because `wasm_bindgen` requires it to be so.
-pub(crate) mod constant;
+mod constant;
 
 use crate::presenter::View;
 use crate::view_model::{Kind, Object, ViewModel};
@@ -10,14 +8,7 @@ use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement, Window};
 
 /// The view object component that manipulates the DOM.
-/// This structure is not meant to be constructed directly and
-/// is only published because `wasm_bindgen` requires it to be so.
-///
-/// If you want to setup the visualization, use [`bootstrapper::init()`] instead
-///
-/// [`bootstrapper::init()`]: ../bootstrapper/fn.init.html
-#[doc(hidden)]
-pub struct CanvasView {
+pub(crate) struct CanvasView {
     context: CanvasRenderingContext2d,
 }
 
@@ -30,7 +21,7 @@ impl View for CanvasView {
 }
 
 impl CanvasView {
-    pub fn new(canvas: &HtmlCanvasElement) -> Self {
+    pub(crate) fn new(canvas: &HtmlCanvasElement) -> Self {
         let context = get_2d_context(canvas);
 
         adjust_canvas_to_device_pixel_ratio(canvas, &context);
