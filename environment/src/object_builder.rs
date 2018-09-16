@@ -33,8 +33,6 @@ use crate::object::{Kind, LocalObject, LocalPolygon, LocalVertex, Location, Radi
 pub struct ObjectBuilderError {
     /// Flag signaling that .shape(...) was never called
     pub missing_shape: bool,
-    /// Flag signaling that .velocity(...) was never called
-    pub missing_velocity: bool,
     /// Flag signaling that .location(...) was never called
     pub missing_location: bool,
     /// Flag signaling that .kind(...) was never called
@@ -49,7 +47,7 @@ pub struct ObjectBuilderError {
 #[derive(Default, Debug)]
 pub struct ObjectBuilder {
     shape: Option<LocalPolygon>,
-    velocity: Option<Velocity>,
+    velocity: Velocity,
     location: Option<Location>,
     kind: Option<Kind>,
     orientation: Option<Radians>,
@@ -95,7 +93,7 @@ impl ObjectBuilder {
     ///     .velocity(-12, 2);
     /// ```
     pub fn velocity(&mut self, x: i32, y: i32) -> &mut Self {
-        self.velocity = Some(Velocity { x, y });
+        self.velocity = Velocity { x, y };
         self
     }
 
@@ -166,14 +164,13 @@ impl ObjectBuilder {
     pub fn build(&mut self) -> Result<LocalObject, ObjectBuilderError> {
         let error = ObjectBuilderError {
             missing_shape: self.shape.is_none(),
-            missing_velocity: self.velocity.is_none(),
             missing_location: self.location.is_none(),
             missing_kind: self.kind.is_none(),
         };
 
         let object = LocalObject {
             shape: self.shape.take().ok_or_else(|| error.clone())?,
-            velocity: self.velocity.take().ok_or_else(|| error.clone())?,
+            velocity: self.velocity.clone(),
             location: self.location.take().ok_or_else(|| error.clone())?,
             kind: self.kind.take().ok_or(error)?,
             orientation: self.orientation.take().unwrap_or_else(Default::default),
@@ -343,7 +340,7 @@ mod test {
     }
 
     #[test]
-    fn test_object_builder_should_error_for_missing_velocity() {
+    fn test_object_builder_should_use_default_velocity() {
         let result = ObjectBuilder::new()
             .shape(
                 PolygonBuilder::new()
@@ -358,13 +355,22 @@ mod test {
             .orientation(Radians(0.0))
             .build();
 
-        assert_eq!(
-            Err(ObjectBuilderError {
-                missing_velocity: true,
-                ..Default::default()
-            }),
-            result
-        );
+        let expected = LocalObject {
+            orientation: Radians(0.0),
+            shape: LocalPolygon {
+                vertices: vec![
+                    LocalVertex { x: 0, y: 0 },
+                    LocalVertex { x: 0, y: 1 },
+                    LocalVertex { x: 1, y: 0 },
+                    LocalVertex { x: 1, y: 1 },
+                ],
+            },
+            velocity: Velocity::default(),
+            location: Location { x: 10, y: 10 },
+            kind: Kind::Organism,
+        };
+
+        assert_eq!(Ok(expected), result);
     }
 
     #[test]
@@ -433,10 +439,8 @@ mod test {
         assert_eq!(
             Err(ObjectBuilderError {
                 missing_shape: true,
-                missing_velocity: true,
                 missing_location: true,
                 missing_kind: true,
-                ..Default::default()
             }),
             result
         );
