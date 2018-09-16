@@ -8,12 +8,6 @@ use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement, Window};
 
 /// The view object component that manipulates the DOM.
-/// This structure is not meant to be constructed directly and
-/// is only published because `wasm_bindgen` requires it to be so.
-///
-/// If you want to setup the visualization, use [`bootstrapper::init()`] instead
-///
-/// [`bootstrapper::init()`]: ../bootstrapper/fn.init.html
 pub(crate) struct CanvasView {
     context: CanvasRenderingContext2d,
 }
