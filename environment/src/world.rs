@@ -240,6 +240,23 @@ mod tests {
             .unwrap()
     }
 
+    fn local_object_without_orientation() -> LocalObject {
+        ObjectBuilder::new()
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(-10, -10)
+                    .vertex(10, -10)
+                    .vertex(10, 10)
+                    .vertex(-10, 10)
+                    .build()
+                    .unwrap(),
+            ).location(30, 40)
+            .velocity(4, 5)
+            .kind(Kind::Organism)
+            .build()
+            .unwrap()
+    }
+
     #[test]
     fn returns_empty_world() {
         let world = WorldImpl::new();
@@ -300,6 +317,34 @@ mod tests {
                 ],
             },
             orientation: Radians(3.0),
+            velocity: Velocity { x: 4, y: 5 },
+            kind: Kind::Organism,
+        };
+        assert_eq!(expected_global_object, objects[0])
+    }
+
+    #[test]
+    fn converts_to_global_object_without_orientation() {
+        let mut world = WorldImpl::new();
+        let local_object = local_object_without_orientation();
+        world.add_object(local_object);
+        let objects = world.objects();
+
+        let expected_global_object = GlobalObject {
+            orientation: Default::default(),
+            shape: GlobalPolygon {
+                // The following inaccuracies appear to be
+                // a product of how nphysics stores its objects
+                // Maybe it can be fixed somehow, but it is okay
+                // for the moment, as an occasional two pixel
+                // displacement doesn't matter at all.
+                vertices: vec![
+                    GlobalVertex { x: 40, y: 50 },
+                    GlobalVertex { x: 20, y: 50 },
+                    GlobalVertex { x: 20, y: 30 },
+                    GlobalVertex { x: 40, y: 30 },
+                ],
+            },
             velocity: Velocity { x: 4, y: 5 },
             kind: Kind::Organism,
         };
