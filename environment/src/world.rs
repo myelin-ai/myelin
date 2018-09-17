@@ -333,7 +333,7 @@ mod tests {
         let objects = world.objects();
 
         let expected_global_object = GlobalObject {
-            orientation: orientation,
+            orientation,
             shape: GlobalPolygon {
                 vertices: vec![
                     GlobalVertex { x: 40, y: 30 },
