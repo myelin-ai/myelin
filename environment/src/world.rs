@@ -108,19 +108,19 @@ impl NphysicsWorld {
     }
 
     fn add_grounded(&mut self, object: &LocalObject) -> ColliderHandle {
-        let shape = object_to_shape(object);
+        let shape = get_shape(object);
         let material = Material::default();
-        let isometry = object_to_isometry(&object);
+        let isometry = get_isometry(&object);
 
         self.physics_world
             .add_collider(0.04, shape, BodyHandle::ground(), isometry, material)
     }
 
     fn add_rigid_body(&mut self, object: &LocalObject) -> ColliderHandle {
-        let shape = object_to_shape(object);
+        let shape = get_shape(object);
         let local_inertia = shape.inertia(0.1);
         let local_center_of_mass = shape.center_of_mass();
-        let isometry = object_to_isometry(&object);
+        let isometry = get_isometry(&object);
         let rigid_body_handle =
             self.physics_world
                 .add_rigid_body(isometry, local_inertia, local_center_of_mass);
@@ -168,7 +168,7 @@ where
     (*iter.next().unwrap(), *iter.next().unwrap())
 }
 
-fn object_to_isometry(object: &LocalObject) -> Isometry<PhysicsType> {
+fn get_isometry(object: &LocalObject) -> Isometry<PhysicsType> {
     Isometry::new(
         Vector::new(
             PhysicsType::from(object.location.x),
@@ -178,7 +178,7 @@ fn object_to_isometry(object: &LocalObject) -> Isometry<PhysicsType> {
     )
 }
 
-fn object_to_shape(object: &LocalObject) -> ShapeHandle<PhysicsType> {
+fn get_shape(object: &LocalObject) -> ShapeHandle<PhysicsType> {
     let points: Vec<_> = object
         .shape
         .vertices
