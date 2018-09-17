@@ -523,4 +523,30 @@ mod tests {
             world.objects().first().unwrap().shape.vertices
         );
     }
+
+    #[test]
+    fn step_is_ignored_for_grounded_objects() {
+        use std::f64::consts::FRAC_PI_2;
+
+        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
+        let object = local_grounded_object(Radians(FRAC_PI_2));
+        world.add_object(object);
+        world.step();
+        let objects = world.objects();
+
+        let expected_global_object = GlobalObject {
+            shape: GlobalPolygon {
+                vertices: vec![
+                    GlobalVertex { x: 200, y: 500 },
+                    GlobalVertex { x: 200, y: 300 },
+                    GlobalVertex { x: 400, y: 300 },
+                    GlobalVertex { x: 400, y: 500 },
+                ],
+            },
+            orientation: Radians(FRAC_PI_2),
+            velocity: Velocity { x: 0, y: 0 },
+            kind: Kind::Terrain,
+        };
+        assert_eq!(expected_global_object, objects[0])
+    }
 }
