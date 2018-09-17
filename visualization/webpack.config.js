@@ -12,11 +12,14 @@ module.exports = {
   node: false,
   output: {
     publicPath: '/dist/',
-    path: path.resolve(__dirname, "dist"),
+    path: path.resolve(__dirname, 'public', 'dist'),
     filename: "index.js",
   },
   resolve: {
     extensions: ['.ts', '.js', '.wasm'],
   },
   mode: "development",
+  devServer: {
+    contentBase: path.join(__dirname, 'public'),
+  },
 };
