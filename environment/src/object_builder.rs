@@ -3,7 +3,7 @@
 //! ```
 //! use myelin_environment::object::{Kind, Radians};
 //! use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
-//! use std::f32::consts::FRAC_PI_2;
+//! use std::f64::consts::FRAC_PI_2;
 //!
 //! let object = ObjectBuilder::new()
 //!     .shape(
@@ -141,7 +141,7 @@ impl ObjectBuilder {
     /// ```
     /// use myelin_environment::object::{Kind, Radians};
     /// use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
-    /// use std::f32::consts::FRAC_PI_2;
+    /// use std::f64::consts::FRAC_PI_2;
     ///
     /// let object = ObjectBuilder::new()
     ///     .shape(

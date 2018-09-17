@@ -4,7 +4,7 @@ use crate::WorldGenerator;
 use myelin_environment::object::{Kind, LocalObject, Radians};
 use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
 use myelin_environment::world::World;
-use std::f32::consts::FRAC_PI_2;
+use std::f64::consts::FRAC_PI_2;
 
 /// World generation algorithm that creates a fixed world
 /// inhabited by two forests, a large central lake and

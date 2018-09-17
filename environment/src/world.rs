@@ -13,7 +13,7 @@ use nphysics2d::object::Material;
 use nphysics2d::volumetric::Volumetric;
 use nphysics2d::world::World as PhysicsWorld;
 use std::collections::HashMap;
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 use std::fmt;
 
 /// A world running a simulation that can be filled with [`Objects`] on
@@ -103,14 +103,14 @@ impl NphysicsWorld {
 /// The offset needed because we define orientation as [0; 2π)
 /// and nphysics defines rotation as (-π; π]
 /// See http://nalgebra.org/rustdoc/nalgebra/geometry/type.UnitComplex.html#method.angle
-const NPHYSICS_ROTATION_OFFSET: f32 = PI;
+const NPHYSICS_ROTATION_OFFSET: f64 = PI;
 
 fn to_nphysics_rotation(orientation: Radians) -> f64 {
-    PhysicsType::from(orientation.0 - NPHYSICS_ROTATION_OFFSET)
+    orientation.0 - NPHYSICS_ROTATION_OFFSET
 }
 
 fn to_orientation(nphysics_rotation: f64) -> Radians {
-    Radians(nphysics_rotation as f32 + NPHYSICS_ROTATION_OFFSET)
+    Radians(nphysics_rotation + NPHYSICS_ROTATION_OFFSET)
 }
 
 fn elements<N>(vector: &Vector2<N>) -> (N, N)
@@ -222,7 +222,7 @@ mod tests {
     use super::*;
     use crate::object_builder::{ObjectBuilder, PolygonBuilder};
 
-    fn local_object() -> LocalObject {
+    fn local_object(orientation: Radians) -> LocalObject {
         ObjectBuilder::new()
             .shape(
                 PolygonBuilder::new()
@@ -233,7 +233,7 @@ mod tests {
                     .build()
                     .unwrap(),
             ).location(30, 40)
-            .orientation(Radians(3.0))
+            .orientation(orientation)
             .velocity(4, 5)
             .kind(Kind::Organism)
             .build()
@@ -258,7 +258,7 @@ mod tests {
     #[test]
     fn returns_correct_number_of_objects() {
         let mut world = NphysicsWorld::new();
-        let local_object = local_object();
+        let local_object = local_object(Radians(3.0));
         world.add_object(local_object.clone());
         world.add_object(local_object);
 
@@ -267,19 +267,14 @@ mod tests {
     }
 
     #[test]
-    fn converts_to_global_object() {
+    fn converts_to_global_object_works_with_orientation() {
         let mut world = NphysicsWorld::new();
-        let local_object = local_object();
+        let local_object = local_object(Radians(3.0));
         world.add_object(local_object);
         let objects = world.objects();
 
         let expected_global_object = GlobalObject {
             shape: GlobalPolygon {
-                // The following inaccuracies appear to be
-                // a product of how nphysics stores its objects
-                // Maybe it can be fixed somehow, but it is okay
-                // for the moment, as an occasional two pixel
-                // displacement doesn't matter at all.
                 vertices: vec![
                     GlobalVertex {
                         x: 20 - 2,
@@ -300,6 +295,53 @@ mod tests {
                 ],
             },
             orientation: Radians(3.0),
+            velocity: Velocity { x: 4, y: 5 },
+            kind: Kind::Organism,
+        };
+        assert_eq!(expected_global_object, objects[0])
+    }
+
+    #[test]
+    fn converts_to_global_object_works_without_orientation() {
+        let mut world = NphysicsWorld::new();
+        let local_object = local_object(Default::default());
+        world.add_object(local_object);
+        let objects = world.objects();
+
+        let expected_global_object = GlobalObject {
+            orientation: Default::default(),
+            shape: GlobalPolygon {
+                vertices: vec![
+                    GlobalVertex { x: 40, y: 50 },
+                    GlobalVertex { x: 20, y: 50 },
+                    GlobalVertex { x: 20, y: 30 },
+                    GlobalVertex { x: 40, y: 30 },
+                ],
+            },
+            velocity: Velocity { x: 4, y: 5 },
+            kind: Kind::Organism,
+        };
+        assert_eq!(expected_global_object, objects[0])
+    }
+
+    #[test]
+    fn converts_to_global_object_works_with_pi_orientation() {
+        let mut world = NphysicsWorld::new();
+        let orientation = Radians(1.5 * PI);
+        let local_object = local_object(orientation);
+        world.add_object(local_object);
+        let objects = world.objects();
+
+        let expected_global_object = GlobalObject {
+            orientation,
+            shape: GlobalPolygon {
+                vertices: vec![
+                    GlobalVertex { x: 40, y: 30 },
+                    GlobalVertex { x: 40, y: 50 },
+                    GlobalVertex { x: 20, y: 50 },
+                    GlobalVertex { x: 20, y: 30 },
+                ],
+            },
             velocity: Velocity { x: 4, y: 5 },
             kind: Kind::Organism,
         };
