@@ -211,18 +211,6 @@ fn is_grounded(kind: &Kind) -> bool {
 impl World for NphysicsWorld {
     fn step(&mut self) {
         self.physics_world.step();
-
-        for collider_handle in &self.collider_handles {
-            let collider = self
-                .physics_world
-                .collider(*collider_handle.0)
-                .expect("Attempted to access invalid collider handle");
-            let rigid_body_handle = collider.data().body();
-            let _rigid_body = self
-                .physics_world
-                .rigid_body(rigid_body_handle)
-                .expect("Attempted to access invalid rigid body handle");
-        }
     }
 
     fn add_object(&mut self, object: LocalObject) {
