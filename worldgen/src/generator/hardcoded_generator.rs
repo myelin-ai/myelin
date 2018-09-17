@@ -166,6 +166,9 @@ mod tests {
         fn objects(&self) -> Vec<GlobalObject> {
             panic!("objects() called unexpectedly")
         }
+        fn set_simulated_timestep(&mut self, _: f64) {
+            panic!("set_simulated_timestep() called unexpectedly");
+        }
     }
     impl Drop for WorldMock {
         fn drop(&mut self) {

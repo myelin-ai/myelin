@@ -59,6 +59,9 @@ mod tests {
         fn add_object(&mut self, _: LocalObject) {
             panic!("add_object() was called unexpectedly")
         }
+        fn set_simulated_timestep(&mut self, _: f64) {
+            panic!("set_simulated_timestep() called unexpectedly");
+        }
         fn objects(&self) -> Vec<GlobalObject> {
             *self.objects_was_called.borrow_mut() = true;
             self.returned_objects.clone()

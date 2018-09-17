@@ -4,6 +4,7 @@
 use crate::input_handler::InputHandler;
 use crate::presenter::CanvasPresenter;
 use crate::simulation::SimulationImpl;
+use crate::view::constant::SIMULATED_TIMESTEP;
 use crate::view::CanvasView;
 use myelin_environment::world::{NphysicsWorld, World};
 use myelin_worldgen::generator::HardcodedGenerator;
@@ -35,7 +36,8 @@ use web_sys::HtmlCanvasElement;
 pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
     let view = Box::new(CanvasView::new(canvas));
     let presenter = Box::new(CanvasPresenter::new(view));
-    let world_factory = Box::new(|| -> Box<dyn World> { Box::new(NphysicsWorld::new()) });
+    let world_factory =
+        Box::new(|| -> Box<dyn World> { Box::new(NphysicsWorld::new(SIMULATED_TIMESTEP)) });
     let worldgen = HardcodedGenerator::new(world_factory);
     let simulation = Box::new(SimulationImpl::new(presenter, &worldgen));
     InputHandler::new(simulation)

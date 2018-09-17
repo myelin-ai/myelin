@@ -29,6 +29,8 @@ pub trait World: fmt::Debug {
     fn add_object(&mut self, object: LocalObject);
     /// Returns all objects currently inhabiting the simulation
     fn objects(&self) -> Vec<GlobalObject>;
+    /// Sets how much time is simulated for each step
+    fn set_simulated_timestep(&mut self, timestep: f64);
 }
 
 type PhysicsType = f64;
@@ -50,9 +52,13 @@ impl NphysicsWorld {
     /// use myelin_environment::world::NphysicsWorld;
     /// let mut world = NphysicsWorld::new();
     /// ```
-    pub fn new() -> Self {
+    pub fn new(timestep: f64) -> Self {
+        let mut physics_world = PhysicsWorld::new();
+
+        physics_world.set_timestep(timestep);
+
         Self {
-            physics_world: PhysicsWorld::new(),
+            physics_world,
             collider_handles: HashMap::new(),
         }
     }
@@ -208,12 +214,10 @@ impl World for NphysicsWorld {
                 .collider(*collider_handle.0)
                 .expect("Attempted to access invalid collider handle");
             let rigid_body_handle = collider.data().body();
-            let rigid_body = self
+            let _rigid_body = self
                 .physics_world
                 .rigid_body(rigid_body_handle)
                 .expect("Attempted to access invalid rigid body handle");
-
-            print!("{}", rigid_body.position());
         }
     }
 
@@ -231,6 +235,10 @@ impl World for NphysicsWorld {
             .iter()
             .map(|(&handle, kind)| self.convert_to_object(handle, kind))
             .collect()
+    }
+
+    fn set_simulated_timestep(&mut self, timestep: f64) {
+        self.physics_world.set_timestep(timestep);
     }
 }
 
@@ -260,6 +268,8 @@ impl<'a> fmt::Debug for DebugPhysicsWorld<'a> {
 mod tests {
     use super::*;
     use crate::object_builder::{ObjectBuilder, PolygonBuilder};
+
+    const DEFAULT_TIMESTEP: f64 = 1.0;
 
     fn local_rigid_object(orientation: Radians) -> LocalObject {
         ObjectBuilder::new()
@@ -298,14 +308,14 @@ mod tests {
 
     #[test]
     fn returns_empty_world() {
-        let world = NphysicsWorld::new();
+        let world = NphysicsWorld::new(DEFAULT_TIMESTEP);
         let objects = world.objects();
         assert!(objects.is_empty())
     }
 
     #[test]
     fn returns_empty_world_after_step() {
-        let mut world = NphysicsWorld::new();
+        let mut world = NphysicsWorld::new(DEFAULT_TIMESTEP);
         world.step();
         let objects = world.objects();
         assert!(objects.is_empty())
@@ -313,7 +323,7 @@ mod tests {
 
     #[test]
     fn returns_correct_number_of_rigid_objects() {
-        let mut world = NphysicsWorld::new();
+        let mut world = NphysicsWorld::new(DEFAULT_TIMESTEP);
         let local_rigid_object = local_rigid_object(Radians(3.0));
         world.add_object(local_rigid_object.clone());
         world.add_object(local_rigid_object);
@@ -324,7 +334,7 @@ mod tests {
 
     #[test]
     fn returns_correct_number_of_grounded_objects() {
-        let mut world = NphysicsWorld::new();
+        let mut world = NphysicsWorld::new(DEFAULT_TIMESTEP);
         let object = local_grounded_object(Radians(3.0));
         world.add_object(object.clone());
         world.add_object(object);
@@ -335,7 +345,7 @@ mod tests {
 
     #[test]
     fn returns_correct_number_of_mixed_objects() {
-        let mut world = NphysicsWorld::new();
+        let mut world = NphysicsWorld::new(DEFAULT_TIMESTEP);
         let rigid_object = local_rigid_object(Radians(3.0));
         let grounded_object = local_grounded_object(Radians(3.0));
         world.add_object(grounded_object.clone());
@@ -349,7 +359,7 @@ mod tests {
 
     #[test]
     fn converts_to_global_object_works_with_orientation() {
-        let mut world = NphysicsWorld::new();
+        let mut world = NphysicsWorld::new(DEFAULT_TIMESTEP);
         let object = local_rigid_object(Radians(3.0));
         world.add_object(object);
         let objects = world.objects();
@@ -385,7 +395,7 @@ mod tests {
     #[test]
     fn converts_to_global_rigid_object_works_without_orientation() {
         let object = local_rigid_object(Default::default());
-        let mut world = NphysicsWorld::new();
+        let mut world = NphysicsWorld::new(DEFAULT_TIMESTEP);
         world.add_object(object);
         let objects = world.objects();
 
@@ -408,7 +418,7 @@ mod tests {
     #[test]
     fn converts_to_global_grounded_object_works_without_orientation() {
         let object = local_grounded_object(Default::default());
-        let mut world = NphysicsWorld::new();
+        let mut world = NphysicsWorld::new(DEFAULT_TIMESTEP);
         world.add_object(object);
         let objects = world.objects();
 
@@ -430,7 +440,7 @@ mod tests {
 
     #[test]
     fn converts_to_global_object_works_with_pi_orientation() {
-        let mut world = NphysicsWorld::new();
+        let mut world = NphysicsWorld::new(DEFAULT_TIMESTEP);
         let orientation = Radians(1.5 * PI);
         let object = local_rigid_object(orientation);
         world.add_object(object);
@@ -450,5 +460,75 @@ mod tests {
             kind: Kind::Organism,
         };
         assert_eq!(expected_global_object, objects[0])
+    }
+
+    #[test]
+    fn test_timestep_is_respected() {
+        let mut world = NphysicsWorld::new(1.0);
+
+        let local_object = ObjectBuilder::new()
+            .kind(Kind::Organism)
+            .velocity(1, 1)
+            .location(5, 5)
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(-5, -5)
+                    .vertex(-5, 5)
+                    .vertex(5, 5)
+                    .vertex(5, -5)
+                    .build()
+                    .unwrap(),
+            ).build()
+            .unwrap();
+        world.add_object(local_object);
+
+        world.step();
+        world.step();
+
+        assert_eq!(
+            vec![
+                GlobalVertex { x: 11, y: 11 },
+                GlobalVertex { x: 11, y: 1 },
+                GlobalVertex { x: 1, y: 11 },
+                GlobalVertex { x: 1, y: 1 },
+            ],
+            world.objects().first().unwrap().shape.vertices
+        );
+    }
+
+    #[test]
+    fn test_set_timestep_works() {
+        let mut world = NphysicsWorld::new(0.0);
+
+        world.set_simulated_timestep(1.0);
+
+        let local_object = ObjectBuilder::new()
+            .kind(Kind::Organism)
+            .velocity(1, 1)
+            .location(5, 5)
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(-5, -5)
+                    .vertex(-5, 5)
+                    .vertex(5, 5)
+                    .vertex(5, -5)
+                    .build()
+                    .unwrap(),
+            ).build()
+            .unwrap();
+        world.add_object(local_object);
+
+        world.step();
+        world.step();
+
+        assert_eq!(
+            vec![
+                GlobalVertex { x: 11, y: 11 },
+                GlobalVertex { x: 11, y: 1 },
+                GlobalVertex { x: 1, y: 11 },
+                GlobalVertex { x: 1, y: 1 },
+            ],
+            world.objects().first().unwrap().shape.vertices
+        );
     }
 }
