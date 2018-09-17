@@ -284,7 +284,7 @@ mod tests {
     }
 
     #[test]
-    fn converts_to_global_object() {
+    fn converts_to_global_object_works_with_orientation() {
         let mut world = WorldImpl::new();
         let local_object = local_object();
         world.add_object(local_object);
@@ -292,11 +292,6 @@ mod tests {
 
         let expected_global_object = GlobalObject {
             shape: GlobalPolygon {
-                // The following inaccuracies appear to be
-                // a product of how nphysics stores its objects
-                // Maybe it can be fixed somehow, but it is okay
-                // for the moment, as an occasional two pixel
-                // displacement doesn't matter at all.
                 vertices: vec![
                     GlobalVertex {
                         x: 20 - 2,
@@ -324,7 +319,7 @@ mod tests {
     }
 
     #[test]
-    fn converts_to_global_object_without_orientation() {
+    fn converts_to_global_object_works_without_orientation() {
         let mut world = WorldImpl::new();
         let local_object = local_object_without_orientation();
         world.add_object(local_object);
@@ -333,11 +328,6 @@ mod tests {
         let expected_global_object = GlobalObject {
             orientation: Default::default(),
             shape: GlobalPolygon {
-                // The following inaccuracies appear to be
-                // a product of how nphysics stores its objects
-                // Maybe it can be fixed somehow, but it is okay
-                // for the moment, as an occasional two pixel
-                // displacement doesn't matter at all.
                 vertices: vec![
                     GlobalVertex { x: 40, y: 50 },
                     GlobalVertex { x: 20, y: 50 },
