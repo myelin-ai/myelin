@@ -89,7 +89,7 @@ impl NphysicsWorld {
     }
 
     fn get_velocity(&self, collider: &Collider<PhysicsType>, kind: &Kind) -> Velocity {
-        let (x, y) = if should_be_grounded(kind) {
+        let (x, y) = if is_grounded(kind) {
             (0.0, 0.0)
         } else {
             let body_handle = collider.data().body();
@@ -189,7 +189,7 @@ fn get_shape(object: &LocalObject) -> ShapeHandle<PhysicsType> {
     ShapeHandle::new(ConvexPolygon::try_new(points).expect("Polygon was not convex"))
 }
 
-fn should_be_grounded(kind: &Kind) -> bool {
+fn is_grounded(kind: &Kind) -> bool {
     match kind {
         Kind::Terrain => true,
         Kind::Water => true,
@@ -218,7 +218,7 @@ impl World for NphysicsWorld {
     }
 
     fn add_object(&mut self, object: LocalObject) {
-        let collider_handle = if should_be_grounded(&object.kind) {
+        let collider_handle = if is_grounded(&object.kind) {
             self.add_grounded(&object)
         } else {
             self.add_rigid_body(&object)
