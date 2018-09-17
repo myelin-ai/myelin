@@ -14,6 +14,10 @@ pub(crate) struct CanvasView {
 
 impl View for CanvasView {
     fn draw_objects(&self, view_model: &ViewModel) {
+        let canvas = self.context.canvas().expect("No canvas found");
+        self.context
+            .clear_rect(0.0, 0.0, canvas.width().into(), canvas.height().into());
+
         for object in &view_model.objects {
             self.draw_object(object);
         }
