@@ -10,6 +10,6 @@ pub(crate) mod color {
 }
 
 #[wasm_bindgen]
-pub fn simulated_timestamp() -> f64 {
+pub fn simulated_timestep() -> f64 {
     SIMULATED_TIMESTEP
 }
