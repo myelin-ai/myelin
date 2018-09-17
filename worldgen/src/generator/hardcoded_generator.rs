@@ -24,11 +24,11 @@ impl HardcodedGenerator {
     ///
     /// # Examples
     /// ```
-    /// use myelin_environment::world::{World, WorldImpl};
+    /// use myelin_environment::world::{World, NphysicsWorld};
     /// use myelin_worldgen::WorldGenerator;
     /// use myelin_worldgen::generator::HardcodedGenerator;
     ///
-    /// let world_factory = Box::new(|| -> Box<dyn World> { Box::new(WorldImpl::new()) });
+    /// let world_factory = Box::new(|| -> Box<dyn World> { Box::new(NphysicsWorld::new()) });
     /// let worldgen = HardcodedGenerator::new(world_factory);
     /// let generated_world = worldgen.generate();
     pub fn new(world_factory: WorldFactory) -> Self {
