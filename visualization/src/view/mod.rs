@@ -18,6 +18,15 @@ impl View for CanvasView {
             self.draw_object(object);
         }
     }
+
+    fn flush(&self) {
+        let canvas = self
+            .context
+            .canvas()
+            .expect("No association with a <canvas> element");
+        self.context
+            .clear_rect(0.0, 0.0, canvas.width().into(), canvas.height().into());
+    }
 }
 
 impl CanvasView {
