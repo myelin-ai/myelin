@@ -50,9 +50,9 @@ impl NphysicsWorld {
     /// # Examples
     /// ```
     /// use myelin_environment::world::NphysicsWorld;
-    /// let mut world = NphysicsWorld::new();
+    /// let mut world = NphysicsWorld::with_timestep(1.0);
     /// ```
-    pub fn new(timestep: f64) -> Self {
+    pub fn with_timestep(timestep: f64) -> Self {
         let mut physics_world = PhysicsWorld::new();
 
         physics_world.set_timestep(timestep);
@@ -308,14 +308,14 @@ mod tests {
 
     #[test]
     fn returns_empty_world() {
-        let world = NphysicsWorld::new(DEFAULT_TIMESTEP);
+        let world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         let objects = world.objects();
         assert!(objects.is_empty())
     }
 
     #[test]
     fn returns_empty_world_after_step() {
-        let mut world = NphysicsWorld::new(DEFAULT_TIMESTEP);
+        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         world.step();
         let objects = world.objects();
         assert!(objects.is_empty())
@@ -323,7 +323,7 @@ mod tests {
 
     #[test]
     fn returns_correct_number_of_rigid_objects() {
-        let mut world = NphysicsWorld::new(DEFAULT_TIMESTEP);
+        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         let local_rigid_object = local_rigid_object(Radians(3.0));
         world.add_object(local_rigid_object.clone());
         world.add_object(local_rigid_object);
@@ -334,7 +334,7 @@ mod tests {
 
     #[test]
     fn returns_correct_number_of_grounded_objects() {
-        let mut world = NphysicsWorld::new(DEFAULT_TIMESTEP);
+        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         let object = local_grounded_object(Radians(3.0));
         world.add_object(object.clone());
         world.add_object(object);
@@ -345,7 +345,7 @@ mod tests {
 
     #[test]
     fn returns_correct_number_of_mixed_objects() {
-        let mut world = NphysicsWorld::new(DEFAULT_TIMESTEP);
+        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         let rigid_object = local_rigid_object(Radians(3.0));
         let grounded_object = local_grounded_object(Radians(3.0));
         world.add_object(grounded_object.clone());
@@ -359,7 +359,7 @@ mod tests {
 
     #[test]
     fn converts_to_global_object_works_with_orientation() {
-        let mut world = NphysicsWorld::new(DEFAULT_TIMESTEP);
+        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         let object = local_rigid_object(Radians(3.0));
         world.add_object(object);
         let objects = world.objects();
@@ -395,7 +395,7 @@ mod tests {
     #[test]
     fn converts_to_global_rigid_object_works_without_orientation() {
         let object = local_rigid_object(Default::default());
-        let mut world = NphysicsWorld::new(DEFAULT_TIMESTEP);
+        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         world.add_object(object);
         let objects = world.objects();
 
@@ -418,7 +418,7 @@ mod tests {
     #[test]
     fn converts_to_global_grounded_object_works_without_orientation() {
         let object = local_grounded_object(Default::default());
-        let mut world = NphysicsWorld::new(DEFAULT_TIMESTEP);
+        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         world.add_object(object);
         let objects = world.objects();
 
@@ -440,7 +440,7 @@ mod tests {
 
     #[test]
     fn converts_to_global_object_works_with_pi_orientation() {
-        let mut world = NphysicsWorld::new(DEFAULT_TIMESTEP);
+        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         let orientation = Radians(1.5 * PI);
         let object = local_rigid_object(orientation);
         world.add_object(object);
@@ -464,7 +464,7 @@ mod tests {
 
     #[test]
     fn timestep_is_respected() {
-        let mut world = NphysicsWorld::new(1.0);
+        let mut world = NphysicsWorld::with_timestep(1.0);
 
         let local_object = ObjectBuilder::new()
             .kind(Kind::Organism)
@@ -498,7 +498,7 @@ mod tests {
 
     #[test]
     fn timestep_can_be_changed() {
-        let mut world = NphysicsWorld::new(0.0);
+        let mut world = NphysicsWorld::with_timestep(0.0);
 
         world.set_simulated_timestep(1.0);
 

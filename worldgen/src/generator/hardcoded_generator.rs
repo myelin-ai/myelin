@@ -28,7 +28,7 @@ impl HardcodedGenerator {
     /// use myelin_worldgen::WorldGenerator;
     /// use myelin_worldgen::generator::HardcodedGenerator;
     ///
-    /// let world_factory = Box::new(|| -> Box<dyn World> { Box::new(NphysicsWorld::new()) });
+    /// let world_factory = Box::new(|| -> Box<dyn World> { Box::new(NphysicsWorld::with_timestep(1.0)) });
     /// let worldgen = HardcodedGenerator::new(world_factory);
     /// let generated_world = worldgen.generate();
     pub fn new(world_factory: WorldFactory) -> Self {
