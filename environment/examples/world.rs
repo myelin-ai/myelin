@@ -1,9 +1,9 @@
 use myelin_environment::object::Kind;
 use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
-use myelin_environment::world::{World, WorldImpl};
+use myelin_environment::world::{NphysicsWorld, World};
 
 fn main() {
-    let mut world = WorldImpl::new();
+    let mut world = NphysicsWorld::new();
 
     world.add_object(
         ObjectBuilder::new()
