@@ -66,7 +66,7 @@ impl NphysicsWorld {
             .shape()
             .as_shape()
             .expect("Failed to cast shape to a ConvexPolygon");
-        let position_isometry = self.get_object_isometry(collider, kind);
+        let position_isometry = collider.position();
         let global_vertices: Vec<_> = convex_polygon
             .points()
             .iter()
@@ -85,18 +85,6 @@ impl NphysicsWorld {
             orientation: to_orientation(position_isometry.rotation.angle()),
             velocity,
             kind: kind.clone(),
-        }
-    }
-
-    fn get_object_isometry<'a, 'b: 'a>(
-        &'b self,
-        collider: &'a Collider<PhysicsType>,
-        kind: &'b Kind,
-    ) -> &'a Isometry<PhysicsType> {
-        if should_be_grounded(kind) {
-            collider.data().position_wrt_body()
-        } else {
-            collider.position()
         }
     }
 
