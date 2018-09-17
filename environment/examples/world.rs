@@ -3,7 +3,7 @@ use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
 use myelin_environment::world::{NphysicsWorld, World};
 
 fn main() {
-    let mut world = NphysicsWorld::new();
+    let mut world = NphysicsWorld::with_timestep(1000.0);
 
     world.add_object(
         ObjectBuilder::new()
