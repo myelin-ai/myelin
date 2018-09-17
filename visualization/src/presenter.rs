@@ -4,7 +4,7 @@ use myelin_environment::object as business_object;
 
 pub(crate) trait View {
     fn draw_objects(&self, view_model: &ViewModel);
-    fn flush_canvas(&self);
+    fn flush(&self);
 }
 
 pub(crate) struct CanvasPresenter {

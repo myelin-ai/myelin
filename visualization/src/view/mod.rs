@@ -14,18 +14,16 @@ pub(crate) struct CanvasView {
 
 impl View for CanvasView {
     fn draw_objects(&self, view_model: &ViewModel) {
-        self.flush_canvas();
-
         for object in &view_model.objects {
             self.draw_object(object);
         }
     }
 
-    fn flush_canvas(&self) {
+    fn flush(&self) {
         let canvas = self
             .context
             .canvas()
-            .expect("No association with an <canvas> element");
+            .expect("No association with a <canvas> element");
         self.context
             .clear_rect(0.0, 0.0, canvas.width().into(), canvas.height().into());
     }
