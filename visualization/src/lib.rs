@@ -7,5 +7,5 @@ pub mod bootstrapper;
 pub mod input_handler;
 pub(crate) mod presenter;
 pub(crate) mod simulation;
-pub(crate) mod view;
+pub mod view;
 pub(crate) mod view_model;
