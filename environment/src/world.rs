@@ -8,8 +8,7 @@ use crate::object::*;
 use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
 use nphysics2d::math::{Isometry, Point, Vector};
-use nphysics2d::object::ColliderHandle;
-use nphysics2d::object::Material;
+use nphysics2d::object::{BodyHandle, Collider, ColliderHandle, Material};
 use nphysics2d::volumetric::Volumetric;
 use nphysics2d::world::World as PhysicsWorld;
 use std::collections::HashMap;
@@ -77,26 +76,73 @@ impl NphysicsWorld {
                 y: vertex.y as u32,
             }).collect();
 
-        let body_handle = collider.data().body();
-        let body = self
-            .physics_world
-            .rigid_body(body_handle)
-            .expect("Body handle was invalid");
-
-        let linear_velocity = body.velocity().linear;
-        let (x, y) = elements(&linear_velocity);
+        let velocity = self.get_velocity(&collider, kind);
 
         GlobalObject {
             shape: GlobalPolygon {
                 vertices: global_vertices,
             },
             orientation: to_orientation(position_isometry.rotation.angle()),
-            velocity: Velocity {
-                x: x as i32,
-                y: y as i32,
-            },
+            velocity,
             kind: kind.clone(),
         }
+    }
+
+    fn get_velocity(&self, collider: &Collider<PhysicsType>, kind: &Kind) -> Velocity {
+        let (x, y) = if is_grounded(kind) {
+            (0.0, 0.0)
+        } else {
+            let body_handle = collider.data().body();
+            let body = self
+                .physics_world
+                .rigid_body(body_handle)
+                .expect("Body handle was invalid");
+
+            let linear_velocity = body.velocity().linear;
+            elements(&linear_velocity)
+        };
+        Velocity {
+            x: x as i32,
+            y: y as i32,
+        }
+    }
+
+    fn add_grounded(&mut self, object: &LocalObject) -> ColliderHandle {
+        let shape = get_shape(object);
+        let material = Material::default();
+        let isometry = get_isometry(&object);
+
+        self.physics_world
+            .add_collider(0.04, shape, BodyHandle::ground(), isometry, material)
+    }
+
+    fn add_rigid_body(&mut self, object: &LocalObject) -> ColliderHandle {
+        let shape = get_shape(object);
+        let local_inertia = shape.inertia(0.1);
+        let local_center_of_mass = shape.center_of_mass();
+        let isometry = get_isometry(&object);
+        let rigid_body_handle =
+            self.physics_world
+                .add_rigid_body(isometry, local_inertia, local_center_of_mass);
+
+        let linear_velocity = Vector2::new(
+            PhysicsType::from(object.velocity.x),
+            PhysicsType::from(object.velocity.y),
+        );
+        let rigid_body = self
+            .physics_world
+            .rigid_body_mut(rigid_body_handle)
+            .expect("add_rigid_body() returned invalid handle");
+        rigid_body.set_linear_velocity(linear_velocity);
+
+        let material = Material::default();
+        self.physics_world.add_collider(
+            0.04,
+            shape,
+            rigid_body_handle,
+            Isometry::identity(),
+            material,
+        )
     }
 }
 
@@ -122,6 +168,36 @@ where
     (*iter.next().unwrap(), *iter.next().unwrap())
 }
 
+fn get_isometry(object: &LocalObject) -> Isometry<PhysicsType> {
+    Isometry::new(
+        Vector::new(
+            PhysicsType::from(object.location.x),
+            PhysicsType::from(object.location.y),
+        ),
+        to_nphysics_rotation(object.orientation),
+    )
+}
+
+fn get_shape(object: &LocalObject) -> ShapeHandle<PhysicsType> {
+    let points: Vec<_> = object
+        .shape
+        .vertices
+        .iter()
+        .map(|vertex| Point::new(PhysicsType::from(vertex.x), PhysicsType::from(vertex.y)))
+        .collect();
+
+    ShapeHandle::new(ConvexPolygon::try_new(points).expect("Polygon was not convex"))
+}
+
+fn is_grounded(kind: &Kind) -> bool {
+    match kind {
+        Kind::Terrain => true,
+        Kind::Water => true,
+        Kind::Organism => false,
+        Kind::Plant => false,
+    }
+}
+
 impl World for NphysicsWorld {
     fn step(&mut self) {
         self.physics_world.step();
@@ -142,48 +218,11 @@ impl World for NphysicsWorld {
     }
 
     fn add_object(&mut self, object: LocalObject) {
-        let points: Vec<_> = object
-            .shape
-            .vertices
-            .iter()
-            .map(|vertex| Point::new(PhysicsType::from(vertex.x), PhysicsType::from(vertex.y)))
-            .collect();
-
-        let shape =
-            ShapeHandle::new(ConvexPolygon::try_new(points).expect("Polygon was not convex"));
-        let local_inertia = shape.inertia(0.1);
-        let local_center_of_mass = shape.center_of_mass();
-        let rigid_body_handle = self.physics_world.add_rigid_body(
-            Isometry::new(
-                Vector::new(
-                    PhysicsType::from(object.location.x),
-                    PhysicsType::from(object.location.y),
-                ),
-                to_nphysics_rotation(object.orientation),
-            ),
-            local_inertia,
-            local_center_of_mass,
-        );
-
-        let linear_velocity = Vector2::new(
-            PhysicsType::from(object.velocity.x),
-            PhysicsType::from(object.velocity.y),
-        );
-        let rigid_body = self
-            .physics_world
-            .rigid_body_mut(rigid_body_handle)
-            .expect("add_rigid_body() returned invalid handle");
-        rigid_body.set_linear_velocity(linear_velocity);
-
-        let material = Material::default();
-        let collider_handle = self.physics_world.add_collider(
-            0.04,
-            shape,
-            rigid_body_handle,
-            Isometry::identity(),
-            material,
-        );
-
+        let collider_handle = if is_grounded(&object.kind) {
+            self.add_grounded(&object)
+        } else {
+            self.add_rigid_body(&object)
+        };
         self.collider_handles.insert(collider_handle, object.kind);
     }
 
@@ -222,7 +261,7 @@ mod tests {
     use super::*;
     use crate::object_builder::{ObjectBuilder, PolygonBuilder};
 
-    fn local_object(orientation: Radians) -> LocalObject {
+    fn local_rigid_object(orientation: Radians) -> LocalObject {
         ObjectBuilder::new()
             .shape(
                 PolygonBuilder::new()
@@ -236,6 +275,23 @@ mod tests {
             .orientation(orientation)
             .velocity(4, 5)
             .kind(Kind::Organism)
+            .build()
+            .unwrap()
+    }
+
+    fn local_grounded_object(orientation: Radians) -> LocalObject {
+        ObjectBuilder::new()
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(-100, -100)
+                    .vertex(100, -100)
+                    .vertex(100, 100)
+                    .vertex(-100, 100)
+                    .build()
+                    .unwrap(),
+            ).location(300, 400)
+            .orientation(orientation)
+            .kind(Kind::Terrain)
             .build()
             .unwrap()
     }
@@ -256,21 +312,46 @@ mod tests {
     }
 
     #[test]
-    fn returns_correct_number_of_objects() {
+    fn returns_correct_number_of_rigid_objects() {
         let mut world = NphysicsWorld::new();
-        let local_object = local_object(Radians(3.0));
-        world.add_object(local_object.clone());
-        world.add_object(local_object);
+        let local_rigid_object = local_rigid_object(Radians(3.0));
+        world.add_object(local_rigid_object.clone());
+        world.add_object(local_rigid_object);
 
         let objects = world.objects();
         assert_eq!(2, objects.len());
     }
 
     #[test]
+    fn returns_correct_number_of_grounded_objects() {
+        let mut world = NphysicsWorld::new();
+        let object = local_grounded_object(Radians(3.0));
+        world.add_object(object.clone());
+        world.add_object(object);
+
+        let objects = world.objects();
+        assert_eq!(2, objects.len());
+    }
+
+    #[test]
+    fn returns_correct_number_of_mixed_objects() {
+        let mut world = NphysicsWorld::new();
+        let rigid_object = local_rigid_object(Radians(3.0));
+        let grounded_object = local_grounded_object(Radians(3.0));
+        world.add_object(grounded_object.clone());
+        world.add_object(grounded_object);
+        world.add_object(rigid_object.clone());
+        world.add_object(rigid_object);
+
+        let objects = world.objects();
+        assert_eq!(4, objects.len());
+    }
+
+    #[test]
     fn converts_to_global_object_works_with_orientation() {
         let mut world = NphysicsWorld::new();
-        let local_object = local_object(Radians(3.0));
-        world.add_object(local_object);
+        let object = local_rigid_object(Radians(3.0));
+        world.add_object(object);
         let objects = world.objects();
 
         let expected_global_object = GlobalObject {
@@ -302,10 +383,10 @@ mod tests {
     }
 
     #[test]
-    fn converts_to_global_object_works_without_orientation() {
+    fn converts_to_global_rigid_object_works_without_orientation() {
+        let object = local_rigid_object(Default::default());
         let mut world = NphysicsWorld::new();
-        let local_object = local_object(Default::default());
-        world.add_object(local_object);
+        world.add_object(object);
         let objects = world.objects();
 
         let expected_global_object = GlobalObject {
@@ -325,11 +406,34 @@ mod tests {
     }
 
     #[test]
+    fn converts_to_global_grounded_object_works_without_orientation() {
+        let object = local_grounded_object(Default::default());
+        let mut world = NphysicsWorld::new();
+        world.add_object(object);
+        let objects = world.objects();
+
+        let expected_global_object = GlobalObject {
+            orientation: Default::default(),
+            shape: GlobalPolygon {
+                vertices: vec![
+                    GlobalVertex { x: 400, y: 500 },
+                    GlobalVertex { x: 200, y: 500 },
+                    GlobalVertex { x: 200, y: 300 },
+                    GlobalVertex { x: 400, y: 300 },
+                ],
+            },
+            velocity: Velocity { x: 0, y: 0 },
+            kind: Kind::Terrain,
+        };
+        assert_eq!(expected_global_object, objects[0])
+    }
+
+    #[test]
     fn converts_to_global_object_works_with_pi_orientation() {
         let mut world = NphysicsWorld::new();
         let orientation = Radians(1.5 * PI);
-        let local_object = local_object(orientation);
-        world.add_object(local_object);
+        let object = local_rigid_object(orientation);
+        world.add_object(object);
         let objects = world.objects();
 
         let expected_global_object = GlobalObject {
