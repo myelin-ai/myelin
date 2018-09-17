@@ -20,6 +20,7 @@ impl Presenter for CanvasPresenter {
                 .collect(),
         };
 
+        self.view.flush();
         self.view.draw_objects(&view_model);
     }
 }
@@ -61,14 +62,35 @@ impl CanvasPresenter {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::cell::RefCell;
 
     struct ViewMock {
-        pub expected_view_model: ViewModel,
+        expected_view_model: ViewModel,
+        flush_was_called: RefCell<bool>,
+    }
+
+    impl ViewMock {
+        fn new(expected_view_model: ViewModel) -> Self {
+            Self {
+                expected_view_model,
+                flush_was_called: RefCell::new(false),
+            }
+        }
     }
 
     impl View for ViewMock {
         fn draw_objects(&self, view_model: &ViewModel) {
             assert_eq!(self.expected_view_model, *view_model);
+        }
+
+        fn flush(&self) {
+            *self.flush_was_called.borrow_mut() = true;
+        }
+    }
+
+    impl Drop for ViewMock {
+        fn drop(&mut self) {
+            assert!(*self.flush_was_called.borrow());
         }
     }
 
@@ -78,9 +100,7 @@ mod tests {
         let expected_view_model = ViewModel {
             objects: Vec::new(),
         };
-        let view_mock = ViewMock {
-            expected_view_model,
-        };
+        let view_mock = ViewMock::new(expected_view_model);
         let presenter = CanvasPresenter::new(Box::new(view_mock));
         presenter.present_objects(&objects);
     }
@@ -103,9 +123,7 @@ mod tests {
                 kind: view_model::Kind::Organism,
             }],
         };
-        let view_mock = ViewMock {
-            expected_view_model,
-        };
+        let view_mock = ViewMock::new(expected_view_model);
         let presenter = CanvasPresenter::new(Box::new(view_mock));
         presenter.present_objects(&objects);
     }
