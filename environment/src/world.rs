@@ -78,8 +78,8 @@ impl NphysicsWorld {
             .iter()
             .map(|vertex| position_isometry * vertex)
             .map(|vertex| GlobalVertex {
-                x: vertex.x as u32,
-                y: vertex.y as u32,
+                x: vertex.x.round() as u32,
+                y: vertex.y.round() as u32,
             }).collect();
 
         let velocity = self.get_velocity(&collider, kind);
@@ -368,19 +368,19 @@ mod tests {
             shape: GlobalPolygon {
                 vertices: vec![
                     GlobalVertex {
-                        x: 20 - 2,
-                        y: 30 + 1,
+                        x: 20 - 1,
+                        y: 30 + 2,
                     },
                     GlobalVertex {
                         x: 40 - 2,
-                        y: 30 - 2,
+                        y: 30 - 1,
                     },
                     GlobalVertex {
                         x: 40 + 1,
                         y: 50 - 2,
                     },
                     GlobalVertex {
-                        x: 20 + 1,
+                        x: 20 + 2,
                         y: 50 + 1,
                     },
                 ],
@@ -489,8 +489,8 @@ mod tests {
             vec![
                 GlobalVertex { x: 11, y: 11 },
                 GlobalVertex { x: 11, y: 1 },
-                GlobalVertex { x: 1, y: 11 },
                 GlobalVertex { x: 1, y: 1 },
+                GlobalVertex { x: 1, y: 11 },
             ],
             world.objects().first().unwrap().shape.vertices
         );
@@ -525,8 +525,8 @@ mod tests {
             vec![
                 GlobalVertex { x: 11, y: 11 },
                 GlobalVertex { x: 11, y: 1 },
-                GlobalVertex { x: 1, y: 11 },
                 GlobalVertex { x: 1, y: 1 },
+                GlobalVertex { x: 1, y: 11 },
             ],
             world.objects().first().unwrap().shape.vertices
         );
