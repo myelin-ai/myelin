@@ -8,7 +8,7 @@ use crate::object::*;
 use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
 use nphysics2d::math::{Isometry, Point, Vector};
-use nphysics2d::object::{BodyHandle, ColliderHandle, Material};
+use nphysics2d::object::{BodyHandle, Collider, ColliderHandle, Material};
 use nphysics2d::volumetric::Volumetric;
 use nphysics2d::world::World as PhysicsWorld;
 use std::collections::HashMap;
@@ -76,6 +76,19 @@ impl NphysicsWorld {
                 y: vertex.y as u32,
             }).collect();
 
+        let velocity = self.get_velocity(&collider);
+
+        GlobalObject {
+            shape: GlobalPolygon {
+                vertices: global_vertices,
+            },
+            orientation: to_orientation(position_isometry.rotation.angle()),
+            velocity,
+            kind: kind.clone(),
+        }
+    }
+
+    fn get_velocity(&self, collider: &Collider<PhysicsType>) -> Velocity {
         let body_handle = collider.data().body();
         let body = self
             .physics_world
@@ -84,17 +97,9 @@ impl NphysicsWorld {
 
         let linear_velocity = body.velocity().linear;
         let (x, y) = elements(&linear_velocity);
-
-        GlobalObject {
-            shape: GlobalPolygon {
-                vertices: global_vertices,
-            },
-            orientation: to_orientation(position_isometry.rotation.angle()),
-            velocity: Velocity {
-                x: x as i32,
-                y: y as i32,
-            },
-            kind: kind.clone(),
+        Velocity {
+            x: x as i32,
+            y: y as i32,
         }
     }
 
@@ -180,6 +185,15 @@ fn object_to_shape(object: &LocalObject) -> ShapeHandle<PhysicsType> {
     ShapeHandle::new(ConvexPolygon::try_new(points).expect("Polygon was not convex"))
 }
 
+fn should_be_grounded(kind: &Kind) -> bool {
+    match kind {
+        Kind::Terrain => true,
+        Kind::Water => true,
+        Kind::Organism => false,
+        Kind::Plant => false,
+    }
+}
+
 impl World for NphysicsWorld {
     fn step(&mut self) {
         self.physics_world.step();
@@ -200,11 +214,10 @@ impl World for NphysicsWorld {
     }
 
     fn add_object(&mut self, object: LocalObject) {
-        let collider_handle = match object.kind {
-            Kind::Terrain => self.add_grounded(&object),
-            Kind::Water => self.add_grounded(&object),
-            Kind::Organism => self.add_rigid_body(&object),
-            Kind::Plant => self.add_rigid_body(&object),
+        let collider_handle = if should_be_grounded(&object.kind) {
+            self.add_grounded(&object)
+        } else {
+            self.add_rigid_body(&object)
         };
         self.collider_handles.insert(collider_handle, object.kind);
     }
