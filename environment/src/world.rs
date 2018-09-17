@@ -323,4 +323,28 @@ mod tests {
         };
         assert_eq!(expected_global_object, objects[0])
     }
+
+    #[test]
+    fn converts_to_global_object_works_with_pi_orientation() {
+        let mut world = WorldImpl::new();
+        let orientation = Radians(1.5 * PI);
+        let local_object = local_object(orientation);
+        world.add_object(local_object);
+        let objects = world.objects();
+
+        let expected_global_object = GlobalObject {
+            orientation: orientation,
+            shape: GlobalPolygon {
+                vertices: vec![
+                    GlobalVertex { x: 40, y: 30 },
+                    GlobalVertex { x: 40, y: 50 },
+                    GlobalVertex { x: 20, y: 50 },
+                    GlobalVertex { x: 20, y: 30 },
+                ],
+            },
+            velocity: Velocity { x: 4, y: 5 },
+            kind: Kind::Organism,
+        };
+        assert_eq!(expected_global_object, objects[0])
+    }
 }
