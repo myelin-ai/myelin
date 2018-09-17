@@ -222,7 +222,7 @@ mod tests {
     use super::*;
     use crate::object_builder::{ObjectBuilder, PolygonBuilder};
 
-    fn local_object() -> LocalObject {
+    fn local_object(orientation: Radians) -> LocalObject {
         ObjectBuilder::new()
             .shape(
                 PolygonBuilder::new()
@@ -233,24 +233,7 @@ mod tests {
                     .build()
                     .unwrap(),
             ).location(30, 40)
-            .orientation(Radians(3.0))
-            .velocity(4, 5)
-            .kind(Kind::Organism)
-            .build()
-            .unwrap()
-    }
-
-    fn local_object_without_orientation() -> LocalObject {
-        ObjectBuilder::new()
-            .shape(
-                PolygonBuilder::new()
-                    .vertex(-10, -10)
-                    .vertex(10, -10)
-                    .vertex(10, 10)
-                    .vertex(-10, 10)
-                    .build()
-                    .unwrap(),
-            ).location(30, 40)
+            .orientation(orientation)
             .velocity(4, 5)
             .kind(Kind::Organism)
             .build()
@@ -275,7 +258,7 @@ mod tests {
     #[test]
     fn returns_correct_number_of_objects() {
         let mut world = WorldImpl::new();
-        let local_object = local_object();
+        let local_object = local_object(Radians(3.0));
         world.add_object(local_object.clone());
         world.add_object(local_object);
 
@@ -286,7 +269,7 @@ mod tests {
     #[test]
     fn converts_to_global_object_works_with_orientation() {
         let mut world = WorldImpl::new();
-        let local_object = local_object();
+        let local_object = local_object(Radians(3.0));
         world.add_object(local_object);
         let objects = world.objects();
 
@@ -321,7 +304,7 @@ mod tests {
     #[test]
     fn converts_to_global_object_works_without_orientation() {
         let mut world = WorldImpl::new();
-        let local_object = local_object_without_orientation();
+        let local_object = local_object(Default::default());
         world.add_object(local_object);
         let objects = world.objects();
 
