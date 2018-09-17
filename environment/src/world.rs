@@ -463,7 +463,7 @@ mod tests {
     }
 
     #[test]
-    fn test_timestep_is_respected() {
+    fn timestep_is_respected() {
         let mut world = NphysicsWorld::new(1.0);
 
         let local_object = ObjectBuilder::new()
@@ -497,7 +497,7 @@ mod tests {
     }
 
     #[test]
-    fn test_set_timestep_works() {
+    fn timestep_can_be_changed() {
         let mut world = NphysicsWorld::new(0.0);
 
         world.set_simulated_timestep(1.0);
