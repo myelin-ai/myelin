@@ -76,7 +76,7 @@ impl NphysicsWorld {
                 y: vertex.y as u32,
             }).collect();
 
-        let velocity = self.get_velocity(&collider);
+        let velocity = self.get_velocity(&collider, kind);
 
         GlobalObject {
             shape: GlobalPolygon {
@@ -88,15 +88,19 @@ impl NphysicsWorld {
         }
     }
 
-    fn get_velocity(&self, collider: &Collider<PhysicsType>) -> Velocity {
-        let body_handle = collider.data().body();
-        let body = self
-            .physics_world
-            .rigid_body(body_handle)
-            .expect("Body handle was invalid");
+    fn get_velocity(&self, collider: &Collider<PhysicsType>, kind: &Kind) -> Velocity {
+        let (x, y) = if should_be_grounded(kind) {
+            (0.0, 0.0)
+        } else {
+            let body_handle = collider.data().body();
+            let body = self
+                .physics_world
+                .rigid_body(body_handle)
+                .expect("Body handle was invalid");
 
-        let linear_velocity = body.velocity().linear;
-        let (x, y) = elements(&linear_velocity);
+            let linear_velocity = body.velocity().linear;
+            elements(&linear_velocity)
+        };
         Velocity {
             x: x as i32,
             y: y as i32,
@@ -378,10 +382,8 @@ mod tests {
         assert_eq!(expected_global_object, objects[0])
     }
 
-    #[test]
-    fn converts_to_global_object_works_without_orientation() {
+    fn converts_to_global_object_works_without_orientation(object: LocalObject) {
         let mut world = NphysicsWorld::new();
-        let object = local_rigid_object(Default::default());
         world.add_object(object);
         let objects = world.objects();
 
@@ -399,6 +401,18 @@ mod tests {
             kind: Kind::Organism,
         };
         assert_eq!(expected_global_object, objects[0])
+    }
+
+    #[test]
+    fn converts_to_global_rigid_object_works_without_orientation() {
+        let object = local_rigid_object(Default::default());
+        converts_to_global_object_works_without_orientation(object);
+    }
+
+    #[test]
+    fn converts_to_global_grounded_object_works_without_orientation() {
+        let object = local_grounded_object(Default::default());
+        converts_to_global_object_works_without_orientation(object);
     }
 
     #[test]
