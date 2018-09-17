@@ -39,17 +39,17 @@ type PhysicsType = f64;
 ///
 /// [`World`]: ./trait.World.html
 #[derive(Default)]
-pub struct WorldImpl {
+pub struct NphysicsWorld {
     physics_world: PhysicsWorld<PhysicsType>,
     collider_handles: HashMap<ColliderHandle, Kind>,
 }
 
-impl WorldImpl {
+impl NphysicsWorld {
     /// Instantiates a new empty world
     /// # Examples
     /// ```
-    /// use myelin_environment::world::WorldImpl;
-    /// let mut world = WorldImpl::new();
+    /// use myelin_environment::world::NphysicsWorld;
+    /// let mut world = NphysicsWorld::new();
     /// ```
     pub fn new() -> Self {
         Self {
@@ -122,7 +122,7 @@ where
     (*iter.next().unwrap(), *iter.next().unwrap())
 }
 
-impl World for WorldImpl {
+impl World for NphysicsWorld {
     fn step(&mut self) {
         self.physics_world.step();
 
@@ -195,9 +195,9 @@ impl World for WorldImpl {
     }
 }
 
-impl fmt::Debug for WorldImpl {
+impl fmt::Debug for NphysicsWorld {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("WorldImpl")
+        f.debug_struct("NphysicsWorld")
             .field("collider_handles", &self.collider_handles)
             .field("physics", &DebugPhysicsWorld(&self.physics_world))
             .finish()
@@ -205,10 +205,10 @@ impl fmt::Debug for WorldImpl {
 }
 
 /// A helper struct used to implement [`std::fmt::Debug`]
-/// for [`WorldImpl`]
+/// for [`NphysicsWorld`]
 ///
 /// [`std::fmt::Debug`]: https://doc.rust-lang.org/nightly/std/fmt/trait.Debug.html
-/// [`WorldImpl`]: ./struct.WorldImpl.html
+/// [`NphysicsWorld`]: ./struct.NphysicsWorld.html
 struct DebugPhysicsWorld<'a>(&'a PhysicsWorld<PhysicsType>);
 
 impl<'a> fmt::Debug for DebugPhysicsWorld<'a> {
@@ -242,14 +242,14 @@ mod tests {
 
     #[test]
     fn returns_empty_world() {
-        let world = WorldImpl::new();
+        let world = NphysicsWorld::new();
         let objects = world.objects();
         assert!(objects.is_empty())
     }
 
     #[test]
     fn returns_empty_world_after_step() {
-        let mut world = WorldImpl::new();
+        let mut world = NphysicsWorld::new();
         world.step();
         let objects = world.objects();
         assert!(objects.is_empty())
@@ -257,7 +257,7 @@ mod tests {
 
     #[test]
     fn returns_correct_number_of_objects() {
-        let mut world = WorldImpl::new();
+        let mut world = NphysicsWorld::new();
         let local_object = local_object();
         world.add_object(local_object.clone());
         world.add_object(local_object);
@@ -268,7 +268,7 @@ mod tests {
 
     #[test]
     fn converts_to_global_object() {
-        let mut world = WorldImpl::new();
+        let mut world = NphysicsWorld::new();
         let local_object = local_object();
         world.add_object(local_object);
         let objects = world.objects();
