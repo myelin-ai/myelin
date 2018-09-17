@@ -66,7 +66,7 @@ impl NphysicsWorld {
             .shape()
             .as_shape()
             .expect("Failed to cast shape to a ConvexPolygon");
-        let position_isometry = collider.position();
+        let position_isometry = self.get_object_isometry(collider, kind);
         let global_vertices: Vec<_> = convex_polygon
             .points()
             .iter()
@@ -85,6 +85,18 @@ impl NphysicsWorld {
             orientation: to_orientation(position_isometry.rotation.angle()),
             velocity,
             kind: kind.clone(),
+        }
+    }
+
+    fn get_object_isometry<'a, 'b: 'a>(
+        &'b self,
+        collider: &'a Collider<PhysicsType>,
+        kind: &'b Kind,
+    ) -> &'a Isometry<PhysicsType> {
+        if should_be_grounded(kind) {
+            collider.data().position_wrt_body()
+        } else {
+            collider.position()
         }
     }
 
@@ -382,7 +394,9 @@ mod tests {
         assert_eq!(expected_global_object, objects[0])
     }
 
-    fn converts_to_global_object_works_without_orientation(object: LocalObject) {
+    #[test]
+    fn converts_to_global_rigid_object_works_without_orientation() {
+        let object = local_rigid_object(Default::default());
         let mut world = NphysicsWorld::new();
         world.add_object(object);
         let objects = world.objects();
@@ -404,15 +418,26 @@ mod tests {
     }
 
     #[test]
-    fn converts_to_global_rigid_object_works_without_orientation() {
-        let object = local_rigid_object(Default::default());
-        converts_to_global_object_works_without_orientation(object);
-    }
-
-    #[test]
     fn converts_to_global_grounded_object_works_without_orientation() {
         let object = local_grounded_object(Default::default());
-        converts_to_global_object_works_without_orientation(object);
+        let mut world = NphysicsWorld::new();
+        world.add_object(object);
+        let objects = world.objects();
+
+        let expected_global_object = GlobalObject {
+            orientation: Default::default(),
+            shape: GlobalPolygon {
+                vertices: vec![
+                    GlobalVertex { x: 400, y: 500 },
+                    GlobalVertex { x: 200, y: 500 },
+                    GlobalVertex { x: 200, y: 300 },
+                    GlobalVertex { x: 400, y: 300 },
+                ],
+            },
+            velocity: Velocity { x: 0, y: 0 },
+            kind: Kind::Terrain,
+        };
+        assert_eq!(expected_global_object, objects[0])
     }
 
     #[test]
