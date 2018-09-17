@@ -13,7 +13,7 @@ use nphysics2d::object::Material;
 use nphysics2d::volumetric::Volumetric;
 use nphysics2d::world::World as PhysicsWorld;
 use std::collections::HashMap;
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 use std::fmt;
 
 /// A world running a simulation that can be filled with [`Objects`] on
@@ -103,14 +103,14 @@ impl WorldImpl {
 /// The offset needed because we define orientation as [0; 2π)
 /// and nphysics defines rotation as (-π; π]
 /// See http://nalgebra.org/rustdoc/nalgebra/geometry/type.UnitComplex.html#method.angle
-const NPHYSICS_ROTATION_OFFSET: f32 = PI;
+const NPHYSICS_ROTATION_OFFSET: f64 = PI;
 
 fn to_nphysics_rotation(orientation: Radians) -> f64 {
     PhysicsType::from(orientation.0 - NPHYSICS_ROTATION_OFFSET)
 }
 
 fn to_orientation(nphysics_rotation: f64) -> Radians {
-    Radians(nphysics_rotation as f32 + NPHYSICS_ROTATION_OFFSET)
+    Radians(nphysics_rotation + NPHYSICS_ROTATION_OFFSET)
 }
 
 fn elements<N>(vector: &Vector2<N>) -> (N, N)

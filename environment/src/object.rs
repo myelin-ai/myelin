@@ -129,7 +129,7 @@ pub struct GlobalVertex {
 
 /// A radian confined to the range of [0.0; 2π)
 #[derive(Debug, PartialEq, Copy, Clone, Default)]
-pub struct Radians(pub f32);
+pub struct Radians(pub f64);
 
 /// A location within the world
 #[derive(Debug, Eq, PartialEq, Clone)]
