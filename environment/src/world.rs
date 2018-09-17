@@ -106,7 +106,7 @@ impl NphysicsWorld {
 const NPHYSICS_ROTATION_OFFSET: f64 = PI;
 
 fn to_nphysics_rotation(orientation: Radians) -> f64 {
-    PhysicsType::from(orientation.0 - NPHYSICS_ROTATION_OFFSET)
+    orientation.0 - NPHYSICS_ROTATION_OFFSET
 }
 
 fn to_orientation(nphysics_rotation: f64) -> Radians {
