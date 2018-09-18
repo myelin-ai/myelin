@@ -174,7 +174,7 @@ mod tests {
         fn add_object(&mut self, object: LocalObject) {
             self.objects.push(object)
         }
-        fn objects(&self) -> Vec<GlobalObject<'_>> {
+        fn objects(&self) -> Vec<GlobalObject> {
             panic!("objects() called unexpectedly")
         }
         fn set_simulated_timestep(&mut self, _: f64) {

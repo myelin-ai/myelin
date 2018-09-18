@@ -107,21 +107,26 @@ mod tests {
     }
 
     struct WorldGeneratorMock {
-        simulation_factory: Box<dyn Fn() -> Box<dyn Simulation>>,
+        simulation_factory: Box<dyn Fn(Vec<GlobalObject>) -> Box<dyn Simulation>>,
         generate_was_called: RefCell<bool>,
+        objects_to_return: Vec<GlobalObject>,
     }
     impl WorldGeneratorMock {
-        fn new(simulation_factory: Box<dyn Fn() -> Box<dyn Simulation>>) -> Self {
+        fn new(
+            simulation_factory: Box<dyn Fn(Vec<GlobalObject>) -> Box<dyn Simulation>>,
+            objects_to_return: Vec<GlobalObject>,
+        ) -> Self {
             Self {
                 generate_was_called: RefCell::new(false),
                 simulation_factory,
+                objects_to_return,
             }
         }
     }
     impl WorldGenerator for WorldGeneratorMock {
         fn generate(&self) -> Box<dyn Simulation> {
             *self.generate_was_called.borrow_mut() = true;
-            (self.simulation_factory)()
+            (self.simulation_factory)(self.objects_to_return.clone())
         }
     }
 
@@ -132,10 +137,10 @@ mod tests {
     }
 
     fn mock_controller(expected_objects: Vec<GlobalObject>) -> ControllerImpl {
-        let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
-            Box::new(SimulationMock::new(expected_objects.clone()))
+        let simulation_factory = Box::new(|objects_present| -> Box<dyn Simulation> {
+            Box::new(SimulationMock::new(objects_present))
         });
-        let world_generator = WorldGeneratorMock::new(simulation_factory);
+        let world_generator = WorldGeneratorMock::new(simulation_factory, expected_objects.clone());
         let presenter: PresenterMock = PresenterMock::new(expected_objects);
         ControllerImpl::new(Box::new(presenter), &world_generator)
     }
