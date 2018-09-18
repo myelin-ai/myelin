@@ -64,10 +64,6 @@ pub struct LocalObject {
     /// An orientation of 0.0 means that the
     /// object is facing right.
     pub orientation: Radians,
-    /// The initial velocity of the object, defined
-    /// as a two dimensional vector relative to the
-    /// object's center
-    pub velocity: Velocity,
     /// The kind of object we are dealing with
     pub kind: Kind,
 }

@@ -16,7 +16,6 @@ fn main() {
                     .build()
                     .unwrap(),
             ).location(30, 40)
-            .velocity(4, 5)
             .kind(Kind::Organism)
             .build()
             .unwrap(),

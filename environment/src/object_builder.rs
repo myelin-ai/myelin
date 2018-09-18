@@ -25,7 +25,7 @@
 //! [`LocalObject`]: ../object/struct.LocalObject.html
 //! [`LocalPolygon`]: ../object/struct.LocalPolygon.html
 
-use crate::object::{Kind, LocalObject, LocalPolygon, LocalVertex, Location, Radians, Velocity};
+use crate::object::{Kind, LocalObject, LocalPolygon, LocalVertex, Location, Radians};
 
 /// An error representing the values that have
 /// wrongly been ommited when building finished
@@ -47,7 +47,6 @@ pub struct ObjectBuilderError {
 #[derive(Default, Debug)]
 pub struct ObjectBuilder {
     shape: Option<LocalPolygon>,
-    velocity: Velocity,
     location: Option<Location>,
     kind: Option<Kind>,
     orientation: Option<Radians>,
@@ -83,17 +82,6 @@ impl ObjectBuilder {
     /// ```
     pub fn shape(&mut self, polygon: LocalPolygon) -> &mut Self {
         self.shape = Some(polygon);
-        self
-    }
-
-    /// # Examples
-    /// ```
-    /// use myelin_environment::object_builder::ObjectBuilder;
-    /// ObjectBuilder::new()
-    ///     .velocity(-12, 2);
-    /// ```
-    pub fn velocity(&mut self, x: i32, y: i32) -> &mut Self {
-        self.velocity = Velocity { x, y };
         self
     }
 
@@ -170,7 +158,6 @@ impl ObjectBuilder {
 
         let object = LocalObject {
             shape: self.shape.take().ok_or_else(|| error.clone())?,
-            velocity: self.velocity.clone(),
             location: self.location.take().ok_or_else(|| error.clone())?,
             kind: self.kind.take().ok_or(error)?,
             orientation: self.orientation.take().unwrap_or_else(Default::default),
@@ -307,8 +294,7 @@ mod test {
                     .vertex(1, 1)
                     .build()
                     .unwrap(),
-            ).velocity(10, 10)
-            .location(10, 10)
+            ).location(10, 10)
             .orientation(Radians(0.0))
             .build();
 
@@ -324,7 +310,6 @@ mod test {
     #[test]
     fn test_object_builder_should_error_for_missing_shape() {
         let result = ObjectBuilder::new()
-            .velocity(10, 10)
             .location(10, 10)
             .kind(Kind::Organism)
             .orientation(Radians(0.0))
@@ -365,7 +350,6 @@ mod test {
                     LocalVertex { x: 1, y: 1 },
                 ],
             },
-            velocity: Velocity::default(),
             location: Location { x: 10, y: 10 },
             kind: Kind::Organism,
         };
@@ -384,8 +368,7 @@ mod test {
                     .vertex(1, 1)
                     .build()
                     .unwrap(),
-            ).velocity(10, 10)
-            .kind(Kind::Organism)
+            ).kind(Kind::Organism)
             .orientation(Radians(0.0))
             .build();
 
@@ -409,8 +392,7 @@ mod test {
                     .vertex(1, 1)
                     .build()
                     .unwrap(),
-            ).velocity(10, 20)
-            .location(30, 40)
+            ).location(30, 40)
             .kind(Kind::Organism)
             .build();
 
@@ -424,7 +406,6 @@ mod test {
                     LocalVertex { x: 1, y: 1 },
                 ],
             },
-            velocity: Velocity { x: 10, y: 20 },
             location: Location { x: 30, y: 40 },
             kind: Kind::Organism,
         };
@@ -457,8 +438,7 @@ mod test {
                     .vertex(1, 1)
                     .build()
                     .unwrap(),
-            ).velocity(10, 20)
-            .location(30, 40)
+            ).location(30, 40)
             .kind(Kind::Organism)
             .orientation(Radians(1.1))
             .build();
@@ -473,7 +453,6 @@ mod test {
                     LocalVertex { x: 1, y: 1 },
                 ],
             },
-            velocity: Velocity { x: 10, y: 20 },
             location: Location { x: 30, y: 40 },
             kind: Kind::Organism,
         };
