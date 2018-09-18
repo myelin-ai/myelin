@@ -9,12 +9,12 @@ pub(crate) trait Presenter {
     fn present_objects(&self, objects: &[GlobalObject<'_>]);
 }
 
-pub(crate) struct ControllerImpl<'a> {
-    presenter: Box<dyn Presenter + 'a>,
-    simulation: Box<dyn Simulation + 'a>,
+pub(crate) struct ControllerImpl {
+    presenter: Box<dyn Presenter>,
+    simulation: Box<dyn Simulation>,
 }
 
-impl<'a> Controller for ControllerImpl<'a> {
+impl Controller for ControllerImpl {
     fn step(&mut self) {
         self.simulation.step();
         let objects = self.simulation.objects();
@@ -22,11 +22,8 @@ impl<'a> Controller for ControllerImpl<'a> {
     }
 }
 
-impl<'a> ControllerImpl<'a> {
-    pub(crate) fn new(
-        presenter: Box<dyn Presenter + 'a>,
-        world_generator: &dyn WorldGenerator<'a>,
-    ) -> Self {
+impl ControllerImpl {
+    pub(crate) fn new(presenter: Box<dyn Presenter>, world_generator: &dyn WorldGenerator) -> Self {
         Self {
             presenter,
             simulation: world_generator.generate(),
@@ -41,13 +38,13 @@ mod tests {
     use std::cell::RefCell;
 
     #[derive(Debug)]
-    struct SimulationMock<'a> {
+    struct SimulationMock {
         step_was_called: bool,
-        returned_objects: Vec<GlobalObject<'a>>,
+        returned_objects: Vec<GlobalObject>,
         objects_was_called: RefCell<bool>,
     }
-    impl<'a> SimulationMock<'a> {
-        fn new(returned_objects: Vec<GlobalObject<'a>>) -> Self {
+    impl SimulationMock {
+        fn new(returned_objects: Vec<GlobalObject>) -> Self {
             Self {
                 step_was_called: false,
                 objects_was_called: RefCell::new(false),
@@ -55,7 +52,7 @@ mod tests {
             }
         }
     }
-    impl<'a> Simulation for SimulationMock<'a> {
+    impl Simulation for SimulationMock {
         fn step(&mut self) {
             self.step_was_called = true;
         }
@@ -71,7 +68,7 @@ mod tests {
         }
     }
 
-    impl<'a> Drop for SimulationMock<'a> {
+    impl Drop for SimulationMock {
         fn drop(&mut self) {
             assert!(*self.objects_was_called.borrow());
             assert!(self.step_was_called);
@@ -79,19 +76,19 @@ mod tests {
     }
 
     #[derive(Debug)]
-    struct PresenterMock<'a> {
-        expected_objects: Vec<GlobalObject<'a>>,
+    struct PresenterMock {
+        expected_objects: Vec<GlobalObject>,
         present_objects_was_called: RefCell<bool>,
     }
-    impl<'a> PresenterMock<'a> {
-        fn new(expected_objects: Vec<GlobalObject<'a>>) -> Self {
+    impl PresenterMock {
+        fn new(expected_objects: Vec<GlobalObject>) -> Self {
             Self {
                 present_objects_was_called: RefCell::new(false),
                 expected_objects,
             }
         }
     }
-    impl<'a> Presenter for PresenterMock<'a> {
+    impl Presenter for PresenterMock {
         fn present_objects(&self, objects: &[GlobalObject<'_>]) {
             *self.present_objects_was_called.borrow_mut() = true;
             self.expected_objects
@@ -103,43 +100,43 @@ mod tests {
         }
     }
 
-    impl<'a> Drop for PresenterMock<'a> {
+    impl Drop for PresenterMock {
         fn drop(&mut self) {
             assert!(*self.present_objects_was_called.borrow());
         }
     }
 
-    struct WorldGeneratorMock<'a> {
-        simulation_factory: Box<dyn FnOnce() -> Box<dyn Simulation + 'a> + 'a>,
+    struct WorldGeneratorMock {
+        simulation_factory: Box<dyn FnOnce() -> Box<dyn Simulation>>,
         generate_was_called: RefCell<bool>,
     }
-    impl<'a> WorldGeneratorMock<'a> {
-        fn new(simulation_factory: Box<dyn FnOnce() -> Box<dyn Simulation + 'a> + 'a>) -> Self {
+    impl WorldGeneratorMock {
+        fn new(simulation_factory: Box<dyn FnOnce() -> Box<dyn Simulation>>) -> Self {
             Self {
                 generate_was_called: RefCell::new(false),
                 simulation_factory,
             }
         }
     }
-    impl<'a> WorldGenerator<'a> for WorldGeneratorMock<'a> {
-        fn generate(&self) -> Box<dyn Simulation + 'a> {
+    impl WorldGenerator for WorldGeneratorMock {
+        fn generate(&self) -> Box<dyn Simulation> {
             *self.generate_was_called.borrow_mut() = true;
             (self.simulation_factory)()
         }
     }
 
-    impl<'a> Drop for WorldGeneratorMock<'a> {
+    impl Drop for WorldGeneratorMock {
         fn drop(&mut self) {
             assert!(*self.generate_was_called.borrow());
         }
     }
 
-    fn mock_controller<'a>(expected_objects: Vec<GlobalObject<'a>>) -> ControllerImpl<'a> {
+    fn mock_controller(expected_objects: Vec<GlobalObject>) -> ControllerImpl {
         let simulation_factory = Box::new(move || -> Box<dyn Simulation> {
             Box::new(SimulationMock::new(expected_objects))
         });
         let world_generator = WorldGeneratorMock::new(simulation_factory);
-        let presenter: PresenterMock<'a> = PresenterMock::new(expected_objects);
+        let presenter: PresenterMock = PresenterMock::new(expected_objects);
         ControllerImpl::new(Box::new(presenter), &world_generator)
     }
 

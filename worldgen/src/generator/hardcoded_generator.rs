@@ -36,8 +36,8 @@ impl HardcodedGenerator {
     }
 }
 
-impl<'a> WorldGenerator<'a> for HardcodedGenerator {
-    fn generate(&self) -> Box<dyn Simulation + 'a> {
+impl WorldGenerator for HardcodedGenerator {
+    fn generate(&self) -> Box<dyn Simulation> {
         let mut simulation = (self.simulation_factory)();
         populate_with_terrain(&mut *simulation);
         populate_with_water(&mut *simulation);
