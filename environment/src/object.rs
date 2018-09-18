@@ -44,6 +44,32 @@
 //! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
 //! [`LocalBody`]: ./struct.LocalBody.html
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct GlobalObject {
+    pub body: GlobalBody,
+    pub kind: Kind,
+}
+
+#[derive(Debug)]
+pub struct LocalObject {
+    pub body: LocalBody,
+    pub behavior: Box<dyn ObjectBehavior>,
+}
+
+pub trait ObjectBehavior: std::fmt::Debug {
+    fn step(&mut self) -> Vec<Action>;
+    fn is_movable(&self) -> bool;
+    fn kind(&self) -> Kind;
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum Action {
+    Move,
+    Rotate,
+    Die,
+    Reproduce,
+}
+
 /// An objects that can be placed in the world.
 /// Its coordinates are relative to the center of
 /// the object, which is determined by the [`location`]
@@ -149,30 +175,4 @@ pub enum Kind {
     Water,
     /// Impassable terrain
     Terrain,
-}
-
-#[derive(Debug)]
-pub struct LocalObject {
-    pub body: LocalBody,
-    pub behavior: Box<dyn ObjectBehavior>,
-}
-
-#[derive(Debug, Clone)]
-pub struct GlobalObject {
-    pub body: GlobalBody,
-    pub kind: Kind,
-}
-
-pub trait ObjectBehavior: std::fmt::Debug {
-    fn step(&mut self) -> Vec<Action>;
-    fn is_movable(&self) -> bool;
-    fn kind(&self) -> Kind;
-}
-
-#[derive(Debug)]
-pub enum Action {
-    Move,
-    Rotate,
-    Die,
-    Reproduce,
 }

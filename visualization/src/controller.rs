@@ -1,4 +1,4 @@
-use myelin_environment::object::{GlobalBody, GlobalObject};
+use myelin_environment::object::GlobalObject;
 use myelin_environment::simulation::Simulation;
 use myelin_worldgen::WorldGenerator;
 
