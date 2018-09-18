@@ -12,10 +12,10 @@ pub mod generator;
 /// API for [`World`] generation
 ///
 /// [`World`]: ../myelin_environment/world/trait.World.html
-pub trait WorldGenerator<'a> {
+pub trait WorldGenerator {
     /// Generate a new [`World`] and populates it with [`Objects`]
     ///
     /// [`World`]: ../myelin_environment/world/trait.World.html
     /// [`Objects`]: ../myelin_environment/object/struct.LocalBody.html
-    fn generate(&self) -> Box<dyn Simulation + 'a>;
+    fn generate(&self) -> Box<dyn Simulation>;
 }
