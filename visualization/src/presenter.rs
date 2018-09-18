@@ -12,7 +12,7 @@ pub(crate) struct CanvasPresenter {
 }
 
 impl Presenter for CanvasPresenter {
-    fn present_objects(&self, objects: &[business_object::GlobalObject<'_>]) {
+    fn present_objects(&self, objects: &[business_object::GlobalObject]) {
         let view_model = ViewModel {
             objects: objects
                 .iter()
@@ -41,7 +41,7 @@ impl CanvasPresenter {
 
     fn business_object_to_view_model_object(
         &self,
-        object: &business_object::GlobalObject<'_>,
+        object: &business_object::GlobalObject,
     ) -> view_model::Object {
         view_model::Object {
             shape: view_model::Polygon {
@@ -55,7 +55,7 @@ impl CanvasPresenter {
                         y: vertex.y,
                     }).collect(),
             },
-            kind: map_kind(&object.behavior.kind()),
+            kind: map_kind(&object.kind),
         }
     }
 }
@@ -116,7 +116,7 @@ mod tests {
                 orientation: business_object::Radians(3.14),
                 velocity: business_object::Velocity { x: -1, y: 34 },
             },
-            behavior: unimplemented!(),
+            kind: business_object::Kind::Organism,
         }];
         let expected_view_model = ViewModel {
             objects: vec![view_model::Object {

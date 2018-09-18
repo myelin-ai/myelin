@@ -6,7 +6,7 @@ pub(crate) trait Controller {
     fn step(&mut self);
 }
 pub(crate) trait Presenter {
-    fn present_objects(&self, objects: &[GlobalObject<'_>]);
+    fn present_objects(&self, objects: &[GlobalObject]);
 }
 
 pub(crate) struct ControllerImpl {
@@ -62,9 +62,9 @@ mod tests {
         fn set_simulated_timestep(&mut self, _: f64) {
             panic!("set_simulated_timestep() called unexpectedly");
         }
-        fn objects(&self) -> Vec<GlobalObject<'_>> {
+        fn objects(&self) -> Vec<GlobalObject> {
             *self.objects_was_called.borrow_mut() = true;
-            self.returned_objects
+            self.returned_objects.clone()
         }
     }
 
@@ -89,7 +89,7 @@ mod tests {
         }
     }
     impl Presenter for PresenterMock {
-        fn present_objects(&self, objects: &[GlobalObject<'_>]) {
+        fn present_objects(&self, objects: &[GlobalObject]) {
             *self.present_objects_was_called.borrow_mut() = true;
             self.expected_objects
                 .iter()
@@ -107,11 +107,11 @@ mod tests {
     }
 
     struct WorldGeneratorMock {
-        simulation_factory: Box<dyn FnOnce() -> Box<dyn Simulation>>,
+        simulation_factory: Box<dyn Fn() -> Box<dyn Simulation>>,
         generate_was_called: RefCell<bool>,
     }
     impl WorldGeneratorMock {
-        fn new(simulation_factory: Box<dyn FnOnce() -> Box<dyn Simulation>>) -> Self {
+        fn new(simulation_factory: Box<dyn Fn() -> Box<dyn Simulation>>) -> Self {
             Self {
                 generate_was_called: RefCell::new(false),
                 simulation_factory,
@@ -132,8 +132,8 @@ mod tests {
     }
 
     fn mock_controller(expected_objects: Vec<GlobalObject>) -> ControllerImpl {
-        let simulation_factory = Box::new(move || -> Box<dyn Simulation> {
-            Box::new(SimulationMock::new(expected_objects))
+        let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
+            Box::new(SimulationMock::new(expected_objects.clone()))
         });
         let world_generator = WorldGeneratorMock::new(simulation_factory);
         let presenter: PresenterMock = PresenterMock::new(expected_objects);
@@ -161,7 +161,7 @@ mod tests {
                 },
                 velocity: Velocity { x: 0, y: -1 },
             },
-            behavior: unimplemented!(),
+            kind: Kind::Organism,
         }];
         let mut controller = mock_controller(expected_objects);
         controller.step();
