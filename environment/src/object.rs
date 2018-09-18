@@ -16,7 +16,6 @@
 //!     },
 //!     orientation: Radians(0.0),
 //!     location: Location { x: 100, y: 100 },
-//!     velocity: Velocity { x: 0, y: 0 },
 //!     kind: Kind::Terrain,
 //! };
 //! ```

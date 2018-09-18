@@ -15,7 +15,6 @@
 //!             .build()
 //!             .unwrap(),
 //!     ).location(300, 450)
-//!     .velocity(4, 5)
 //!     .orientation(Radians(FRAC_PI_2))
 //!     .kind(Kind::Organism)
 //!     .build()
@@ -141,7 +140,6 @@ impl ObjectBuilder {
     ///             .build()
     ///             .unwrap(),
     ///     ).location(300, 450)
-    ///     .velocity(4, 5)
     ///     .orientation(Radians(FRAC_PI_2))
     ///     .kind(Kind::Organism)
     ///     .build()
