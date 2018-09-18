@@ -16,7 +16,6 @@
 //!     },
 //!     orientation: Radians(0.0),
 //!     location: Location { x: 100, y: 100 },
-//!     velocity: Velocity { x: 0, y: 0 },
 //!     kind: Kind::Terrain,
 //! };
 //! ```
@@ -64,10 +63,6 @@ pub struct LocalObject {
     /// An orientation of 0.0 means that the
     /// object is facing right.
     pub orientation: Radians,
-    /// The initial velocity of the object, defined
-    /// as a two dimensional vector relative to the
-    /// object's center
-    pub velocity: Velocity,
     /// The kind of object we are dealing with
     pub kind: Kind,
 }

@@ -135,16 +135,6 @@ impl NphysicsWorld {
             self.physics_world
                 .add_rigid_body(isometry, local_inertia, local_center_of_mass);
 
-        let linear_velocity = Vector2::new(
-            PhysicsType::from(object.velocity.x),
-            PhysicsType::from(object.velocity.y),
-        );
-        let rigid_body = self
-            .physics_world
-            .rigid_body_mut(rigid_body_handle)
-            .expect("add_rigid_body() returned invalid handle");
-        rigid_body.set_linear_velocity(linear_velocity);
-
         let material = Material::default();
         self.physics_world.add_collider(
             0.04,
@@ -275,7 +265,6 @@ mod tests {
                     .unwrap(),
             ).location(30, 40)
             .orientation(orientation)
-            .velocity(4, 5)
             .kind(Kind::Organism)
             .build()
             .unwrap()
@@ -378,7 +367,7 @@ mod tests {
                 ],
             },
             orientation: Radians(3.0),
-            velocity: Velocity { x: 4, y: 5 },
+            velocity: Velocity::default(),
             kind: Kind::Organism,
         };
         assert_eq!(expected_global_object, objects[0])
@@ -401,7 +390,7 @@ mod tests {
                     GlobalVertex { x: 40, y: 30 },
                 ],
             },
-            velocity: Velocity { x: 4, y: 5 },
+            velocity: Velocity::default(),
             kind: Kind::Organism,
         };
         assert_eq!(expected_global_object, objects[0])
@@ -424,7 +413,7 @@ mod tests {
                     GlobalVertex { x: 400, y: 300 },
                 ],
             },
-            velocity: Velocity { x: 0, y: 0 },
+            velocity: Velocity::default(),
             kind: Kind::Terrain,
         };
         assert_eq!(expected_global_object, objects[0])
@@ -448,19 +437,19 @@ mod tests {
                     GlobalVertex { x: 20, y: 30 },
                 ],
             },
-            velocity: Velocity { x: 4, y: 5 },
+            velocity: Velocity::default(),
             kind: Kind::Organism,
         };
         assert_eq!(expected_global_object, objects[0])
     }
 
+    #[ignore]
     #[test]
     fn timestep_is_respected() {
         let mut world = NphysicsWorld::with_timestep(1.0);
 
         let local_object = ObjectBuilder::new()
             .kind(Kind::Organism)
-            .velocity(1, 1)
             .location(5, 5)
             .shape(
                 PolygonBuilder::new()
@@ -488,6 +477,9 @@ mod tests {
         );
     }
 
+    /// Can be reactivated when https://github.com/myelin-ai/myelin/issues/92
+    /// has been resolved
+    #[ignore]
     #[test]
     fn timestep_can_be_changed() {
         let mut world = NphysicsWorld::with_timestep(0.0);
@@ -496,7 +488,6 @@ mod tests {
 
         let local_object = ObjectBuilder::new()
             .kind(Kind::Organism)
-            .velocity(1, 1)
             .location(5, 5)
             .shape(
                 PolygonBuilder::new()
@@ -524,6 +515,9 @@ mod tests {
         );
     }
 
+    /// Can be reactivated when https://github.com/myelin-ai/myelin/issues/92
+    /// has been resolved
+    #[ignore]
     #[test]
     fn step_is_ignored_for_grounded_objects() {
         use std::f64::consts::FRAC_PI_2;
