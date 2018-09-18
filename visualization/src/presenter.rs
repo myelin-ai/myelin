@@ -1,4 +1,4 @@
-use crate::simulation::Presenter;
+use crate::controller::Presenter;
 use crate::view_model::{self, ViewModel};
 use myelin_environment::object as business_object;
 
@@ -12,7 +12,7 @@ pub(crate) struct CanvasPresenter {
 }
 
 impl Presenter for CanvasPresenter {
-    fn present_objects(&self, objects: &[business_object::GlobalObject]) {
+    fn present_objects(&self, objects: &[business_object::GlobalObject<'_>]) {
         let view_model = ViewModel {
             objects: objects
                 .iter()
@@ -41,11 +41,12 @@ impl CanvasPresenter {
 
     fn business_object_to_view_model_object(
         &self,
-        object: &business_object::GlobalObject,
+        object: &business_object::GlobalObject<'_>,
     ) -> view_model::Object {
         view_model::Object {
             shape: view_model::Polygon {
                 vertices: object
+                    .body
                     .shape
                     .vertices
                     .iter()
@@ -54,7 +55,7 @@ impl CanvasPresenter {
                         y: vertex.y,
                     }).collect(),
             },
-            kind: map_kind(&object.kind),
+            kind: map_kind(&object.behavior.kind()),
         }
     }
 }
@@ -108,12 +109,14 @@ mod tests {
     #[test]
     fn maps_to_correct_view_model() {
         let objects = vec![business_object::GlobalObject {
-            shape: business_object::GlobalPolygon {
-                vertices: vec![business_object::GlobalVertex { x: 3, y: 15 }],
+            body: business_object::GlobalBody {
+                shape: business_object::GlobalPolygon {
+                    vertices: vec![business_object::GlobalVertex { x: 3, y: 15 }],
+                },
+                orientation: business_object::Radians(3.14),
+                velocity: business_object::Velocity { x: -1, y: 34 },
             },
-            orientation: business_object::Radians(3.14),
-            velocity: business_object::Velocity { x: -1, y: 34 },
-            kind: business_object::Kind::Organism,
+            behavior: unimplemented!(),
         }];
         let expected_view_model = ViewModel {
             objects: vec![view_model::Object {

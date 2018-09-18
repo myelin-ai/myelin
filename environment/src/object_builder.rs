@@ -1,4 +1,4 @@
-//! Convenient builders for [`LocalObject`] and [`LocalPolygon`]
+//! Convenient builders for [`LocalBody`] and [`LocalPolygon`]
 //! # Examples
 //! ```
 //! use myelin_environment::object::{Kind, Radians};
@@ -21,10 +21,10 @@
 //!     .unwrap();
 //! ```
 //!
-//! [`LocalObject`]: ../object/struct.LocalObject.html
+//! [`LocalBody`]: ../object/struct.LocalBody.html
 //! [`LocalPolygon`]: ../object/struct.LocalPolygon.html
 
-use crate::object::{Kind, LocalObject, LocalPolygon, LocalVertex, Location, Radians};
+use crate::object::{LocalBody, LocalPolygon, LocalVertex, Location, Radians};
 
 /// An error representing the values that have
 /// wrongly been ommited when building finished
@@ -34,25 +34,22 @@ pub struct ObjectBuilderError {
     pub missing_shape: bool,
     /// Flag signaling that .location(...) was never called
     pub missing_location: bool,
-    /// Flag signaling that .kind(...) was never called
-    pub missing_kind: bool,
 }
 
-/// [`LocalObject`] factory, which can be used in order to configure
+/// [`LocalBody`] factory, which can be used in order to configure
 /// the properties of a new object.
 /// Methods can be chained on it in order to configure it.
 ///
-/// [`LocalObject`]: ../object/struct.LocalObject.html
+/// [`LocalBody`]: ../object/struct.LocalBody.html
 #[derive(Default, Debug)]
 pub struct ObjectBuilder {
     shape: Option<LocalPolygon>,
     location: Option<Location>,
-    kind: Option<Kind>,
     orientation: Option<Radians>,
 }
 
 impl ObjectBuilder {
-    /// Generates the base configuration for creating a [`LocalObject`],
+    /// Generates the base configuration for creating a [`LocalBody`],
     /// from which configuration methods can be chained.
     /// # Examples
     /// ```
@@ -60,7 +57,7 @@ impl ObjectBuilder {
     /// let builder = ObjectBuilder::new();
     /// ```
     ///
-    /// [`LocalObject`]: ../object/struct.LocalObject.html
+    /// [`LocalBody`]: ../object/struct.LocalBody.html
     pub fn new() -> Self {
         Default::default()
     }
@@ -98,18 +95,6 @@ impl ObjectBuilder {
     /// # Examples
     /// ```
     /// use myelin_environment::object_builder::ObjectBuilder;
-    /// use myelin_environment::object::Kind;
-    /// ObjectBuilder::new()
-    ///     .kind(Kind::Plant);
-    /// ```
-    pub fn kind(&mut self, kind: Kind) -> &mut Self {
-        self.kind = Some(kind);
-        self
-    }
-
-    /// # Examples
-    /// ```
-    /// use myelin_environment::object_builder::ObjectBuilder;
     /// use myelin_environment::object::Radians;
     /// ObjectBuilder::new()
     ///     .orientation(Radians(4.5));
@@ -119,7 +104,7 @@ impl ObjectBuilder {
         self
     }
 
-    /// Build the [`LocalObject`] with all specified settings
+    /// Build the [`LocalBody`] with all specified settings
     /// # Errors
     /// If a non-optional member has not specified while building
     /// an error is returned, containing flags specifying which
@@ -146,18 +131,16 @@ impl ObjectBuilder {
     ///     .unwrap();
     /// ```
     ///
-    /// [`LocalObject`]: ../object/struct.LocalObject.html
-    pub fn build(&mut self) -> Result<LocalObject, ObjectBuilderError> {
+    /// [`LocalBody`]: ../object/struct.LocalBody.html
+    pub fn build(&mut self) -> Result<LocalBody, ObjectBuilderError> {
         let error = ObjectBuilderError {
             missing_shape: self.shape.is_none(),
             missing_location: self.location.is_none(),
-            missing_kind: self.kind.is_none(),
         };
 
-        let object = LocalObject {
+        let object = LocalBody {
             shape: self.shape.take().ok_or_else(|| error.clone())?,
             location: self.location.take().ok_or_else(|| error.clone())?,
-            kind: self.kind.take().ok_or(error)?,
             orientation: self.orientation.take().unwrap_or_else(Default::default),
         };
 
@@ -282,34 +265,9 @@ mod test {
     }
 
     #[test]
-    fn test_object_builder_should_error_for_missing_kind() {
-        let result = ObjectBuilder::new()
-            .shape(
-                PolygonBuilder::new()
-                    .vertex(0, 0)
-                    .vertex(0, 1)
-                    .vertex(1, 0)
-                    .vertex(1, 1)
-                    .build()
-                    .unwrap(),
-            ).location(10, 10)
-            .orientation(Radians(0.0))
-            .build();
-
-        assert_eq!(
-            Err(ObjectBuilderError {
-                missing_kind: true,
-                ..Default::default()
-            }),
-            result
-        );
-    }
-
-    #[test]
     fn test_object_builder_should_error_for_missing_shape() {
         let result = ObjectBuilder::new()
             .location(10, 10)
-            .kind(Kind::Organism)
             .orientation(Radians(0.0))
             .build();
 
@@ -334,11 +292,10 @@ mod test {
                     .build()
                     .unwrap(),
             ).location(10, 10)
-            .kind(Kind::Organism)
             .orientation(Radians(0.0))
             .build();
 
-        let expected = LocalObject {
+        let expected = LocalBody {
             orientation: Radians(0.0),
             shape: LocalPolygon {
                 vertices: vec![
@@ -349,7 +306,6 @@ mod test {
                 ],
             },
             location: Location { x: 10, y: 10 },
-            kind: Kind::Organism,
         };
 
         assert_eq!(Ok(expected), result);
@@ -366,8 +322,7 @@ mod test {
                     .vertex(1, 1)
                     .build()
                     .unwrap(),
-            ).kind(Kind::Organism)
-            .orientation(Radians(0.0))
+            ).orientation(Radians(0.0))
             .build();
 
         assert_eq!(
@@ -391,10 +346,9 @@ mod test {
                     .build()
                     .unwrap(),
             ).location(30, 40)
-            .kind(Kind::Organism)
             .build();
 
-        let expected = LocalObject {
+        let expected = LocalBody {
             orientation: Radians(0.0),
             shape: LocalPolygon {
                 vertices: vec![
@@ -405,7 +359,6 @@ mod test {
                 ],
             },
             location: Location { x: 30, y: 40 },
-            kind: Kind::Organism,
         };
 
         assert_eq!(Ok(expected), result);
@@ -419,7 +372,6 @@ mod test {
             Err(ObjectBuilderError {
                 missing_shape: true,
                 missing_location: true,
-                missing_kind: true,
             }),
             result
         );
@@ -437,11 +389,10 @@ mod test {
                     .build()
                     .unwrap(),
             ).location(30, 40)
-            .kind(Kind::Organism)
             .orientation(Radians(1.1))
             .build();
 
-        let expected = LocalObject {
+        let expected = LocalBody {
             orientation: Radians(1.1),
             shape: LocalPolygon {
                 vertices: vec![
@@ -452,7 +403,6 @@ mod test {
                 ],
             },
             location: Location { x: 30, y: 40 },
-            kind: Kind::Organism,
         };
 
         assert_eq!(Ok(expected), result);

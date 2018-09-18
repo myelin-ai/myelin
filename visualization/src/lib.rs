@@ -4,8 +4,8 @@
 #![deny(rust_2018_idioms)]
 
 pub mod bootstrapper;
+pub(crate) mod controller;
 pub mod input_handler;
 pub(crate) mod presenter;
-pub(crate) mod simulation;
 pub mod view;
 pub(crate) mod view_model;

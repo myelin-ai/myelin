@@ -5,7 +5,7 @@
 //! ```
 //! use myelin_environment::object::*;
 //!
-//! let square = LocalObject {
+//! let square = LocalBody {
 //!     shape: LocalPolygon {
 //!         vertices: vec![
 //!             LocalVertex { x: -50, y: -50 },
@@ -19,14 +19,14 @@
 //!     kind: Kind::Terrain,
 //! };
 //! ```
-//! The prefered way of constructing a [`LocalObject`] however
+//! The prefered way of constructing a [`LocalBody`] however
 //! is by using an [`ObjectBuilder`].
 //!
 //! The global analog to the last example looks like this:
 //! ```
 //! use myelin_environment::object::*;
 //!
-//! let square = GlobalObject {
+//! let square = GlobalBody {
 //!     shape: GlobalPolygon {
 //!         vertices: vec![
 //!             GlobalVertex { x: 50, y: 50 },
@@ -42,19 +42,19 @@
 //! ```
 //!
 //! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
-//! [`LocalObject`]: ./struct.LocalObject.html
+//! [`LocalBody`]: ./struct.LocalBody.html
 
 /// An objects that can be placed in the world.
 /// Its coordinates are relative to the center of
 /// the object, which is determined by the [`location`]
 ///
-/// [`location`]: ./struct.LocalObject.html#structfield.location
+/// [`location`]: ./struct.LocalBody.html#structfield.location
 #[derive(Debug, PartialEq, Clone)]
-pub struct LocalObject {
+pub struct LocalBody {
     /// The vertices defining the shape of the object
     /// in relation to its [`location`]
     ///
-    /// [`location`]: ./struct.LocalObject.html#structfield.location
+    /// [`location`]: ./struct.LocalBody.html#structfield.location
     pub shape: LocalPolygon,
     /// The global position of the center of the object
     pub location: Location,
@@ -63,15 +63,13 @@ pub struct LocalObject {
     /// An orientation of 0.0 means that the
     /// object is facing right.
     pub orientation: Radians,
-    /// The kind of object we are dealing with
-    pub kind: Kind,
 }
 
 /// An object that has already been placed in the world.
 /// Its coordinates are global, using the upper left corner of
 /// the world as their origin.
 #[derive(Debug, PartialEq, Clone)]
-pub struct GlobalObject {
+pub struct GlobalBody {
     /// The global vertices defining the shape of the object
     /// in relation to the upper left corner of the world
     pub shape: GlobalPolygon,
@@ -84,8 +82,6 @@ pub struct GlobalObject {
     /// as a two dimensional vector relative to the
     /// objects center
     pub velocity: Velocity,
-    /// The kind of object we are dealing with
-    pub kind: Kind,
 }
 
 /// This type holds the vertices of an object
@@ -153,4 +149,30 @@ pub enum Kind {
     Water,
     /// Impassable terrain
     Terrain,
+}
+
+#[derive(Debug)]
+pub struct LocalObject {
+    pub body: LocalBody,
+    pub behavior: Box<dyn ObjectBehavior>,
+}
+
+#[derive(Debug)]
+pub struct GlobalObject<'a> {
+    pub body: GlobalBody,
+    pub behavior: &'a dyn ObjectBehavior,
+}
+
+pub trait ObjectBehavior: std::fmt::Debug {
+    fn step(&mut self) -> Vec<Action>;
+    fn is_movable(&self) -> bool;
+    fn kind(&self) -> Kind;
+}
+
+#[derive(Debug)]
+pub enum Action {
+    Move,
+    Rotate,
+    Die,
+    Reproduce,
 }
