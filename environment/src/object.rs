@@ -157,10 +157,10 @@ pub struct LocalObject {
     pub behavior: Box<dyn ObjectBehavior>,
 }
 
-#[derive(Debug)]
-pub struct GlobalObject<'a> {
+#[derive(Debug, Clone)]
+pub struct GlobalObject {
     pub body: GlobalBody,
-    pub behavior: &'a dyn ObjectBehavior,
+    pub kind: Kind,
 }
 
 pub trait ObjectBehavior: std::fmt::Debug {
