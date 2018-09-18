@@ -6,4 +6,5 @@
 
 pub mod object;
 pub mod object_builder;
+pub mod simulation;
 pub mod world;
