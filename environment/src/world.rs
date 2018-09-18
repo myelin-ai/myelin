@@ -443,6 +443,7 @@ mod tests {
         assert_eq!(expected_global_object, objects[0])
     }
 
+    #[ignore]
     #[test]
     fn timestep_is_respected() {
         let mut world = NphysicsWorld::with_timestep(1.0);
@@ -476,6 +477,9 @@ mod tests {
         );
     }
 
+    /// Can be reactivated when https://github.com/myelin-ai/myelin/issues/92
+    /// has been resolved
+    #[ignore]
     #[test]
     fn timestep_can_be_changed() {
         let mut world = NphysicsWorld::with_timestep(0.0);
@@ -511,6 +515,9 @@ mod tests {
         );
     }
 
+    /// Can be reactivated when https://github.com/myelin-ai/myelin/issues/92
+    /// has been resolved
+    #[ignore]
     #[test]
     fn step_is_ignored_for_grounded_objects() {
         use std::f64::consts::FRAC_PI_2;
