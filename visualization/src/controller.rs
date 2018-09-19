@@ -155,13 +155,13 @@ mod tests {
     #[test]
     fn propagates_step_step() {
         let expected_objects = vec![GlobalObject {
-            body: GlobalBody {
+            body: Body {
                 orientation: Radians(6.0),
-                shape: GlobalPolygon {
+                shape: Polygon {
                     vertices: vec![
-                        GlobalVertex { x: 2, y: 3 },
-                        GlobalVertex { x: 10, y: 3 },
-                        GlobalVertex { x: 30, y: 34 },
+                        Vertex { x: 2, y: 3 },
+                        Vertex { x: 10, y: 3 },
+                        Vertex { x: 30, y: 34 },
                     ],
                 },
                 velocity: Velocity { x: 0, y: -1 },

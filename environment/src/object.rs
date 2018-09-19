@@ -5,13 +5,13 @@
 //! ```
 //! use myelin_environment::object::*;
 //!
-//! let square = LocalBody {
-//!     shape: LocalPolygon {
+//! let square = Body {
+//!     shape: Polygon {
 //!         vertices: vec![
-//!             LocalVertex { x: -50, y: -50 },
-//!             LocalVertex { x: -50, y: 50 },
-//!             LocalVertex { x: 50, y: 50 },
-//!             LocalVertex { x: 50, y: -50 },
+//!             Vertex { x: -50, y: -50 },
+//!             Vertex { x: -50, y: 50 },
+//!             Vertex { x: 50, y: 50 },
+//!             Vertex { x: 50, y: -50 },
 //!         ],
 //!     },
 //!     orientation: Radians(0.0),
@@ -19,20 +19,20 @@
 //!     kind: Kind::Terrain,
 //! };
 //! ```
-//! The prefered way of constructing a [`LocalBody`] however
+//! The prefered way of constructing a [`Body`] however
 //! is by using an [`ObjectBuilder`].
 //!
 //! The global analog to the last example looks like this:
 //! ```
 //! use myelin_environment::object::*;
 //!
-//! let square = GlobalBody {
-//!     shape: GlobalPolygon {
+//! let square = Body {
+//!     shape: Polygon {
 //!         vertices: vec![
-//!             GlobalVertex { x: 50, y: 50 },
-//!             GlobalVertex { x: 150, y: 50 },
-//!             GlobalVertex { x: 150, y: 150 },
-//!             GlobalVertex { x: 50, y: 150 },
+//!             Vertex { x: 50, y: 50 },
+//!             Vertex { x: 150, y: 50 },
+//!             Vertex { x: 150, y: 150 },
+//!             Vertex { x: 50, y: 150 },
 //!         ],
 //!     },
 //!     orientation: Radians(0.0),
@@ -42,21 +42,9 @@
 //! ```
 //!
 //! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
-//! [`LocalBody`]: ./struct.LocalBody.html
+//! [`Body`]: ./struct.Body.html
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct GlobalObject {
-    pub body: GlobalBody,
-    pub kind: Kind,
-}
-
-#[derive(Debug)]
-pub struct LocalObject {
-    pub body: LocalBody,
-    pub behavior: Box<dyn ObjectBehavior>,
-}
-
-pub trait ObjectBehavior: std::fmt::Debug {
+pub trait Object: std::fmt::Debug {
     fn step(&mut self) -> Vec<Action>;
     fn is_movable(&self) -> bool;
     fn kind(&self) -> Kind;
@@ -74,14 +62,14 @@ pub enum Action {
 /// Its coordinates are relative to the center of
 /// the object, which is determined by the [`location`]
 ///
-/// [`location`]: ./struct.LocalBody.html#structfield.location
+/// [`location`]: ./struct.Body.html#structfield.location
 #[derive(Debug, PartialEq, Clone)]
-pub struct LocalBody {
+pub struct Body {
     /// The vertices defining the shape of the object
     /// in relation to its [`location`]
     ///
-    /// [`location`]: ./struct.LocalBody.html#structfield.location
-    pub shape: LocalPolygon,
+    /// [`location`]: ./struct.Body.html#structfield.location
+    pub shape: Polygon,
     /// The global position of the center of the object
     pub location: Location,
     /// The orientation of the object, measured in
@@ -91,57 +79,21 @@ pub struct LocalBody {
     pub orientation: Radians,
 }
 
-/// An object that has already been placed in the world.
-/// Its coordinates are global, using the upper left corner of
-/// the world as their origin.
-#[derive(Debug, PartialEq, Clone)]
-pub struct GlobalBody {
-    /// The global vertices defining the shape of the object
-    /// in relation to the upper left corner of the world
-    pub shape: GlobalPolygon,
-    /// The orientation of the object, measured in
-    /// radians within the range [0.0; 2π).
-    /// An orientation of 0.0 means that the
-    /// object is facing right.
-    pub orientation: Radians,
-    /// The current velocity of the object, defined
-    /// as a two dimensional vector relative to the
-    /// objects center
-    pub velocity: Velocity,
-}
-
 /// This type holds the vertices of an object
 /// in relation to its center, i.e. [0; 0] means
 /// the exact center of the object.
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub struct LocalPolygon {
+pub struct Polygon {
     /// The vertices defining the shape of the object
-    pub vertices: Vec<LocalVertex>,
-}
-
-/// This type holds the vertices of an object
-/// in relation to the world, i.e. [0; 0] means
-/// the upper left corner of the world.
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct GlobalPolygon {
-    /// The vertices defining the shape of the object
-    pub vertices: Vec<GlobalVertex>,
+    pub vertices: Vec<Vertex>,
 }
 
 /// The coordinates representing a corner
 /// of a polygon in relation to its center
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub struct LocalVertex {
+pub struct Vertex {
     pub x: i32,
     pub y: i32,
-}
-
-/// The coordinates representing a corner
-/// of a polygon in relation to the world origin
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct GlobalVertex {
-    pub x: u32,
-    pub y: u32,
 }
 
 /// A radian confined to the range of [0.0; 2π)

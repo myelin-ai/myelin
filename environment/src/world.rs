@@ -3,14 +3,14 @@
 //! by physics.
 //!
 //! [`World`]: ./trait.World.html
-//! [`Objects`]: ../object/struct.LocalBody.html
+//! [`Objects`]: ../object/struct.Body.html
 use crate::object::*;
-use crate::simulation::{ObjectHandle, World};
+use crate::simulation::{BodyHandle, World};
 use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
 use ncollide2d::world::CollisionObjectHandle;
 use nphysics2d::math::{Isometry, Point, Vector};
-use nphysics2d::object::{BodyHandle, Collider, ColliderHandle, Material};
+use nphysics2d::object::{BodyHandle as NphysicsBodyHandle, Collider, ColliderHandle, Material};
 use nphysics2d::volumetric::Volumetric;
 use nphysics2d::world::World as PhysicsWorld;
 use std::collections::HashMap;
@@ -47,7 +47,7 @@ impl NphysicsWorld {
         }
     }
 
-    fn convert_to_object(&self, collider_handle: ColliderHandle) -> GlobalBody {
+    fn convert_to_object(&self, collider_handle: ColliderHandle) -> Body {
         let collider = self
             .physics_world
             .collider(collider_handle)
@@ -60,16 +60,15 @@ impl NphysicsWorld {
         let global_vertices: Vec<_> = convex_polygon
             .points()
             .iter()
-            .map(|vertex| position_isometry * vertex)
-            .map(|vertex| GlobalVertex {
-                x: vertex.x.round() as u32,
-                y: vertex.y.round() as u32,
+            .map(|vertex| Vertex {
+                x: vertex.x.round() as i32,
+                y: vertex.y.round() as i32,
             }).collect();
 
         let velocity = self.get_velocity(&collider);
 
-        GlobalBody {
-            shape: GlobalPolygon {
+        Body {
+            shape: Polygon {
                 vertices: global_vertices,
             },
             orientation: to_orientation(position_isometry.rotation.angle()),
@@ -119,7 +118,7 @@ where
     (*iter.next().unwrap(), *iter.next().unwrap())
 }
 
-fn get_isometry(object: &LocalBody) -> Isometry<PhysicsType> {
+fn get_isometry(object: &Body) -> Isometry<PhysicsType> {
     Isometry::new(
         Vector::new(
             PhysicsType::from(object.location.x),
@@ -129,7 +128,7 @@ fn get_isometry(object: &LocalBody) -> Isometry<PhysicsType> {
     )
 }
 
-fn get_shape(object: &LocalBody) -> ShapeHandle<PhysicsType> {
+fn get_shape(object: &Body) -> ShapeHandle<PhysicsType> {
     let points: Vec<_> = object
         .shape
         .vertices
@@ -145,7 +144,7 @@ impl World for NphysicsWorld {
         self.physics_world.step();
     }
 
-    fn add_rigid_object(&mut self, object: LocalBody) -> ObjectHandle {
+    fn add_rigid_object(&mut self, object: Body) -> BodyHandle {
         let shape = get_shape(&object);
         let local_inertia = shape.inertia(0.1);
         let local_center_of_mass = shape.center_of_mass();
@@ -165,18 +164,22 @@ impl World for NphysicsWorld {
         to_object_handle(collider_handle)
     }
 
-    fn add_grounded_object(&mut self, object: LocalBody) -> ObjectHandle {
+    fn add_grounded_object(&mut self, object: Body) -> BodyHandle {
         let shape = get_shape(&object);
         let material = Material::default();
         let isometry = get_isometry(&object);
 
-        let collider_handle =
-            self.physics_world
-                .add_collider(0.04, shape, BodyHandle::ground(), isometry, material);
+        let collider_handle = self.physics_world.add_collider(
+            0.04,
+            shape,
+            NphysicsBodyHandle::ground(),
+            isometry,
+            material,
+        );
         to_object_handle(collider_handle)
     }
 
-    fn object(&self, handle: ObjectHandle) -> GlobalBody {
+    fn object(&self, handle: BodyHandle) -> Body {
         let collider_handle = to_collider_handle(handle);
         self.convert_to_object(collider_handle)
     }
@@ -186,11 +189,11 @@ impl World for NphysicsWorld {
     }
 }
 
-fn to_object_handle(collider_handle: ColliderHandle) -> ObjectHandle {
-    ObjectHandle(collider_handle.uid())
+fn to_object_handle(collider_handle: ColliderHandle) -> BodyHandle {
+    BodyHandle(collider_handle.uid())
 }
 
-fn to_collider_handle(object_handle: ObjectHandle) -> ColliderHandle {
+fn to_collider_handle(object_handle: BodyHandle) -> ColliderHandle {
     CollisionObjectHandle(object_handle.0)
 }
 
@@ -223,7 +226,7 @@ mod tests {
 
     const DEFAULT_TIMESTEP: f64 = 1.0;
 
-    fn local_rigid_object(orientation: Radians) -> LocalBody {
+    fn local_rigid_object(orientation: Radians) -> Body {
         ObjectBuilder::new()
             .shape(
                 PolygonBuilder::new()
@@ -239,7 +242,7 @@ mod tests {
             .unwrap()
     }
 
-    fn local_grounded_object(orientation: Radians) -> LocalBody {
+    fn local_grounded_object(orientation: Radians) -> Body {
         ObjectBuilder::new()
             .shape(
                 PolygonBuilder::new()
@@ -259,7 +262,7 @@ mod tests {
     #[test]
     fn panics_on_invalid_handle() {
         let world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let object = world.object(ObjectHandle(1337));
+        let object = world.object(BodyHandle(1337));
     }
 
     #[test]
@@ -299,22 +302,22 @@ mod tests {
         let object = local_rigid_object(Radians(3.0));
         let handle = world.add_rigid_object(object);
 
-        let expected_global_object = GlobalBody {
-            shape: GlobalPolygon {
+        let expected_global_object = Body {
+            shape: Polygon {
                 vertices: vec![
-                    GlobalVertex {
+                    Vertex {
                         x: 20 - 1,
                         y: 30 + 2,
                     },
-                    GlobalVertex {
+                    Vertex {
                         x: 40 - 2,
                         y: 30 - 1,
                     },
-                    GlobalVertex {
+                    Vertex {
                         x: 40 + 1,
                         y: 50 - 2,
                     },
-                    GlobalVertex {
+                    Vertex {
                         x: 20 + 2,
                         y: 50 + 1,
                     },
@@ -334,14 +337,14 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         let handle = world.add_rigid_object(object);
 
-        let expected_global_object = GlobalBody {
+        let expected_global_object = Body {
             orientation: Default::default(),
-            shape: GlobalPolygon {
+            shape: Polygon {
                 vertices: vec![
-                    GlobalVertex { x: 40, y: 50 },
-                    GlobalVertex { x: 20, y: 50 },
-                    GlobalVertex { x: 20, y: 30 },
-                    GlobalVertex { x: 40, y: 30 },
+                    Vertex { x: 40, y: 50 },
+                    Vertex { x: 20, y: 50 },
+                    Vertex { x: 20, y: 30 },
+                    Vertex { x: 40, y: 30 },
                 ],
             },
             velocity: Velocity::default(),
@@ -357,14 +360,14 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         let handle = world.add_rigid_object(object);
 
-        let expected_global_object = GlobalBody {
+        let expected_global_object = Body {
             orientation: Default::default(),
-            shape: GlobalPolygon {
+            shape: Polygon {
                 vertices: vec![
-                    GlobalVertex { x: 400, y: 500 },
-                    GlobalVertex { x: 200, y: 500 },
-                    GlobalVertex { x: 200, y: 300 },
-                    GlobalVertex { x: 400, y: 300 },
+                    Vertex { x: 400, y: 500 },
+                    Vertex { x: 200, y: 500 },
+                    Vertex { x: 200, y: 300 },
+                    Vertex { x: 400, y: 300 },
                 ],
             },
             velocity: Velocity::default(),
@@ -381,14 +384,14 @@ mod tests {
         let object = local_rigid_object(orientation);
         let handle = world.add_rigid_object(object);
 
-        let expected_global_object = GlobalBody {
+        let expected_global_object = Body {
             orientation,
-            shape: GlobalPolygon {
+            shape: Polygon {
                 vertices: vec![
-                    GlobalVertex { x: 40, y: 30 },
-                    GlobalVertex { x: 40, y: 50 },
-                    GlobalVertex { x: 20, y: 50 },
-                    GlobalVertex { x: 20, y: 30 },
+                    Vertex { x: 40, y: 30 },
+                    Vertex { x: 40, y: 50 },
+                    Vertex { x: 20, y: 50 },
+                    Vertex { x: 20, y: 30 },
                 ],
             },
             velocity: Velocity::default(),
@@ -423,10 +426,10 @@ mod tests {
         let object = world.object(handle);
         assert_eq!(
             vec![
-                GlobalVertex { x: 11, y: 11 },
-                GlobalVertex { x: 11, y: 1 },
-                GlobalVertex { x: 1, y: 1 },
-                GlobalVertex { x: 1, y: 11 },
+                Vertex { x: 11, y: 11 },
+                Vertex { x: 11, y: 1 },
+                Vertex { x: 1, y: 1 },
+                Vertex { x: 1, y: 11 },
             ],
             object.shape.vertices
         );
@@ -461,10 +464,10 @@ mod tests {
         let object = world.object(handle);
         assert_eq!(
             vec![
-                GlobalVertex { x: 11, y: 11 },
-                GlobalVertex { x: 11, y: 1 },
-                GlobalVertex { x: 1, y: 1 },
-                GlobalVertex { x: 1, y: 11 },
+                Vertex { x: 11, y: 11 },
+                Vertex { x: 11, y: 1 },
+                Vertex { x: 1, y: 1 },
+                Vertex { x: 1, y: 11 },
             ],
             object.shape.vertices
         );
@@ -482,13 +485,13 @@ mod tests {
         let handle = world.add_grounded_object(object);
         world.step();
 
-        let expected_global_object = GlobalBody {
-            shape: GlobalPolygon {
+        let expected_global_object = Body {
+            shape: Polygon {
                 vertices: vec![
-                    GlobalVertex { x: 200, y: 500 },
-                    GlobalVertex { x: 200, y: 300 },
-                    GlobalVertex { x: 400, y: 300 },
-                    GlobalVertex { x: 400, y: 500 },
+                    Vertex { x: 200, y: 500 },
+                    Vertex { x: 200, y: 300 },
+                    Vertex { x: 400, y: 300 },
+                    Vertex { x: 400, y: 500 },
                 ],
             },
             orientation: Radians(FRAC_PI_2),
