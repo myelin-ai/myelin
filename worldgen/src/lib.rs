@@ -16,6 +16,6 @@ pub trait WorldGenerator {
     /// Generate a new [`World`] and populates it with [`Objects`]
     ///
     /// [`World`]: ../myelin_environment/world/trait.World.html
-    /// [`Objects`]: ../myelin_environment/object/struct.LocalBody.html
+    /// [`Objects`]: ../myelin_environment/object/struct.Body.html
     fn generate(&self) -> Box<dyn Simulation>;
 }

@@ -109,9 +109,9 @@ mod tests {
     #[test]
     fn maps_to_correct_view_model() {
         let objects = vec![business_object::GlobalObject {
-            body: business_object::GlobalBody {
-                shape: business_object::GlobalPolygon {
-                    vertices: vec![business_object::GlobalVertex { x: 3, y: 15 }],
+            body: business_object::Body {
+                shape: business_object::Polygon {
+                    vertices: vec![business_object::Vertex { x: 3, y: 15 }],
                 },
                 orientation: business_object::Radians(3.14),
                 velocity: business_object::Velocity { x: -1, y: 34 },

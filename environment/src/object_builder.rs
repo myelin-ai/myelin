@@ -1,4 +1,4 @@
-//! Convenient builders for [`LocalBody`] and [`LocalPolygon`]
+//! Convenient builders for [`Body`] and [`Polygon`]
 //! # Examples
 //! ```
 //! use myelin_environment::object::{Kind, Radians};
@@ -21,10 +21,10 @@
 //!     .unwrap();
 //! ```
 //!
-//! [`LocalBody`]: ../object/struct.LocalBody.html
-//! [`LocalPolygon`]: ../object/struct.LocalPolygon.html
+//! [`Body`]: ../object/struct.Body.html
+//! [`Polygon`]: ../object/struct.Polygon.html
 
-use crate::object::{LocalBody, LocalPolygon, LocalVertex, Location, Radians};
+use crate::object::{Body, Location, Polygon, Radians, Vertex};
 
 /// An error representing the values that have
 /// wrongly been ommited when building finished
@@ -36,20 +36,20 @@ pub struct ObjectBuilderError {
     pub missing_location: bool,
 }
 
-/// [`LocalBody`] factory, which can be used in order to configure
+/// [`Body`] factory, which can be used in order to configure
 /// the properties of a new object.
 /// Methods can be chained on it in order to configure it.
 ///
-/// [`LocalBody`]: ../object/struct.LocalBody.html
+/// [`Body`]: ../object/struct.Body.html
 #[derive(Default, Debug)]
 pub struct ObjectBuilder {
-    shape: Option<LocalPolygon>,
+    shape: Option<Polygon>,
     location: Option<Location>,
     orientation: Option<Radians>,
 }
 
 impl ObjectBuilder {
-    /// Generates the base configuration for creating a [`LocalBody`],
+    /// Generates the base configuration for creating a [`Body`],
     /// from which configuration methods can be chained.
     /// # Examples
     /// ```
@@ -57,7 +57,7 @@ impl ObjectBuilder {
     /// let builder = ObjectBuilder::new();
     /// ```
     ///
-    /// [`LocalBody`]: ../object/struct.LocalBody.html
+    /// [`Body`]: ../object/struct.Body.html
     pub fn new() -> Self {
         Default::default()
     }
@@ -76,7 +76,7 @@ impl ObjectBuilder {
     ///             .unwrap(),
     ///     );
     /// ```
-    pub fn shape(&mut self, polygon: LocalPolygon) -> &mut Self {
+    pub fn shape(&mut self, polygon: Polygon) -> &mut Self {
         self.shape = Some(polygon);
         self
     }
@@ -104,7 +104,7 @@ impl ObjectBuilder {
         self
     }
 
-    /// Build the [`LocalBody`] with all specified settings
+    /// Build the [`Body`] with all specified settings
     /// # Errors
     /// If a non-optional member has not specified while building
     /// an error is returned, containing flags specifying which
@@ -131,14 +131,14 @@ impl ObjectBuilder {
     ///     .unwrap();
     /// ```
     ///
-    /// [`LocalBody`]: ../object/struct.LocalBody.html
-    pub fn build(&mut self) -> Result<LocalBody, ObjectBuilderError> {
+    /// [`Body`]: ../object/struct.Body.html
+    pub fn build(&mut self) -> Result<Body, ObjectBuilderError> {
         let error = ObjectBuilderError {
             missing_shape: self.shape.is_none(),
             missing_location: self.location.is_none(),
         };
 
-        let object = LocalBody {
+        let object = Body {
             shape: self.shape.take().ok_or_else(|| error.clone())?,
             location: self.location.take().ok_or_else(|| error.clone())?,
             orientation: self.orientation.take().unwrap_or_else(Default::default),
@@ -148,18 +148,18 @@ impl ObjectBuilder {
     }
 }
 
-/// [`LocalPolygon`] factory, which can be used in order to configure
+/// [`Polygon`] factory, which can be used in order to configure
 /// the properties of a new polygon.
 /// Methods can be chained on it in order to configure it.
 ///
-/// [`LocalPolygon`]: ../object/struct.LocalPolygon.html
+/// [`Polygon`]: ../object/struct.Polygon.html
 #[derive(Default, Debug)]
 pub struct PolygonBuilder {
-    vertices: Vec<LocalVertex>,
+    vertices: Vec<Vertex>,
 }
 
 impl PolygonBuilder {
-    /// Generates the base configuration for creating a [`LocalPolygon`],
+    /// Generates the base configuration for creating a [`Polygon`],
     /// from which configuration methods can be chained.
     /// # Examples
     /// ```
@@ -167,7 +167,7 @@ impl PolygonBuilder {
     /// let builder = PolygonBuilder::new();
     /// ```
     ///
-    /// [`LocalPolygon`]: ../object/struct.LocalPolygon.html
+    /// [`Polygon`]: ../object/struct.Polygon.html
     pub fn new() -> Self {
         Default::default()
     }
@@ -183,15 +183,15 @@ impl PolygonBuilder {
     ///     .vertex(-50, 50);
     /// ```
     pub fn vertex(mut self, x: i32, y: i32) -> Self {
-        self.vertices.push(LocalVertex { x, y });
+        self.vertices.push(Vertex { x, y });
         self
     }
 
-    /// Finishes building the [`LocalPolygon`] with all
+    /// Finishes building the [`Polygon`] with all
     /// vertices that have been configured up to this point
     /// # Errors
     /// This method will return an error if the number of configured
-    /// vertices is less than three, as the resulting [`LocalPolygon`]
+    /// vertices is less than three, as the resulting [`Polygon`]
     /// would not be two-dimensional.
     /// # Examples
     /// ```
@@ -206,15 +206,15 @@ impl PolygonBuilder {
     ///     .unwrap();
     /// ```
     ///
-    /// [`LocalPolygon`]: ../object/struct.LocalPolygon.html
-    pub fn build(self) -> Result<LocalPolygon, ()> {
+    /// [`Polygon`]: ../object/struct.Polygon.html
+    pub fn build(self) -> Result<Polygon, ()> {
         const MINIMUM_VERTICES_IN_A_POLYGON: usize = 3;
 
         if self.vertices.len() < MINIMUM_VERTICES_IN_A_POLYGON {
             return Err(());
         }
 
-        Ok(LocalPolygon {
+        Ok(Polygon {
             vertices: self.vertices,
         })
     }
@@ -234,12 +234,12 @@ mod test {
             .build()
             .unwrap();
 
-        let expected = LocalPolygon {
+        let expected = Polygon {
             vertices: vec![
-                LocalVertex { x: 0, y: 0 },
-                LocalVertex { x: 0, y: 1 },
-                LocalVertex { x: 1, y: 0 },
-                LocalVertex { x: 1, y: 1 },
+                Vertex { x: 0, y: 0 },
+                Vertex { x: 0, y: 1 },
+                Vertex { x: 1, y: 0 },
+                Vertex { x: 1, y: 1 },
             ],
         };
 
@@ -295,14 +295,14 @@ mod test {
             .orientation(Radians(0.0))
             .build();
 
-        let expected = LocalBody {
+        let expected = Body {
             orientation: Radians(0.0),
-            shape: LocalPolygon {
+            shape: Polygon {
                 vertices: vec![
-                    LocalVertex { x: 0, y: 0 },
-                    LocalVertex { x: 0, y: 1 },
-                    LocalVertex { x: 1, y: 0 },
-                    LocalVertex { x: 1, y: 1 },
+                    Vertex { x: 0, y: 0 },
+                    Vertex { x: 0, y: 1 },
+                    Vertex { x: 1, y: 0 },
+                    Vertex { x: 1, y: 1 },
                 ],
             },
             location: Location { x: 10, y: 10 },
@@ -348,14 +348,14 @@ mod test {
             ).location(30, 40)
             .build();
 
-        let expected = LocalBody {
+        let expected = Body {
             orientation: Radians(0.0),
-            shape: LocalPolygon {
+            shape: Polygon {
                 vertices: vec![
-                    LocalVertex { x: 0, y: 0 },
-                    LocalVertex { x: 0, y: 1 },
-                    LocalVertex { x: 1, y: 0 },
-                    LocalVertex { x: 1, y: 1 },
+                    Vertex { x: 0, y: 0 },
+                    Vertex { x: 0, y: 1 },
+                    Vertex { x: 1, y: 0 },
+                    Vertex { x: 1, y: 1 },
                 ],
             },
             location: Location { x: 30, y: 40 },
@@ -392,14 +392,14 @@ mod test {
             .orientation(Radians(1.1))
             .build();
 
-        let expected = LocalBody {
+        let expected = Body {
             orientation: Radians(1.1),
-            shape: LocalPolygon {
+            shape: Polygon {
                 vertices: vec![
-                    LocalVertex { x: 0, y: 0 },
-                    LocalVertex { x: 0, y: 1 },
-                    LocalVertex { x: 1, y: 0 },
-                    LocalVertex { x: 1, y: 1 },
+                    Vertex { x: 0, y: 0 },
+                    Vertex { x: 0, y: 1 },
+                    Vertex { x: 1, y: 0 },
+                    Vertex { x: 1, y: 1 },
                 ],
             },
             location: Location { x: 30, y: 40 },

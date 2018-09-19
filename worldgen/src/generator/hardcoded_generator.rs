@@ -1,7 +1,7 @@
 //! A generator for a hardcoded simulation
 
 use crate::WorldGenerator;
-use myelin_environment::object::{Kind, LocalBody, LocalObject, Radians};
+use myelin_environment::object::{Body, Kind, LocalObject, Radians};
 use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
 use myelin_environment::simulation::Simulation;
 use std::f64::consts::FRAC_PI_2;
