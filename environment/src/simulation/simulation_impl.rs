@@ -1,5 +1,5 @@
 use super::{ObjectDescription, Simulation};
-use crate::object::*;
+use crate::object::{Mobility, Object, Polygon, Position};
 use std::fmt;
 
 #[derive(Debug)]

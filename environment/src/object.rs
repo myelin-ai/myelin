@@ -75,6 +75,26 @@ pub enum ImmovableAction {
     Reproduce,
 }
 
+/// An objects that can be placed in the world.
+/// Its coordinates are relative to the center of
+/// the object, which is determined by the [`location`]
+///
+/// [`location`]: ./struct.Body.html#structfield.location
+#[derive(Debug, PartialEq, Clone)]
+pub struct ObjectDescription {
+    /// The vertices defining the shape of the object
+    /// in relation to its [`location`]
+    ///
+    /// [`location`]: ./struct.Body.html#structfield.location
+    pub shape: Polygon,
+    pub position: Position,
+    /// The current velocity of the object, defined
+    /// as a two dimensional vector relative to the
+    /// objects center
+    pub velocity: Mobility,
+    pub kind: Kind,
+}
+
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Mobility {
     Immovable,
