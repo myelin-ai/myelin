@@ -24,7 +24,8 @@
 //! [`Body`]: ../object/struct.Body.html
 //! [`Polygon`]: ../object/struct.Polygon.html
 
-use crate::object::{Body, Location, Polygon, Radians, Vertex};
+use crate::object::{Location, Polygon, Position, Radians, Vertex};
+use crate::simulation::simulation_impl::PhysicalBody;
 
 /// An error representing the values that have
 /// wrongly been ommited when building finished
@@ -132,16 +133,18 @@ impl ObjectBuilder {
     /// ```
     ///
     /// [`Body`]: ../object/struct.Body.html
-    pub fn build(&mut self) -> Result<Body, ObjectBuilderError> {
+    pub fn build(&mut self) -> Result<PhysicalBody, ObjectBuilderError> {
         let error = ObjectBuilderError {
             missing_shape: self.shape.is_none(),
             missing_location: self.location.is_none(),
         };
 
-        let object = Body {
+        let object = PhysicalBody {
             shape: self.shape.take().ok_or_else(|| error.clone())?,
-            location: self.location.take().ok_or_else(|| error.clone())?,
-            orientation: self.orientation.take().unwrap_or_else(Default::default),
+            position: Position {
+                location: self.location.take().ok_or_else(|| error.clone())?,
+                rotation: self.orientation.take().unwrap_or_else(Default::default),
+            },
         };
 
         Ok(object)

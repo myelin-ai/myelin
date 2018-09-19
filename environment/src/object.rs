@@ -44,39 +44,41 @@
 //! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
 //! [`Body`]: ./struct.Body.html
 
-pub trait Object: std::fmt::Debug {
-    fn step(&mut self) -> Vec<Action>;
-    fn is_movable(&self) -> bool;
+pub enum Object {
+    Movable(Box<dyn MovableObject>),
+    Immovable(Box<dyn ImmovableObject>),
+}
+
+pub trait MovableObject: std::fmt::Debug {
+    fn step(&mut self) -> Vec<MovableAction>;
+    fn shape(&self) -> Polygon;
     fn kind(&self) -> Kind;
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum Action {
+pub enum MovableAction {
     Move,
     Rotate,
     Die,
     Reproduce,
 }
 
-/// An objects that can be placed in the world.
-/// Its coordinates are relative to the center of
-/// the object, which is determined by the [`location`]
-///
-/// [`location`]: ./struct.Body.html#structfield.location
-#[derive(Debug, PartialEq, Clone)]
-pub struct Body {
-    /// The vertices defining the shape of the object
-    /// in relation to its [`location`]
-    ///
-    /// [`location`]: ./struct.Body.html#structfield.location
-    pub shape: Polygon,
-    /// The global position of the center of the object
-    pub location: Location,
-    /// The orientation of the object, measured in
-    /// radians within the range [0.0; 2π).
-    /// An orientation of 0.0 means that the
-    /// object is facing right.
-    pub orientation: Radians,
+pub trait ImmovableObject: std::fmt::Debug {
+    fn step(&mut self) -> Vec<ImmovableAction>;
+    fn shape(&self) -> Polygon;
+    fn kind(&self) -> Kind;
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum ImmovableAction {
+    Die,
+    Reproduce,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub enum Mobility {
+    Immovable,
+    Movable(Velocity),
 }
 
 /// This type holds the vertices of an object
@@ -94,6 +96,12 @@ pub struct Polygon {
 pub struct Vertex {
     pub x: i32,
     pub y: i32,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Position {
+    pub location: Location,
+    pub rotation: Radians,
 }
 
 /// A radian confined to the range of [0.0; 2π)
