@@ -24,8 +24,7 @@
 //! [`Body`]: ../object/struct.Body.html
 //! [`Polygon`]: ../object/struct.Polygon.html
 
-use crate::object::{Location, Polygon, Position, Radians, Vertex};
-use crate::simulation::simulation_impl::PhysicalBody;
+use crate::object::*;
 
 /// An error representing the values that have
 /// wrongly been ommited when building finished
@@ -35,6 +34,8 @@ pub struct ObjectBuilderError {
     pub missing_shape: bool,
     /// Flag signaling that .location(...) was never called
     pub missing_location: bool,
+    /// Flag signaling that .kind(...) was never called
+    pub missing_kind: bool,
 }
 
 /// [`Body`] factory, which can be used in order to configure
@@ -47,6 +48,7 @@ pub struct ObjectBuilder {
     shape: Option<Polygon>,
     location: Option<Location>,
     orientation: Option<Radians>,
+    kind: Option<Kind>,
 }
 
 impl ObjectBuilder {
@@ -96,6 +98,18 @@ impl ObjectBuilder {
     /// # Examples
     /// ```
     /// use myelin_environment::object_builder::ObjectBuilder;
+    /// use myelin_environment::object::Kind;
+    /// ObjectBuilder::new()
+    ///     .kind(Kind::Plant);
+    /// ```
+    pub fn kind(&mut self, kind: Kind) -> &mut Self {
+        self.kind = Some(kind);
+        self
+    }
+
+    /// # Examples
+    /// ```
+    /// use myelin_environment::object_builder::ObjectBuilder;
     /// use myelin_environment::object::Radians;
     /// ObjectBuilder::new()
     ///     .orientation(Radians(4.5));
@@ -133,18 +147,20 @@ impl ObjectBuilder {
     /// ```
     ///
     /// [`Body`]: ../object/struct.Body.html
-    pub fn build(&mut self) -> Result<PhysicalBody, ObjectBuilderError> {
+    pub fn build(&mut self) -> Result<ObjectDescription, ObjectBuilderError> {
         let error = ObjectBuilderError {
             missing_shape: self.shape.is_none(),
             missing_location: self.location.is_none(),
+            missing_kind: self.kind.is_none(),
         };
 
-        let object = PhysicalBody {
+        let object = ObjectDescription {
             shape: self.shape.take().ok_or_else(|| error.clone())?,
             position: Position {
                 location: self.location.take().ok_or_else(|| error.clone())?,
                 rotation: self.orientation.take().unwrap_or_else(Default::default),
             },
+            kind: self.kind.take().ok_or(error)?,
         };
 
         Ok(object)
@@ -284,6 +300,29 @@ mod test {
     }
 
     #[test]
+    fn test_object_builder_should_error_for_missing_kind() {
+        let result = ObjectBuilder::new()
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(0, 0)
+                    .vertex(0, 1)
+                    .vertex(1, 0)
+                    .vertex(1, 1)
+                    .build()
+                    .unwrap(),
+            ).location(10, 10)
+            .orientation(Radians(0.0))
+            .build();
+        assert_eq!(
+            Err(ObjectBuilderError {
+                missing_kind: true,
+                ..Default::default()
+            }),
+            result
+        );
+    }
+
+    #[test]
     fn test_object_builder_should_use_default_velocity() {
         let result = ObjectBuilder::new()
             .shape(
@@ -298,8 +337,7 @@ mod test {
             .orientation(Radians(0.0))
             .build();
 
-        let expected = Body {
-            orientation: Radians(0.0),
+        let expected = ObjectDescription {
             shape: Polygon {
                 vertices: vec![
                     Vertex { x: 0, y: 0 },
@@ -308,7 +346,10 @@ mod test {
                     Vertex { x: 1, y: 1 },
                 ],
             },
-            location: Location { x: 10, y: 10 },
+            position: Position {
+                location: Location { x: 10, y: 10 },
+                rotation: Radians(0.0),
+            },
         };
 
         assert_eq!(Ok(expected), result);
@@ -351,8 +392,7 @@ mod test {
             ).location(30, 40)
             .build();
 
-        let expected = Body {
-            orientation: Radians(0.0),
+        let expected = ObjectDescription {
             shape: Polygon {
                 vertices: vec![
                     Vertex { x: 0, y: 0 },
@@ -361,7 +401,10 @@ mod test {
                     Vertex { x: 1, y: 1 },
                 ],
             },
-            location: Location { x: 30, y: 40 },
+            position: Position {
+                rotation: Radians(0.0),
+                location: Location { x: 30, y: 40 },
+            },
         };
 
         assert_eq!(Ok(expected), result);
@@ -375,6 +418,7 @@ mod test {
             Err(ObjectBuilderError {
                 missing_shape: true,
                 missing_location: true,
+                missing_kind: true
             }),
             result
         );
@@ -395,7 +439,7 @@ mod test {
             .orientation(Radians(1.1))
             .build();
 
-        let expected = Body {
+        let expected = ObjectDescription {
             orientation: Radians(1.1),
             shape: Polygon {
                 vertices: vec![
