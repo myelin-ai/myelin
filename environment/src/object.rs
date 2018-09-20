@@ -43,7 +43,8 @@
 //!
 //! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
 //! [`Body`]: ./struct.Body.html
-
+//!
+#[derive(Debug)]
 pub enum Object {
     Movable(Box<dyn MovableObject>),
     Immovable(Box<dyn ImmovableObject>),

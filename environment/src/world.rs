@@ -235,47 +235,50 @@ impl<'a> fmt::Debug for DebugPhysicsWorld<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::object_builder::{ObjectBuilder, PolygonBuilder};
+    use crate::object::*;
+    use crate::object_builder::PolygonBuilder;
 
     const DEFAULT_TIMESTEP: f64 = 1.0;
 
     fn local_rigid_object(orientation: Radians) -> PhysicalBody {
-        ObjectBuilder::new()
-            .shape(
-                PolygonBuilder::new()
-                    .vertex(-10, -10)
-                    .vertex(10, -10)
-                    .vertex(10, 10)
-                    .vertex(-10, 10)
-                    .build()
-                    .unwrap(),
-            ).location(30, 40)
-            .orientation(orientation)
-            .build()
-            .unwrap()
+        PhysicalBody {
+            position: Position {
+                location: Location { x: 5, y: 5 },
+                rotation: orientation,
+            },
+            velocity: Mobility::Movable(Velocity { x: 1, y: 1 }),
+            shape: PolygonBuilder::new()
+                .vertex(-5, -5)
+                .vertex(-5, 5)
+                .vertex(5, 5)
+                .vertex(5, -5)
+                .build()
+                .unwrap(),
+        }
     }
 
     fn local_grounded_object(orientation: Radians) -> PhysicalBody {
-        ObjectBuilder::new()
-            .shape(
-                PolygonBuilder::new()
-                    .vertex(-100, -100)
-                    .vertex(100, -100)
-                    .vertex(100, 100)
-                    .vertex(-100, 100)
-                    .build()
-                    .unwrap(),
-            ).location(300, 400)
-            .orientation(orientation)
-            .build()
-            .unwrap()
+        PhysicalBody {
+            shape: PolygonBuilder::new()
+                .vertex(-100, -100)
+                .vertex(100, -100)
+                .vertex(100, 100)
+                .vertex(-100, 100)
+                .build()
+                .unwrap(),
+            velocity: Mobility::Immovable,
+            position: Position {
+                location: Location { x: 300, y: 200 },
+                rotation: orientation,
+            },
+        }
     }
 
     #[should_panic]
     #[test]
     fn panics_on_invalid_handle() {
         let world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let body = world.body(BodyHandle(1337));
+        world.body(BodyHandle(1337));
     }
 
     #[test]
@@ -310,208 +313,109 @@ mod tests {
     }
 
     #[test]
-    fn converting_to_global_object_works_with_orientation() {
+    fn returns_correct_rigid_body() {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let object = local_rigid_object(Radians(3.0));
-        let handle = world.add_rigid_body(object);
+        let expected_body = local_rigid_object(Radians(3.0));
+        let handle = world.add_rigid_body(expected_body.clone());
+        let actual_body = world.body(handle);
 
-        let expected_global_object = PhysicalBody {
-            shape: Polygon {
-                vertices: vec![
-                    Vertex {
-                        x: 20 - 1,
-                        y: 30 + 2,
-                    },
-                    Vertex {
-                        x: 40 - 2,
-                        y: 30 - 1,
-                    },
-                    Vertex {
-                        x: 40 + 1,
-                        y: 50 - 2,
-                    },
-                    Vertex {
-                        x: 20 + 2,
-                        y: 50 + 1,
-                    },
-                ],
-            },
-            orientation: Radians(3.0),
-            velocity: Velocity::default(),
-        };
-
-        let body = world.body(handle);
-        assert_eq!(expected_global_object, object)
+        assert_eq!(expected_body, actual_body)
     }
 
     #[test]
-    fn converting_to_global_rigid_object_works_without_orientation() {
-        let object = local_rigid_object(Default::default());
+    fn returns_correct_grounded_body() {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let handle = world.add_rigid_body(object);
+        let expected_body = local_grounded_object(Radians(3.0));
+        let handle = world.add_grounded_body(expected_body.clone());
+        let actual_body = world.body(handle);
 
-        let expected_global_object = Body {
-            orientation: Default::default(),
-            shape: Polygon {
-                vertices: vec![
-                    Vertex { x: 40, y: 50 },
-                    Vertex { x: 20, y: 50 },
-                    Vertex { x: 20, y: 30 },
-                    Vertex { x: 40, y: 30 },
-                ],
-            },
-            velocity: Velocity::default(),
-        };
-
-        let body = world.body(handle);
-        assert_eq!(expected_global_object, object)
+        assert_eq!(expected_body, actual_body)
     }
 
-    #[test]
-    fn converting_to_global_grounded_object_works_without_orientation() {
-        let object = local_grounded_object(Default::default());
-        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let handle = world.add_rigid_body(object);
-
-        let expected_global_object = PhysicalBody {
-            orientation: Default::default(),
-            shape: Polygon {
-                vertices: vec![
-                    Vertex { x: 400, y: 500 },
-                    Vertex { x: 200, y: 500 },
-                    Vertex { x: 200, y: 300 },
-                    Vertex { x: 400, y: 300 },
-                ],
-            },
-            velocity: Velocity::default(),
-        };
-
-        let body = world.body(handle);
-        assert_eq!(expected_global_object, object)
-    }
-
-    #[test]
-    fn converting_to_global_object_works_with_pi_orientation() {
-        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let orientation = Radians(1.5 * PI);
-        let object = local_rigid_object(orientation);
-        let handle = world.add_rigid_body(object);
-
-        let expected_global_object = PhysicalBody {
-            orientation,
-            shape: Polygon {
-                vertices: vec![
-                    Vertex { x: 40, y: 30 },
-                    Vertex { x: 40, y: 50 },
-                    Vertex { x: 20, y: 50 },
-                    Vertex { x: 20, y: 30 },
-                ],
-            },
-            velocity: Velocity::default(),
-        };
-
-        let body = world.body(handle);
-        assert_eq!(expected_global_object, object)
-    }
-
-    #[ignore]
     #[test]
     fn timestep_is_respected() {
         let mut world = NphysicsWorld::with_timestep(1.0);
 
-        let local_object = ObjectBuilder::new()
-            .location(5, 5)
-            .shape(
-                PolygonBuilder::new()
-                    .vertex(-5, -5)
-                    .vertex(-5, 5)
-                    .vertex(5, 5)
-                    .vertex(5, -5)
-                    .build()
-                    .unwrap(),
-            ).build()
-            .unwrap();
-        let handle = world.add_rigid_body(local_object);
+        let local_object = local_rigid_object(Radians::default());
+        let handle = world.add_rigid_body(local_object.clone());
 
         world.step();
         world.step();
 
-        let body = world.body(handle);
-        assert_eq!(
-            vec![
-                Vertex { x: 11, y: 11 },
-                Vertex { x: 11, y: 1 },
-                Vertex { x: 1, y: 1 },
-                Vertex { x: 1, y: 11 },
-            ],
-            body.shape.vertices
-        );
+        let actual_body = world.body(handle);
+
+        let expected_body = PhysicalBody {
+            shape: Polygon {
+                vertices: vec![
+                    Vertex { x: 11, y: 11 },
+                    Vertex { x: 11, y: 1 },
+                    Vertex { x: 1, y: 1 },
+                    Vertex { x: 1, y: 11 },
+                ],
+            },
+            ..local_object
+        };
+        assert_eq!(expected_body, actual_body);
     }
 
-    /// Can be reactivated when https://github.com/myelin-ai/myelin/issues/92
-    /// has been resolved
-    #[ignore]
     #[test]
     fn timestep_can_be_changed() {
         let mut world = NphysicsWorld::with_timestep(0.0);
-
         world.set_simulated_timestep(1.0);
 
-        let local_object = ObjectBuilder::new()
-            .location(5, 5)
-            .shape(
-                PolygonBuilder::new()
-                    .vertex(-5, -5)
-                    .vertex(-5, 5)
-                    .vertex(5, 5)
-                    .vertex(5, -5)
-                    .build()
-                    .unwrap(),
-            ).build()
-            .unwrap();
-        let handle = world.add_rigid_body(local_object);
+        let local_object = local_rigid_object(Radians::default());
+        let handle = world.add_rigid_body(local_object.clone());
 
         world.step();
         world.step();
 
-        let body = world.body(handle);
-        assert_eq!(
-            vec![
-                Vertex { x: 11, y: 11 },
-                Vertex { x: 11, y: 1 },
-                Vertex { x: 1, y: 1 },
-                Vertex { x: 1, y: 11 },
-            ],
-            body.shape.vertices
-        );
+        let actual_body = world.body(handle);
+
+        let expected_body = PhysicalBody {
+            shape: Polygon {
+                vertices: vec![
+                    Vertex { x: 11, y: 11 },
+                    Vertex { x: 11, y: 1 },
+                    Vertex { x: 1, y: 1 },
+                    Vertex { x: 1, y: 11 },
+                ],
+            },
+            ..local_object
+        };
+        assert_eq!(expected_body, actual_body);
     }
 
-    /// Can be reactivated when https://github.com/myelin-ai/myelin/issues/92
-    /// has been resolved
-    #[ignore]
+    #[test]
+    fn step_is_ignored_for_rigid_objects_with_no_movement() {
+        use std::f64::consts::FRAC_PI_2;
+
+        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
+        let expected_object = local_grounded_object(Radians(FRAC_PI_2));
+        let handle = world.add_grounded_body(expected_object.clone());
+
+        world.step();
+        world.step();
+
+        let actual_body = world.body(handle);
+        assert_eq!(expected_object, actual_body)
+    }
+
     #[test]
     fn step_is_ignored_for_grounded_objects() {
         use std::f64::consts::FRAC_PI_2;
 
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let object = local_grounded_object(Radians(FRAC_PI_2));
-        let handle = world.add_grounded_body(object);
+        let body = local_grounded_object(Radians(FRAC_PI_2));
+        let still_body = PhysicalBody {
+            velocity: Mobility::Movable(Velocity { x: 0, y: 0 }),
+            ..body
+        };
+        let handle = world.add_grounded_body(still_body.clone());
+
+        world.step();
         world.step();
 
-        let expected_global_object = PhysicalBody {
-            shape: Polygon {
-                vertices: vec![
-                    Vertex { x: 200, y: 500 },
-                    Vertex { x: 200, y: 300 },
-                    Vertex { x: 400, y: 300 },
-                    Vertex { x: 400, y: 500 },
-                ],
-            },
-            orientation: Radians(FRAC_PI_2),
-            velocity: Velocity { x: 0, y: 0 },
-        };
-
-        let body = world.body(handle);
-        assert_eq!(expected_global_object, object)
+        let actual_body = world.body(handle);
+        assert_eq!(still_body, actual_body)
     }
 }
