@@ -52,7 +52,6 @@ pub enum Object {
 
 pub trait MovableObject: std::fmt::Debug {
     fn step(&mut self) -> Vec<MovableAction>;
-    fn shape(&self) -> Polygon;
     fn kind(&self) -> Kind;
 }
 

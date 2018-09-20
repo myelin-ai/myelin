@@ -1,4 +1,4 @@
-use super::{ObjectDescription, Simulation};
+use super::{NewObject, ObjectDescription, Simulation};
 use crate::object::{Mobility, Object, Polygon, Position};
 use std::fmt;
 
@@ -17,7 +17,7 @@ impl Simulation for SimulationImpl {
     fn step(&mut self) {
         unimplemented!()
     }
-    fn add_object_at(&mut self, object: Object, position: Position) {
+    fn add_object(&mut self, object: NewObject) {
         unimplemented!()
     }
     fn objects(&self) -> ObjectDescription {

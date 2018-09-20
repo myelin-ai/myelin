@@ -1,4 +1,4 @@
-use crate::object::{Object, ObjectDescription, Position};
+use crate::object::{Object, ObjectDescription, Polygon, Position};
 
 pub mod simulation_impl;
 
@@ -13,7 +13,7 @@ pub trait Simulation {
     /// forces to the objects, handle collisions and move them.
     fn step(&mut self);
     /// Add a new object to the world.
-    fn add_object_at(&mut self, object: Object, position: Position);
+    fn add_object(&mut self, object: NewObject);
     /// Returns all objects currently inhabiting the simulation.
     fn objects(&self) -> ObjectDescription;
     /// Sets how much time in seconds is simulated for each step.
@@ -22,4 +22,10 @@ pub trait Simulation {
     /// can run `set_simulated_timestep(1.0/60.0)`. Note that this method
     /// does not block the thread if called faster than expected.
     fn set_simulated_timestep(&mut self, timestep: f64);
+}
+
+pub struct NewObject {
+    pub object: Object,
+    pub position: Position,
+    pub shape: Polygon,
 }
