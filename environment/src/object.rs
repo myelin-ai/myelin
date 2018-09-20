@@ -65,7 +65,6 @@ pub enum MovableAction {
 
 pub trait ImmovableObject: std::fmt::Debug {
     fn step(&mut self) -> Vec<ImmovableAction>;
-    fn shape(&self) -> Polygon;
     fn kind(&self) -> Kind;
 }
 
