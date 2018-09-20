@@ -1,7 +1,7 @@
 //! A generator for a hardcoded simulation
 
 use crate::WorldGenerator;
-use myelin_environment::object::{Body, Kind, LocalObject, Radians};
+use myelin_environment::object::{Kind, Object, Radians};
 use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
 use myelin_environment::simulation::Simulation;
 use std::f64::consts::FRAC_PI_2;
@@ -11,9 +11,11 @@ use std::f64::consts::FRAC_PI_2;
 /// a row of organisms. The simulation is framed by terrain.
 pub struct HardcodedGenerator {
     simulation_factory: SimulationFactory,
+    object_factory: ObjectFactory,
 }
 
 pub type SimulationFactory = Box<dyn Fn() -> Box<dyn Simulation>>;
+pub type ObjectFactory = Box<dyn Fn(Kind) -> Object>;
 
 impl HardcodedGenerator {
     /// Creates a new generator, injecting a simulation factory, i.e.
@@ -31,8 +33,11 @@ impl HardcodedGenerator {
     /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> { Box::new(NphysicsSimulation::with_timestep(1.0)) });
     /// let simulationgen = HardcodedGenerator::new(simulation_factory);
     /// let generated_simulation = simulationgen.generate();
-    pub fn new(simulation_factory: SimulationFactory) -> Self {
-        Self { simulation_factory }
+    pub fn new(simulation_factory: SimulationFactory, object_factory: ObjectFactory) -> Self {
+        Self {
+            simulation_factory,
+            object_factory,
+        }
     }
 }
 
@@ -48,16 +53,17 @@ impl WorldGenerator for HardcodedGenerator {
 }
 
 fn populate_with_terrain(simulation: &mut dyn Simulation) {
-    simulation.add_object(build_terrain((25, 500), 50, 1000));
-    simulation.add_object(build_terrain((500, 25), 1000, 50));
-    simulation.add_object(build_terrain((975, 500), 50, 1000));
-    simulation.add_object(build_terrain((500, 975), 1000, 50));
+    simulation.add_object_at(build_terrain((25, 500), 50, 1000));
+    simulation.add_object_at(build_terrain((500, 25), 1000, 50));
+    simulation.add_object_at(build_terrain((975, 500), 50, 1000));
+    simulation.add_object_at(build_terrain((500, 975), 1000, 50));
 }
 
-fn build_terrain(location: (u32, u32), width: i32, length: i32) -> LocalObject {
+fn build_terrain(location: (u32, u32), width: i32, length: i32) -> Object {
     // We add two pixels because of https://github.com/myelin-ai/myelin/issues/60
     let x_offset = width / 2 + 2;
     let y_offset = length / 2 + 2;
+
     let body = ObjectBuilder::new()
         .shape(
             PolygonBuilder::new()
