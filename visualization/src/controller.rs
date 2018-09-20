@@ -1,4 +1,4 @@
-use myelin_environment::object::GlobalObject;
+use myelin_environment::object::ObjectDescription;
 use myelin_environment::simulation::Simulation;
 use myelin_worldgen::WorldGenerator;
 
@@ -6,7 +6,7 @@ pub(crate) trait Controller {
     fn step(&mut self);
 }
 pub(crate) trait Presenter {
-    fn present_objects(&self, objects: &[GlobalObject]);
+    fn present_objects(&self, objects: &[ObjectDescription]);
 }
 
 pub(crate) struct ControllerImpl {
@@ -35,16 +35,17 @@ impl ControllerImpl {
 mod tests {
     use super::*;
     use myelin_environment::object::*;
+    use myelin_environment::simulation::NewObject;
     use std::cell::RefCell;
 
     #[derive(Debug)]
     struct SimulationMock {
         step_was_called: bool,
-        returned_objects: Vec<GlobalObject>,
+        returned_objects: Vec<ObjectDescription>,
         objects_was_called: RefCell<bool>,
     }
     impl SimulationMock {
-        fn new(returned_objects: Vec<GlobalObject>) -> Self {
+        fn new(returned_objects: Vec<ObjectDescription>) -> Self {
             Self {
                 step_was_called: false,
                 objects_was_called: RefCell::new(false),
@@ -56,13 +57,13 @@ mod tests {
         fn step(&mut self) {
             self.step_was_called = true;
         }
-        fn add_object(&mut self, _: LocalObject) {
+        fn add_object(&mut self, _: NewObject) {
             panic!("add_object() was called unexpectedly")
         }
         fn set_simulated_timestep(&mut self, _: f64) {
             panic!("set_simulated_timestep() called unexpectedly");
         }
-        fn objects(&self) -> Vec<GlobalObject> {
+        fn objects(&self) -> Vec<ObjectDescription> {
             *self.objects_was_called.borrow_mut() = true;
             self.returned_objects.clone()
         }
@@ -77,11 +78,11 @@ mod tests {
 
     #[derive(Debug)]
     struct PresenterMock {
-        expected_objects: Vec<GlobalObject>,
+        expected_objects: Vec<ObjectDescription>,
         present_objects_was_called: RefCell<bool>,
     }
     impl PresenterMock {
-        fn new(expected_objects: Vec<GlobalObject>) -> Self {
+        fn new(expected_objects: Vec<ObjectDescription>) -> Self {
             Self {
                 present_objects_was_called: RefCell::new(false),
                 expected_objects,
@@ -89,13 +90,13 @@ mod tests {
         }
     }
     impl Presenter for PresenterMock {
-        fn present_objects(&self, objects: &[GlobalObject]) {
+        fn present_objects(&self, objects: &[ObjectDescription]) {
             *self.present_objects_was_called.borrow_mut() = true;
             self.expected_objects
                 .iter()
                 .zip(objects)
                 .for_each(|(expected, actual)| {
-                    assert_eq!(expected.body, actual.body);
+                    assert_eq!(expected, actual);
                 });
         }
     }
@@ -107,14 +108,14 @@ mod tests {
     }
 
     struct WorldGeneratorMock {
-        simulation_factory: Box<dyn Fn(Vec<GlobalObject>) -> Box<dyn Simulation>>,
+        simulation_factory: Box<dyn Fn(Vec<ObjectDescription>) -> Box<dyn Simulation>>,
         generate_was_called: RefCell<bool>,
-        objects_to_return: Vec<GlobalObject>,
+        objects_to_return: Vec<ObjectDescription>,
     }
     impl WorldGeneratorMock {
         fn new(
-            simulation_factory: Box<dyn Fn(Vec<GlobalObject>) -> Box<dyn Simulation>>,
-            objects_to_return: Vec<GlobalObject>,
+            simulation_factory: Box<dyn Fn(Vec<ObjectDescription>) -> Box<dyn Simulation>>,
+            objects_to_return: Vec<ObjectDescription>,
         ) -> Self {
             Self {
                 generate_was_called: RefCell::new(false),
@@ -136,7 +137,7 @@ mod tests {
         }
     }
 
-    fn mock_controller(expected_objects: Vec<GlobalObject>) -> ControllerImpl {
+    fn mock_controller(expected_objects: Vec<ObjectDescription>) -> ControllerImpl {
         let simulation_factory = Box::new(|objects_present| -> Box<dyn Simulation> {
             Box::new(SimulationMock::new(objects_present))
         });
@@ -153,19 +154,21 @@ mod tests {
     }
 
     #[test]
-    fn propagates_step_step() {
-        let expected_objects = vec![GlobalObject {
-            body: Body {
-                orientation: Radians(6.0),
-                shape: Polygon {
-                    vertices: vec![
-                        Vertex { x: 2, y: 3 },
-                        Vertex { x: 10, y: 3 },
-                        Vertex { x: 30, y: 34 },
-                    ],
-                },
-                velocity: Velocity { x: 0, y: -1 },
+    fn propagates_step() {
+        let expected_objects = vec![ObjectDescription {
+            shape: Polygon {
+                vertices: vec![
+                    Vertex { x: -5, y: -5 },
+                    Vertex { x: 5, y: -5 },
+                    Vertex { x: 5, y: 5 },
+                    Vertex { x: -5, y: 5 },
+                ],
             },
+            position: Position {
+                location: Location { x: 20, y: 40 },
+                rotation: Radians(6.0),
+            },
+            velocity: Mobility::Movable(Velocity { x: 0, y: -1 }),
             kind: Kind::Organism,
         }];
         let mut controller = mock_controller(expected_objects);

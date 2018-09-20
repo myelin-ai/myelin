@@ -6,7 +6,8 @@ use crate::input_handler::InputHandler;
 use crate::presenter::CanvasPresenter;
 use crate::view::constant::SIMULATED_TIMESTEP;
 use crate::view::CanvasView;
-use myelin_environment::simulation::{Simulation, SimulationImpl};
+use myelin_environment::object::{Kind, Object};
+use myelin_environment::simulation::{simulation_impl::SimulationImpl, Simulation};
 use myelin_environment::world::NphysicsWorld;
 use myelin_worldgen::generator::HardcodedGenerator;
 use wasm_bindgen::prelude::*;
@@ -41,7 +42,8 @@ pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
         let world = Box::new(NphysicsWorld::with_timestep(SIMULATED_TIMESTEP));
         Box::new(SimulationImpl::new(world))
     });
-    let worldgen = HardcodedGenerator::new(simulation_factory);
+    let object_factory = Box::new(|kind: Kind| -> Object { unimplemented!() });
+    let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
     let controller = Box::new(ControllerImpl::new(presenter, &worldgen));
     InputHandler::new(controller)
 }

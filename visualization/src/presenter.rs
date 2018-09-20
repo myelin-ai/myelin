@@ -12,17 +12,36 @@ pub(crate) struct CanvasPresenter {
 }
 
 impl Presenter for CanvasPresenter {
-    fn present_objects(&self, objects: &[business_object::GlobalObject]) {
+    fn present_objects(&self, objects: &[business_object::ObjectDescription]) {
         let view_model = ViewModel {
             objects: objects
                 .iter()
-                .map(|object| self.business_object_to_view_model_object(object))
+                .map(|object| to_global_object(object))
                 .collect(),
         };
 
         self.view.flush();
         self.view.draw_objects(&view_model);
     }
+}
+
+fn to_global_object(object: &business_object::ObjectDescription) -> view_model::Object {
+    /*
+    view_model::Object {
+        shape: view_model::Polygon {
+            vertices: object
+                .shape
+                .vertices
+                .iter()
+                .map(|vertex| view_model::Vertex {
+                    x: vertex.x as u32,
+                    y: vertex.y as u32,
+                }).collect(),
+        },
+        kind: map_kind(&object.kind),
+    }
+    */
+    unimplemented!()
 }
 
 fn map_kind(kind: &business_object::Kind) -> view_model::Kind {
@@ -37,26 +56,6 @@ fn map_kind(kind: &business_object::Kind) -> view_model::Kind {
 impl CanvasPresenter {
     pub(crate) fn new(view: Box<dyn View>) -> Self {
         Self { view }
-    }
-
-    fn business_object_to_view_model_object(
-        &self,
-        object: &business_object::GlobalObject,
-    ) -> view_model::Object {
-        view_model::Object {
-            shape: view_model::Polygon {
-                vertices: object
-                    .body
-                    .shape
-                    .vertices
-                    .iter()
-                    .map(|vertex| view_model::Vertex {
-                        x: vertex.x,
-                        y: vertex.y,
-                    }).collect(),
-            },
-            kind: map_kind(&object.kind),
-        }
     }
 }
 
@@ -108,14 +107,19 @@ mod tests {
 
     #[test]
     fn maps_to_correct_view_model() {
-        let objects = vec![business_object::GlobalObject {
-            body: business_object::Body {
-                shape: business_object::Polygon {
-                    vertices: vec![business_object::Vertex { x: 3, y: 15 }],
-                },
-                orientation: business_object::Radians(3.14),
-                velocity: business_object::Velocity { x: -1, y: 34 },
+        let objects = vec![business_object::ObjectDescription {
+            shape: business_object::Polygon {
+                vertices: vec![business_object::Vertex { x: 3, y: 15 }],
             },
+            position: business_object::Position {
+                rotation: business_object::Radians(3.14),
+                location: business_object::Location { x: 20, y: 40 },
+            },
+            velocity: business_object::Mobility::Movable(business_object::Velocity {
+                x: -1,
+                y: 34,
+            }),
+
             kind: business_object::Kind::Organism,
         }];
         let expected_view_model = ViewModel {
