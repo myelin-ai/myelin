@@ -24,6 +24,7 @@ pub trait Simulation {
     fn set_simulated_timestep(&mut self, timestep: f64);
 }
 
+#[derive(Debug)]
 pub struct NewObject {
     pub object: Object,
     pub position: Position,
