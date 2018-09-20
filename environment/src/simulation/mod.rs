@@ -15,7 +15,7 @@ pub trait Simulation {
     /// Add a new object to the world.
     fn add_object(&mut self, object: NewObject);
     /// Returns all objects currently inhabiting the simulation.
-    fn objects(&self) -> ObjectDescription;
+    fn objects(&self) -> Vec<ObjectDescription>;
     /// Sets how much time in seconds is simulated for each step.
     /// # Examples
     /// If you want to run a simulation with 60 steps per second, you

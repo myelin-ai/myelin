@@ -20,7 +20,7 @@ impl Simulation for SimulationImpl {
     fn add_object(&mut self, object: NewObject) {
         unimplemented!()
     }
-    fn objects(&self) -> ObjectDescription {
+    fn objects(&self) -> Vec<ObjectDescription> {
         unimplemented!()
     }
     fn set_simulated_timestep(&mut self, timestep: f64) {
