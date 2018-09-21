@@ -54,6 +54,8 @@ pub struct BodyHandle(pub usize);
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::object::*;
+    use crate::object_builder::PolygonBuilder;
     use std::cell::RefCell;
 
     #[test]
@@ -90,6 +92,45 @@ mod tests {
         world.expect_set_simulated_timestep(EXPECTED_TIMESTEP);
         let mut simulation = SimulationImpl::new(world);
         simulation.set_simulated_timestep(EXPECTED_TIMESTEP);
+    }
+
+    #[test]
+    fn returns_no_objects_when_empty() {
+        let mut world = Box::new(WorldMock::new());
+        let simulation = SimulationImpl::new(world);
+        let objects = simulation.objects();
+        assert!(objects.is_empty())
+    }
+
+    #[test]
+    fn converts_to_physical_body() {
+        let mut world = Box::new(WorldMock::new());
+        let expected_shape = PolygonBuilder::new()
+            .vertex(-5, -5)
+            .vertex(5, -5)
+            .vertex(5, 5)
+            .vertex(-5, 5)
+            .build()
+            .unwrap();
+        let expected_position = Position {
+            location: Location { x: 30, y: 40 },
+            rotation: Radians(3.4),
+        };
+        let expected_physical_body = PhysicalBody {
+            shape: expected_shape.clone(),
+            position: expected_position.clone(),
+            velocity: Mobility::Movable(Velocity { x: 0, y: 0 }),
+        };
+        let returned_handle = BodyHandle(1337);
+        world.expect_add_body_and_return(expected_physical_body, returned_handle);
+        let mut simulation = SimulationImpl::new(world);
+
+        let object = NewObject {
+            object: unimplemented!(),
+            position: expected_position,
+            shape: expected_shape,
+        };
+        simulation.add_object(object);
     }
 
     #[derive(Debug, Default)]
