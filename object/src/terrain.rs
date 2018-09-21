@@ -1,9 +1,9 @@
-use myelin_environment::object::*;
+use myelin_environment::object::{ImmovableAction, ImmovableObject, Kind};
 
 #[derive(Debug, Default)]
 pub struct StaticTerrain;
 impl StaticTerrain {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {}
     }
 }

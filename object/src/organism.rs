@@ -1,15 +1,15 @@
-use myelin_environment::object::*;
+use myelin_environment::object::{Kind, MovableAction, MovableObject};
 
 #[derive(Debug, Default)]
 pub struct StaticOrganism;
 impl StaticOrganism {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {}
     }
 }
 
-impl ImmovableObject for StaticOrganism {
-    fn step(&mut self) -> Vec<ImmovableAction> {
+impl MovableObject for StaticOrganism {
+    fn step(&mut self) -> Vec<MovableAction> {
         Vec::new()
     }
     fn kind(&self) -> Kind {
