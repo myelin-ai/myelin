@@ -17,10 +17,13 @@ impl Simulation for SimulationImpl {
     fn step(&mut self) {
         self.world.step()
     }
+
     fn add_object(&mut self, object: NewObject) {}
+
     fn objects(&self) -> Vec<ObjectDescription> {
         Vec::new()
     }
+
     fn set_simulated_timestep(&mut self, timestep: f64) {
         assert!(timestep >= 0.0, "Cannot set timestep to a negative value");
         self.world.set_simulated_timestep(timestep)
@@ -104,17 +107,8 @@ mod tests {
     #[test]
     fn converts_to_physical_body() {
         let mut world = Box::new(WorldMock::new());
-        let expected_shape = PolygonBuilder::new()
-            .vertex(-5, -5)
-            .vertex(5, -5)
-            .vertex(5, 5)
-            .vertex(-5, 5)
-            .build()
-            .unwrap();
-        let expected_position = Position {
-            location: Location { x: 30, y: 40 },
-            rotation: Radians(3.4),
-        };
+        let expected_shape = shape();
+        let expected_position = position();
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
@@ -130,6 +124,59 @@ mod tests {
             shape: expected_shape,
         };
         simulation.add_object(object);
+    }
+
+    #[test]
+    fn returns_added_object() {
+        let mut world = Box::new(WorldMock::new());
+        let expected_shape = shape();
+        let expected_position = position();
+        let expected_physical_body = PhysicalBody {
+            shape: expected_shape.clone(),
+            position: expected_position.clone(),
+            velocity: Mobility::Movable(Velocity::default()),
+        };
+        let returned_handle = BodyHandle(1337);
+        world.expect_add_body_and_return(expected_physical_body, returned_handle);
+        let mut simulation = SimulationImpl::new(world);
+
+        let object = Box::new(ObjectMock {});
+        let expected_kind = object.kind();
+        let new_object = NewObject {
+            object: Object::Movable(object),
+            position: expected_position.clone(),
+            shape: expected_shape.clone(),
+        };
+        simulation.add_object(new_object);
+
+        let objects = simulation.objects();
+        assert_eq!(1, objects.len());
+
+        let expected_object_description = ObjectDescription {
+            position: expected_position,
+            shape: expected_shape,
+            kind: expected_kind,
+            velocity: Mobility::Movable(Velocity::default()),
+        };
+        let object_description = &objects[0];
+        assert_eq!(expected_object_description, *object_description);
+    }
+
+    fn shape() -> Polygon {
+        PolygonBuilder::new()
+            .vertex(-5, -5)
+            .vertex(5, -5)
+            .vertex(5, 5)
+            .vertex(-5, 5)
+            .build()
+            .unwrap()
+    }
+
+    fn position() -> Position {
+        Position {
+            location: Location { x: 30, y: 40 },
+            rotation: Radians(3.4),
+        }
     }
 
     #[derive(Debug, Default)]
