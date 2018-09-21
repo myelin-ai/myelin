@@ -2,11 +2,11 @@ use crate::object::{Object, ObjectDescription, Polygon, Position};
 
 pub mod simulation_impl;
 
-/// A world running a simulation that can be filled with [`Objects`] on
+/// A Simulation that can be filled with [`NewObject`] on
 /// which it will apply physical rules when calling [`step`].
 /// This trait represents our API.
 ///
-/// [`Objects`]: ../object/struct.Body.html
+/// [`NewObject`]: ./struct.NewObject.html
 /// [`step`]: ./trait.World.html#structfield.location#tymethod.step
 pub trait Simulation {
     /// Advance the simulation by one tick. This will apply
@@ -24,6 +24,7 @@ pub trait Simulation {
     fn set_simulated_timestep(&mut self, timestep: f64);
 }
 
+/// A new object that is going to be placed in the simulation
 #[derive(Debug)]
 pub struct NewObject {
     pub object: Object,
