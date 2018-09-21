@@ -38,6 +38,16 @@ impl SimulationImpl {
 
 impl Simulation for SimulationImpl {
     fn step(&mut self) {
+        for (_, object) in &mut self.objects {
+            match object {
+                Object::Movable(object) => {
+                    object.step();
+                }
+                Object::Immovable(object) => {
+                    object.step();
+                }
+            }
+        }
         self.world.step()
     }
 
@@ -157,11 +167,37 @@ mod tests {
         let mut simulation = SimulationImpl::new(world);
 
         let object = NewObject {
-            object: Object::Movable(Box::new(ObjectMock::default())),
+            object: Object::Movable(Box::new(ObjectMock::new())),
             position: expected_position,
             shape: expected_shape,
         };
         simulation.add_object(object);
+    }
+
+    #[test]
+    fn propagates_step_to_added_object() {
+        let mut world = Box::new(WorldMock::new());
+        world.expect_step();
+        let expected_shape = shape();
+        let expected_position = position();
+        let expected_physical_body = PhysicalBody {
+            shape: expected_shape.clone(),
+            position: expected_position.clone(),
+            velocity: Mobility::Movable(Velocity { x: 0, y: 0 }),
+        };
+        let returned_handle = BodyHandle(1337);
+        world.expect_add_body_and_return(expected_physical_body, returned_handle);
+        let mut simulation = SimulationImpl::new(world);
+
+        let mut object = ObjectMock::new();
+        object.expect_step();
+        let object = NewObject {
+            object: Object::Movable(Box::new(object)),
+            position: expected_position,
+            shape: expected_shape,
+        };
+        simulation.add_object(object);
+        simulation.step();
     }
 
     #[test]
@@ -175,7 +211,8 @@ mod tests {
             velocity: Mobility::Movable(Velocity::default()),
         };
         let returned_handle = BodyHandle(1984);
-        world.expect_add_body_and_return(expected_physical_body, returned_handle);
+        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
+        world.expect_body_and_return(returned_handle, expected_physical_body);
         let mut simulation = SimulationImpl::new(world);
 
         let object = Box::new(ObjectMock::default());
@@ -344,6 +381,16 @@ mod tests {
     struct ObjectMock {
         expects_step: bool,
         step_was_called: RefCell<bool>,
+    }
+
+    impl ObjectMock {
+        fn new() -> ObjectMock {
+            Default::default()
+        }
+
+        fn expect_step(&mut self) {
+            self.expects_step = true
+        }
     }
 
     impl MovableObject for ObjectMock {
