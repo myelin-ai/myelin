@@ -78,11 +78,10 @@ mod tests {
     #[should_panic]
     #[test]
     fn panics_on_negative_timestep() {
-        let mut world = Box::new(WorldMock::new());
-        const EXPECTED_TIMESTEP: f64 = -0.1;
-        world.expect_set_simulated_timestep(EXPECTED_TIMESTEP);
+        let world = Box::new(WorldMock::new());
         let mut simulation = SimulationImpl::new(world);
-        simulation.set_simulated_timestep(EXPECTED_TIMESTEP);
+        const INVALID_TIMESTEP: f64 = -0.1;
+        simulation.set_simulated_timestep(INVALID_TIMESTEP);
     }
 
     #[test]
@@ -96,7 +95,7 @@ mod tests {
 
     #[test]
     fn returns_no_objects_when_empty() {
-        let mut world = Box::new(WorldMock::new());
+        let world = Box::new(WorldMock::new());
         let simulation = SimulationImpl::new(world);
         let objects = simulation.objects();
         assert!(objects.is_empty())
