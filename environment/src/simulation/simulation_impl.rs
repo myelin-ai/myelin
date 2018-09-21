@@ -38,7 +38,7 @@ impl SimulationImpl {
 
 impl Simulation for SimulationImpl {
     fn step(&mut self) {
-        for (_, object) in &mut self.objects {
+        for object in self.objects.values_mut() {
             match object {
                 Object::Movable(object) => {
                     object.step();
