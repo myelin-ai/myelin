@@ -1,15 +1,38 @@
 use super::{NewObject, ObjectDescription, Simulation};
-use crate::object::{Mobility, Object, Polygon, Position};
+use crate::object::{Mobility, Object, Polygon, Position, Velocity};
+use std::collections::HashMap;
 use std::fmt;
 
 #[derive(Debug)]
 pub struct SimulationImpl {
     world: Box<dyn World>,
+    objects: HashMap<BodyHandle, Object>,
 }
 
 impl SimulationImpl {
     pub fn new(world: Box<dyn World>) -> Self {
-        Self { world }
+        Self {
+            world,
+            objects: HashMap::new(),
+        }
+    }
+
+    fn convert_to_object_description(
+        &self,
+        body_handle: BodyHandle,
+        object: &Object,
+    ) -> ObjectDescription {
+        let physics_body = self.world.body(body_handle);
+        let kind = match object {
+            Object::Immovable(object) => object.kind(),
+            Object::Movable(object) => object.kind(),
+        };
+        ObjectDescription {
+            shape: physics_body.shape,
+            position: physics_body.position,
+            velocity: physics_body.velocity,
+            kind,
+        }
     }
 }
 
@@ -18,10 +41,25 @@ impl Simulation for SimulationImpl {
         self.world.step()
     }
 
-    fn add_object(&mut self, object: NewObject) {}
+    fn add_object(&mut self, new_object: NewObject) {
+        let velocity = match new_object.object {
+            Object::Immovable(_) => Mobility::Immovable,
+            Object::Movable(_) => Mobility::Movable(Velocity::default()),
+        };
+        let physical_body = PhysicalBody {
+            shape: new_object.shape,
+            position: new_object.position,
+            velocity,
+        };
+        let body_handle = self.world.add_body(physical_body);
+        self.objects.insert(body_handle, new_object.object);
+    }
 
     fn objects(&self) -> Vec<ObjectDescription> {
-        Vec::new()
+        self.objects
+            .iter()
+            .map(|(&handle, object)| self.convert_to_object_description(handle, object))
+            .collect()
     }
 
     fn set_simulated_timestep(&mut self, timestep: f64) {
@@ -119,7 +157,7 @@ mod tests {
         let mut simulation = SimulationImpl::new(world);
 
         let object = NewObject {
-            object: Object::Movable(Box::new(ObjectMock {})),
+            object: Object::Movable(Box::new(ObjectMock::default())),
             position: expected_position,
             shape: expected_shape,
         };
@@ -140,7 +178,7 @@ mod tests {
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
         let mut simulation = SimulationImpl::new(world);
 
-        let object = Box::new(ObjectMock {});
+        let object = Box::new(ObjectMock::default());
         let expected_kind = object.kind();
         let new_object = NewObject {
             object: Object::Movable(object),
@@ -302,14 +340,34 @@ mod tests {
         }
     }
 
-    #[derive(Debug)]
-    struct ObjectMock;
+    #[derive(Debug, Default)]
+    struct ObjectMock {
+        expects_step: bool,
+        step_was_called: RefCell<bool>,
+    }
+
     impl MovableObject for ObjectMock {
         fn step(&mut self) -> Vec<MovableAction> {
-            panic!("step() was called unexpectedly")
+            if self.expects_step {
+                *self.step_was_called.borrow_mut() = true;
+                // Actions are currently ignored
+                Vec::new()
+            } else {
+                panic!("step() was called unexpectedly")
+            }
         }
         fn kind(&self) -> Kind {
             Kind::Organism
+        }
+    }
+    impl Drop for ObjectMock {
+        fn drop(&mut self) {
+            if self.expects_step {
+                assert!(
+                    *self.step_was_called.borrow(),
+                    "step() was not called, but was expected"
+                )
+            }
         }
     }
 }
