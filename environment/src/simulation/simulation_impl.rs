@@ -15,16 +15,15 @@ impl SimulationImpl {
 
 impl Simulation for SimulationImpl {
     fn step(&mut self) {
-        unimplemented!()
+        self.world.step()
     }
-    fn add_object(&mut self, object: NewObject) {
-        unimplemented!()
-    }
+    fn add_object(&mut self, object: NewObject) {}
     fn objects(&self) -> Vec<ObjectDescription> {
-        unimplemented!()
+        Vec::new()
     }
     fn set_simulated_timestep(&mut self, timestep: f64) {
-        unimplemented!()
+        assert!(timestep >= 0.0, "Cannot set timestep to a negative value");
+        self.world.set_simulated_timestep(timestep)
     }
 }
 
@@ -55,8 +54,43 @@ pub struct BodyHandle(pub usize);
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::borrow::BorrowMut;
     use std::cell::RefCell;
+
+    #[test]
+    fn propagates_step() {
+        let mut world = Box::new(WorldMock::new());
+        world.expect_step();
+        let mut simulation = SimulationImpl::new(world);
+        simulation.step();
+    }
+
+    #[test]
+    fn propagates_simulated_timestep() {
+        let mut world = Box::new(WorldMock::new());
+        const EXPECTED_TIMESTEP: f64 = 1.0;
+        world.expect_set_simulated_timestep(EXPECTED_TIMESTEP);
+        let mut simulation = SimulationImpl::new(world);
+        simulation.set_simulated_timestep(EXPECTED_TIMESTEP);
+    }
+
+    #[should_panic]
+    #[test]
+    fn panics_on_negative_timestep() {
+        let mut world = Box::new(WorldMock::new());
+        const EXPECTED_TIMESTEP: f64 = -0.1;
+        world.expect_set_simulated_timestep(EXPECTED_TIMESTEP);
+        let mut simulation = SimulationImpl::new(world);
+        simulation.set_simulated_timestep(EXPECTED_TIMESTEP);
+    }
+
+    #[test]
+    fn propagates_zero_timestep() {
+        let mut world = Box::new(WorldMock::new());
+        const EXPECTED_TIMESTEP: f64 = 0.0;
+        world.expect_set_simulated_timestep(EXPECTED_TIMESTEP);
+        let mut simulation = SimulationImpl::new(world);
+        simulation.set_simulated_timestep(EXPECTED_TIMESTEP);
+    }
 
     #[derive(Debug, Default)]
     struct WorldMock {
@@ -71,23 +105,31 @@ mod tests {
         set_simulated_timestep_was_called: RefCell<bool>,
     }
     impl WorldMock {
-        fn new() -> Self {
+        pub(crate) fn new() -> Self {
             Default::default()
         }
 
-        fn expect_step(&mut self) {
+        pub(crate) fn expect_step(&mut self) {
             self.expect_step = Some(());
         }
 
-        fn expect_add_body_and_return(&mut self, body: PhysicalBody, returned_value: BodyHandle) {
+        pub(crate) fn expect_add_body_and_return(
+            &mut self,
+            body: PhysicalBody,
+            returned_value: BodyHandle,
+        ) {
             self.expect_add_body_and_return = Some((body, returned_value));
         }
 
-        fn expect_body_and_return(&mut self, handle: BodyHandle, returned_value: PhysicalBody) {
+        pub(crate) fn expect_body_and_return(
+            &mut self,
+            handle: BodyHandle,
+            returned_value: PhysicalBody,
+        ) {
             self.expect_body_and_return = Some((handle, returned_value));
         }
 
-        fn expect_set_simulated_timestep(&mut self, timestep: f64) {
+        pub(crate) fn expect_set_simulated_timestep(&mut self, timestep: f64) {
             self.expect_set_simulated_timestep = Some(timestep);
         }
     }
@@ -103,19 +145,19 @@ mod tests {
             if self.expect_add_body_and_return.is_some() {
                 assert!(
                     *self.add_body_was_called.borrow(),
-                    "step() was not called, but was expected"
+                    "add_body() was not called, but was expected"
                 )
             }
             if self.expect_body_and_return.is_some() {
                 assert!(
                     *self.body_was_called.borrow(),
-                    "step() was not called, but was expected"
+                    "body() was not called, but was expected"
                 )
             }
             if self.expect_set_simulated_timestep.is_some() {
                 assert!(
                     *self.set_simulated_timestep_was_called.borrow(),
-                    "step() was not called, but was expected"
+                    "set_simulated_timestep() was not called, but was expected"
                 )
             }
         }
