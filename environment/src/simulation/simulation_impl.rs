@@ -65,10 +65,10 @@ mod tests {
         expect_body_and_return: Option<(BodyHandle, PhysicalBody)>,
         expect_set_simulated_timestep: Option<f64>,
 
-        step_was_called_with: RefCell<Option<()>>,
-        add_body_was_called_with: RefCell<Option<(PhysicalBody, BodyHandle)>>,
-        body_was_called_with: RefCell<Option<(BodyHandle, PhysicalBody)>>,
-        set_simulated_timestep_was_called_with: RefCell<Option<f64>>,
+        step_was_called: RefCell<bool>,
+        add_body_was_called: RefCell<bool>,
+        body_was_called: RefCell<bool>,
+        set_simulated_timestep_was_called: RefCell<bool>,
     }
     impl WorldMock {
         fn new() -> Self {
@@ -94,31 +94,82 @@ mod tests {
 
     impl Drop for WorldMock {
         fn drop(&mut self) {
-            assert_eq!(self.expect_step, *self.step_was_called_with.borrow());
-            assert_eq!(
-                self.expect_add_body_and_return,
-                *self.add_body_was_called_with.borrow()
-            );
-            assert_eq!(
-                self.expect_body_and_return,
-                *self.body_was_called_with.borrow()
-            );
-            assert_eq!(
-                self.expect_set_simulated_timestep,
-                *self.set_simulated_timestep_was_called_with.borrow()
-            );
+            if self.expect_step.is_some() {
+                assert!(
+                    *self.step_was_called.borrow(),
+                    "step() was not called, but was expected"
+                )
+            }
+            if self.expect_add_body_and_return.is_some() {
+                assert!(
+                    *self.add_body_was_called.borrow(),
+                    "step() was not called, but was expected"
+                )
+            }
+            if self.expect_body_and_return.is_some() {
+                assert!(
+                    *self.body_was_called.borrow(),
+                    "step() was not called, but was expected"
+                )
+            }
+            if self.expect_set_simulated_timestep.is_some() {
+                assert!(
+                    *self.set_simulated_timestep_was_called.borrow(),
+                    "step() was not called, but was expected"
+                )
+            }
         }
     }
 
     impl World for WorldMock {
-        fn step(&mut self) {}
-        fn add_body(&mut self, body: PhysicalBody) -> BodyHandle {
-            if let Some((expected_body, return_value)) = self.expect_add_body_and_return {
-            } else {
-                panic!("add_body was called unexpectedly")
+        fn step(&mut self) {
+            *self.step_was_called.borrow_mut() = true;
+            if self.expect_step.is_none() {
+                panic!("step() was called unexpectedly")
             }
         }
-        fn body(&self, handle: BodyHandle) -> PhysicalBody {}
-        fn set_simulated_timestep(&mut self, timestep: f64) {}
+        fn add_body(&mut self, body: PhysicalBody) -> BodyHandle {
+            *self.add_body_was_called.borrow_mut() = true;
+            if let Some((ref expected_body, ref return_value)) = self.expect_add_body_and_return {
+                if body == *expected_body {
+                    return_value.clone()
+                } else {
+                    panic!(
+                        "add_body() was called with {:?}, expected {:?}",
+                        body, expected_body
+                    )
+                }
+            } else {
+                panic!("add_body() was called unexpectedly")
+            }
+        }
+        fn body(&self, handle: BodyHandle) -> PhysicalBody {
+            *self.body_was_called.borrow_mut() = true;
+            if let Some((ref expected_handle, ref return_value)) = self.expect_body_and_return {
+                if handle == *expected_handle {
+                    return_value.clone()
+                } else {
+                    panic!(
+                        "body() was called with {:?}, expected {:?}",
+                        handle, expected_handle
+                    )
+                }
+            } else {
+                panic!("body() was called unexpectedly")
+            }
+        }
+        fn set_simulated_timestep(&mut self, timestep: f64) {
+            *self.set_simulated_timestep_was_called.borrow_mut() = true;
+            if let Some(expected_timestep) = self.expect_set_simulated_timestep {
+                if timestep != expected_timestep {
+                    panic!(
+                        "set_simulated_timestep() was called with {:?}, expected {:?}",
+                        timestep, expected_timestep
+                    )
+                }
+            } else {
+                panic!("set_simulated_timestep() was called unexpectedly")
+            }
+        }
     }
 }
