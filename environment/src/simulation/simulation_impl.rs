@@ -30,8 +30,7 @@ impl Simulation for SimulationImpl {
 
 pub trait World: fmt::Debug {
     fn step(&mut self);
-    fn add_rigid_body(&mut self, body: PhysicalBody) -> BodyHandle;
-    fn add_grounded_body(&mut self, body: PhysicalBody) -> BodyHandle;
+    fn add_body(&mut self, body: PhysicalBody) -> BodyHandle;
     fn body(&self, handle: BodyHandle) -> PhysicalBody;
     fn set_simulated_timestep(&mut self, timestep: f64);
 }

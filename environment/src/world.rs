@@ -10,7 +10,9 @@ use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
 use ncollide2d::world::CollisionObjectHandle;
 use nphysics2d::math::{Isometry, Point, Vector};
-use nphysics2d::object::{BodyHandle as NphysicsBodyHandle, Collider, ColliderHandle, Material};
+use nphysics2d::object::{
+    BodyHandle as NphysicsBodyHandle, Collider, ColliderHandle, Material, RigidBody,
+};
 use nphysics2d::volumetric::Volumetric;
 use nphysics2d::world::World as PhysicsWorld;
 use std::collections::HashMap;
@@ -47,7 +49,7 @@ impl NphysicsWorld {
         }
     }
 
-    fn convert_to_object(&self, collider_handle: ColliderHandle) -> PhysicalBody {
+    fn get_body_from_handle(&self, collider_handle: ColliderHandle) -> PhysicalBody {
         let collider = self
             .physics_world
             .collider(collider_handle)
@@ -157,49 +159,61 @@ impl World for NphysicsWorld {
         self.physics_world.step();
     }
 
-    fn add_rigid_body(&mut self, body: PhysicalBody) -> BodyHandle {
+    fn add_body(&mut self, body: PhysicalBody) -> BodyHandle {
         let shape = get_shape(&body);
         let local_inertia = shape.inertia(0.1);
         let local_center_of_mass = shape.center_of_mass();
         let isometry = get_isometry(&body);
-        let rigid_body_handle =
-            self.physics_world
-                .add_rigid_body(isometry, local_inertia, local_center_of_mass);
-
         let material = Material::default();
-        let collider_handle = self.physics_world.add_collider(
-            0.04,
-            shape,
-            rigid_body_handle,
-            Isometry::identity(),
-            material,
-        );
-        to_object_handle(collider_handle)
-    }
 
-    fn add_grounded_body(&mut self, body: PhysicalBody) -> BodyHandle {
-        let shape = get_shape(&body);
-        let material = Material::default();
-        let isometry = get_isometry(&body);
+        let handle = match body.velocity {
+            Mobility::Immovable => self.physics_world.add_collider(
+                0.04,
+                shape,
+                NphysicsBodyHandle::ground(),
+                isometry,
+                material,
+            ),
+            Mobility::Movable(velocity) => {
+                let rigid_body_handle = self.physics_world.add_rigid_body(
+                    isometry,
+                    local_inertia,
+                    local_center_of_mass,
+                );
+                let mut rigid_body = self
+                    .physics_world
+                    .rigid_body_mut(rigid_body_handle)
+                    .expect("Invalid body handle");
+                set_velocity(&mut rigid_body, &velocity);
+                self.physics_world.add_collider(
+                    0.04,
+                    shape,
+                    rigid_body_handle,
+                    Isometry::identity(),
+                    material,
+                )
+            }
+        };
 
-        let collider_handle = self.physics_world.add_collider(
-            0.04,
-            shape,
-            NphysicsBodyHandle::ground(),
-            isometry,
-            material,
-        );
-        to_object_handle(collider_handle)
+        to_object_handle(handle)
     }
 
     fn body(&self, handle: BodyHandle) -> PhysicalBody {
         let collider_handle = to_collider_handle(handle);
-        self.convert_to_object(collider_handle)
+        self.get_body_from_handle(collider_handle)
     }
 
     fn set_simulated_timestep(&mut self, timestep: f64) {
         self.physics_world.set_timestep(timestep);
     }
+}
+
+fn set_velocity(rigid_body: &mut RigidBody<PhysicsType>, velocity: &Velocity) {
+    let nphysics_velocity = nphysics2d::algebra::Velocity2::linear(
+        PhysicsType::from(velocity.x),
+        PhysicsType::from(velocity.y),
+    );
+    rigid_body.set_velocity(nphysics_velocity);
 }
 
 fn to_object_handle(collider_handle: ColliderHandle) -> BodyHandle {
@@ -286,7 +300,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         let local_rigid_object = local_rigid_object(Radians(3.0));
 
-        let handle = world.add_rigid_body(local_rigid_object);
+        let handle = world.add_body(local_rigid_object);
         let _body = world.body(handle);
     }
 
@@ -295,7 +309,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         let object = local_grounded_object(Radians(3.0));
 
-        let handle = world.add_grounded_body(object.clone());
+        let handle = world.add_body(object.clone());
         let _body = world.body(handle);
     }
 
@@ -305,8 +319,8 @@ mod tests {
         let rigid_object = local_rigid_object(Radians(3.0));
         let grounded_object = local_grounded_object(Radians(3.0));
 
-        let rigid_handle = world.add_rigid_body(rigid_object);
-        let grounded_handle = world.add_grounded_body(grounded_object);
+        let rigid_handle = world.add_body(rigid_object);
+        let grounded_handle = world.add_body(grounded_object);
 
         let _rigid_body = world.body(rigid_handle);
         let _grounded_body = world.body(grounded_handle);
@@ -316,7 +330,7 @@ mod tests {
     fn returns_correct_rigid_body() {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         let expected_body = local_rigid_object(Radians(3.0));
-        let handle = world.add_rigid_body(expected_body.clone());
+        let handle = world.add_body(expected_body.clone());
         let actual_body = world.body(handle);
 
         assert_eq!(expected_body, actual_body)
@@ -326,7 +340,7 @@ mod tests {
     fn returns_correct_grounded_body() {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         let expected_body = local_grounded_object(Radians(3.0));
-        let handle = world.add_grounded_body(expected_body.clone());
+        let handle = world.add_body(expected_body.clone());
         let actual_body = world.body(handle);
 
         assert_eq!(expected_body, actual_body)
@@ -337,7 +351,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(1.0);
 
         let local_object = local_rigid_object(Radians::default());
-        let handle = world.add_rigid_body(local_object.clone());
+        let handle = world.add_body(local_object.clone());
 
         world.step();
         world.step();
@@ -364,7 +378,7 @@ mod tests {
         world.set_simulated_timestep(1.0);
 
         let local_object = local_rigid_object(Radians::default());
-        let handle = world.add_rigid_body(local_object.clone());
+        let handle = world.add_body(local_object.clone());
 
         world.step();
         world.step();
@@ -391,7 +405,7 @@ mod tests {
 
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         let expected_object = local_grounded_object(Radians(FRAC_PI_2));
-        let handle = world.add_grounded_body(expected_object.clone());
+        let handle = world.add_body(expected_object.clone());
 
         world.step();
         world.step();
@@ -410,7 +424,7 @@ mod tests {
             velocity: Mobility::Movable(Velocity { x: 0, y: 0 }),
             ..body
         };
-        let handle = world.add_grounded_body(still_body.clone());
+        let handle = world.add_body(still_body.clone());
 
         world.step();
         world.step();
