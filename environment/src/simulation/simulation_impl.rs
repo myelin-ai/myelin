@@ -126,7 +126,7 @@ mod tests {
         let mut simulation = SimulationImpl::new(world);
 
         let object = NewObject {
-            object: unimplemented!(),
+            object: Object::Movable(Box::new(ObjectMock {})),
             position: expected_position,
             shape: expected_shape,
         };
@@ -253,6 +253,17 @@ mod tests {
             } else {
                 panic!("set_simulated_timestep() was called unexpectedly")
             }
+        }
+    }
+
+    #[derive(Debug)]
+    struct ObjectMock;
+    impl MovableObject for ObjectMock {
+        fn step(&mut self) -> Vec<MovableAction> {
+            panic!("step() was called unexpectedly")
+        }
+        fn kind(&self) -> Kind {
+            Kind::Organism
         }
     }
 }
