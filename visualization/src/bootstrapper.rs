@@ -9,9 +9,11 @@ use crate::view::CanvasView;
 use myelin_environment::object::{Kind, Object};
 use myelin_environment::simulation::{simulation_impl::SimulationImpl, Simulation};
 use myelin_environment::world::NphysicsWorld;
+use myelin_object::{
+    organism::StaticOrganism, plant::StaticPlant, terrain::StaticTerrain, water::StaticWater,
+};
 use myelin_worldgen::generator::HardcodedGenerator;
 use wasm_bindgen::prelude::*;
-
 use web_sys::HtmlCanvasElement;
 
 /// Initializes all components with explicit implementations
@@ -42,7 +44,12 @@ pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
         let world = Box::new(NphysicsWorld::with_timestep(SIMULATED_TIMESTEP));
         Box::new(SimulationImpl::new(world))
     });
-    let object_factory = Box::new(|kind: Kind| -> Object { unimplemented!() });
+    let object_factory = Box::new(|kind: Kind| match kind {
+        Kind::Plant => Object::Immovable(Box::new(StaticPlant::new())),
+        Kind::Organism => Object::Movable(Box::new(StaticOrganism::new())),
+        Kind::Water => Object::Immovable(Box::new(StaticWater::new())),
+        Kind::Terrain => Object::Immovable(Box::new(StaticTerrain::new())),
+    });
     let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
     let controller = Box::new(ControllerImpl::new(presenter, &worldgen));
     InputHandler::new(controller)
