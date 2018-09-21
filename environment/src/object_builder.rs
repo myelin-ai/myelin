@@ -380,6 +380,7 @@ mod test {
                     .build()
                     .unwrap(),
             ).orientation(Radians(0.0))
+            .location(30, 40)
             .kind(Kind::Plant)
             .build();
 
