@@ -51,18 +51,18 @@ impl Simulation for SimulationImpl {
         self.world.step()
     }
 
-    fn add_object(&mut self, new_object: Object) {
-        let mobility = match new_object.object_behavior {
+    fn add_object(&mut self, object: Object) {
+        let mobility = match object.object_behavior {
             ObjectBehavior::Immovable(_) => Mobility::Immovable,
             ObjectBehavior::Movable(_) => Mobility::Movable(Velocity::default()),
         };
         let physical_body = PhysicalBody {
-            shape: new_object.shape,
-            position: new_object.position,
+            shape: object.shape,
+            position: object.position,
             mobility,
         };
         let body_handle = self.world.add_body(physical_body);
-        self.objects.insert(body_handle, new_object.object_behavior);
+        self.objects.insert(body_handle, object.object_behavior);
     }
 
     fn objects(&self) -> Vec<ObjectDescription> {

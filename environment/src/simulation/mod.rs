@@ -13,7 +13,7 @@ pub trait Simulation {
     /// forces to the objects, handle collisions and move them.
     fn step(&mut self);
     /// Add a new object to the world.
-    fn add_object(&mut self, new_object: Object);
+    fn add_object(&mut self, object: Object);
     /// Returns all objects currently inhabiting the simulation.
     fn objects(&self) -> Vec<ObjectDescription>;
     /// Sets how much time in seconds is simulated for each step.
