@@ -26,11 +26,15 @@ impl HardcodedGenerator {
     ///
     /// # Examples
     /// ```
-    /// use myelin_environment::simulation::{Simulation, NphysicsSimulation};
-    /// use myelin_simulationgen::SimulationGenerator;
-    /// use myelin_simulationgen::generator::HardcodedGenerator;
+    /// use myelin_environment::simulation::{Simulation, simulation_impl::SimulationImpl};
+    /// use myelin_environment::world::NphysicsWorld;
+    /// use myelin_worldgen::WorldGenerator;
+    /// use myelin_worldgen::generator::HardcodedGenerator;
     ///
-    /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> { Box::new(NphysicsSimulation::with_timestep(1.0)) });
+    /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
+    ///     let world = Box::new(NphysicsWorld::with_timestep(1.0));
+    ///     Box::new(SimulationImpl::new(world))
+    /// });
     /// let simulationgen = HardcodedGenerator::new(simulation_factory);
     /// let generated_simulation = simulationgen.generate();
     pub fn new(simulation_factory: SimulationFactory, object_factory: ObjectFactory) -> Self {
