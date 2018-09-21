@@ -57,17 +57,42 @@ mod tests {
     use super::*;
     use std::cell::RefCell;
 
-    #[derive(Debug)]
+    #[derive(Debug, Default)]
     struct WorldMock {
         expect_step: Option<()>,
         expect_add_body_and_return: Option<(PhysicalBody, BodyHandle)>,
         expect_body_and_return: Option<(BodyHandle, PhysicalBody)>,
         expect_set_simulated_timestep: Option<f64>,
 
-        step_was_called: RefCell<bool>,
-        add_body_was_called: RefCell<bool>,
-        body_was_called: RefCell<bool>,
-        set_simulated_timestep_was_called: RefCell<bool>,
+        step_was_called_with: RefCell<Option<()>>,
+        add_body_was_called_with: RefCell<Option<(PhysicalBody, BodyHandle)>>,
+        body_was_called_with: RefCell<Option<(BodyHandle, PhysicalBody)>>,
+        set_simulated_timestep_was_called_with: RefCell<Option<f64>>,
+    }
+    impl WorldMock {
+        fn new() -> Self {
+            Default::default()
+        }
+
+        fn expect_step(&mut self) {
+            self.expect_step = Some(());
+        }
+
+        fn expect_add_body_and_return(&mut self, body: PhysicalBody, returned_value: BodyHandle) {
+            self.expect_add_body_and_return = Some((body, returned_value));
+        }
+
+        fn expect_body_and_return(&mut self, handle: BodyHandle, returned_value: PhysicalBody) {
+            self.expect_body_and_return = Some((handle, returned_value));
+        }
+
+        fn expect_set_simulated_timestep(&mut self, timestep: f64) {
+            self.expect_set_simulated_timestep = Some(timestep);
+        }
+    }
+
+    impl Drop for WorldMock {
+        fn drop(&mut self) {}
     }
 
     impl World for WorldMock {
