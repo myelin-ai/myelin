@@ -1,9 +1,9 @@
 //! A generator for a hardcoded simulation
 
 use crate::WorldGenerator;
-use myelin_environment::object::{Kind, Location, Object, Position, Radians};
+use myelin_environment::object::{Kind, Location, ObjectBehavior, Position, Radians};
 use myelin_environment::object_builder::PolygonBuilder;
-use myelin_environment::simulation::{NewObject, Simulation};
+use myelin_environment::simulation::{Object, Simulation};
 use std::f64::consts::FRAC_PI_2;
 
 /// Simulation generation algorithm that creates a fixed simulation
@@ -15,7 +15,7 @@ pub struct HardcodedGenerator {
 }
 
 pub type SimulationFactory = Box<dyn Fn() -> Box<dyn Simulation>>;
-pub type ObjectFactory = Box<dyn Fn(Kind) -> Object>;
+pub type ObjectFactory = Box<dyn Fn(Kind) -> ObjectBehavior>;
 
 impl HardcodedGenerator {
     /// Creates a new generator, injecting a simulation factory, i.e.
@@ -28,7 +28,7 @@ impl HardcodedGenerator {
     /// ```
     /// use myelin_environment::simulation::{Simulation, simulation_impl::SimulationImpl};
     /// use myelin_environment::world::NphysicsWorld;
-    /// use myelin_environment::object::{Kind, Object};
+    /// use myelin_environment::object::{Kind, ObjectBehavior};
     /// use myelin_worldgen::WorldGenerator;
     /// use myelin_worldgen::generator::HardcodedGenerator;
     /// use myelin_object::{
@@ -41,10 +41,10 @@ impl HardcodedGenerator {
     /// });
     ///
     /// let object_factory = Box::new(|kind: Kind| match kind {
-    ///     Kind::Plant => Object::Immovable(Box::new(StaticPlant::new())),
-    ///     Kind::Organism => Object::Movable(Box::new(StaticOrganism::new())),
-    ///     Kind::Water => Object::Immovable(Box::new(StaticWater::new())),
-    ///     Kind::Terrain => Object::Immovable(Box::new(StaticTerrain::new())),
+    ///     Kind::Plant => ObjectBehavior::Immovable(Box::new(StaticPlant::new())),
+    ///     Kind::Organism => ObjectBehavior::Movable(Box::new(StaticOrganism::new())),
+    ///     Kind::Water => ObjectBehavior::Immovable(Box::new(StaticWater::new())),
+    ///     Kind::Terrain => ObjectBehavior::Immovable(Box::new(StaticTerrain::new())),
     /// });
     /// let simulationgen = HardcodedGenerator::new(simulation_factory, object_factory);
     /// let generated_simulation = simulationgen.generate();
@@ -62,13 +62,13 @@ impl HardcodedGenerator {
         simulation.add_object(self.build_terrain((500, 975), 1000, 50));
     }
 
-    fn build_terrain(&self, location: (u32, u32), width: i32, length: i32) -> NewObject {
+    fn build_terrain(&self, location: (u32, u32), width: i32, length: i32) -> Object {
         // We add two pixels because of https://github.com/myelin-ai/myelin/issues/60
         let x_offset = width / 2 + 2;
         let y_offset = length / 2 + 2;
 
-        NewObject {
-            object: (self.object_factory)(Kind::Terrain),
+        Object {
+            object_behavior: (self.object_factory)(Kind::Terrain),
             shape: PolygonBuilder::new()
                 .vertex(-x_offset, -y_offset)
                 .vertex(x_offset, -y_offset)
@@ -87,8 +87,8 @@ impl HardcodedGenerator {
     }
 
     fn populate_with_water(&self, simulation: &mut dyn Simulation) {
-        let object = NewObject {
-            object: (self.object_factory)(Kind::Water),
+        let object = Object {
+            object_behavior: (self.object_factory)(Kind::Water),
             shape: PolygonBuilder::new()
                 .vertex(-180, 60)
                 .vertex(0, 200)
@@ -118,9 +118,9 @@ impl HardcodedGenerator {
         }
     }
 
-    fn build_plant(&self, x: u32, y: u32) -> NewObject {
-        NewObject {
-            object: (self.object_factory)(Kind::Plant),
+    fn build_plant(&self, x: u32, y: u32) -> Object {
+        Object {
+            object_behavior: (self.object_factory)(Kind::Plant),
             shape: PolygonBuilder::new()
                 .vertex(-10, -10)
                 .vertex(10, -10)
@@ -143,9 +143,9 @@ impl HardcodedGenerator {
         simulation.add_object(self.build_organism(700, 800));
     }
 
-    fn build_organism(&self, x: u32, y: u32) -> NewObject {
-        NewObject {
-            object: (self.object_factory)(Kind::Organism),
+    fn build_organism(&self, x: u32, y: u32) -> Object {
+        Object {
+            object_behavior: (self.object_factory)(Kind::Organism),
             shape: PolygonBuilder::new()
                 .vertex(25, 0)
                 .vertex(-25, 20)
@@ -176,21 +176,20 @@ impl WorldGenerator for HardcodedGenerator {
 mod tests {
     use super::*;
     use myelin_environment::object::{
-        ImmovableAction, ImmovableObject, Kind, Location, Object, ObjectDescription, Position,
-        Radians,
+        ImmovableAction, ImmovableObject, Kind, ObjectBehavior, ObjectDescription,
     };
-    use myelin_environment::simulation::NewObject;
+    use myelin_environment::simulation::Object;
 
     #[derive(Debug, Default)]
     struct SimulationMock {
-        objects: Vec<NewObject>,
+        objects: Vec<Object>,
     }
 
     impl Simulation for SimulationMock {
         fn step(&mut self) {
             panic!("step() called unexpectedly")
         }
-        fn add_object(&mut self, object: NewObject) {
+        fn add_object(&mut self, object: Object) {
             self.objects.push(object)
         }
         fn objects(&self) -> Vec<ObjectDescription> {
@@ -221,7 +220,7 @@ mod tests {
     fn generates_simulation() {
         let simulation_factory =
             Box::new(|| -> Box<dyn Simulation> { Box::new(SimulationMock::default()) });
-        let object_factory = Box::new(|_: Kind| Object::Immovable(Box::new(ObjectMock {})));
+        let object_factory = Box::new(|_: Kind| ObjectBehavior::Immovable(Box::new(ObjectMock {})));
         let generator = HardcodedGenerator::new(simulation_factory, object_factory);
 
         let _simulation = generator.generate();

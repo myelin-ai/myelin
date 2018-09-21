@@ -35,7 +35,7 @@ impl ControllerImpl {
 mod tests {
     use super::*;
     use myelin_environment::object::*;
-    use myelin_environment::simulation::NewObject;
+    use myelin_environment::simulation::Object;
     use std::cell::RefCell;
 
     #[derive(Debug)]
@@ -57,7 +57,7 @@ mod tests {
         fn step(&mut self) {
             self.step_was_called = true;
         }
-        fn add_object(&mut self, _: NewObject) {
+        fn add_object(&mut self, _: Object) {
             panic!("add_object() was called unexpectedly")
         }
         fn set_simulated_timestep(&mut self, _: f64) {
@@ -168,7 +168,7 @@ mod tests {
                 location: Location { x: 20, y: 40 },
                 rotation: Radians(6.0),
             },
-            velocity: Mobility::Movable(Velocity { x: 0, y: -1 }),
+            mobility: Mobility::Movable(Velocity { x: 0, y: -1 }),
             kind: Kind::Organism,
         }];
         let mut controller = mock_controller(expected_objects);

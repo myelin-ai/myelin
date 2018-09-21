@@ -1,19 +1,19 @@
-use crate::object::{Object, ObjectDescription, Polygon, Position};
+use crate::object::{ObjectBehavior, ObjectDescription, Polygon, Position};
 
 pub mod simulation_impl;
 
-/// A Simulation that can be filled with [`NewObject`] on
+/// A Simulation that can be filled with [`Object`] on
 /// which it will apply physical rules when calling [`step`].
 /// This trait represents our API.
 ///
-/// [`NewObject`]: ./struct.NewObject.html
+/// [`Object`]: ./struct.Object.html
 /// [`step`]: ./trait.World.html#structfield.location#tymethod.step
 pub trait Simulation {
     /// Advance the simulation by one tick. This will apply
     /// forces to the objects, handle collisions and move them.
     fn step(&mut self);
     /// Add a new object to the world.
-    fn add_object(&mut self, new_object: NewObject);
+    fn add_object(&mut self, new_object: Object);
     /// Returns all objects currently inhabiting the simulation.
     fn objects(&self) -> Vec<ObjectDescription>;
     /// Sets how much time in seconds is simulated for each step.
@@ -26,8 +26,8 @@ pub trait Simulation {
 
 /// A new object that is going to be placed in the simulation
 #[derive(Debug)]
-pub struct NewObject {
-    pub object: Object,
+pub struct Object {
+    pub object_behavior: ObjectBehavior,
     pub position: Position,
     pub shape: Polygon,
 }

@@ -17,7 +17,7 @@
 //!     ).location(300, 450)
 //!     .orientation(Radians(FRAC_PI_2))
 //!     .kind(Kind::Organism)
-//!     .velocity(Mobility::Movable(Velocity{x: 3, y: 5}))
+//!     .mobility(Mobility::Movable(Velocity{x: 3, y: 5}))
 //!     .build()
 //!     .unwrap();
 //! ```
@@ -38,7 +38,7 @@ pub struct ObjectBuilderError {
     /// Flag signaling that .kind(...) was never called
     pub missing_kind: bool,
     /// Flag signaling that .velocity(...) was never called
-    pub missing_velocity: bool,
+    pub missing_mobility: bool,
 }
 
 /// [`ObjectDescription`] factory, which can be used in order to configure
@@ -51,7 +51,7 @@ pub struct ObjectBuilder {
     shape: Option<Polygon>,
     location: Option<Location>,
     orientation: Option<Radians>,
-    velocity: Option<Mobility>,
+    mobility: Option<Mobility>,
     kind: Option<Kind>,
 }
 
@@ -116,10 +116,10 @@ impl ObjectBuilder {
     /// use myelin_environment::object_builder::ObjectBuilder;
     /// use myelin_environment::object::{Mobility, Velocity};
     /// ObjectBuilder::new()
-    ///     .velocity(Mobility::Movable(Velocity { x: -12, y: 4 }));
+    ///     .mobility(Mobility::Movable(Velocity { x: -12, y: 4 }));
     /// ```
-    pub fn velocity(&mut self, velocity: Mobility) -> &mut Self {
-        self.velocity = Some(velocity);
+    pub fn mobility(&mut self, mobility: Mobility) -> &mut Self {
+        self.mobility = Some(mobility);
         self
     }
 
@@ -158,7 +158,7 @@ impl ObjectBuilder {
     ///     ).location(300, 450)
     ///     .orientation(Radians(FRAC_PI_2))
     ///     .kind(Kind::Organism)
-    ///     .velocity(Mobility::Movable(Velocity{x: 3, y: 5}))
+    ///     .mobility(Mobility::Movable(Velocity{x: 3, y: 5}))
     ///     .build()
     ///     .unwrap();
     /// ```
@@ -169,7 +169,7 @@ impl ObjectBuilder {
             missing_shape: self.shape.is_none(),
             missing_location: self.location.is_none(),
             missing_kind: self.kind.is_none(),
-            missing_velocity: self.velocity.is_none(),
+            missing_mobility: self.mobility.is_none(),
         };
 
         let object = ObjectDescription {
@@ -179,7 +179,7 @@ impl ObjectBuilder {
                 rotation: self.orientation.take().unwrap_or_else(Default::default),
             },
             kind: self.kind.take().ok_or_else(|| error.clone())?,
-            velocity: self.velocity.take().ok_or(error)?,
+            mobility: self.mobility.take().ok_or(error)?,
         };
 
         Ok(object)
@@ -308,7 +308,7 @@ mod test {
             .location(10, 10)
             .orientation(Radians(0.0))
             .kind(Kind::Terrain)
-            .velocity(Mobility::Immovable)
+            .mobility(Mobility::Immovable)
             .build();
 
         assert_eq!(
@@ -333,7 +333,7 @@ mod test {
                     .unwrap(),
             ).location(10, 10)
             .orientation(Radians(0.0))
-            .velocity(Mobility::Immovable)
+            .mobility(Mobility::Immovable)
             .build();
         assert_eq!(
             Err(ObjectBuilderError {
@@ -357,7 +357,7 @@ mod test {
                     .unwrap(),
             ).orientation(Radians(0.0))
             .kind(Kind::Terrain)
-            .velocity(Mobility::Immovable)
+            .mobility(Mobility::Immovable)
             .build();
 
         assert_eq!(
@@ -370,7 +370,7 @@ mod test {
     }
 
     #[test]
-    fn test_object_builder_should_error_for_missing_velocity() {
+    fn test_object_builder_should_error_for_missing_mobility() {
         let result = ObjectBuilder::new()
             .shape(
                 PolygonBuilder::new()
@@ -387,7 +387,7 @@ mod test {
 
         assert_eq!(
             Err(ObjectBuilderError {
-                missing_velocity: true,
+                missing_mobility: true,
                 ..Default::default()
             }),
             result
@@ -407,7 +407,7 @@ mod test {
                     .unwrap(),
             ).location(30, 40)
             .kind(Kind::Terrain)
-            .velocity(Mobility::Immovable)
+            .mobility(Mobility::Immovable)
             .build();
 
         let expected = ObjectDescription {
@@ -424,7 +424,7 @@ mod test {
                 location: Location { x: 30, y: 40 },
             },
             kind: Kind::Terrain,
-            velocity: Mobility::Immovable,
+            mobility: Mobility::Immovable,
         };
 
         assert_eq!(Ok(expected), result);
@@ -439,7 +439,7 @@ mod test {
                 missing_shape: true,
                 missing_location: true,
                 missing_kind: true,
-                missing_velocity: true
+                missing_mobility: true
             }),
             result
         );
@@ -456,7 +456,7 @@ mod test {
                     .vertex(1, 1)
                     .build()
                     .unwrap(),
-            ).velocity(Mobility::Movable(Velocity { x: -12, y: 5 }))
+            ).mobility(Mobility::Movable(Velocity { x: -12, y: 5 }))
             .kind(Kind::Organism)
             .location(30, 40)
             .orientation(Radians(1.1))
@@ -467,7 +467,7 @@ mod test {
                 location: Location { x: 30, y: 40 },
                 rotation: Radians(1.1),
             },
-            velocity: Mobility::Movable(Velocity { x: -12, y: 5 }),
+            mobility: Mobility::Movable(Velocity { x: -12, y: 5 }),
             kind: Kind::Organism,
             shape: Polygon {
                 vertices: vec![

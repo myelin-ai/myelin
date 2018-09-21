@@ -25,8 +25,8 @@ impl Presenter for CanvasPresenter {
     }
 }
 
-fn to_global_object(object: &business_object::ObjectDescription) -> view_model::Object {
-    view_model::Object {
+fn to_global_object(object: &business_object::ObjectDescription) -> view_model::ObjectBehavior {
+    view_model::ObjectBehavior {
         shape: view_model::Polygon {
             vertices: object
                 .shape
@@ -124,7 +124,7 @@ mod tests {
                     .vertex(-10, 10)
                     .build()
                     .unwrap(),
-            ).velocity(Mobility::Immovable)
+            ).mobility(Mobility::Immovable)
             .location(30, 40)
             .orientation(orientation)
             .kind(Kind::Plant)
@@ -147,7 +147,7 @@ mod tests {
     fn converts_to_global_object_with_no_orientation() {
         let object_description = [object_description(Radians::default())];
         let expected_view_model = ViewModel {
-            objects: vec![view_model::Object {
+            objects: vec![view_model::ObjectBehavior {
                 shape: view_model::Polygon {
                     vertices: vec![
                         view_model::Vertex { x: 20, y: 30 },
@@ -168,7 +168,7 @@ mod tests {
     fn converts_to_global_object_with_pi_orientation() {
         let object_description = [object_description(Radians(PI))];
         let expected_view_model = ViewModel {
-            objects: vec![view_model::Object {
+            objects: vec![view_model::ObjectBehavior {
                 shape: view_model::Polygon {
                     vertices: vec![
                         view_model::Vertex { x: 40, y: 50 },
@@ -189,7 +189,7 @@ mod tests {
     fn converts_to_global_object_with_arbitrary_orientation() {
         let object_description = [object_description(Radians(3.0))];
         let expected_view_model = ViewModel {
-            objects: vec![view_model::Object {
+            objects: vec![view_model::ObjectBehavior {
                 shape: view_model::Polygon {
                     vertices: vec![
                         view_model::Vertex {

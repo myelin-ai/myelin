@@ -1,12 +1,12 @@
-use super::{NewObject, ObjectDescription, Simulation};
-use crate::object::{Mobility, Object, Polygon, Position, Velocity};
+use super::{Object, ObjectDescription, Simulation};
+use crate::object::{Mobility, ObjectBehavior, Polygon, Position, Velocity};
 use std::collections::HashMap;
 use std::fmt;
 
 #[derive(Debug)]
 pub struct SimulationImpl {
     world: Box<dyn World>,
-    objects: HashMap<BodyHandle, Object>,
+    objects: HashMap<BodyHandle, ObjectBehavior>,
 }
 
 impl SimulationImpl {
@@ -20,17 +20,17 @@ impl SimulationImpl {
     fn convert_to_object_description(
         &self,
         body_handle: BodyHandle,
-        object: &Object,
+        object: &ObjectBehavior,
     ) -> ObjectDescription {
         let physics_body = self.world.body(body_handle);
         let kind = match object {
-            Object::Immovable(object) => object.kind(),
-            Object::Movable(object) => object.kind(),
+            ObjectBehavior::Immovable(object) => object.kind(),
+            ObjectBehavior::Movable(object) => object.kind(),
         };
         ObjectDescription {
             shape: physics_body.shape,
             position: physics_body.position,
-            velocity: physics_body.velocity,
+            mobility: physics_body.mobility,
             kind,
         }
     }
@@ -40,10 +40,10 @@ impl Simulation for SimulationImpl {
     fn step(&mut self) {
         for object in self.objects.values_mut() {
             match object {
-                Object::Movable(object) => {
+                ObjectBehavior::Movable(object) => {
                     object.step();
                 }
-                Object::Immovable(object) => {
+                ObjectBehavior::Immovable(object) => {
                     object.step();
                 }
             }
@@ -51,18 +51,18 @@ impl Simulation for SimulationImpl {
         self.world.step()
     }
 
-    fn add_object(&mut self, new_object: NewObject) {
-        let velocity = match new_object.object {
-            Object::Immovable(_) => Mobility::Immovable,
-            Object::Movable(_) => Mobility::Movable(Velocity::default()),
+    fn add_object(&mut self, new_object: Object) {
+        let mobility = match new_object.object_behavior {
+            ObjectBehavior::Immovable(_) => Mobility::Immovable,
+            ObjectBehavior::Movable(_) => Mobility::Movable(Velocity::default()),
         };
         let physical_body = PhysicalBody {
             shape: new_object.shape,
             position: new_object.position,
-            velocity,
+            mobility,
         };
         let body_handle = self.world.add_body(physical_body);
-        self.objects.insert(body_handle, new_object.object);
+        self.objects.insert(body_handle, new_object.object_behavior);
     }
 
     fn objects(&self) -> Vec<ObjectDescription> {
@@ -96,7 +96,7 @@ pub struct PhysicalBody {
     /// The current velocity of the object, defined
     /// as a two dimensional vector relative to the
     /// objects center
-    pub velocity: Mobility,
+    pub mobility: Mobility,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -160,14 +160,14 @@ mod tests {
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
-            velocity: Mobility::Movable(Velocity { x: 0, y: 0 }),
+            mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
         let mut simulation = SimulationImpl::new(world);
 
-        let object = NewObject {
-            object: Object::Movable(Box::new(ObjectMock::new())),
+        let object = Object {
+            object_behavior: ObjectBehavior::Movable(Box::new(ObjectMock::new())),
             position: expected_position,
             shape: expected_shape,
         };
@@ -183,7 +183,7 @@ mod tests {
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
-            velocity: Mobility::Movable(Velocity { x: 0, y: 0 }),
+            mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
@@ -191,8 +191,8 @@ mod tests {
 
         let mut object = ObjectMock::new();
         object.expect_step();
-        let object = NewObject {
-            object: Object::Movable(Box::new(object)),
+        let object = Object {
+            object_behavior: ObjectBehavior::Movable(Box::new(object)),
             position: expected_position,
             shape: expected_shape,
         };
@@ -208,7 +208,7 @@ mod tests {
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
-            velocity: Mobility::Movable(Velocity::default()),
+            mobility: Mobility::Movable(Velocity::default()),
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
@@ -217,8 +217,8 @@ mod tests {
 
         let object = Box::new(ObjectMock::default());
         let expected_kind = object.kind();
-        let new_object = NewObject {
-            object: Object::Movable(object),
+        let new_object = Object {
+            object_behavior: ObjectBehavior::Movable(object),
             position: expected_position.clone(),
             shape: expected_shape.clone(),
         };
@@ -231,7 +231,7 @@ mod tests {
             position: expected_position,
             shape: expected_shape,
             kind: expected_kind,
-            velocity: Mobility::Movable(Velocity::default()),
+            mobility: Mobility::Movable(Velocity::default()),
         };
         let object_description = &objects[0];
         assert_eq!(expected_object_description, *object_description);

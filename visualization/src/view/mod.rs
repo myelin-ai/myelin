@@ -2,7 +2,7 @@
 pub mod constant;
 
 use crate::presenter::View;
-use crate::view_model::{Kind, Object, ViewModel};
+use crate::view_model::{Kind, ObjectBehavior, ViewModel};
 use std::fmt;
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement, Window};
@@ -38,7 +38,7 @@ impl CanvasView {
         Self { context }
     }
 
-    fn draw_object(&self, object: &Object) {
+    fn draw_object(&self, object: &ObjectBehavior) {
         self.context.begin_path();
 
         let first_vertex = &object.shape.vertices[0];

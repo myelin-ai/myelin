@@ -57,12 +57,12 @@ impl NphysicsWorld {
 
         let shape = self.get_shape(&collider);
         let position = self.get_position(&collider);
-        let velocity = self.get_velocity(&collider);
+        let mobility = self.get_mobility(&collider);
 
         PhysicalBody {
             shape,
             position,
-            velocity,
+            mobility,
         }
     }
 
@@ -81,7 +81,7 @@ impl NphysicsWorld {
         Polygon { vertices }
     }
 
-    fn get_velocity(&self, collider: &Collider<PhysicsType>) -> Mobility {
+    fn get_mobility(&self, collider: &Collider<PhysicsType>) -> Mobility {
         let body_handle = collider.data().body();
         if body_handle.is_ground() {
             Mobility::Immovable
@@ -166,7 +166,7 @@ impl World for NphysicsWorld {
         let isometry = get_isometry(&body);
         let material = Material::default();
 
-        let handle = match body.velocity {
+        let handle = match body.mobility {
             Mobility::Immovable => self.physics_world.add_collider(
                 0.04,
                 shape,
@@ -249,7 +249,6 @@ impl<'a> fmt::Debug for DebugPhysicsWorld<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::object::*;
     use crate::object_builder::PolygonBuilder;
 
     const DEFAULT_TIMESTEP: f64 = 1.0;
@@ -260,7 +259,7 @@ mod tests {
                 location: Location { x: 5, y: 5 },
                 rotation: orientation,
             },
-            velocity: Mobility::Movable(Velocity { x: 1, y: 1 }),
+            mobility: Mobility::Movable(Velocity { x: 1, y: 1 }),
             shape: PolygonBuilder::new()
                 .vertex(-5, -5)
                 .vertex(-5, 5)
@@ -280,7 +279,7 @@ mod tests {
                 .vertex(-100, 100)
                 .build()
                 .unwrap(),
-            velocity: Mobility::Immovable,
+            mobility: Mobility::Immovable,
             position: Position {
                 location: Location { x: 300, y: 200 },
                 rotation: orientation,
@@ -413,7 +412,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         let body = local_grounded_object(Radians(FRAC_PI_2));
         let still_body = PhysicalBody {
-            velocity: Mobility::Movable(Velocity { x: 0, y: 0 }),
+            mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
             ..body
         };
         let handle = world.add_body(still_body.clone());

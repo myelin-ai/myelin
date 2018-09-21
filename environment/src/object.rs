@@ -19,7 +19,7 @@
 //!         location: Location { x: 100, y: 100 },
 //!     },
 //!     kind: Kind::Terrain,
-//!     velocity: Mobility::Immovable
+//!     mobility: Mobility::Immovable
 //! };
 //! ```
 //! The prefered way of constructing a [`ObjectDescription`] however
@@ -29,7 +29,7 @@
 //! [`ObjectDescription`]: ./struct.ObjectDescription.html
 //!
 #[derive(Debug)]
-pub enum Object {
+pub enum ObjectBehavior {
     Movable(Box<dyn MovableObject>),
     Immovable(Box<dyn ImmovableObject>),
 }
@@ -74,7 +74,7 @@ pub struct ObjectDescription {
     /// The current velocity of the object, defined
     /// as a two dimensional vector relative to the
     /// objects center
-    pub velocity: Mobility,
+    pub mobility: Mobility,
     pub kind: Kind,
 }
 

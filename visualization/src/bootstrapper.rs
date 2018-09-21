@@ -6,7 +6,7 @@ use crate::input_handler::InputHandler;
 use crate::presenter::CanvasPresenter;
 use crate::view::constant::SIMULATED_TIMESTEP;
 use crate::view::CanvasView;
-use myelin_environment::object::{Kind, Object};
+use myelin_environment::object::{Kind, ObjectBehavior};
 use myelin_environment::simulation::{simulation_impl::SimulationImpl, Simulation};
 use myelin_environment::world::NphysicsWorld;
 use myelin_object::{
@@ -45,10 +45,10 @@ pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
         Box::new(SimulationImpl::new(world))
     });
     let object_factory = Box::new(|kind: Kind| match kind {
-        Kind::Plant => Object::Immovable(Box::new(StaticPlant::new())),
-        Kind::Organism => Object::Movable(Box::new(StaticOrganism::new())),
-        Kind::Water => Object::Immovable(Box::new(StaticWater::new())),
-        Kind::Terrain => Object::Immovable(Box::new(StaticTerrain::new())),
+        Kind::Plant => ObjectBehavior::Immovable(Box::new(StaticPlant::new())),
+        Kind::Organism => ObjectBehavior::Movable(Box::new(StaticOrganism::new())),
+        Kind::Water => ObjectBehavior::Immovable(Box::new(StaticWater::new())),
+        Kind::Terrain => ObjectBehavior::Immovable(Box::new(StaticTerrain::new())),
     });
     let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
     let controller = Box::new(ControllerImpl::new(presenter, &worldgen));
