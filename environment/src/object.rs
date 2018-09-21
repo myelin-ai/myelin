@@ -5,7 +5,7 @@
 //! ```
 //! use myelin_environment::object::*;
 //!
-//! let square = Body {
+//! let square = ObjectDescription {
 //!     shape: Polygon {
 //!         vertices: vec![
 //!             Vertex { x: -50, y: -50 },
@@ -14,35 +14,19 @@
 //!             Vertex { x: 50, y: -50 },
 //!         ],
 //!     },
-//!     orientation: Radians(0.0),
-//!     location: Location { x: 100, y: 100 },
+//!     position: Position {
+//!         rotation: Radians(0.0),
+//!         location: Location { x: 100, y: 100 },
+//!     },
 //!     kind: Kind::Terrain,
+//!     velocity: Mobility::Immovable
 //! };
 //! ```
-//! The prefered way of constructing a [`Body`] however
+//! The prefered way of constructing a [`ObjectDescription`] however
 //! is by using an [`ObjectBuilder`].
 //!
-//! The global analog to the last example looks like this:
-//! ```
-//! use myelin_environment::object::*;
-//!
-//! let square = Body {
-//!     shape: Polygon {
-//!         vertices: vec![
-//!             Vertex { x: 50, y: 50 },
-//!             Vertex { x: 150, y: 50 },
-//!             Vertex { x: 150, y: 150 },
-//!             Vertex { x: 50, y: 150 },
-//!         ],
-//!     },
-//!     orientation: Radians(0.0),
-//!     velocity: Velocity { x: 0, y: 0 },
-//!     kind: Kind::Terrain,
-//! };
-//! ```
-//!
 //! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
-//! [`Body`]: ./struct.Body.html
+//! [`ObjectDescription`]: ./struct.ObjectDescription.html
 //!
 #[derive(Debug)]
 pub enum Object {
@@ -78,13 +62,13 @@ pub enum ImmovableAction {
 /// Its coordinates are relative to the center of
 /// the object, which is determined by the [`location`]
 ///
-/// [`location`]: ./struct.Body.html#structfield.location
+/// [`location`]: ./struct.ObjectDescription.html#structfield.location
 #[derive(Debug, PartialEq, Clone)]
 pub struct ObjectDescription {
     /// The vertices defining the shape of the object
     /// in relation to its [`location`]
     ///
-    /// [`location`]: ./struct.Body.html#structfield.location
+    /// [`location`]: ./struct.ObjectDescription.html#structfield.location
     pub shape: Polygon,
     pub position: Position,
     /// The current velocity of the object, defined

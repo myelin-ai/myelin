@@ -1,7 +1,7 @@
-//! Convenient builders for [`Body`] and [`Polygon`]
+//! Convenient builders for [`ObjectDescription`] and [`Polygon`]
 //! # Examples
 //! ```
-//! use myelin_environment::object::{Kind, Radians};
+//! use myelin_environment::object::{Kind, Radians, Velocity, Mobility};
 //! use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
 //! use std::f64::consts::FRAC_PI_2;
 //!
@@ -17,11 +17,12 @@
 //!     ).location(300, 450)
 //!     .orientation(Radians(FRAC_PI_2))
 //!     .kind(Kind::Organism)
+//!     .velocity(Mobility::Movable(Velocity{x: 3, y: 5}))
 //!     .build()
 //!     .unwrap();
 //! ```
 //!
-//! [`Body`]: ../object/struct.Body.html
+//! [`ObjectDescription`]: ../object/struct.ObjectDescription.html
 //! [`Polygon`]: ../object/struct.Polygon.html
 
 use crate::object::*;
@@ -40,11 +41,11 @@ pub struct ObjectBuilderError {
     pub missing_velocity: bool,
 }
 
-/// [`Body`] factory, which can be used in order to configure
+/// [`ObjectDescription`] factory, which can be used in order to configure
 /// the properties of a new object.
 /// Methods can be chained on it in order to configure it.
 ///
-/// [`Body`]: ../object/struct.Body.html
+/// [`ObjectDescription`]: ../object/struct.ObjectDescription.html
 #[derive(Default, Debug)]
 pub struct ObjectBuilder {
     shape: Option<Polygon>,
@@ -55,7 +56,7 @@ pub struct ObjectBuilder {
 }
 
 impl ObjectBuilder {
-    /// Generates the base configuration for creating a [`Body`],
+    /// Generates the base configuration for creating a [`ObjectDescription`],
     /// from which configuration methods can be chained.
     /// # Examples
     /// ```
@@ -63,7 +64,7 @@ impl ObjectBuilder {
     /// let builder = ObjectBuilder::new();
     /// ```
     ///
-    /// [`Body`]: ../object/struct.Body.html
+    /// [`ObjectDescription`]: ../object/struct.ObjectDescription.html
     pub fn new() -> Self {
         Default::default()
     }
@@ -116,7 +117,6 @@ impl ObjectBuilder {
     /// use myelin_environment::object::{Mobility, Velocity};
     /// ObjectBuilder::new()
     ///     .velocity(Mobility::Movable(Velocity { x: -12, y: 4 }));
-    /// }));
     /// ```
     pub fn velocity(&mut self, velocity: Mobility) -> &mut Self {
         self.velocity = Some(velocity);
@@ -135,14 +135,14 @@ impl ObjectBuilder {
         self
     }
 
-    /// Build the [`Body`] with all specified settings
+    /// Build the [`ObjectDescription`] with all specified settings
     /// # Errors
     /// If a non-optional member has not specified while building
     /// an error is returned, containing flags specifying which
     /// setting has been omitted
     /// # Examples
     /// ```
-    /// use myelin_environment::object::{Kind, Radians};
+    /// use myelin_environment::object::{Kind, Radians, Mobility, Velocity};
     /// use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
     /// use std::f64::consts::FRAC_PI_2;
     ///
@@ -158,11 +158,12 @@ impl ObjectBuilder {
     ///     ).location(300, 450)
     ///     .orientation(Radians(FRAC_PI_2))
     ///     .kind(Kind::Organism)
+    ///     .velocity(Mobility::Movable(Velocity{x: 3, y: 5}))
     ///     .build()
     ///     .unwrap();
     /// ```
     ///
-    /// [`Body`]: ../object/struct.Body.html
+    /// [`ObjectDescription`]: ../object/struct.ObjectDescription.html
     pub fn build(&mut self) -> Result<ObjectDescription, ObjectBuilderError> {
         let error = ObjectBuilderError {
             missing_shape: self.shape.is_none(),
