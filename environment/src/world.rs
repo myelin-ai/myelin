@@ -359,13 +359,9 @@ mod tests {
         let actual_body = world.body(handle);
 
         let expected_body = PhysicalBody {
-            shape: Polygon {
-                vertices: vec![
-                    Vertex { x: 11, y: 11 },
-                    Vertex { x: 11, y: 1 },
-                    Vertex { x: 1, y: 1 },
-                    Vertex { x: 1, y: 11 },
-                ],
+            position: Position {
+                location: Location { x: 6, y: 6 },
+                rotation: Radians::default(),
             },
             ..local_object
         };
@@ -375,7 +371,7 @@ mod tests {
     #[test]
     fn timestep_can_be_changed() {
         let mut world = NphysicsWorld::with_timestep(0.0);
-        world.set_simulated_timestep(1.0);
+        world.set_simulated_timestep(2.0);
 
         let local_object = local_rigid_object(Radians::default());
         let handle = world.add_body(local_object.clone());
@@ -386,13 +382,9 @@ mod tests {
         let actual_body = world.body(handle);
 
         let expected_body = PhysicalBody {
-            shape: Polygon {
-                vertices: vec![
-                    Vertex { x: 11, y: 11 },
-                    Vertex { x: 11, y: 1 },
-                    Vertex { x: 1, y: 1 },
-                    Vertex { x: 1, y: 11 },
-                ],
+            position: Position {
+                location: Location { x: 7, y: 7 },
+                rotation: Radians::default(),
             },
             ..local_object
         };
