@@ -51,3 +51,29 @@ pub struct PhysicalBody {
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct BodyHandle(pub usize);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::cell::RefCell;
+
+    #[derive(Debug)]
+    struct WorldMock {
+        expect_step: Option<()>,
+        expect_add_body_and_return: Option<(PhysicalBody, BodyHandle)>,
+        expect_body_and_return: Option<(BodyHandle, PhysicalBody)>,
+        expect_set_simulated_timestep: Option<f64>,
+
+        step_was_called: RefCell<bool>,
+        add_body_was_called: RefCell<bool>,
+        body_was_called: RefCell<bool>,
+        set_simulated_timestep_was_called: RefCell<bool>,
+    }
+
+    impl World for WorldMock {
+        fn step(&mut self) {}
+        fn add_body(&mut self, body: PhysicalBody) -> BodyHandle {}
+        fn body(&self, handle: BodyHandle) -> PhysicalBody {}
+        fn set_simulated_timestep(&mut self, timestep: f64) {}
+    }
+}
