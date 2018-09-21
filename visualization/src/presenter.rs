@@ -26,22 +26,38 @@ impl Presenter for CanvasPresenter {
 }
 
 fn to_global_object(object: &business_object::ObjectDescription) -> view_model::Object {
-    /*
     view_model::Object {
         shape: view_model::Polygon {
             vertices: object
                 .shape
                 .vertices
                 .iter()
-                .map(|vertex| view_model::Vertex {
-                    x: vertex.x as u32,
-                    y: vertex.y as u32,
-                }).collect(),
+                .map(|vertex| to_global_rotated_vertex(vertex, object))
+                .collect(),
         },
         kind: map_kind(&object.kind),
     }
-    */
-    unimplemented!()
+}
+
+fn to_global_rotated_vertex(
+    vertex: &business_object::Vertex,
+    object: &business_object::ObjectDescription,
+) -> view_model::Vertex {
+    // algorithm source: https://stackoverflow.com/questions/786472/rotate-a-point-by-another-point-in-2d/786508#786508
+    let center_x = f64::from(object.position.location.x);
+    let center_y = f64::from(object.position.location.y);
+    let rotation = object.position.rotation.0;
+    let global_x = center_x + f64::from(vertex.x);
+    let global_y = center_y + f64::from(vertex.y);
+    let rotated_global_x =
+        rotation.cos() * (global_x - center_x) - rotation.sin() * (global_y - center_y) + center_x;
+    let rotated_global_y =
+        rotation.sin() * (global_x - center_x) + rotation.cos() * (global_y - center_y) + center_y;
+
+    view_model::Vertex {
+        x: rotated_global_x.round() as u32,
+        y: rotated_global_y.round() as u32,
+    }
 }
 
 fn map_kind(kind: &business_object::Kind) -> view_model::Kind {
@@ -129,15 +145,15 @@ mod tests {
 
     #[test]
     fn converts_to_global_object_with_no_orientation() {
-        let object_description = [object_description(Radians(3.0))];
+        let object_description = [object_description(Radians::default())];
         let expected_view_model = ViewModel {
             objects: vec![view_model::Object {
                 shape: view_model::Polygon {
                     vertices: vec![
-                        view_model::Vertex { x: 40, y: 50 },
-                        view_model::Vertex { x: 20, y: 50 },
                         view_model::Vertex { x: 20, y: 30 },
                         view_model::Vertex { x: 40, y: 30 },
+                        view_model::Vertex { x: 40, y: 50 },
+                        view_model::Vertex { x: 20, y: 50 },
                     ],
                 },
                 kind: view_model::Kind::Plant,
@@ -155,10 +171,10 @@ mod tests {
             objects: vec![view_model::Object {
                 shape: view_model::Polygon {
                     vertices: vec![
-                        view_model::Vertex { x: 40, y: 30 },
                         view_model::Vertex { x: 40, y: 50 },
                         view_model::Vertex { x: 20, y: 50 },
                         view_model::Vertex { x: 20, y: 30 },
+                        view_model::Vertex { x: 40, y: 30 },
                     ],
                 },
                 kind: view_model::Kind::Plant,
@@ -177,20 +193,20 @@ mod tests {
                 shape: view_model::Polygon {
                     vertices: vec![
                         view_model::Vertex {
-                            x: 20 - 1,
-                            y: 30 + 2,
-                        },
-                        view_model::Vertex {
-                            x: 40 - 2,
-                            y: 30 - 1,
-                        },
-                        view_model::Vertex {
                             x: 40 + 1,
                             y: 50 - 2,
                         },
                         view_model::Vertex {
                             x: 20 + 2,
                             y: 50 + 1,
+                        },
+                        view_model::Vertex {
+                            x: 20 - 1,
+                            y: 30 + 2,
+                        },
+                        view_model::Vertex {
+                            x: 40 - 2,
+                            y: 30 - 1,
                         },
                     ],
                 },
