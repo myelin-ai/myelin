@@ -3,6 +3,11 @@ use crate::object::{Mobility, ObjectBehavior, Polygon, Position, Velocity};
 use std::collections::HashMap;
 use std::fmt;
 
+/// implementation of [`Simulation`] that uses a physical
+/// [`World`] in order to apply physics to objects.
+///
+/// [`Simulation`]: ./../trait.Simulation.html
+/// [`World`]: ./trait.World.html
 #[derive(Debug)]
 pub struct SimulationImpl {
     world: Box<dyn World>,
@@ -99,6 +104,12 @@ pub struct PhysicalBody {
     pub mobility: Mobility,
 }
 
+/// A unique identifier that can be used to retrieve a [`PhysicalBody`] from a
+/// [`World`]. Don't construct any of these by yourself, only use the
+/// instances that [`World`] provides you
+///
+/// [`PhysicalBody`]: ./struct.PhysicalBody.html
+/// [`World`]: ./trait.World.html
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct BodyHandle(pub usize);
 

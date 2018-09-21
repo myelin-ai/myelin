@@ -10,11 +10,12 @@ pub mod simulation_impl;
 /// [`step`]: ./trait.World.html#structfield.location#tymethod.step
 pub trait Simulation {
     /// Advance the simulation by one tick. This will apply
-    /// forces to the objects, handle collisions and move them.
+    /// forces to the objects, handle collisions and allow them to
+    /// take action.
     fn step(&mut self);
     /// Add a new object to the world.
     fn add_object(&mut self, object: Object);
-    /// Returns all objects currently inhabiting the simulation.
+    /// Returns a read-only description of all objects currently inhabiting the simulation.
     fn objects(&self) -> Vec<ObjectDescription>;
     /// Sets how much time in seconds is simulated for each step.
     /// # Examples
@@ -27,7 +28,10 @@ pub trait Simulation {
 /// A new object that is going to be placed in the simulation
 #[derive(Debug)]
 pub struct Object {
+    /// The object's behavior, which determines its kind and what the object is going to do every step
     pub object_behavior: ObjectBehavior,
+    /// The object's initial position
     pub position: Position,
+    /// The object's shape
     pub shape: Polygon,
 }
