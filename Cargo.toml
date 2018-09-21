@@ -2,7 +2,8 @@
 members = [
     "environment",
     "visualization",
-    "worldgen"
+    "worldgen",
+    "object"
 ]
 
 [patch.crates-io]

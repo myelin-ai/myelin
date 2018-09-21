@@ -219,6 +219,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "myelin-object"
+version = "0.1.0"
+dependencies = [
+ "myelin-environment 0.1.0",
+]
+
+[[package]]
 name = "myelin-visualization"
 version = "0.1.0"
 dependencies = [
