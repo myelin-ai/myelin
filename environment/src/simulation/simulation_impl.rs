@@ -55,6 +55,7 @@ pub struct BodyHandle(pub usize);
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::borrow::BorrowMut;
     use std::cell::RefCell;
 
     #[derive(Debug, Default)]
@@ -92,12 +93,31 @@ mod tests {
     }
 
     impl Drop for WorldMock {
-        fn drop(&mut self) {}
+        fn drop(&mut self) {
+            assert_eq!(self.expect_step, *self.step_was_called_with.borrow());
+            assert_eq!(
+                self.expect_add_body_and_return,
+                *self.add_body_was_called_with.borrow()
+            );
+            assert_eq!(
+                self.expect_body_and_return,
+                *self.body_was_called_with.borrow()
+            );
+            assert_eq!(
+                self.expect_set_simulated_timestep,
+                *self.set_simulated_timestep_was_called_with.borrow()
+            );
+        }
     }
 
     impl World for WorldMock {
         fn step(&mut self) {}
-        fn add_body(&mut self, body: PhysicalBody) -> BodyHandle {}
+        fn add_body(&mut self, body: PhysicalBody) -> BodyHandle {
+            if let Some((expected_body, return_value)) = self.expect_add_body_and_return {
+            } else {
+                panic!("add_body was called unexpectedly")
+            }
+        }
         fn body(&self, handle: BodyHandle) -> PhysicalBody {}
         fn set_simulated_timestep(&mut self, timestep: f64) {}
     }
