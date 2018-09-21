@@ -28,14 +28,25 @@ impl HardcodedGenerator {
     /// ```
     /// use myelin_environment::simulation::{Simulation, simulation_impl::SimulationImpl};
     /// use myelin_environment::world::NphysicsWorld;
+    /// use myelin_environment::object::{Kind, Object};
     /// use myelin_worldgen::WorldGenerator;
     /// use myelin_worldgen::generator::HardcodedGenerator;
+    /// use myelin_object::{organism::StaticOrganism, water::StaticWater, terrain::StaticTerrain, plant::StaticPlant};
     ///
     /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
     ///     let world = Box::new(NphysicsWorld::with_timestep(1.0));
     ///     Box::new(SimulationImpl::new(world))
     /// });
-    /// let simulationgen = HardcodedGenerator::new(simulation_factory);
+    ///
+    /// let object_factory = Box::new(|kind: Kind|
+    ///     match kind {
+    ///         Kind::Plant => Object::Immovable(Box::new(StaticPlant::new())),
+    ///         Kind::Organism => Object::Movable(Box::new(StaticOrganism::new())),
+    ///         Kind::Water => Object::Immovable(Box::new(StaticWater::new())),
+    ///         Kind::Terrain => Object::Immovable(Box::new(StaticTerrain::new()))
+    ///     }
+    /// );
+    /// let simulationgen = HardcodedGenerator::new(simulation_factory, object_factory);
     /// let generated_simulation = simulationgen.generate();
     pub fn new(simulation_factory: SimulationFactory, object_factory: ObjectFactory) -> Self {
         Self {
