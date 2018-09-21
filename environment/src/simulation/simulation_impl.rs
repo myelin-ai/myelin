@@ -136,7 +136,7 @@ mod tests {
             position: expected_position.clone(),
             velocity: Mobility::Movable(Velocity::default()),
         };
-        let returned_handle = BodyHandle(1337);
+        let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
         let mut simulation = SimulationImpl::new(world);
 
