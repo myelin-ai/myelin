@@ -178,7 +178,7 @@ impl ObjectBuilder {
                 location: self.location.take().ok_or_else(|| error.clone())?,
                 rotation: self.orientation.take().unwrap_or_else(Default::default),
             },
-            kind: self.kind.take().ok_or(error.clone())?,
+            kind: self.kind.take().ok_or_else(|| error.clone())?,
             velocity: self.velocity.take().ok_or(error)?,
         };
 
