@@ -62,7 +62,11 @@ impl CanvasPresenter {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::view_model::{self, ViewModel};
+    use myelin_environment::object::{Kind, Mobility, ObjectDescription, Radians};
+    use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
     use std::cell::RefCell;
+    use std::f64::consts::PI;
 
     struct ViewMock {
         expected_view_model: ViewModel,
@@ -94,6 +98,24 @@ mod tests {
         }
     }
 
+    fn object_description(orientation: Radians) -> ObjectDescription {
+        ObjectBuilder::new()
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(-10, -10)
+                    .vertex(10, -10)
+                    .vertex(10, 10)
+                    .vertex(-10, 10)
+                    .build()
+                    .unwrap(),
+            ).velocity(Mobility::Immovable)
+            .location(30, 40)
+            .orientation(orientation)
+            .kind(Kind::Plant)
+            .build()
+            .unwrap()
+    }
+
     #[test]
     fn maps_to_empty_view_model() {
         let objects = Vec::new();
@@ -106,32 +128,77 @@ mod tests {
     }
 
     #[test]
-    fn maps_to_correct_view_model() {
-        let objects = vec![business_object::ObjectDescription {
-            shape: business_object::Polygon {
-                vertices: vec![business_object::Vertex { x: 3, y: 15 }],
-            },
-            position: business_object::Position {
-                rotation: business_object::Radians(3.14),
-                location: business_object::Location { x: 20, y: 40 },
-            },
-            velocity: business_object::Mobility::Movable(business_object::Velocity {
-                x: -1,
-                y: 34,
-            }),
-
-            kind: business_object::Kind::Organism,
-        }];
+    fn converts_to_global_object_with_no_orientation() {
+        let object_description = [object_description(Radians(3.0))];
         let expected_view_model = ViewModel {
             objects: vec![view_model::Object {
                 shape: view_model::Polygon {
-                    vertices: vec![view_model::Vertex { x: 3, y: 15 }],
+                    vertices: vec![
+                        view_model::Vertex { x: 40, y: 50 },
+                        view_model::Vertex { x: 20, y: 50 },
+                        view_model::Vertex { x: 20, y: 30 },
+                        view_model::Vertex { x: 40, y: 30 },
+                    ],
                 },
-                kind: view_model::Kind::Organism,
+                kind: view_model::Kind::Plant,
             }],
         };
         let view_mock = ViewMock::new(expected_view_model);
         let presenter = CanvasPresenter::new(Box::new(view_mock));
-        presenter.present_objects(&objects);
+        presenter.present_objects(&object_description);
+    }
+
+    #[test]
+    fn converts_to_global_object_with_pi_orientation() {
+        let object_description = [object_description(Radians(PI))];
+        let expected_view_model = ViewModel {
+            objects: vec![view_model::Object {
+                shape: view_model::Polygon {
+                    vertices: vec![
+                        view_model::Vertex { x: 40, y: 30 },
+                        view_model::Vertex { x: 40, y: 50 },
+                        view_model::Vertex { x: 20, y: 50 },
+                        view_model::Vertex { x: 20, y: 30 },
+                    ],
+                },
+                kind: view_model::Kind::Plant,
+            }],
+        };
+        let view_mock = ViewMock::new(expected_view_model);
+        let presenter = CanvasPresenter::new(Box::new(view_mock));
+        presenter.present_objects(&object_description);
+    }
+
+    #[test]
+    fn converts_to_global_object_with_arbitrary_orientation() {
+        let object_description = [object_description(Radians(3.0))];
+        let expected_view_model = ViewModel {
+            objects: vec![view_model::Object {
+                shape: view_model::Polygon {
+                    vertices: vec![
+                        view_model::Vertex {
+                            x: 20 - 1,
+                            y: 30 + 2,
+                        },
+                        view_model::Vertex {
+                            x: 40 - 2,
+                            y: 30 - 1,
+                        },
+                        view_model::Vertex {
+                            x: 40 + 1,
+                            y: 50 - 2,
+                        },
+                        view_model::Vertex {
+                            x: 20 + 2,
+                            y: 50 + 1,
+                        },
+                    ],
+                },
+                kind: view_model::Kind::Plant,
+            }],
+        };
+        let view_mock = ViewMock::new(expected_view_model);
+        let presenter = CanvasPresenter::new(Box::new(view_mock));
+        presenter.present_objects(&object_description);
     }
 }
