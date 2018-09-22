@@ -89,29 +89,41 @@ pub enum ImmovableAction {
     Reproduce,
 }
 
-/// An objects that can be placed in the world.
-/// Its coordinates are relative to the center of
-/// the object, which is determined by the [`location`]
+/// The dehaviourless description of an object that has
+/// been placed inside a [`Simulation`].
 ///
-/// [`location`]: ./struct.ObjectDescription.html#structfield.location
+/// [`Simulation`]: ../simulation/trait.Simulation.html
 #[derive(Debug, PartialEq, Clone)]
 pub struct ObjectDescription {
     /// The vertices defining the shape of the object
-    /// in relation to its [`location`]
+    /// in relation to its [`position`]
     ///
-    /// [`location`]: ./struct.ObjectDescription.html#structfield.location
+    /// [`position`]: ./struct.ObjectDescription.html#structfield.location
     pub shape: Polygon,
+    /// The current position of the object
     pub position: Position,
     /// The current velocity of the object, defined
     /// as a two dimensional vector relative to the
     /// objects center
     pub mobility: Mobility,
+    /// The object's kind
     pub kind: Kind,
 }
 
+/// An object's mobility and, if present, its
+/// current [`Velocity`]
+///
+/// [`Velocity`]: ./struct.Velocity.html
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Mobility {
+    /// The object cannot have any velocity as
+    /// it cannot be moved. Corresponds to [`ImmovableObject`]
+    ///
+    /// [`ImmovableObject`]: ./trait.ImmovableObject.html
     Immovable,
+    /// A movable object's current velocity. Corresponds to [`MovableObject`]
+    ///
+    /// [`MovableObject`]: ./trait.MovableObject.html
     Movable(Velocity),
 }
 
@@ -132,9 +144,13 @@ pub struct Vertex {
     pub y: i32,
 }
 
+/// A position within the world, defined as a combination
+/// of location and rotation
 #[derive(Debug, PartialEq, Clone)]
 pub struct Position {
+    /// An absolute location
     pub location: Location,
+    /// A rotation defined in radians
     pub rotation: Radians,
 }
 
@@ -142,7 +158,11 @@ pub struct Position {
 #[derive(Debug, PartialEq, Copy, Clone, Default)]
 pub struct Radians(pub f64);
 
-/// A location within the world
+/// An absolute location within the world, where
+/// [0; 0] is defined as the upper left corner of
+/// the [`Simulation`]
+///
+/// [`Simulation`]: ../simulation/trait.Simulation.html
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Location {
     pub x: u32,
