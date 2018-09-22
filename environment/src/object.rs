@@ -167,7 +167,7 @@ pub struct Position {
     pub rotation: Radians,
 }
 
-/// A radian confined to the range of (-π; π]
+/// A radian confined to the range of [0.0; 2π)
 #[derive(Debug, PartialEq, Copy, Clone, Default)]
 pub struct Radians(pub f64);
 
