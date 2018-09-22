@@ -7,7 +7,7 @@ pub mod simulation_impl;
 /// This trait represents our API.
 ///
 /// [`Object`]: ./struct.Object.html
-/// [`step`]: ./trait.World.html#structfield.location#tymethod.step
+/// [`step`]: ./trait.Simulation.html#tymethod.step
 pub trait Simulation {
     /// Advance the simulation by one tick. This will apply
     /// forces to the objects, handle collisions and allow them to

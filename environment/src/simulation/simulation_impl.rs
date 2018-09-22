@@ -1,3 +1,6 @@
+//! A `Simulation` that outsources all physical
+//! behaviour into a separate `World` type
+
 use super::{Object, ObjectDescription, Simulation};
 use crate::object::{Mobility, ObjectBehavior, Polygon, Position, Velocity};
 use std::collections::HashMap;
@@ -15,6 +18,16 @@ pub struct SimulationImpl {
 }
 
 impl SimulationImpl {
+    /// Create a new SimulationImpl by injecting a [`World`]
+    /// # Examples
+    /// ```
+    /// use myelin_environment::simulation::simulation_impl::SimulationImpl;
+    /// use myelin_environment::world::NphysicsWorld;
+    ///
+    /// let world = Box::new(NphysicsWorld::with_timestep(1.0));
+    /// let simulation = SimulationImpl::new(world);
+    /// ```
+    /// [`World`]: ./trait.World.html
     pub fn new(world: Box<dyn World>) -> Self {
         Self {
             world,
@@ -83,10 +96,35 @@ impl Simulation for SimulationImpl {
     }
 }
 
+/// A container for [`PhysicalBodies`] that will apply
+/// physical laws to them on [`step`]
+///
+/// [`PhysicalBodies`]: ./struct.PhysicalBody.html
+/// [`step`]: ./trait.World.html#tymethod.step
 pub trait World: fmt::Debug {
+    /// Advance the simulation by one tick. This will apply
+    /// forces to the objects and handle collisions;
     fn step(&mut self);
+    /// Place a [`PhysicalBody`] in the world. Returns a
+    /// unique [`BodyHandle`] that can be passed to [`body()`]
+    /// in order to retrieve the [`PhysicalBody`] again
+    ///
+    /// [`PhysicalBody`]: ./struct.PhysicalBody.html
+    /// [`BodyHandle`]: ./struct.BodyHandle.html
+    /// [`body()`]: ./trait.World.html#tymethod.body
     fn add_body(&mut self, body: PhysicalBody) -> BodyHandle;
+    /// Returns a [`PhysicalBody`] that has previously been
+    /// placed with [`add_body()`] by its [`BodyHandle`].
+    ///
+    /// [`PhysicalBody`]: ./struct.PhysicalBody.html
+    /// [`BodyHandle`]: ./struct.BodyHandle.html
+    /// [`add_body()`]: ./trait.World.html#tymethod.add_body
     fn body(&self, handle: BodyHandle) -> PhysicalBody;
+    /// Sets how much time in seconds is simulated for each step.
+    /// # Examples
+    /// If you want to run a simulation with 60 steps per second, you
+    /// can run `set_simulated_timestep(1.0/60.0)`. Note that this method
+    /// does not block the thread if called faster than expected.
     fn set_simulated_timestep(&mut self, timestep: f64);
 }
 
@@ -97,9 +135,12 @@ pub struct PhysicalBody {
     ///
     /// [`location`]: ./struct.Body.html#structfield.location
     pub shape: Polygon,
+    /// The current position of the body within the [`World`]
+    ///
+    /// [`World`]: trait.World.html
     pub position: Position,
-    /// The current velocity of the object, defined
-    /// as a two dimensional vector relative to the
+    /// The current mobility of the object. If present,
+    /// this is defined as a two dimensional vector relative to the
     /// objects center
     pub mobility: Mobility,
 }
