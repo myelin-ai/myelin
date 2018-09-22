@@ -1,10 +1,10 @@
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) struct ViewModel {
-    pub(crate) objects: Vec<ObjectBehavior>,
+    pub(crate) objects: Vec<Object>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub(crate) struct ObjectBehavior {
+pub(crate) struct Object {
     pub(crate) shape: Polygon,
     pub(crate) kind: Kind,
 }
