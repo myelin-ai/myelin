@@ -40,7 +40,10 @@ impl SimulationImpl {
         body_handle: BodyHandle,
         object: &ObjectBehavior,
     ) -> ObjectDescription {
-        let physics_body = self.world.body(body_handle);
+        let physics_body = self
+            .world
+            .body(body_handle)
+            .expect("Internal error: Stored body handle was invalid");
         let kind = match object {
             ObjectBehavior::Immovable(object) => object.kind(),
             ObjectBehavior::Movable(object) => object.kind(),
@@ -116,10 +119,14 @@ pub trait World: fmt::Debug {
     /// Returns a [`PhysicalBody`] that has previously been
     /// placed with [`add_body()`] by its [`BodyHandle`].
     ///
+    /// # Errors
+    /// Returns `None` if the [`BodyHandle`] did not correspond
+    /// to any [`PhysicalBody`]
+    ///
     /// [`PhysicalBody`]: ./struct.PhysicalBody.html
     /// [`BodyHandle`]: ./struct.BodyHandle.html
     /// [`add_body()`]: ./trait.World.html#tymethod.add_body
-    fn body(&self, handle: BodyHandle) -> PhysicalBody;
+    fn body(&self, handle: BodyHandle) -> Option<PhysicalBody>;
     /// Sets how much time in seconds is simulated for each step.
     /// # Examples
     /// If you want to run a simulation with 60 steps per second, you
@@ -266,7 +273,7 @@ mod tests {
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
-        world.expect_body_and_return(returned_handle, expected_physical_body);
+        world.expect_body_and_return(returned_handle, Some(expected_physical_body));
         let mut simulation = SimulationImpl::new(world);
 
         let object = Box::new(ObjectMock::default());
@@ -291,6 +298,32 @@ mod tests {
         assert_eq!(expected_object_description, *object_description);
     }
 
+    #[should_panic]
+    #[test]
+    fn panics_on_invalid_body() {
+        let mut world = Box::new(WorldMock::new());
+        let expected_shape = shape();
+        let expected_position = position();
+        let expected_physical_body = PhysicalBody {
+            shape: expected_shape.clone(),
+            position: expected_position.clone(),
+            mobility: Mobility::Movable(Velocity::default()),
+        };
+        let returned_handle = BodyHandle(1984);
+        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
+        world.expect_body_and_return(returned_handle, None);
+        let mut simulation = SimulationImpl::new(world);
+
+        let object = Box::new(ObjectMock::default());
+        let new_object = Object {
+            object_behavior: ObjectBehavior::Movable(object),
+            position: expected_position.clone(),
+            shape: expected_shape.clone(),
+        };
+        simulation.add_object(new_object);
+        simulation.objects();
+    }
+
     fn shape() -> Polygon {
         PolygonBuilder::new()
             .vertex(-5, -5)
@@ -312,7 +345,7 @@ mod tests {
     struct WorldMock {
         expect_step: Option<()>,
         expect_add_body_and_return: Option<(PhysicalBody, BodyHandle)>,
-        expect_body_and_return: Option<(BodyHandle, PhysicalBody)>,
+        expect_body_and_return: Option<(BodyHandle, Option<PhysicalBody>)>,
         expect_set_simulated_timestep: Option<f64>,
 
         step_was_called: RefCell<bool>,
@@ -340,7 +373,7 @@ mod tests {
         pub(crate) fn expect_body_and_return(
             &mut self,
             handle: BodyHandle,
-            returned_value: PhysicalBody,
+            returned_value: Option<PhysicalBody>,
         ) {
             self.expect_body_and_return = Some((handle, returned_value));
         }
@@ -401,7 +434,7 @@ mod tests {
                 panic!("add_body() was called unexpectedly")
             }
         }
-        fn body(&self, handle: BodyHandle) -> PhysicalBody {
+        fn body(&self, handle: BodyHandle) -> Option<PhysicalBody> {
             *self.body_was_called.borrow_mut() = true;
             if let Some((ref expected_handle, ref return_value)) = self.expect_body_and_return {
                 if handle == *expected_handle {

@@ -48,21 +48,18 @@ impl NphysicsWorld {
         }
     }
 
-    fn get_body_from_handle(&self, collider_handle: ColliderHandle) -> PhysicalBody {
-        let collider = self
-            .physics_world
-            .collider(collider_handle)
-            .expect("Collider handle was invalid");
+    fn get_body_from_handle(&self, collider_handle: ColliderHandle) -> Option<PhysicalBody> {
+        let collider = self.physics_world.collider(collider_handle)?;
 
         let shape = self.get_shape(&collider);
         let position = self.get_position(&collider);
         let mobility = self.get_mobility(&collider);
 
-        PhysicalBody {
+        Some(PhysicalBody {
             shape,
             position,
             mobility,
-        }
+        })
     }
 
     fn get_shape(&self, collider: &Collider<PhysicsType>) -> Polygon {
@@ -188,7 +185,7 @@ impl World for NphysicsWorld {
         to_object_handle(handle)
     }
 
-    fn body(&self, handle: BodyHandle) -> PhysicalBody {
+    fn body(&self, handle: BodyHandle) -> Option<PhysicalBody> {
         let collider_handle = to_collider_handle(handle);
         self.get_body_from_handle(collider_handle)
     }
@@ -277,11 +274,11 @@ mod tests {
         }
     }
 
-    #[should_panic]
     #[test]
     fn panics_on_invalid_handle() {
         let world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        world.body(BodyHandle(1337));
+        let body = world.body(BodyHandle(1337));
+        assert!(body.is_none())
     }
 
     #[test]
@@ -322,7 +319,7 @@ mod tests {
         let handle = world.add_body(expected_body.clone());
         let actual_body = world.body(handle);
 
-        assert_eq!(expected_body, actual_body)
+        assert_eq!(Some(expected_body), actual_body)
     }
 
     #[test]
@@ -332,7 +329,7 @@ mod tests {
         let handle = world.add_body(expected_body.clone());
         let actual_body = world.body(handle);
 
-        assert_eq!(expected_body, actual_body)
+        assert_eq!(Some(expected_body), actual_body)
     }
 
     #[test]
@@ -354,7 +351,7 @@ mod tests {
             },
             ..local_object
         };
-        assert_eq!(expected_body, actual_body);
+        assert_eq!(Some(expected_body), actual_body);
     }
 
     #[test]
@@ -377,7 +374,7 @@ mod tests {
             },
             ..local_object
         };
-        assert_eq!(expected_body, actual_body);
+        assert_eq!(Some(expected_body), actual_body);
     }
 
     #[test]
@@ -385,14 +382,14 @@ mod tests {
         use std::f64::consts::FRAC_PI_2;
 
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let expected_object = local_grounded_object(Radians(FRAC_PI_2));
-        let handle = world.add_body(expected_object.clone());
+        let expected_body = local_grounded_object(Radians(FRAC_PI_2));
+        let handle = world.add_body(expected_body.clone());
 
         world.step();
         world.step();
 
         let actual_body = world.body(handle);
-        assert_eq!(expected_object, actual_body)
+        assert_eq!(Some(expected_body), actual_body)
     }
 
     #[test]
@@ -411,6 +408,6 @@ mod tests {
         world.step();
 
         let actual_body = world.body(handle);
-        assert_eq!(still_body, actual_body)
+        assert_eq!(Some(still_body), actual_body)
     }
 }
