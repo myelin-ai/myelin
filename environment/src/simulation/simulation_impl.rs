@@ -128,16 +128,18 @@ pub trait World: fmt::Debug {
     fn set_simulated_timestep(&mut self, timestep: f64);
 }
 
+/// The pure physical representation of an object
+/// that can be placed within a [`World`]
+///
+/// [`World`]: trait.World.html
 #[derive(Debug, PartialEq, Clone)]
 pub struct PhysicalBody {
     /// The vertices defining the shape of the object
-    /// in relation to its [`location`]
+    /// in relation to its [`position`]
     ///
-    /// [`location`]: ./struct.Body.html#structfield.location
+    /// [`position`]: ./struct.Body.html#structfield.position
     pub shape: Polygon,
-    /// The current position of the body within the [`World`]
-    ///
-    /// [`World`]: trait.World.html
+    /// The current position of the body
     pub position: Position,
     /// The current mobility of the object. If present,
     /// this is defined as a two dimensional vector relative to the
