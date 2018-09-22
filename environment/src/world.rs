@@ -16,7 +16,6 @@ use nphysics2d::object::{
 use nphysics2d::volumetric::Volumetric;
 use nphysics2d::world::World as PhysicsWorld;
 use std::collections::HashMap;
-use std::f64::consts::PI;
 use std::fmt;
 
 type PhysicsType = f64;
@@ -110,18 +109,9 @@ impl NphysicsWorld {
                 x: x as u32,
                 y: y as u32,
             },
-            rotation: Radians(rotation + NPHYSICS_ROTATION_OFFSET),
+            rotation: Radians(rotation),
         }
     }
-}
-
-/// The offset needed because we define orientation as [0; 2π)
-/// and nphysics defines rotation as (-π; π]
-/// See http://nalgebra.org/rustdoc/nalgebra/geometry/type.UnitComplex.html#method.angle
-const NPHYSICS_ROTATION_OFFSET: f64 = PI;
-
-fn to_nphysics_rotation(orientation: Radians) -> f64 {
-    orientation.0 - NPHYSICS_ROTATION_OFFSET
 }
 
 fn elements<N>(vector: &Vector2<N>) -> (N, N)
@@ -139,7 +129,7 @@ fn get_isometry(body: &PhysicalBody) -> Isometry<PhysicsType> {
             PhysicsType::from(body.position.location.x),
             PhysicsType::from(body.position.location.y),
         ),
-        to_nphysics_rotation(body.position.rotation),
+        body.position.rotation.0,
     )
 }
 
