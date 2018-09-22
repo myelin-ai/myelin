@@ -4,8 +4,8 @@
 //!
 //! [`World`]: ./trait.World.html
 //! [`Objects`]: ../object/struct.Body.html
+use super::{BodyHandle, PhysicalBody, World};
 use crate::object::*;
-use crate::simulation::simulation_impl::{BodyHandle, PhysicalBody, World};
 use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
 use ncollide2d::world::CollisionObjectHandle;

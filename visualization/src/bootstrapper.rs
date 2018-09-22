@@ -7,8 +7,8 @@ use crate::presenter::CanvasPresenter;
 use crate::view::constant::SIMULATED_TIMESTEP;
 use crate::view::CanvasView;
 use myelin_environment::object::{Kind, ObjectBehavior};
-use myelin_environment::simulation::{simulation_impl::SimulationImpl, Simulation};
-use myelin_environment::world::NphysicsWorld;
+use myelin_environment::simulation_impl::world::NphysicsWorld;
+use myelin_environment::{simulation_impl::SimulationImpl, Simulation};
 use myelin_object::{
     organism::StaticOrganism, plant::StaticPlant, terrain::StaticTerrain, water::StaticWater,
 };

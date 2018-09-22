@@ -28,6 +28,19 @@
 //! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
 //! [`ObjectDescription`]: ./struct.ObjectDescription.html
 
+/// A new object that is going to be placed in the [`Simulation`]
+/// [`Simulation`]: ../trait.Simulation.html
+///
+#[derive(Debug)]
+pub struct Object {
+    /// The object's behavior, which determines its kind and what the object is going to do every step
+    pub object_behavior: ObjectBehavior,
+    /// The object's initial position
+    pub position: Position,
+    /// The object's shape
+    pub shape: Polygon,
+}
+
 /// Custom behaviour of an object,
 /// defining its interactions and whether it is
 /// able to be moved by the physics engine or not

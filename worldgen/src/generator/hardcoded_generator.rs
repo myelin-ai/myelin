@@ -1,9 +1,9 @@
 //! A generator for a hardcoded simulation
 
 use crate::WorldGenerator;
-use myelin_environment::object::{Kind, Location, ObjectBehavior, Position, Radians};
+use myelin_environment::object::{Kind, Location, Object, ObjectBehavior, Position, Radians};
 use myelin_environment::object_builder::PolygonBuilder;
-use myelin_environment::simulation::{Object, Simulation};
+use myelin_environment::Simulation;
 use std::f64::consts::FRAC_PI_2;
 
 /// Simulation generation algorithm that creates a fixed simulation
@@ -177,7 +177,7 @@ mod tests {
     use myelin_environment::object::{
         ImmovableAction, ImmovableObject, Kind, ObjectBehavior, ObjectDescription,
     };
-    use myelin_environment::simulation::Object;
+    use myelin_environment::Object;
 
     #[derive(Debug, Default)]
     struct SimulationMock {

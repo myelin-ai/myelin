@@ -5,7 +5,7 @@
 
 #![deny(rust_2018_idioms)]
 
-use myelin_environment::simulation::Simulation;
+use myelin_environment::Simulation;
 
 pub mod generator;
 

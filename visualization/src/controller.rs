@@ -1,5 +1,5 @@
 use myelin_environment::object::ObjectDescription;
-use myelin_environment::simulation::Simulation;
+use myelin_environment::Simulation;
 use myelin_worldgen::WorldGenerator;
 
 pub(crate) trait Controller {
@@ -34,8 +34,8 @@ impl ControllerImpl {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use myelin_environment::object::Object;
     use myelin_environment::object::*;
-    use myelin_environment::simulation::Object;
     use std::cell::RefCell;
 
     #[derive(Debug)]

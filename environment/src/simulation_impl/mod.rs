@@ -1,10 +1,14 @@
 //! A `Simulation` that outsources all physical
 //! behaviour into a separate `World` type
 
-use super::{Object, ObjectDescription, Simulation};
-use crate::object::{Mobility, ObjectBehavior, Polygon, Position, Velocity};
+use crate::object::{
+    Mobility, Object, ObjectBehavior, ObjectDescription, Polygon, Position, Velocity,
+};
+use crate::Simulation;
 use std::collections::HashMap;
 use std::fmt;
+
+pub mod world;
 
 /// implementation of [`Simulation`] that uses a physical
 /// [`World`] in order to apply physics to objects.
