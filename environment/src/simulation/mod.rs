@@ -1,3 +1,6 @@
+//! API of the crate. Simulation of a physical world
+//! filled with objects that can interact with each other
+
 use crate::object::{ObjectBehavior, ObjectDescription, Polygon, Position};
 
 pub mod simulation_impl;
