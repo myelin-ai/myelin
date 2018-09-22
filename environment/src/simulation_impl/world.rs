@@ -34,7 +34,7 @@ impl NphysicsWorld {
     /// Instantiates a new empty world
     /// # Examples
     /// ```
-    /// use myelin_environment::world::NphysicsWorld;
+    /// use myelin_environment::simulation_impl::world::NphysicsWorld;
     /// let mut world = NphysicsWorld::with_timestep(1.0);
     /// ```
     pub fn with_timestep(timestep: f64) -> Self {

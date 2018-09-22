@@ -26,8 +26,8 @@ impl HardcodedGenerator {
     ///
     /// # Examples
     /// ```
-    /// use myelin_environment::simulation::{Simulation, simulation_impl::SimulationImpl};
-    /// use myelin_environment::world::NphysicsWorld;
+    /// use myelin_environment::Simulation;
+    /// use myelin_environment::simulation_impl::{SimulationImpl, world::NphysicsWorld};
     /// use myelin_environment::object::{Kind, ObjectBehavior};
     /// use myelin_worldgen::WorldGenerator;
     /// use myelin_worldgen::generator::HardcodedGenerator;
@@ -174,10 +174,10 @@ impl WorldGenerator for HardcodedGenerator {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use myelin_environment::object::Object;
     use myelin_environment::object::{
         ImmovableAction, ImmovableObject, Kind, ObjectBehavior, ObjectDescription,
     };
-    use myelin_environment::Object;
 
     #[derive(Debug, Default)]
     struct SimulationMock {

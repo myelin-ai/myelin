@@ -25,8 +25,7 @@ impl SimulationImpl {
     /// Create a new SimulationImpl by injecting a [`World`]
     /// # Examples
     /// ```
-    /// use myelin_environment::simulation::simulation_impl::SimulationImpl;
-    /// use myelin_environment::world::NphysicsWorld;
+    /// use myelin_environment::simulation_impl::{SimulationImpl, world::NphysicsWorld};
     ///
     /// let world = Box::new(NphysicsWorld::with_timestep(1.0));
     /// let simulation = SimulationImpl::new(world);
