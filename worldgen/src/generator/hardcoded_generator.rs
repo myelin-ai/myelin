@@ -63,9 +63,8 @@ impl HardcodedGenerator {
     }
 
     fn build_terrain(&self, location: (u32, u32), width: i32, length: i32) -> Object {
-        // We add two pixels because of https://github.com/myelin-ai/myelin/issues/60
-        let x_offset = width / 2 + 2;
-        let y_offset = length / 2 + 2;
+        let x_offset = width / 2;
+        let y_offset = length / 2;
 
         Object {
             object_behavior: (self.object_factory)(Kind::Terrain),
