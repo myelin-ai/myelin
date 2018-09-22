@@ -1,4 +1,4 @@
-//! This module contains all objects that can be
+//! objects that can be
 //! placed in a world and their components.
 //! # Examples
 //! The following defines a stationary square terrain:
@@ -27,34 +27,65 @@
 //!
 //! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
 //! [`ObjectDescription`]: ./struct.ObjectDescription.html
-//!
+
+/// Custom behaviour of an object,
+/// defining its interactions and whether it is
+/// able to be moved by the physics engine or not
 #[derive(Debug)]
 pub enum ObjectBehavior {
+    /// The behaviour of an object that can be moved
     Movable(Box<dyn MovableObject>),
+    /// The behaviour of an object that can never be moved
     Immovable(Box<dyn ImmovableObject>),
 }
 
+/// Behaviour of an object that can be moved
 pub trait MovableObject: std::fmt::Debug {
+    /// Returns all actions performed by the object
+    /// in the current simulation tick
     fn step(&mut self) -> Vec<MovableAction>;
+    /// Returns the object's kind.
+    /// This information is arbitrary and is only used
+    /// as a tag for visualizers
     fn kind(&self) -> Kind;
 }
 
+/// Possible actions performed by a [`MovableObject`]
+/// during a simulation step
+///
+/// [`MovableObject`]: ./trait.MovableObject.html
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum MovableAction {
+    /// Move the object to the specified Location
     Move,
+    /// Rotate the object by the specified radians
     Rotate,
+    /// Destroy the object
     Die,
+    /// Create a new object at the specified location
     Reproduce,
 }
 
+/// Behaviour of an object that can never be moved
 pub trait ImmovableObject: std::fmt::Debug {
+    /// Returns all actions performed by the object
+    /// in the current simulation tick
     fn step(&mut self) -> Vec<ImmovableAction>;
+    /// Returns the object's kind.
+    /// This information is arbitrary and is only used
+    /// as a tag for visualizers
     fn kind(&self) -> Kind;
 }
 
+/// Possible actions performed by a [`ImmovableObject`]
+/// during a simulation step
+///
+/// [`ImmovableObject`]: ./trait.ImmovableObject.html
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ImmovableAction {
+    /// Destroy the object
     Die,
+    /// Create a new object at the specified location
     Reproduce,
 }
 
