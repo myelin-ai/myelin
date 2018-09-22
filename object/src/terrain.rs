@@ -1,5 +1,9 @@
+//! Behaviours of various terrains
+
 use myelin_environment::object::{ImmovableAction, ImmovableObject, Kind};
 
+/// A purely static and non-interactive terrain.
+/// This type will never perform any actions.
 #[derive(Debug, Default)]
 pub struct StaticTerrain;
 impl StaticTerrain {

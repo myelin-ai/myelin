@@ -1,5 +1,9 @@
+//! Behaviours of various waters
+
 use myelin_environment::object::{ImmovableAction, ImmovableObject, Kind};
 
+/// A purely static and non-interactive water.
+/// This type will never perform any actions.
 #[derive(Debug, Default)]
 pub struct StaticWater;
 impl StaticWater {

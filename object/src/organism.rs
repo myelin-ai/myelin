@@ -1,5 +1,9 @@
+//! Behaviours of various organisms
+
 use myelin_environment::object::{Kind, MovableAction, MovableObject};
 
+/// A purely static and non-interactive organism.
+/// This type will never perform any actions.
 #[derive(Debug, Default)]
 pub struct StaticOrganism;
 impl StaticOrganism {

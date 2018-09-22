@@ -1,5 +1,9 @@
+//! Behaviours of various plants
+
 use myelin_environment::object::{ImmovableAction, ImmovableObject, Kind};
 
+/// A purely static and non-interactive plant.
+/// This type will never perform any actions.
 #[derive(Debug, Default)]
 pub struct StaticPlant;
 impl StaticPlant {
