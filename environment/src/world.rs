@@ -240,7 +240,7 @@ mod tests {
 
     const DEFAULT_TIMESTEP: f64 = 1.0;
 
-    fn local_rigid_object(orientation: Radians) -> PhysicalBody {
+    fn movable_body(orientation: Radians) -> PhysicalBody {
         PhysicalBody {
             position: Position {
                 location: Location { x: 5, y: 5 },
@@ -257,7 +257,7 @@ mod tests {
         }
     }
 
-    fn local_grounded_object(orientation: Radians) -> PhysicalBody {
+    fn immovable_body(orientation: Radians) -> PhysicalBody {
         PhysicalBody {
             shape: PolygonBuilder::new()
                 .vertex(-100, -100)
@@ -284,26 +284,26 @@ mod tests {
     #[test]
     fn can_return_rigid_object_with_valid_handle() {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let local_rigid_object = local_rigid_object(Radians(3.0));
+        let movable_body = movable_body(Radians(3.0));
 
-        let handle = world.add_body(local_rigid_object);
-        let _body = world.body(handle);
+        let handle = world.add_body(movable_body);
+        world.body(handle);
     }
 
     #[test]
     fn can_return_grounded_object_with_valid_handle() {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let object = local_grounded_object(Radians(3.0));
+        let body = immovable_body(Radians(3.0));
 
-        let handle = world.add_body(object.clone());
-        let _body = world.body(handle);
+        let handle = world.add_body(body);
+        world.body(handle);
     }
 
     #[test]
     fn can_return_mixed_objects_with_valid_handles() {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let rigid_object = local_rigid_object(Radians(3.0));
-        let grounded_object = local_grounded_object(Radians(3.0));
+        let rigid_object = movable_body(Radians(3.0));
+        let grounded_object = immovable_body(Radians(3.0));
 
         let rigid_handle = world.add_body(rigid_object);
         let grounded_handle = world.add_body(grounded_object);
@@ -315,7 +315,7 @@ mod tests {
     #[test]
     fn returns_correct_rigid_body() {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let expected_body = local_rigid_object(Radians(3.0));
+        let expected_body = movable_body(Radians(3.0));
         let handle = world.add_body(expected_body.clone());
         let actual_body = world.body(handle);
 
@@ -325,7 +325,7 @@ mod tests {
     #[test]
     fn returns_correct_grounded_body() {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let expected_body = local_grounded_object(Radians(3.0));
+        let expected_body = immovable_body(Radians(3.0));
         let handle = world.add_body(expected_body.clone());
         let actual_body = world.body(handle);
 
@@ -336,7 +336,7 @@ mod tests {
     fn timestep_is_respected() {
         let mut world = NphysicsWorld::with_timestep(1.0);
 
-        let local_object = local_rigid_object(Radians::default());
+        let local_object = movable_body(Radians::default());
         let handle = world.add_body(local_object.clone());
 
         world.step();
@@ -359,7 +359,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(0.0);
         world.set_simulated_timestep(2.0);
 
-        let local_object = local_rigid_object(Radians::default());
+        let local_object = movable_body(Radians::default());
         let handle = world.add_body(local_object.clone());
 
         world.step();
@@ -382,7 +382,7 @@ mod tests {
         use std::f64::consts::FRAC_PI_2;
 
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let expected_body = local_grounded_object(Radians(FRAC_PI_2));
+        let expected_body = immovable_body(Radians(FRAC_PI_2));
         let handle = world.add_body(expected_body.clone());
 
         world.step();
@@ -397,7 +397,7 @@ mod tests {
         use std::f64::consts::FRAC_PI_2;
 
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let body = local_grounded_object(Radians(FRAC_PI_2));
+        let body = immovable_body(Radians(FRAC_PI_2));
         let still_body = PhysicalBody {
             mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
             ..body
