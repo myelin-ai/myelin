@@ -1,15 +1,19 @@
 //! Entrypoint for the crate,
 //! used to setup the entire visualization
 
+use crate::controller::ControllerImpl;
 use crate::input_handler::InputHandler;
 use crate::presenter::CanvasPresenter;
-use crate::simulation::SimulationImpl;
 use crate::view::constant::SIMULATED_TIMESTEP;
 use crate::view::CanvasView;
-use myelin_environment::world::{NphysicsWorld, World};
+use myelin_environment::object::{Kind, ObjectBehavior};
+use myelin_environment::simulation_impl::world::NphysicsWorld;
+use myelin_environment::{simulation_impl::SimulationImpl, Simulation};
+use myelin_object::{
+    organism::StaticOrganism, plant::StaticPlant, terrain::StaticTerrain, water::StaticWater,
+};
 use myelin_worldgen::generator::HardcodedGenerator;
 use wasm_bindgen::prelude::*;
-
 use web_sys::HtmlCanvasElement;
 
 /// Initializes all components with explicit implementations
@@ -36,10 +40,17 @@ use web_sys::HtmlCanvasElement;
 pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
     let view = Box::new(CanvasView::new(canvas));
     let presenter = Box::new(CanvasPresenter::new(view));
-    let world_factory = Box::new(|| -> Box<dyn World> {
-        Box::new(NphysicsWorld::with_timestep(SIMULATED_TIMESTEP))
+    let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
+        let world = Box::new(NphysicsWorld::with_timestep(SIMULATED_TIMESTEP));
+        Box::new(SimulationImpl::new(world))
     });
-    let worldgen = HardcodedGenerator::new(world_factory);
-    let simulation = Box::new(SimulationImpl::new(presenter, &worldgen));
-    InputHandler::new(simulation)
+    let object_factory = Box::new(|kind: Kind| match kind {
+        Kind::Plant => ObjectBehavior::Immovable(Box::new(StaticPlant::new())),
+        Kind::Organism => ObjectBehavior::Movable(Box::new(StaticOrganism::new())),
+        Kind::Water => ObjectBehavior::Immovable(Box::new(StaticWater::new())),
+        Kind::Terrain => ObjectBehavior::Immovable(Box::new(StaticTerrain::new())),
+    });
+    let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
+    let controller = Box::new(ControllerImpl::new(presenter, &worldgen));
+    InputHandler::new(controller)
 }

@@ -5,7 +5,7 @@
 
 #![deny(rust_2018_idioms)]
 
-use myelin_environment::world::World;
+use myelin_environment::Simulation;
 
 pub mod generator;
 
@@ -16,6 +16,6 @@ pub trait WorldGenerator {
     /// Generate a new [`World`] and populates it with [`Objects`]
     ///
     /// [`World`]: ../myelin_environment/world/trait.World.html
-    /// [`Objects`]: ../myelin_environment/object/struct.LocalObject.html
-    fn generate(&self) -> Box<dyn World>;
+    /// [`Objects`]: ../myelin_environment/object/struct.Body.html
+    fn generate(&self) -> Box<dyn Simulation>;
 }

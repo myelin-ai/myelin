@@ -9,7 +9,7 @@
 **/node_modules/
 
 # WASM compiled bundle
-visualization/out
+/visualization/out
 
 # Webpack generated
 /visualization/public/dist/

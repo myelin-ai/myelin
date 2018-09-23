@@ -219,11 +219,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "myelin-object"
+version = "0.1.0"
+dependencies = [
+ "myelin-environment 0.1.0",
+]
+
+[[package]]
 name = "myelin-visualization"
 version = "0.1.0"
 dependencies = [
  "js-sys 0.2.6 (git+https://github.com/myelin-ai/wasm-bindgen)",
  "myelin-environment 0.1.0",
+ "myelin-object 0.1.0",
  "myelin-worldgen 0.1.0",
  "wasm-bindgen 0.2.21 (git+https://github.com/myelin-ai/wasm-bindgen)",
  "web-sys 0.1.0 (git+https://github.com/myelin-ai/wasm-bindgen)",
@@ -234,6 +242,7 @@ name = "myelin-worldgen"
 version = "0.1.0"
 dependencies = [
  "myelin-environment 0.1.0",
+ "myelin-object 0.1.0",
 ]
 
 [[package]]

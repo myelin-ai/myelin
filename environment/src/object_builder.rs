@@ -1,7 +1,7 @@
-//! Convenient builders for [`LocalObject`] and [`LocalPolygon`]
+//! Convenient builders for [`ObjectDescription`] and [`Polygon`]
 //! # Examples
 //! ```
-//! use myelin_environment::object::{Kind, Radians};
+//! use myelin_environment::object::{Kind, Radians, Velocity, Mobility};
 //! use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
 //! use std::f64::consts::FRAC_PI_2;
 //!
@@ -17,14 +17,15 @@
 //!     ).location(300, 450)
 //!     .orientation(Radians(FRAC_PI_2))
 //!     .kind(Kind::Organism)
+//!     .mobility(Mobility::Movable(Velocity{x: 3, y: 5}))
 //!     .build()
 //!     .unwrap();
 //! ```
 //!
-//! [`LocalObject`]: ../object/struct.LocalObject.html
-//! [`LocalPolygon`]: ../object/struct.LocalPolygon.html
+//! [`ObjectDescription`]: ../object/struct.ObjectDescription.html
+//! [`Polygon`]: ../object/struct.Polygon.html
 
-use crate::object::{Kind, LocalObject, LocalPolygon, LocalVertex, Location, Radians};
+use crate::object::*;
 
 /// An error representing the values that have
 /// wrongly been ommited when building finished
@@ -36,23 +37,26 @@ pub struct ObjectBuilderError {
     pub missing_location: bool,
     /// Flag signaling that .kind(...) was never called
     pub missing_kind: bool,
+    /// Flag signaling that .mobility(...) was never called
+    pub missing_mobility: bool,
 }
 
-/// [`LocalObject`] factory, which can be used in order to configure
+/// [`ObjectDescription`] factory, which can be used in order to configure
 /// the properties of a new object.
 /// Methods can be chained on it in order to configure it.
 ///
-/// [`LocalObject`]: ../object/struct.LocalObject.html
+/// [`ObjectDescription`]: ../object/struct.ObjectDescription.html
 #[derive(Default, Debug)]
 pub struct ObjectBuilder {
-    shape: Option<LocalPolygon>,
+    shape: Option<Polygon>,
     location: Option<Location>,
-    kind: Option<Kind>,
     orientation: Option<Radians>,
+    mobility: Option<Mobility>,
+    kind: Option<Kind>,
 }
 
 impl ObjectBuilder {
-    /// Generates the base configuration for creating a [`LocalObject`],
+    /// Generates the base configuration for creating a [`ObjectDescription`],
     /// from which configuration methods can be chained.
     /// # Examples
     /// ```
@@ -60,7 +64,7 @@ impl ObjectBuilder {
     /// let builder = ObjectBuilder::new();
     /// ```
     ///
-    /// [`LocalObject`]: ../object/struct.LocalObject.html
+    /// [`ObjectDescription`]: ../object/struct.ObjectDescription.html
     pub fn new() -> Self {
         Default::default()
     }
@@ -79,7 +83,7 @@ impl ObjectBuilder {
     ///             .unwrap(),
     ///     );
     /// ```
-    pub fn shape(&mut self, polygon: LocalPolygon) -> &mut Self {
+    pub fn shape(&mut self, polygon: Polygon) -> &mut Self {
         self.shape = Some(polygon);
         self
     }
@@ -110,6 +114,18 @@ impl ObjectBuilder {
     /// # Examples
     /// ```
     /// use myelin_environment::object_builder::ObjectBuilder;
+    /// use myelin_environment::object::{Mobility, Velocity};
+    /// ObjectBuilder::new()
+    ///     .mobility(Mobility::Movable(Velocity { x: -12, y: 4 }));
+    /// ```
+    pub fn mobility(&mut self, mobility: Mobility) -> &mut Self {
+        self.mobility = Some(mobility);
+        self
+    }
+
+    /// # Examples
+    /// ```
+    /// use myelin_environment::object_builder::ObjectBuilder;
     /// use myelin_environment::object::Radians;
     /// ObjectBuilder::new()
     ///     .orientation(Radians(4.5));
@@ -119,14 +135,14 @@ impl ObjectBuilder {
         self
     }
 
-    /// Build the [`LocalObject`] with all specified settings
+    /// Build the [`ObjectDescription`] with all specified settings
     /// # Errors
     /// If a non-optional member has not specified while building
     /// an error is returned, containing flags specifying which
     /// setting has been omitted
     /// # Examples
     /// ```
-    /// use myelin_environment::object::{Kind, Radians};
+    /// use myelin_environment::object::{Kind, Radians, Mobility, Velocity};
     /// use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
     /// use std::f64::consts::FRAC_PI_2;
     ///
@@ -142,41 +158,46 @@ impl ObjectBuilder {
     ///     ).location(300, 450)
     ///     .orientation(Radians(FRAC_PI_2))
     ///     .kind(Kind::Organism)
+    ///     .mobility(Mobility::Movable(Velocity{x: 3, y: 5}))
     ///     .build()
     ///     .unwrap();
     /// ```
     ///
-    /// [`LocalObject`]: ../object/struct.LocalObject.html
-    pub fn build(&mut self) -> Result<LocalObject, ObjectBuilderError> {
+    /// [`ObjectDescription`]: ../object/struct.ObjectDescription.html
+    pub fn build(&mut self) -> Result<ObjectDescription, ObjectBuilderError> {
         let error = ObjectBuilderError {
             missing_shape: self.shape.is_none(),
             missing_location: self.location.is_none(),
             missing_kind: self.kind.is_none(),
+            missing_mobility: self.mobility.is_none(),
         };
 
-        let object = LocalObject {
+        let object = ObjectDescription {
             shape: self.shape.take().ok_or_else(|| error.clone())?,
-            location: self.location.take().ok_or_else(|| error.clone())?,
-            kind: self.kind.take().ok_or(error)?,
-            orientation: self.orientation.take().unwrap_or_else(Default::default),
+            position: Position {
+                location: self.location.take().ok_or_else(|| error.clone())?,
+                rotation: self.orientation.take().unwrap_or_else(Default::default),
+            },
+            kind: self.kind.take().ok_or_else(|| error.clone())?,
+            mobility: self.mobility.take().ok_or(error)?,
         };
 
         Ok(object)
     }
 }
 
-/// [`LocalPolygon`] factory, which can be used in order to configure
+/// [`Polygon`] factory, which can be used in order to configure
 /// the properties of a new polygon.
 /// Methods can be chained on it in order to configure it.
 ///
-/// [`LocalPolygon`]: ../object/struct.LocalPolygon.html
+/// [`Polygon`]: ../object/struct.Polygon.html
 #[derive(Default, Debug)]
 pub struct PolygonBuilder {
-    vertices: Vec<LocalVertex>,
+    vertices: Vec<Vertex>,
 }
 
 impl PolygonBuilder {
-    /// Generates the base configuration for creating a [`LocalPolygon`],
+    /// Generates the base configuration for creating a [`Polygon`],
     /// from which configuration methods can be chained.
     /// # Examples
     /// ```
@@ -184,7 +205,7 @@ impl PolygonBuilder {
     /// let builder = PolygonBuilder::new();
     /// ```
     ///
-    /// [`LocalPolygon`]: ../object/struct.LocalPolygon.html
+    /// [`Polygon`]: ../object/struct.Polygon.html
     pub fn new() -> Self {
         Default::default()
     }
@@ -200,15 +221,15 @@ impl PolygonBuilder {
     ///     .vertex(-50, 50);
     /// ```
     pub fn vertex(mut self, x: i32, y: i32) -> Self {
-        self.vertices.push(LocalVertex { x, y });
+        self.vertices.push(Vertex { x, y });
         self
     }
 
-    /// Finishes building the [`LocalPolygon`] with all
+    /// Finishes building the [`Polygon`] with all
     /// vertices that have been configured up to this point
     /// # Errors
     /// This method will return an error if the number of configured
-    /// vertices is less than three, as the resulting [`LocalPolygon`]
+    /// vertices is less than three, as the resulting [`Polygon`]
     /// would not be two-dimensional.
     /// # Examples
     /// ```
@@ -223,15 +244,15 @@ impl PolygonBuilder {
     ///     .unwrap();
     /// ```
     ///
-    /// [`LocalPolygon`]: ../object/struct.LocalPolygon.html
-    pub fn build(self) -> Result<LocalPolygon, ()> {
+    /// [`Polygon`]: ../object/struct.Polygon.html
+    pub fn build(self) -> Result<Polygon, ()> {
         const MINIMUM_VERTICES_IN_A_POLYGON: usize = 3;
 
         if self.vertices.len() < MINIMUM_VERTICES_IN_A_POLYGON {
             return Err(());
         }
 
-        Ok(LocalPolygon {
+        Ok(Polygon {
             vertices: self.vertices,
         })
     }
@@ -251,12 +272,12 @@ mod test {
             .build()
             .unwrap();
 
-        let expected = LocalPolygon {
+        let expected = Polygon {
             vertices: vec![
-                LocalVertex { x: 0, y: 0 },
-                LocalVertex { x: 0, y: 1 },
-                LocalVertex { x: 1, y: 0 },
-                LocalVertex { x: 1, y: 1 },
+                Vertex { x: 0, y: 0 },
+                Vertex { x: 0, y: 1 },
+                Vertex { x: 1, y: 0 },
+                Vertex { x: 1, y: 1 },
             ],
         };
 
@@ -282,35 +303,12 @@ mod test {
     }
 
     #[test]
-    fn test_object_builder_should_error_for_missing_kind() {
-        let result = ObjectBuilder::new()
-            .shape(
-                PolygonBuilder::new()
-                    .vertex(0, 0)
-                    .vertex(0, 1)
-                    .vertex(1, 0)
-                    .vertex(1, 1)
-                    .build()
-                    .unwrap(),
-            ).location(10, 10)
-            .orientation(Radians(0.0))
-            .build();
-
-        assert_eq!(
-            Err(ObjectBuilderError {
-                missing_kind: true,
-                ..Default::default()
-            }),
-            result
-        );
-    }
-
-    #[test]
     fn test_object_builder_should_error_for_missing_shape() {
         let result = ObjectBuilder::new()
             .location(10, 10)
-            .kind(Kind::Organism)
             .orientation(Radians(0.0))
+            .kind(Kind::Terrain)
+            .mobility(Mobility::Immovable)
             .build();
 
         assert_eq!(
@@ -323,7 +321,7 @@ mod test {
     }
 
     #[test]
-    fn test_object_builder_should_use_default_velocity() {
+    fn test_object_builder_should_error_for_missing_kind() {
         let result = ObjectBuilder::new()
             .shape(
                 PolygonBuilder::new()
@@ -334,25 +332,16 @@ mod test {
                     .build()
                     .unwrap(),
             ).location(10, 10)
-            .kind(Kind::Organism)
             .orientation(Radians(0.0))
+            .mobility(Mobility::Immovable)
             .build();
-
-        let expected = LocalObject {
-            orientation: Radians(0.0),
-            shape: LocalPolygon {
-                vertices: vec![
-                    LocalVertex { x: 0, y: 0 },
-                    LocalVertex { x: 0, y: 1 },
-                    LocalVertex { x: 1, y: 0 },
-                    LocalVertex { x: 1, y: 1 },
-                ],
-            },
-            location: Location { x: 10, y: 10 },
-            kind: Kind::Organism,
-        };
-
-        assert_eq!(Ok(expected), result);
+        assert_eq!(
+            Err(ObjectBuilderError {
+                missing_kind: true,
+                ..Default::default()
+            }),
+            result
+        );
     }
 
     #[test]
@@ -366,13 +355,39 @@ mod test {
                     .vertex(1, 1)
                     .build()
                     .unwrap(),
-            ).kind(Kind::Organism)
-            .orientation(Radians(0.0))
+            ).orientation(Radians(0.0))
+            .kind(Kind::Terrain)
+            .mobility(Mobility::Immovable)
             .build();
 
         assert_eq!(
             Err(ObjectBuilderError {
                 missing_location: true,
+                ..Default::default()
+            }),
+            result
+        );
+    }
+
+    #[test]
+    fn test_object_builder_should_error_for_missing_mobility() {
+        let result = ObjectBuilder::new()
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(0, 0)
+                    .vertex(0, 1)
+                    .vertex(1, 0)
+                    .vertex(1, 1)
+                    .build()
+                    .unwrap(),
+            ).orientation(Radians(0.0))
+            .location(30, 40)
+            .kind(Kind::Plant)
+            .build();
+
+        assert_eq!(
+            Err(ObjectBuilderError {
+                missing_mobility: true,
                 ..Default::default()
             }),
             result
@@ -391,21 +406,25 @@ mod test {
                     .build()
                     .unwrap(),
             ).location(30, 40)
-            .kind(Kind::Organism)
+            .kind(Kind::Terrain)
+            .mobility(Mobility::Immovable)
             .build();
 
-        let expected = LocalObject {
-            orientation: Radians(0.0),
-            shape: LocalPolygon {
+        let expected = ObjectDescription {
+            shape: Polygon {
                 vertices: vec![
-                    LocalVertex { x: 0, y: 0 },
-                    LocalVertex { x: 0, y: 1 },
-                    LocalVertex { x: 1, y: 0 },
-                    LocalVertex { x: 1, y: 1 },
+                    Vertex { x: 0, y: 0 },
+                    Vertex { x: 0, y: 1 },
+                    Vertex { x: 1, y: 0 },
+                    Vertex { x: 1, y: 1 },
                 ],
             },
-            location: Location { x: 30, y: 40 },
-            kind: Kind::Organism,
+            position: Position {
+                rotation: Radians(0.0),
+                location: Location { x: 30, y: 40 },
+            },
+            kind: Kind::Terrain,
+            mobility: Mobility::Immovable,
         };
 
         assert_eq!(Ok(expected), result);
@@ -420,6 +439,7 @@ mod test {
                 missing_shape: true,
                 missing_location: true,
                 missing_kind: true,
+                missing_mobility: true
             }),
             result
         );
@@ -436,23 +456,27 @@ mod test {
                     .vertex(1, 1)
                     .build()
                     .unwrap(),
-            ).location(30, 40)
+            ).mobility(Mobility::Movable(Velocity { x: -12, y: 5 }))
             .kind(Kind::Organism)
+            .location(30, 40)
             .orientation(Radians(1.1))
             .build();
 
-        let expected = LocalObject {
-            orientation: Radians(1.1),
-            shape: LocalPolygon {
+        let expected = ObjectDescription {
+            position: Position {
+                location: Location { x: 30, y: 40 },
+                rotation: Radians(1.1),
+            },
+            mobility: Mobility::Movable(Velocity { x: -12, y: 5 }),
+            kind: Kind::Organism,
+            shape: Polygon {
                 vertices: vec![
-                    LocalVertex { x: 0, y: 0 },
-                    LocalVertex { x: 0, y: 1 },
-                    LocalVertex { x: 1, y: 0 },
-                    LocalVertex { x: 1, y: 1 },
+                    Vertex { x: 0, y: 0 },
+                    Vertex { x: 0, y: 1 },
+                    Vertex { x: 1, y: 0 },
+                    Vertex { x: 1, y: 1 },
                 ],
             },
-            location: Location { x: 30, y: 40 },
-            kind: Kind::Organism,
         };
 
         assert_eq!(Ok(expected), result);

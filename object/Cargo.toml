@@ -1,5 +1,5 @@
 [package]
-name = "myelin-worldgen"
+name = "myelin-object"
 version = "0.1.0"
 authors = [    
     "Jan Nils Ferner <jan@myelin.ch>",
@@ -11,4 +11,3 @@ edition = "2018"
 
 [dependencies]
 myelin-environment = { path = "../environment" }
-myelin-object = { path = "../object" }
