@@ -1,5 +1,4 @@
-//! objects that can be
-//! placed in a world and their components.
+//! Objects that can be placed in a world and their components.
 //! # Examples
 //! The following defines a stationary square terrain:
 //! ```
@@ -28,9 +27,11 @@
 //! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
 //! [`ObjectDescription`]: ./struct.ObjectDescription.html
 
+use std::fmt::Debug;
+
 /// A new object that is going to be placed in the [`Simulation`]
-/// [`Simulation`]: ../trait.Simulation.html
 ///
+/// [`Simulation`]: ../trait.Simulation.html
 #[derive(Debug)]
 pub struct Object {
     /// The object's behavior, which determines its kind and what the object is going to do every step
@@ -65,7 +66,7 @@ impl ObjectBehavior {
 }
 
 /// Behaviour of an object that can be moved
-pub trait MovableObject: std::fmt::Debug {
+pub trait MovableObject: Debug {
     /// Returns all actions performed by the object
     /// in the current simulation tick
     fn step(&mut self) -> Vec<MovableAction>;
@@ -92,7 +93,7 @@ pub enum MovableAction {
 }
 
 /// Behaviour of an object that can never be moved
-pub trait ImmovableObject: std::fmt::Debug {
+pub trait ImmovableObject: Debug {
     /// Returns all actions performed by the object
     /// in the current simulation tick
     fn step(&mut self) -> Vec<ImmovableAction>;

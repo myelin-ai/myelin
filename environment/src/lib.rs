@@ -14,7 +14,7 @@ use crate::object::{Object, ObjectDescription};
 /// which it will apply physical rules when calling [`step`].
 /// This trait represents our API.
 ///
-/// [`Object`]: ./struct.Object.html
+/// [`Object`]: ./object/struct.Object.html
 /// [`step`]: ./trait.Simulation.html#tymethod.step
 pub trait Simulation {
     /// Advance the simulation by one tick. This will apply

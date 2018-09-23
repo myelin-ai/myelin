@@ -10,7 +10,7 @@ use std::fmt;
 
 pub mod world;
 
-/// implementation of [`Simulation`] that uses a physical
+/// Implementation of [`Simulation`] that uses a physical
 /// [`World`] in order to apply physics to objects.
 ///
 /// [`Simulation`]: ./../trait.Simulation.html

@@ -37,7 +37,7 @@ pub struct ObjectBuilderError {
     pub missing_location: bool,
     /// Flag signaling that .kind(...) was never called
     pub missing_kind: bool,
-    /// Flag signaling that .velocity(...) was never called
+    /// Flag signaling that .mobility(...) was never called
     pub missing_mobility: bool,
 }
 
