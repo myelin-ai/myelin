@@ -154,7 +154,7 @@ impl HardcodedGenerator {
                 .expect("Generated an invalid vertex"),
             position: Position {
                 location: Location { x, y },
-                rotation: Radians(FRAC_PI_2 / 2.0),
+                rotation: Radians(FRAC_PI_2),
             },
         }
     }
