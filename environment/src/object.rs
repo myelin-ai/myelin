@@ -52,6 +52,18 @@ pub enum ObjectBehavior {
     Immovable(Box<dyn ImmovableObject>),
 }
 
+impl ObjectBehavior {
+    /// Returns the object's kind.
+    /// This information is arbitrary and is only used
+    /// as a tag for visualizers
+    pub fn kind(&self) -> Kind {
+        match self {
+            ObjectBehavior::Movable(object) => object.kind(),
+            ObjectBehavior::Immovable(object) => object.kind(),
+        }
+    }
+}
+
 /// Behaviour of an object that can be moved
 pub trait MovableObject: std::fmt::Debug {
     /// Returns all actions performed by the object
@@ -192,7 +204,7 @@ pub struct Velocity {
 
 /// The part of an object that is responsible for custom
 /// behavior and interactions
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Copy)]
 pub enum Kind {
     /// An intelligent organism featuring a neural network
     Organism,

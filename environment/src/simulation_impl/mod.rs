@@ -47,15 +47,11 @@ impl SimulationImpl {
             .world
             .body(body_handle)
             .expect("Internal error: Stored body handle was invalid");
-        let kind = match object {
-            ObjectBehavior::Immovable(object) => object.kind(),
-            ObjectBehavior::Movable(object) => object.kind(),
-        };
         ObjectDescription {
             shape: physics_body.shape,
             position: physics_body.position,
             mobility: physics_body.mobility,
-            kind,
+            kind: object.kind(),
         }
     }
 }
