@@ -35,7 +35,7 @@ fn to_global_object(object: &business_object::ObjectDescription) -> view_model::
                 .map(|vertex| to_global_rotated_vertex(vertex, object))
                 .collect(),
         },
-        kind: map_kind(&object.kind),
+        kind: map_kind(object.kind),
     }
 }
 
@@ -60,8 +60,8 @@ fn to_global_rotated_vertex(
     }
 }
 
-fn map_kind(kind: &business_object::Kind) -> view_model::Kind {
-    match *kind {
+fn map_kind(kind: business_object::Kind) -> view_model::Kind {
+    match kind {
         business_object::Kind::Organism => view_model::Kind::Organism,
         business_object::Kind::Plant => view_model::Kind::Plant,
         business_object::Kind::Water => view_model::Kind::Water,
