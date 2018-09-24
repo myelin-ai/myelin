@@ -5,7 +5,7 @@ use crate::presenter::View;
 use crate::view_model::{Kind, Object, ViewModel};
 use std::fmt;
 use wasm_bindgen::JsValue;
-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement, Window};
+use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement};
 
 /// The view object component that manipulates the DOM.
 pub(crate) struct CanvasView {
@@ -76,7 +76,8 @@ fn adjust_canvas_to_device_pixel_ratio(
     canvas: &HtmlCanvasElement,
     context: &CanvasRenderingContext2d,
 ) {
-    let native_pixel_ratio = Window::device_pixel_ratio();
+    let window = web_sys::window().expect("No window available");
+    let native_pixel_ratio = window.device_pixel_ratio();
     let pixel_ratio = native_pixel_ratio.round() as u32;
     let width = canvas.width();
     let height = canvas.height();
