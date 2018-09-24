@@ -1,6 +1,18 @@
 pipeline {
   agent any
   stages {
+    stage('Clean') {
+      when {
+        anyOf {
+          branch 'master'
+          changeRequest()
+        }
+      }
+      steps {
+        sh 'git checkout .'
+        sh 'git clean -xfd'
+      }
+    }
     stage('Build') {
       parallel {
         stage('cargo build') {
