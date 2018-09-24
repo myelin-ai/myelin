@@ -25,10 +25,17 @@ impl ImmovableObject for StochasticSpreadingPlant {
     }
 }
 
+/// Dedicated random number generator
 pub trait RandomChanceChecker: fmt::Debug {
+    /// Returns a random boolean with a given probability of returning true.
+    /// The probability is defined in the range `[0.0; 1.0]` where `0.0` means
+    /// always return `false` and `1.0` means always return `true`.
+    /// # Errors
+    /// Panics if `probability` is outside the range [0.0; 1.0]
     fn flip_coin_with_probability(&mut self, probability: f64) -> bool;
 }
 
+/// Random number generator implementation that uses the `rand` crate
 #[derive(Debug)]
 pub struct RandomChanceCheckerImpl {
     rng: ThreadRng,
@@ -43,7 +50,7 @@ impl RandomChanceCheckerImpl {
 impl RandomChanceChecker for RandomChanceCheckerImpl {
     fn flip_coin_with_probability(&mut self, probability: f64) -> bool {
         let num: f64 = self.rng.gen();
-        probability <= num
+        num <= probability
     }
 }
 
