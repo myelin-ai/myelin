@@ -21,10 +21,13 @@ impl Default for RandomChanceCheckerImpl {
 
 impl RandomChanceChecker for RandomChanceCheckerImpl {
     fn flip_coin_with_probability(&mut self, probability: f64) -> bool {
-        assert!(
-            probability >= 0.0 && probability <= 1.0,
-            "probability was outside of range [0.0; 0.0]"
-        );
+        if probability < 0.0 || probability > 1.0 {
+            let error = format!(
+                "Expected probability to be in range [0.0; 1.0] but got {}",
+                probability
+            );
+            panic!(error);
+        }
         let num: f64 = self.rng.gen();
         num <= probability
     }
