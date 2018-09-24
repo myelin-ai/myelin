@@ -45,12 +45,13 @@ pipeline {
       }
     }
     stage('Deploy') {
-      if (env.BRANCH_NAME == 'master') {
-        stage('docs') {
-          steps {
-            sh 'cp -r target/doc/* /usr/share/nginx/html/docs-preview/myelin/'
-            sh 'cp docs/index.html /usr/share/nginx/html/docs-preview/myelin/'
-          }
+      stage('docs') {
+        when {
+          branch 'master'
+        }
+        steps {
+          sh 'cp -r target/doc/* /usr/share/nginx/html/docs-preview/myelin/'
+          sh 'cp docs/index.html /usr/share/nginx/html/docs-preview/myelin/'
         }
       }
     }
