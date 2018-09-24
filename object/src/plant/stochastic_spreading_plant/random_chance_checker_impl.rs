@@ -13,6 +13,12 @@ impl RandomChanceCheckerImpl {
     }
 }
 
+impl Default for RandomChanceCheckerImpl {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RandomChanceChecker for RandomChanceCheckerImpl {
     fn flip_coin_with_probability(&mut self, probability: f64) -> bool {
         assert!(
