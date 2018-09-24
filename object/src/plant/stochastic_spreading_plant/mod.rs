@@ -42,6 +42,14 @@ mod tests {
     use super::*;
     use myelin_environment::object::Kind;
 
+    #[test]
+    fn is_correct_kind() {
+        let random_chance_checker = Box::new(RandomChanceCheckerMock::with_coin_flip_result(true));
+        let object = StochasticSpreadingPlant::new(random_chance_checker);
+        let kind = object.kind();
+        assert_eq!(Kind::Plant, kind);
+    }
+
     #[derive(Debug)]
     struct RandomChanceCheckerMock {
         coin_flip_result: bool,
@@ -56,13 +64,5 @@ mod tests {
         fn flip_coin_with_probability(&mut self, _probability: f64) -> bool {
             self.coin_flip_result
         }
-    }
-
-    #[test]
-    fn is_correct_kind() {
-        let random_chance_checker = Box::new(RandomChanceCheckerMock::with_coin_flip_result(true));
-        let object = StochasticSpreadingPlant::new(random_chance_checker);
-        let kind = object.kind();
-        assert_eq!(Kind::Plant, kind);
     }
 }
