@@ -1,5 +1,3 @@
-//! Behaviours of various plants
-
 use myelin_environment::object::{ImmovableAction, ImmovableObject, Kind};
 
 /// A purely static and non-interactive plant.
