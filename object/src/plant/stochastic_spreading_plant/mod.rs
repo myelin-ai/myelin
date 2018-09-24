@@ -21,11 +21,24 @@ impl StochasticSpreadingPlant {
             random_chance_checker,
         }
     }
+
+    fn should_spread(&mut self) -> bool {
+        self.random_chance_checker
+            .flip_coin_with_probability(self.spreading_chance)
+    }
+
+    fn spread(&self) -> Vec<ImmovableAction> {
+        unimplemented!()
+    }
 }
 
 impl ImmovableObject for StochasticSpreadingPlant {
     fn step(&mut self) -> Vec<ImmovableAction> {
-        unimplemented!()
+        if self.should_spread() {
+            self.spread()
+        } else {
+            Vec::new()
+        }
     }
     fn kind(&self) -> Kind {
         Kind::Plant
