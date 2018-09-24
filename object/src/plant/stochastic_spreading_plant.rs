@@ -46,7 +46,7 @@ mod tests {
     }
 
     impl RandomChanceChecker for RandomChanceCheckerMock {
-        fn did_chance_occur(&self, chance: f32) -> bool {
+        fn did_chance_occur(&self, _chance: f32) -> bool {
             self.did_chance_occur_return_value
         }
     }
