@@ -4,7 +4,7 @@ pub mod constant;
 use crate::presenter::View;
 use crate::view_model::{Kind, Object, ViewModel};
 use std::fmt;
-use wasm_bindgen::JsValue;
+use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement};
 
 /// The view object component that manipulates the DOM.
@@ -67,9 +67,9 @@ fn get_2d_context(canvas: &HtmlCanvasElement) -> CanvasRenderingContext2d {
         .expect(ERROR_MESSAGE)
         .expect(ERROR_MESSAGE);
 
-    // This is safe because get_context() always returns `CanvasRenderingContext2d`
-    // when the context id '2d' is passed.
-    unsafe { std::mem::transmute(context) }
+    context
+        .dyn_into()
+        .expect("unable to cast context into CanvasRenderingContext2d")
 }
 
 fn adjust_canvas_to_device_pixel_ratio(
