@@ -164,15 +164,15 @@ name = "js-sys"
 version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "wasm-bindgen 0.2.22 (git+https://github.com/myelin-ai/wasm-bindgen)",
+ "wasm-bindgen 0.2.22 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)",
 ]
 
 [[package]]
 name = "js-sys"
 version = "0.2.7"
-source = "git+https://github.com/myelin-ai/wasm-bindgen#cee4446ab83431ad596cfb1a0b68e948f10c0478"
+source = "git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2#d10ca579e43a9d072d1aa9880fa873fd59a8f0c2"
 dependencies = [
- "wasm-bindgen 0.2.22 (git+https://github.com/myelin-ai/wasm-bindgen)",
+ "wasm-bindgen 0.2.22 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)",
 ]
 
 [[package]]
@@ -244,8 +244,8 @@ dependencies = [
  "myelin-environment 0.1.0",
  "myelin-object 0.1.0",
  "myelin-worldgen 0.1.0",
- "wasm-bindgen 0.2.22 (git+https://github.com/myelin-ai/wasm-bindgen)",
- "web-sys 0.1.0 (git+https://github.com/myelin-ai/wasm-bindgen)",
+ "wasm-bindgen 0.2.22 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)",
+ "web-sys 0.1.0 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)",
 ]
 
 [[package]]
@@ -306,7 +306,7 @@ dependencies = [
  "num-traits 0.2.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "slab 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.40 (registry+https://github.com/rust-lang/crates.io-index)",
- "wasm-bindgen 0.2.22 (git+https://github.com/myelin-ai/wasm-bindgen)",
+ "wasm-bindgen 0.2.22 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)",
 ]
 
 [[package]]
@@ -564,15 +564,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "wasm-bindgen"
 version = "0.2.22"
-source = "git+https://github.com/myelin-ai/wasm-bindgen#cee4446ab83431ad596cfb1a0b68e948f10c0478"
+source = "git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2#d10ca579e43a9d072d1aa9880fa873fd59a8f0c2"
 dependencies = [
- "wasm-bindgen-macro 0.2.22 (git+https://github.com/myelin-ai/wasm-bindgen)",
+ "wasm-bindgen-macro 0.2.22 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)",
 ]
 
 [[package]]
 name = "wasm-bindgen-backend"
 version = "0.2.22"
-source = "git+https://github.com/myelin-ai/wasm-bindgen#cee4446ab83431ad596cfb1a0b68e948f10c0478"
+source = "git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2#d10ca579e43a9d072d1aa9880fa873fd59a8f0c2"
 dependencies = [
  "lazy_static 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -580,34 +580,34 @@ dependencies = [
  "quote 0.6.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.30 (registry+https://github.com/rust-lang/crates.io-index)",
  "syn 0.15.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "wasm-bindgen-shared 0.2.22 (git+https://github.com/myelin-ai/wasm-bindgen)",
+ "wasm-bindgen-shared 0.2.22 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)",
 ]
 
 [[package]]
 name = "wasm-bindgen-macro"
 version = "0.2.22"
-source = "git+https://github.com/myelin-ai/wasm-bindgen#cee4446ab83431ad596cfb1a0b68e948f10c0478"
+source = "git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2#d10ca579e43a9d072d1aa9880fa873fd59a8f0c2"
 dependencies = [
  "quote 0.6.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "wasm-bindgen-macro-support 0.2.22 (git+https://github.com/myelin-ai/wasm-bindgen)",
+ "wasm-bindgen-macro-support 0.2.22 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)",
 ]
 
 [[package]]
 name = "wasm-bindgen-macro-support"
 version = "0.2.22"
-source = "git+https://github.com/myelin-ai/wasm-bindgen#cee4446ab83431ad596cfb1a0b68e948f10c0478"
+source = "git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2#d10ca579e43a9d072d1aa9880fa873fd59a8f0c2"
 dependencies = [
  "proc-macro2 0.4.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 0.6.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "syn 0.15.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "wasm-bindgen-backend 0.2.22 (git+https://github.com/myelin-ai/wasm-bindgen)",
- "wasm-bindgen-shared 0.2.22 (git+https://github.com/myelin-ai/wasm-bindgen)",
+ "wasm-bindgen-backend 0.2.22 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)",
+ "wasm-bindgen-shared 0.2.22 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)",
 ]
 
 [[package]]
 name = "wasm-bindgen-shared"
 version = "0.2.22"
-source = "git+https://github.com/myelin-ai/wasm-bindgen#cee4446ab83431ad596cfb1a0b68e948f10c0478"
+source = "git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2#d10ca579e43a9d072d1aa9880fa873fd59a8f0c2"
 dependencies = [
  "serde 1.0.79 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.79 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -616,7 +616,7 @@ dependencies = [
 [[package]]
 name = "wasm-bindgen-webidl"
 version = "0.2.17"
-source = "git+https://github.com/myelin-ai/wasm-bindgen#cee4446ab83431ad596cfb1a0b68e948f10c0478"
+source = "git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2#d10ca579e43a9d072d1aa9880fa873fd59a8f0c2"
 dependencies = [
  "failure 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure_derive 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -625,21 +625,21 @@ dependencies = [
  "proc-macro2 0.4.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 0.6.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "syn 0.15.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "wasm-bindgen-backend 0.2.22 (git+https://github.com/myelin-ai/wasm-bindgen)",
+ "wasm-bindgen-backend 0.2.22 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)",
  "weedle 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "web-sys"
 version = "0.1.0"
-source = "git+https://github.com/myelin-ai/wasm-bindgen#cee4446ab83431ad596cfb1a0b68e948f10c0478"
+source = "git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2#d10ca579e43a9d072d1aa9880fa873fd59a8f0c2"
 dependencies = [
  "env_logger 0.5.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "js-sys 0.2.7 (git+https://github.com/myelin-ai/wasm-bindgen)",
+ "js-sys 0.2.7 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)",
  "sourcefile 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "wasm-bindgen 0.2.22 (git+https://github.com/myelin-ai/wasm-bindgen)",
- "wasm-bindgen-webidl 0.2.17 (git+https://github.com/myelin-ai/wasm-bindgen)",
+ "wasm-bindgen 0.2.22 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)",
+ "wasm-bindgen-webidl 0.2.17 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)",
 ]
 
 [[package]]
@@ -708,7 +708,7 @@ dependencies = [
 "checksum humantime 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "0484fda3e7007f2a4a0d9c3a703ca38c71c54c55602ce4660c419fd32e188c9e"
 "checksum itoa 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)" = "1306f3464951f30e30d12373d31c79fbd52d236e5e896fd92f96ec7babbbe60b"
 "checksum js-sys 0.2.6 (registry+https://github.com/rust-lang/crates.io-index)" = "352edacd81f94086d4330c490bf571281debfc0e4eaa1af650dcae7608191cf8"
-"checksum js-sys 0.2.7 (git+https://github.com/myelin-ai/wasm-bindgen)" = "<none>"
+"checksum js-sys 0.2.7 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)" = "<none>"
 "checksum lazy_static 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ca488b89a5657b0a2ecd45b95609b3e848cf1755da332a0da46e2b2b1cb371a7"
 "checksum libc 0.2.43 (registry+https://github.com/rust-lang/crates.io-index)" = "76e3a3ef172f1a0b9a9ff0dd1491ae5e6c948b94479a3021819ba7d860c8645d"
 "checksum libm 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "03c0bb6d5ce1b5cc6fd0578ec1cbc18c9d88b5b591a5c7c1d6c6175e266a0819"
@@ -754,13 +754,13 @@ dependencies = [
 "checksum utf8-ranges 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "fd70f467df6810094968e2fce0ee1bd0e87157aceb026a8c083bcf5e25b9efe4"
 "checksum version_check 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "914b1a6776c4c929a602fafd8bc742e06365d4bcbe48c30f9cca5824f70dc9dd"
 "checksum void 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "6a02e4885ed3bc0f2de90ea6dd45ebcbb66dacffe03547fadbb0eeae2770887d"
-"checksum wasm-bindgen 0.2.22 (git+https://github.com/myelin-ai/wasm-bindgen)" = "<none>"
-"checksum wasm-bindgen-backend 0.2.22 (git+https://github.com/myelin-ai/wasm-bindgen)" = "<none>"
-"checksum wasm-bindgen-macro 0.2.22 (git+https://github.com/myelin-ai/wasm-bindgen)" = "<none>"
-"checksum wasm-bindgen-macro-support 0.2.22 (git+https://github.com/myelin-ai/wasm-bindgen)" = "<none>"
-"checksum wasm-bindgen-shared 0.2.22 (git+https://github.com/myelin-ai/wasm-bindgen)" = "<none>"
-"checksum wasm-bindgen-webidl 0.2.17 (git+https://github.com/myelin-ai/wasm-bindgen)" = "<none>"
-"checksum web-sys 0.1.0 (git+https://github.com/myelin-ai/wasm-bindgen)" = "<none>"
+"checksum wasm-bindgen 0.2.22 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)" = "<none>"
+"checksum wasm-bindgen-backend 0.2.22 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)" = "<none>"
+"checksum wasm-bindgen-macro 0.2.22 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)" = "<none>"
+"checksum wasm-bindgen-macro-support 0.2.22 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)" = "<none>"
+"checksum wasm-bindgen-shared 0.2.22 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)" = "<none>"
+"checksum wasm-bindgen-webidl 0.2.17 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)" = "<none>"
+"checksum web-sys 0.1.0 (git+https://github.com/rustwasm/wasm-bindgen?rev=d10ca579e43a9d072d1aa9880fa873fd59a8f0c2)" = "<none>"
 "checksum weedle 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "26a4c67f132386d965390b8a734d5d10adbcd30eb5cc74bd9229af8b83f10044"
 "checksum winapi 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)" = "92c1eb33641e276cfa214a0522acad57be5c56b10cb348b3c5117db75f3ac4b0"
 "checksum winapi-i686-pc-windows-gnu 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ac3b87c63620426dd9b991e5ce0329eff545bccbbb34f3be09ff6fb6ab51b7b6"
