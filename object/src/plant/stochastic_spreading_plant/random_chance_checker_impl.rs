@@ -15,7 +15,50 @@ impl RandomChanceCheckerImpl {
 
 impl RandomChanceChecker for RandomChanceCheckerImpl {
     fn flip_coin_with_probability(&mut self, probability: f64) -> bool {
+        assert!(
+            probability >= 0.0 && probability <= 1.0,
+            "probability was outside of range [0.0; 0.0]"
+        );
         let num: f64 = self.rng.gen();
         num <= probability
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn flips_true_on_100_percent_chance() {
+        let mut random_chance_checker = RandomChanceCheckerImpl::new();
+        let coin_flip_result = random_chance_checker.flip_coin_with_probability(1.0);
+        assert!(coin_flip_result);
+    }
+
+    #[test]
+    fn flips_false_on_0_percent_chance() {
+        let mut random_chance_checker = RandomChanceCheckerImpl::new();
+        let coin_flip_result = random_chance_checker.flip_coin_with_probability(0.0);
+        assert!(!coin_flip_result);
+    }
+
+    #[test]
+    fn does_not_panic_on_valid_range() {
+        let mut random_chance_checker = RandomChanceCheckerImpl::new();
+        random_chance_checker.flip_coin_with_probability(0.5);
+    }
+
+    #[should_panic]
+    #[test]
+    fn panics_on_negative_probability() {
+        let mut random_chance_checker = RandomChanceCheckerImpl::new();
+        random_chance_checker.flip_coin_with_probability(-1.0);
+    }
+
+    #[should_panic]
+    #[test]
+    fn panics_too_high_probability() {
+        let mut random_chance_checker = RandomChanceCheckerImpl::new();
+        random_chance_checker.flip_coin_with_probability(1.1);
     }
 }
