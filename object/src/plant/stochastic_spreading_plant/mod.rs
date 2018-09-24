@@ -8,11 +8,16 @@ pub use self::random_chance_checker_impl::RandomChanceCheckerImpl;
 #[derive(Debug)]
 pub struct StochasticSpreadingPlant {
     random_chance_checker: Box<dyn RandomChanceChecker>,
+    spreading_chance: f64,
 }
 
 impl StochasticSpreadingPlant {
-    pub fn new(random_chance_checker: Box<dyn RandomChanceChecker>) -> Self {
+    pub fn with_spreading_chance(
+        spreading_chance: f64,
+        random_chance_checker: Box<dyn RandomChanceChecker>,
+    ) -> Self {
         Self {
+            spreading_chance,
             random_chance_checker,
         }
     }
@@ -41,36 +46,80 @@ pub trait RandomChanceChecker: fmt::Debug {
 mod tests {
     use super::*;
     use myelin_environment::object::Kind;
+    use std::cell::RefCell;
+    const SPREADING_CHANGE: f64 = 1.0 / (60.0 * 30.0);
 
     #[test]
     fn is_correct_kind() {
-        let random_chance_checker = Box::new(RandomChanceCheckerMock::with_coin_flip_result(true));
-        let object = StochasticSpreadingPlant::new(random_chance_checker);
+        let random_chance_checker = RandomChanceCheckerMock::new();
+        let object = StochasticSpreadingPlant::with_spreading_chance(
+            SPREADING_CHANGE,
+            Box::new(random_chance_checker),
+        );
         let kind = object.kind();
         assert_eq!(Kind::Plant, kind);
     }
 
     #[test]
     fn does_nothing_when_chance_is_not_hit() {
-        let random_chance_checker = Box::new(RandomChanceCheckerMock::with_coin_flip_result(false));
-        let object = StochasticSpreadingPlant::new(random_chance_checker);
+        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, false);
+        let mut object = StochasticSpreadingPlant::with_spreading_chance(
+            SPREADING_CHANGE,
+            Box::new(random_chance_checker),
+        );
         let actions = object.step();
         assert!(actions.is_empty());
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Default)]
     struct RandomChanceCheckerMock {
-        coin_flip_result: bool,
+        expect_flip_coin_with_probability_and_return: Option<(f64, bool)>,
+        flip_coin_with_probability_was_called: RefCell<bool>,
     }
+
     impl RandomChanceCheckerMock {
-        fn with_coin_flip_result(coin_flip_result: bool) -> Self {
-            Self { coin_flip_result }
+        pub(crate) fn new() -> Self {
+            Default::default()
+        }
+
+        pub(crate) fn expect_flip_coin_with_probability_and_return(
+            &mut self,
+            probability: f64,
+            returned_value: bool,
+        ) {
+            self.expect_flip_coin_with_probability_and_return = Some((probability, returned_value));
+        }
+    }
+
+    impl Drop for RandomChanceCheckerMock {
+        fn drop(&mut self) {
+            if self.expect_flip_coin_with_probability_and_return.is_some() {
+                assert!(
+                    *self.flip_coin_with_probability_was_called.borrow(),
+                    "body() was not called, but was expected"
+                )
+            }
         }
     }
 
     impl RandomChanceChecker for RandomChanceCheckerMock {
-        fn flip_coin_with_probability(&mut self, _probability: f64) -> bool {
-            self.coin_flip_result
+        fn flip_coin_with_probability(&mut self, probability: f64) -> bool {
+            *self.flip_coin_with_probability_was_called.borrow_mut() = true;
+            if let Some((ref expected_probability, ref return_value)) =
+                self.expect_flip_coin_with_probability_and_return
+            {
+                if probability == *expected_probability {
+                    return_value.clone()
+                } else {
+                    panic!(
+                        "flip_coin_with_probability() was called with {:?}, expected {:?}",
+                        probability, expected_probability
+                    )
+                }
+            } else {
+                panic!("body() was called unexpectedly")
+            }
         }
     }
 }
