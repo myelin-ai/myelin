@@ -1,4 +1,5 @@
 use myelin_environment::object::{ImmovableAction, ImmovableObject, Kind};
+use rand::{thread_rng, Rng, ThreadRng};
 use std::fmt;
 
 /// Plant that spreads in stochastic intervals
@@ -25,7 +26,25 @@ impl ImmovableObject for StochasticSpreadingPlant {
 }
 
 pub trait RandomChanceChecker: fmt::Debug {
-    fn did_chance_occur(&self, chance: f32) -> bool;
+    fn did_chance_occur(&mut self, chance: f64) -> bool;
+}
+
+#[derive(Debug)]
+pub struct RandomChanceCheckerImpl {
+    rng: ThreadRng,
+}
+
+impl RandomChanceCheckerImpl {
+    pub fn new() -> Self {
+        Self { rng: thread_rng() }
+    }
+}
+
+impl RandomChanceChecker for RandomChanceCheckerImpl {
+    fn did_chance_occur(&mut self, chance: f64) -> bool {
+        let num: f64 = self.rng.gen();
+        chance <= num
+    }
 }
 
 #[cfg(test)]
@@ -46,7 +65,7 @@ mod tests {
     }
 
     impl RandomChanceChecker for RandomChanceCheckerMock {
-        fn did_chance_occur(&self, _chance: f32) -> bool {
+        fn did_chance_occur(&mut self, _chance: f64) -> bool {
             self.did_chance_occur_return_value
         }
     }

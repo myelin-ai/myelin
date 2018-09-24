@@ -11,3 +11,4 @@ edition = "2018"
 
 [dependencies]
 myelin-environment = { path = "../environment" }
+rand = "0.5.5"

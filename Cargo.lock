@@ -233,6 +233,7 @@ name = "myelin-object"
 version = "0.1.0"
 dependencies = [
  "myelin-environment 0.1.0",
+ "rand 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
