@@ -46,7 +46,7 @@ pipeline {
     }
     stage('Deploy') {
       when {
-        branch 'master'
+        branch 'documentation_on_ci'
       }
       steps {
         sh 'cp -r target/doc/* /usr/share/nginx/html/docs-preview/myelin/'
