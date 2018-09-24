@@ -49,8 +49,8 @@ pipeline {
         branch 'master'
       }
       steps {
-        sh 'cp -r target/doc/* $DOCS_PUBLIC_PATH'
-        sh 'cp docs/* $DOCS_PUBLIC_PATH'
+        sh 'cp -r target/doc/* ${env.DOCS_PUBLIC_PATH}'
+        sh 'cp docs/* ${env.DOCS_PUBLIC_PATH}'
       }
     }
   }
