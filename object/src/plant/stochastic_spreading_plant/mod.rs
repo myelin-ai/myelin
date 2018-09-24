@@ -50,6 +50,14 @@ mod tests {
         assert_eq!(Kind::Plant, kind);
     }
 
+    #[test]
+    fn does_nothing_when_chance_is_not_hit() {
+        let random_chance_checker = Box::new(RandomChanceCheckerMock::with_coin_flip_result(false));
+        let object = StochasticSpreadingPlant::new(random_chance_checker);
+        let actions = object.step();
+        assert!(actions.is_empty());
+    }
+
     #[derive(Debug)]
     struct RandomChanceCheckerMock {
         coin_flip_result: bool,
