@@ -33,9 +33,28 @@ mod tests {
     use super::*;
     use myelin_environment::object::Kind;
 
+    #[derive(Debug)]
+    struct RandomChanceCheckerMock {
+        did_chance_occur_return_value: bool,
+    }
+    impl RandomChanceCheckerMock {
+        fn with_return_value(return_value: bool) -> Self {
+            Self {
+                did_chance_occur_return_value: return_value,
+            }
+        }
+    }
+
+    impl RandomChanceChecker for RandomChanceCheckerMock {
+        fn did_chance_occur(&self, chance: f32) -> bool {
+            self.did_chance_occur_return_value
+        }
+    }
+
     #[test]
     fn is_correct_kind() {
-        let object = StochasticSpreadingPlant::new();
+        let random_chance_checker = Box::new(RandomChanceCheckerMock::with_return_value(true));
+        let object = StochasticSpreadingPlant::new(random_chance_checker);
         let kind = object.kind();
         assert_eq!(Kind::Plant, kind);
     }
