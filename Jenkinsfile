@@ -50,7 +50,7 @@ pipeline {
       }
       steps {
         sh 'cp -r target/doc/* /usr/share/nginx/html/docs-preview/myelin/'
-        sh 'cp docs/index.html /usr/share/nginx/html/docs-preview/myelin/'
+        sh 'cp docs/* /usr/share/nginx/html/docs-preview/myelin/'
       }
     }
   }
