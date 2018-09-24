@@ -8,23 +8,28 @@ pub use self::random_chance_checker_impl::RandomChanceCheckerImpl;
 #[derive(Debug)]
 pub struct StochasticSpreadingPlant {
     random_chance_checker: Box<dyn RandomChanceChecker>,
-    spreading_chance: f64,
+    spreading_probability: f64,
 }
 
 impl StochasticSpreadingPlant {
-    pub fn with_spreading_chance(
-        spreading_chance: f64,
+    /// Returns a plant that has a probability of `spreading_probability`
+    /// in every step to spawn a new plant, using the injected [`RandomChanceChecker`]
+    /// to check if the probability was met.
+    ///
+    /// [`RandomChanceChecker`]: ./trait.RandomChanceChecker.html
+    pub fn with_spreading_probability(
+        spreading_probability: f64,
         random_chance_checker: Box<dyn RandomChanceChecker>,
     ) -> Self {
         Self {
-            spreading_chance,
+            spreading_probability,
             random_chance_checker,
         }
     }
 
     fn should_spread(&mut self) -> bool {
         self.random_chance_checker
-            .flip_coin_with_probability(self.spreading_chance)
+            .flip_coin_with_probability(self.spreading_probability)
     }
 
     fn spread(&self) -> Vec<ImmovableAction> {
@@ -65,7 +70,7 @@ mod tests {
     #[test]
     fn is_correct_kind() {
         let random_chance_checker = RandomChanceCheckerMock::new();
-        let object = StochasticSpreadingPlant::with_spreading_chance(
+        let object = StochasticSpreadingPlant::with_spreading_probability(
             SPREADING_CHANGE,
             Box::new(random_chance_checker),
         );
@@ -77,7 +82,7 @@ mod tests {
     fn does_nothing_when_chance_is_not_hit() {
         let mut random_chance_checker = RandomChanceCheckerMock::new();
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, false);
-        let mut object = StochasticSpreadingPlant::with_spreading_chance(
+        let mut object = StochasticSpreadingPlant::with_spreading_probability(
             SPREADING_CHANGE,
             Box::new(random_chance_checker),
         );
