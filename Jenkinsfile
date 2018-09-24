@@ -3,9 +3,14 @@ pipeline {
   stages {
     stage('Build') {
       parallel {
-        stage('cargo') {
+        stage('cargo build') {
           steps {
             sh 'cargo build'
+          }
+        }
+        stage('cargo doc') {
+          steps {
+            sh 'cargo doc --no-deps'
           }
         }
         stage('wasm') {
@@ -37,6 +42,15 @@ pipeline {
             sh '(cd visualization && tslint --project tsconfig.json \'src/**/*.ts\')'
           }
         }
+      }
+    }
+    stage('Deploy') {
+      when {
+        branch 'master'
+      }
+      steps {
+        sh 'cp -r target/doc/* ${env.DOCS_PUBLIC_PATH}'
+        sh 'cp docs/* ${env.DOCS_PUBLIC_PATH}'
       }
     }
   }
