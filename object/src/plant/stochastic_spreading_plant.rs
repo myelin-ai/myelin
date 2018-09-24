@@ -26,7 +26,7 @@ impl ImmovableObject for StochasticSpreadingPlant {
 }
 
 pub trait RandomChanceChecker: fmt::Debug {
-    fn did_chance_occur(&mut self, chance: f64) -> bool;
+    fn flip_coin_with_probability(&mut self, probability: f64) -> bool;
 }
 
 #[derive(Debug)]
@@ -41,9 +41,9 @@ impl RandomChanceCheckerImpl {
 }
 
 impl RandomChanceChecker for RandomChanceCheckerImpl {
-    fn did_chance_occur(&mut self, chance: f64) -> bool {
+    fn flip_coin_with_probability(&mut self, probability: f64) -> bool {
         let num: f64 = self.rng.gen();
-        chance <= num
+        probability <= num
     }
 }
 
@@ -54,25 +54,23 @@ mod tests {
 
     #[derive(Debug)]
     struct RandomChanceCheckerMock {
-        did_chance_occur_return_value: bool,
+        coin_flip_result: bool,
     }
     impl RandomChanceCheckerMock {
-        fn with_return_value(return_value: bool) -> Self {
-            Self {
-                did_chance_occur_return_value: return_value,
-            }
+        fn with_coin_flip_result(coin_flip_result: bool) -> Self {
+            Self { coin_flip_result }
         }
     }
 
     impl RandomChanceChecker for RandomChanceCheckerMock {
-        fn did_chance_occur(&mut self, _chance: f64) -> bool {
-            self.did_chance_occur_return_value
+        fn flip_coin_with_probability(&mut self, _probability: f64) -> bool {
+            self.coin_flip_result
         }
     }
 
     #[test]
     fn is_correct_kind() {
-        let random_chance_checker = Box::new(RandomChanceCheckerMock::with_return_value(true));
+        let random_chance_checker = Box::new(RandomChanceCheckerMock::with_coin_flip_result(true));
         let object = StochasticSpreadingPlant::new(random_chance_checker);
         let kind = object.kind();
         assert_eq!(Kind::Plant, kind);
