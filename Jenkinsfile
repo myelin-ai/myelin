@@ -49,8 +49,8 @@ pipeline {
         branch 'master'
       }
       steps {
-        sh 'cp -r target/doc/* /usr/share/nginx/html/docs-preview/myelin/'
-        sh 'cp docs/* /usr/share/nginx/html/docs-preview/myelin/'
+        sh 'cp -r target/doc/* $DOCS_PUBLIC_PATH'
+        sh 'cp docs/* $DOCS_PUBLIC_PATH'
       }
     }
   }
