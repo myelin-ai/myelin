@@ -3,9 +3,14 @@ pipeline {
   stages {
     stage('Build') {
       parallel {
-        stage('cargo') {
+        stage('cargo build') {
           steps {
             sh 'cargo build'
+          }
+        }
+        stage('cargo doc') {
+          steps {
+            sh 'cargo doc --no-deps'
           }
         }
         stage('wasm') {
@@ -37,6 +42,12 @@ pipeline {
             sh '(cd visualization && tslint --project tsconfig.json \'src/**/*.ts\')'
           }
         }
+      }
+    }
+    if(env.BRANCH_NAME == 'master') {
+      stage('Deploy') {
+        sh 'cp -r target/doc/* /usr/share/nginx/html/docs-preview/myelin/'
+        sh 'cp docs/index.html /usr/share/nginx/html/docs-preview/myelin/'
       }
     }
   }
