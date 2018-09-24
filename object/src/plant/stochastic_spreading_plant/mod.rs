@@ -1,6 +1,8 @@
 use myelin_environment::object::{ImmovableAction, ImmovableObject, Kind};
-use rand::{thread_rng, Rng, ThreadRng};
 use std::fmt;
+
+mod random_chance_checker_impl;
+pub use self::random_chance_checker_impl::RandomChanceCheckerImpl;
 
 /// Plant that spreads in stochastic intervals
 #[derive(Debug)]
@@ -31,27 +33,8 @@ pub trait RandomChanceChecker: fmt::Debug {
     /// The probability is defined in the range `[0.0; 1.0]` where `0.0` means
     /// always return `false` and `1.0` means always return `true`.
     /// # Errors
-    /// Panics if `probability` is outside the range [0.0; 1.0]
+    /// Is allowed to panic if `probability` is outside the range [0.0; 1.0]
     fn flip_coin_with_probability(&mut self, probability: f64) -> bool;
-}
-
-/// Random number generator implementation that uses the `rand` crate
-#[derive(Debug)]
-pub struct RandomChanceCheckerImpl {
-    rng: ThreadRng,
-}
-
-impl RandomChanceCheckerImpl {
-    pub fn new() -> Self {
-        Self { rng: thread_rng() }
-    }
-}
-
-impl RandomChanceChecker for RandomChanceCheckerImpl {
-    fn flip_coin_with_probability(&mut self, probability: f64) -> bool {
-        let num: f64 = self.rng.gen();
-        num <= probability
-    }
 }
 
 #[cfg(test)]
