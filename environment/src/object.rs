@@ -63,17 +63,31 @@ impl ObjectBehavior {
             ObjectBehavior::Immovable(object) => object.kind(),
         }
     }
+
+    /// Returns all sensors that are attached to the
+    /// object
+    pub fn sensors(&self) -> Vec<Sensor> {
+        match self {
+            ObjectBehavior::Movable(object) => object.sensors(),
+            ObjectBehavior::Immovable(object) => object.sensors(),
+        }
+    }
 }
 
 /// Behaviour of an object that can be moved
 pub trait MovableObject: Debug {
     /// Returns all actions performed by the object
     /// in the current simulation tick
-    fn step(&mut self) -> Vec<MovableAction>;
+    fn step(&mut self, collisions: &[ObjectDescription]) -> Vec<MovableAction>;
+
     /// Returns the object's kind.
     /// This information is arbitrary and is only used
     /// as a tag for visualizers
     fn kind(&self) -> Kind;
+
+    /// Returns all sensors that are attached to the
+    /// object
+    fn sensors(&self) -> Vec<Sensor>;
 }
 
 /// Possible actions performed by a [`MovableObject`]
@@ -96,11 +110,15 @@ pub enum MovableAction {
 pub trait ImmovableObject: Debug {
     /// Returns all actions performed by the object
     /// in the current simulation tick
-    fn step(&mut self) -> Vec<ImmovableAction>;
+    fn step(&mut self, collisions: &[ObjectDescription]) -> Vec<ImmovableAction>;
     /// Returns the object's kind.
     /// This information is arbitrary and is only used
     /// as a tag for visualizers
     fn kind(&self) -> Kind;
+
+    /// Returns all sensors that are attached to the
+    /// object
+    fn sensors(&self) -> Vec<Sensor>;
 }
 
 /// Possible actions performed by a [`ImmovableObject`]
@@ -113,6 +131,21 @@ pub enum ImmovableAction {
     Die,
     /// Create a new object at the specified location
     Reproduce,
+}
+
+/// A sensor that can be attached to an [`Object`],
+/// which will report any collisions to it.
+///
+/// [`Object`]: ./enum.Object.html
+#[derive(Debug)]
+pub struct Sensor {
+    /// The shape of the sensor
+    pub shape: Polygon,
+    /// The shape's position in relation to its
+    /// parent [`Object`]
+    ///
+    /// [`Object`]: ./enum.Object.html
+    pub position: Position,
 }
 
 /// The dehaviourless description of an object that has
