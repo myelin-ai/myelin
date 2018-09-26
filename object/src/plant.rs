@@ -1,6 +1,6 @@
 //! Behaviours of various plants
 
-use myelin_environment::object::{ImmovableAction, ImmovableObject, Kind};
+use myelin_environment::object::{ImmovableAction, ImmovableObject, Kind, Sensor};
 
 /// A purely static and non-interactive plant.
 /// This type will never perform any actions.
@@ -18,6 +18,9 @@ impl ImmovableObject for StaticPlant {
     }
     fn kind(&self) -> Kind {
         Kind::Plant
+    }
+    fn sensors(&self) -> Vec<Sensor> {
+        Vec::new()
     }
 }
 
@@ -38,5 +41,12 @@ mod tests {
         let object = StaticPlant::new();
         let kind = object.kind();
         assert_eq!(Kind::Plant, kind);
+    }
+
+    #[test]
+    fn has_no_sensors() {
+        let object = StaticPlant::new();
+        let sensor = object.sensors();
+        assert!(sensor.is_empty());
     }
 }

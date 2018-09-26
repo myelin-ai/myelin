@@ -1,6 +1,6 @@
 //! Behaviours of various waters
 
-use myelin_environment::object::{ImmovableAction, ImmovableObject, Kind};
+use myelin_environment::object::{ImmovableAction, ImmovableObject, Kind, Sensor};
 
 /// A purely static and non-interactive water.
 /// This type will never perform any actions.
@@ -18,6 +18,9 @@ impl ImmovableObject for StaticWater {
     }
     fn kind(&self) -> Kind {
         Kind::Water
+    }
+    fn sensors(&self) -> Vec<Sensor> {
+        Vec::new()
     }
 }
 
@@ -38,5 +41,12 @@ mod tests {
         let object = StaticWater::new();
         let kind = object.kind();
         assert_eq!(Kind::Water, kind);
+    }
+
+    #[test]
+    fn has_no_sensors() {
+        let object = StaticWater::new();
+        let sensor = object.sensors();
+        assert!(sensor.is_empty());
     }
 }
