@@ -78,7 +78,7 @@ impl ObjectBehavior {
 pub trait MovableObject: Debug {
     /// Returns all actions performed by the object
     /// in the current simulation tick
-    fn step(&mut self, collisions: &[ObjectDescription]) -> Vec<MovableAction>;
+    fn step(&mut self, sensor_collisions: &[ObjectDescription]) -> Vec<MovableAction>;
 
     /// Returns the object's kind.
     /// This information is arbitrary and is only used
@@ -110,7 +110,7 @@ pub enum MovableAction {
 pub trait ImmovableObject: Debug {
     /// Returns all actions performed by the object
     /// in the current simulation tick
-    fn step(&mut self, collisions: &[ObjectDescription]) -> Vec<ImmovableAction>;
+    fn step(&mut self, sensor_collisions: &[ObjectDescription]) -> Vec<ImmovableAction>;
     /// Returns the object's kind.
     /// This information is arbitrary and is only used
     /// as a tag for visualizers
