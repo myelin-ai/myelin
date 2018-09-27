@@ -124,7 +124,8 @@ mod tests {
                     .vertex(-10, 10)
                     .build()
                     .unwrap(),
-            ).mobility(Mobility::Immovable)
+            )
+            .mobility(Mobility::Immovable)
             .location(30, 40)
             .orientation(orientation)
             .kind(Kind::Plant)

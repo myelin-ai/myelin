@@ -331,7 +331,8 @@ mod test {
                     .vertex(1, 1)
                     .build()
                     .unwrap(),
-            ).location(10, 10)
+            )
+            .location(10, 10)
             .orientation(Radians(0.0))
             .mobility(Mobility::Immovable)
             .build();
@@ -355,7 +356,8 @@ mod test {
                     .vertex(1, 1)
                     .build()
                     .unwrap(),
-            ).orientation(Radians(0.0))
+            )
+            .orientation(Radians(0.0))
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
             .build();
@@ -380,7 +382,8 @@ mod test {
                     .vertex(1, 1)
                     .build()
                     .unwrap(),
-            ).orientation(Radians(0.0))
+            )
+            .orientation(Radians(0.0))
             .location(30, 40)
             .kind(Kind::Plant)
             .build();
@@ -405,7 +408,8 @@ mod test {
                     .vertex(1, 1)
                     .build()
                     .unwrap(),
-            ).location(30, 40)
+            )
+            .location(30, 40)
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
             .build();
@@ -456,7 +460,8 @@ mod test {
                     .vertex(1, 1)
                     .build()
                     .unwrap(),
-            ).mobility(Mobility::Movable(Velocity { x: -12, y: 5 }))
+            )
+            .mobility(Mobility::Movable(Velocity { x: -12, y: 5 }))
             .kind(Kind::Organism)
             .location(30, 40)
             .orientation(Radians(1.1))
