@@ -226,7 +226,7 @@ impl World for NphysicsWorld {
             }
         };
 
-        to_object_handle(handle)
+        to_body_handle(handle)
     }
 
     fn attach_sensor(&mut self, body_handle: BodyHandle, sensor: Sensor) -> Option<SensorHandle> {
@@ -253,7 +253,7 @@ impl World for NphysicsWorld {
         let collisions = self.sensor_collisions.get(&sensor_handle)?;
         let bodies_within_sensor = collisions
             .iter()
-            .map(|&collider_handle| to_object_handle(collider_handle))
+            .map(|&collider_handle| to_body_handle(collider_handle))
             .collect();
         Some(bodies_within_sensor)
     }
@@ -271,7 +271,7 @@ fn set_velocity(rigid_body: &mut RigidBody<PhysicsType>, velocity: &Velocity) {
     rigid_body.set_velocity(nphysics_velocity);
 }
 
-fn to_object_handle(collider_handle: ColliderHandle) -> BodyHandle {
+fn to_body_handle(collider_handle: ColliderHandle) -> BodyHandle {
     BodyHandle(collider_handle.uid())
 }
 
