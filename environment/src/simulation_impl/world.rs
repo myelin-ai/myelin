@@ -354,20 +354,7 @@ mod tests {
     fn returns_none_attaching_sensor_to_inhalid_body_handle() {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         let invalid_handle = BodyHandle(132144);
-        let sensor = Sensor {
-            shape: PolygonBuilder::new()
-                .vertex(-5, -5)
-                .vertex(5, -5)
-                .vertex(5, 5)
-                .vertex(-5, 5)
-                .build()
-                .unwrap(),
-            position: Position {
-                location: Location { x: 0, y: 0 },
-                rotation: Radians::default(),
-            },
-        };
-        let sensor_handle = world.attach_sensor(invalid_handle, sensor);
+        let sensor_handle = world.attach_sensor(invalid_handle, sensor());
         assert!(sensor_handle.is_none())
     }
 
@@ -457,5 +444,21 @@ mod tests {
 
         let actual_body = world.body(handle);
         assert_eq!(Some(still_body), actual_body)
+    }
+
+    fn sensor() -> Sensor {
+        Sensor {
+            shape: PolygonBuilder::new()
+                .vertex(-5, -5)
+                .vertex(5, -5)
+                .vertex(5, 5)
+                .vertex(-5, 5)
+                .build()
+                .unwrap(),
+            position: Position {
+                location: Location { x: 0, y: 0 },
+                rotation: Radians::default(),
+            },
+        }
     }
 }
