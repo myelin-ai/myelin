@@ -25,9 +25,10 @@ impl SimulationImpl {
     /// Create a new SimulationImpl by injecting a [`World`]
     /// # Examples
     /// ```
-    /// use myelin_environment::simulation_impl::{SimulationImpl, world::NphysicsWorld};
+    /// use myelin_environment::simulation_impl::{SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl};
     ///
-    /// let world = Box::new(NphysicsWorld::with_timestep(1.0));
+    /// let rotation_translator = NphysicsRotationTranslatorImpl {};
+    /// let world = Box::new(NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator)));
     /// let simulation = SimulationImpl::new(world);
     /// ```
     /// [`World`]: ./trait.World.html
