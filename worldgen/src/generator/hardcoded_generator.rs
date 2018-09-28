@@ -174,10 +174,7 @@ impl WorldGenerator for HardcodedGenerator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::Object;
-    use myelin_environment::object::{
-        ImmovableAction, ImmovableObject, Kind, ObjectBehavior, ObjectDescription,
-    };
+    use myelin_environment::object::*;
 
     #[derive(Debug, Default)]
     struct SimulationMock {
@@ -207,11 +204,14 @@ mod tests {
     #[derive(Debug)]
     struct ObjectMock;
     impl ImmovableObject for ObjectMock {
-        fn step(&mut self) -> Vec<ImmovableAction> {
+        fn step(&mut self, _sensor_collisions: &[ObjectDescription]) -> Vec<ImmovableAction> {
             panic!("step() was called unexpectedly")
         }
         fn kind(&self) -> Kind {
             panic!("kind() was called unexpectedly")
+        }
+        fn sensor(&self) -> Option<Sensor> {
+            panic!("sensor() was called unexpectedly")
         }
     }
 
