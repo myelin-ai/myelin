@@ -373,12 +373,14 @@ mod tests {
         expect_add_body_and_return: Option<(PhysicalBody, BodyHandle)>,
         expect_body_and_return: Option<(BodyHandle, Option<PhysicalBody>)>,
         expect_attach_sensor_and_return: Option<(BodyHandle, Sensor, Option<SensorHandle>)>,
+        expect_bodies_within_sensor_and_return: Option<(SensorHandle, Option<Vec<BodyHandle>>)>,
         expect_set_simulated_timestep: Option<f64>,
 
         step_was_called: RefCell<bool>,
         add_body_was_called: RefCell<bool>,
         attach_sensor_was_called: RefCell<bool>,
         body_was_called: RefCell<bool>,
+        bodies_within_sensor_was_called: RefCell<bool>,
         set_simulated_timestep_was_called: RefCell<bool>,
     }
     impl WorldMock {
@@ -496,6 +498,23 @@ mod tests {
                 }
             } else {
                 panic!("body() was called unexpectedly")
+            }
+        }
+        fn bodies_within_sensor(&self, sensor_handle: SensorHandle) -> Option<Vec<BodyHandle>> {
+            *self.bodies_within_sensor_was_called.borrow_mut() = true;
+            if let Some((ref expected_handle, ref return_value)) =
+                self.expect_bodies_within_sensor_and_return
+            {
+                if sensor_handle == *expected_handle {
+                    return_value.clone()
+                } else {
+                    panic!(
+                        "bodies_within_sensor() was called with {:?}, expected {:?}",
+                        sensor_handle, expected_handle
+                    )
+                }
+            } else {
+                panic!("bodies_within_sensor() was called unexpectedly")
             }
         }
         fn set_simulated_timestep(&mut self, timestep: f64) {
