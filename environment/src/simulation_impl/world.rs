@@ -411,7 +411,7 @@ mod tests {
             },
             ..immovable_body(Radians::default())
         };
-        let expected_handle = world.add_body(close_body);
+        world.add_body(close_body);
 
         world.step();
 
