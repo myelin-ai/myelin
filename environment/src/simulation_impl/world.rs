@@ -78,8 +78,7 @@ impl NphysicsWorld {
             .map(|vertex| Vertex {
                 x: vertex.x.round() as i32,
                 y: vertex.y.round() as i32,
-            })
-            .collect();
+            }).collect();
         Polygon { vertices }
     }
 
@@ -158,9 +157,10 @@ fn collision_with_sensor(
     first_handle: CollisionObjectHandle,
     second_handle: CollisionObjectHandle,
 ) -> Option<CollisionObjectHandle> {
+    let sensor_handle = to_nphysics_sensor_handle(sensor_handle);
     match sensor_handle {
-        first_handle => Some(second_handle),
-        second_handle => Some(first_handle),
+        _ if sensor_handle == first_handle => Some(second_handle),
+        _ if sensor_handle == second_handle => Some(first_handle),
         _ => None,
     }
 }
@@ -250,7 +250,12 @@ impl World for NphysicsWorld {
     }
 
     fn bodies_within_sensor(&self, sensor_handle: SensorHandle) -> Option<Vec<BodyHandle>> {
-        None
+        let collisions = self.sensor_collisions.get(&sensor_handle)?;
+        let bodies_within_sensor = collisions
+            .iter()
+            .map(|&collider_handle| to_object_handle(collider_handle))
+            .collect();
+        Some(bodies_within_sensor)
     }
 
     fn set_simulated_timestep(&mut self, timestep: f64) {
@@ -276,6 +281,10 @@ fn to_collider_handle(object_handle: BodyHandle) -> ColliderHandle {
 
 fn to_sensor_handle(sensor_handle: NphysicsSensorHandle) -> SensorHandle {
     SensorHandle(sensor_handle.0)
+}
+
+fn to_nphysics_sensor_handle(sensor_handle: SensorHandle) -> NphysicsSensorHandle {
+    CollisionObjectHandle(sensor_handle.0)
 }
 
 impl fmt::Debug for NphysicsWorld {
