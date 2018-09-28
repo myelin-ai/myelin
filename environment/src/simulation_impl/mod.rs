@@ -240,6 +240,7 @@ mod tests {
     use crate::object::*;
     use crate::object_builder::PolygonBuilder;
     use std::cell::RefCell;
+    use std::thread::panicking;
 
     #[test]
     fn propagates_step() {
@@ -407,13 +408,63 @@ mod tests {
 
         let mut object_behavior = ObjectMock::new();
         object_behavior.expect_sensor_and_return(None);
-        object_behavior.expect_step_and_return(&[], Vec::new());
+        object_behavior.expect_step_and_return(Vec::new(), Vec::new());
 
         let object = Object {
             object_behavior: ObjectBehavior::Movable(Box::new(object_behavior)),
             position: expected_position,
             shape: expected_shape,
         };
+        simulation.add_object(object);
+        simulation.step();
+    }
+
+    #[test]
+    fn propagates_objects_within_sensor() {
+        let mut world = Box::new(WorldMock::new());
+        world.expect_step();
+        let expected_shape = shape();
+        let expected_position = position();
+        let expected_physical_body = PhysicalBody {
+            shape: expected_shape.clone(),
+            position: expected_position.clone(),
+            mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
+        };
+        let returned_handle = BodyHandle(1337);
+        world.expect_add_body_and_return(expected_physical_body, returned_handle);
+
+        let mut object_behavior = ObjectMock::new();
+        let sensor_shape = shape();
+        let expected_sensor = Sensor {
+            shape: sensor_shape,
+            position: Position::default(),
+        };
+        let expected_sensor_handle = SensorHandle(1357);
+        world.expect_attach_sensor_and_return(
+            returned_handle,
+            expected_sensor.clone(),
+            Some(expected_sensor_handle),
+        );
+        world.expect_bodies_within_sensor_and_return(
+            expected_sensor_handle,
+            Some(vec![returned_handle]),
+        );
+        object_behavior.expect_sensor_and_return(Some(expected_sensor));
+        let expected_object_description = ObjectDescription {
+            shape: expected_shape.clone(),
+            position: expected_position.clone(),
+            mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
+            kind: Kind::Organism,
+        };
+        object_behavior.expect_step_and_return(vec![expected_object_description], Vec::new());
+
+        let object = Object {
+            object_behavior: ObjectBehavior::Movable(Box::new(object_behavior)),
+            position: expected_position,
+            shape: expected_shape,
+        };
+
+        let mut simulation = SimulationImpl::new(world);
         simulation.add_object(object);
         simulation.step();
     }
@@ -567,6 +618,9 @@ mod tests {
 
     impl Drop for WorldMock {
         fn drop(&mut self) {
+            if panicking() {
+                return;
+            }
             if self.expect_step.is_some() {
                 assert!(
                     *self.step_was_called.borrow(),
@@ -704,7 +758,7 @@ mod tests {
 
     #[derive(Debug, Default)]
     struct ObjectMock {
-        expect_step_and_return: Option<(&'static [ObjectDescription], Vec<MovableAction>)>,
+        expect_step_and_return: Option<(Vec<ObjectDescription>, Vec<MovableAction>)>,
         expect_sensor_and_return: Option<Option<Sensor>>,
 
         step_was_called: RefCell<bool>,
@@ -718,7 +772,7 @@ mod tests {
 
         pub(crate) fn expect_step_and_return(
             &mut self,
-            sensor_collisions: &'static [ObjectDescription],
+            sensor_collisions: Vec<ObjectDescription>,
             returned_value: Vec<MovableAction>,
         ) {
             self.expect_step_and_return = Some((sensor_collisions, returned_value));
@@ -735,7 +789,7 @@ mod tests {
             if let Some((ref expected_sensor_collisions, ref return_value)) =
                 self.expect_step_and_return
             {
-                if sensor_collisions == *expected_sensor_collisions {
+                if sensor_collisions.to_vec() == *expected_sensor_collisions {
                     return_value.clone()
                 } else {
                     panic!(
@@ -763,6 +817,9 @@ mod tests {
     }
     impl Drop for ObjectMock {
         fn drop(&mut self) {
+            if panicking() {
+                return;
+            }
             if self.expect_step_and_return.is_some() {
                 assert!(
                     *self.step_was_called.borrow(),

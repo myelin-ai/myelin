@@ -202,7 +202,7 @@ pub struct Vertex {
 
 /// A position within the world, defined as a combination
 /// of location and rotation
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Default)]
 pub struct Position {
     /// An absolute location
     pub location: Location,
