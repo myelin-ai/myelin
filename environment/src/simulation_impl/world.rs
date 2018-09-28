@@ -257,40 +257,6 @@ mod tests {
 
     const DEFAULT_TIMESTEP: f64 = 1.0;
 
-    fn movable_body(orientation: Radians) -> PhysicalBody {
-        PhysicalBody {
-            position: Position {
-                location: Location { x: 5, y: 5 },
-                rotation: orientation,
-            },
-            mobility: Mobility::Movable(Velocity { x: 1, y: 1 }),
-            shape: PolygonBuilder::new()
-                .vertex(-5, -5)
-                .vertex(-5, 5)
-                .vertex(5, 5)
-                .vertex(5, -5)
-                .build()
-                .unwrap(),
-        }
-    }
-
-    fn immovable_body(orientation: Radians) -> PhysicalBody {
-        PhysicalBody {
-            shape: PolygonBuilder::new()
-                .vertex(-100, -100)
-                .vertex(100, -100)
-                .vertex(100, 100)
-                .vertex(-100, 100)
-                .build()
-                .unwrap(),
-            mobility: Mobility::Immovable,
-            position: Position {
-                location: Location { x: 300, y: 200 },
-                rotation: orientation,
-            },
-        }
-    }
-
     #[test]
     fn returns_none_when_calling_body_with_invalid_handle() {
         let world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
@@ -458,6 +424,40 @@ mod tests {
             position: Position {
                 location: Location { x: 0, y: 0 },
                 rotation: Radians::default(),
+            },
+        }
+    }
+
+    fn movable_body(orientation: Radians) -> PhysicalBody {
+        PhysicalBody {
+            position: Position {
+                location: Location { x: 5, y: 5 },
+                rotation: orientation,
+            },
+            mobility: Mobility::Movable(Velocity { x: 1, y: 1 }),
+            shape: PolygonBuilder::new()
+                .vertex(-5, -5)
+                .vertex(-5, 5)
+                .vertex(5, 5)
+                .vertex(5, -5)
+                .build()
+                .unwrap(),
+        }
+    }
+
+    fn immovable_body(orientation: Radians) -> PhysicalBody {
+        PhysicalBody {
+            shape: PolygonBuilder::new()
+                .vertex(-100, -100)
+                .vertex(100, -100)
+                .vertex(100, 100)
+                .vertex(-100, 100)
+                .build()
+                .unwrap(),
+            mobility: Mobility::Immovable,
+            position: Position {
+                location: Location { x: 300, y: 200 },
+                rotation: orientation,
             },
         }
     }
