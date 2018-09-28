@@ -4,7 +4,7 @@
 //!
 //! [`World`]: ./trait.World.html
 //! [`Objects`]: ../object/struct.Body.html
-use super::{BodyHandle, PhysicalBody, World};
+use super::{BodyHandle, PhysicalBody, SensorHandle, World};
 use crate::object::*;
 use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
@@ -74,8 +74,7 @@ impl NphysicsWorld {
             .map(|vertex| Vertex {
                 x: vertex.x.round() as i32,
                 y: vertex.y.round() as i32,
-            })
-            .collect();
+            }).collect();
         Polygon { vertices }
     }
 
@@ -194,9 +193,17 @@ impl World for NphysicsWorld {
         to_object_handle(handle)
     }
 
+    fn attach_sensor(&mut self, body_handle: BodyHandle, sensor: Sensor) -> Option<SensorHandle> {
+        None
+    }
+
     fn body(&self, handle: BodyHandle) -> Option<PhysicalBody> {
         let collider_handle = to_collider_handle(handle);
         self.get_body_from_handle(collider_handle)
+    }
+
+    fn bodies_within_sensor(&self, sensor_handle: SensorHandle) -> Option<Vec<BodyHandle>> {
+        None
     }
 
     fn set_simulated_timestep(&mut self, timestep: f64) {
@@ -284,9 +291,10 @@ mod tests {
     }
 
     #[test]
-    fn panics_on_invalid_handle() {
+    fn returns_none_when_calling_body_with_invalid_handle() {
         let world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let body = world.body(BodyHandle(1337));
+        let invalid_handle = BodyHandle(1337);
+        let body = world.body(invalid_handle);
         assert!(body.is_none())
     }
 
@@ -339,6 +347,36 @@ mod tests {
         let actual_body = world.body(handle);
 
         assert_eq!(Some(expected_body), actual_body)
+    }
+
+    #[test]
+    fn returns_none_attaching_sensor_to_inhalid_body_handle() {
+        let world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
+        let invalid_handle = BodyHandle(132144);
+        let sensor = Sensor {
+            shape: PolygonBuilder::new()
+                .vertex(-5, -5)
+                .vertex(5, -5)
+                .vertex(5, 5)
+                .vertex(-5, 5)
+                .build()
+                .unwrap(),
+            position: Position {
+                location: Location { x: 0, y: 0 },
+                rotation: Radians::default(),
+            },
+        };
+        let sensor_handle = world.attach_sensor(invalid_handle, sensor);
+        assert!(sensor_handle.is_none())
+    }
+
+    #[test]
+    fn returns_none_when_calling_bodies_within_sensor_with_invalid_handle() {
+        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
+        let invalid_handle = SensorHandle(112358);
+        let body_handles = world.bodies_within_sensor(invalid_handle);
+
+        assert!(body_handles.is_none())
     }
 
     #[test]
