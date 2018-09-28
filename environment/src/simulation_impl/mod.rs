@@ -253,8 +253,10 @@ mod tests {
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
         let mut simulation = SimulationImpl::new(world);
 
+        let mut object_behavior = ObjectMock::new();
+        object_behavior.expect_sensors_and_return(Vec::new());
         let object = Object {
-            object_behavior: ObjectBehavior::Movable(Box::new(ObjectMock::new())),
+            object_behavior: ObjectBehavior::Movable(Box::new(object_behavior)),
             position: expected_position,
             shape: expected_shape,
         };
@@ -277,7 +279,10 @@ mod tests {
         let mut simulation = SimulationImpl::new(world);
 
         let mut object = ObjectMock::new();
-        object.expect_step();
+        let mut object_behavior = ObjectMock::new();
+        object_behavior.expect_sensors_and_return(Vec::new());
+        object.expect_step_and_return(&[], Vec::new());
+
         let object = Object {
             object_behavior: ObjectBehavior::Movable(Box::new(object)),
             position: expected_position,
