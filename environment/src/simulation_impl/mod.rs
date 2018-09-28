@@ -2,7 +2,7 @@
 //! behaviour into a separate `World` type
 
 use crate::object::{
-    Mobility, Object, ObjectBehavior, ObjectDescription, Polygon, Position, Velocity,
+    Mobility, Object, ObjectBehavior, ObjectDescription, Polygon, Position, Sensor, Velocity,
 };
 use crate::Simulation;
 use std::collections::HashMap;
@@ -115,6 +115,12 @@ pub trait World: fmt::Debug {
     /// [`BodyHandle`]: ./struct.BodyHandle.html
     /// [`body()`]: ./trait.World.html#tymethod.body
     fn add_body(&mut self, body: PhysicalBody) -> BodyHandle;
+
+    /// Attaches a sensor to the body identified by `body_handle`.
+    /// # Errors
+    /// Returns `None` if `body_handle` did not match any bodies
+    fn attach_sensor(&mut self, body_handle: BodyHandle, sensor: Sensor) -> Option<SensorHandle>;
+
     /// Returns a [`PhysicalBody`] that has previously been
     /// placed with [`add_body()`] by its [`BodyHandle`].
     ///
@@ -126,6 +132,13 @@ pub trait World: fmt::Debug {
     /// [`BodyHandle`]: ./struct.BodyHandle.html
     /// [`add_body()`]: ./trait.World.html#tymethod.add_body
     fn body(&self, handle: BodyHandle) -> Option<PhysicalBody>;
+
+    /// Retrieves the handles of all bodies that are within the range of
+    /// a sensor, excluding the parent body it is attached to.
+    /// # Errors
+    /// Returns `None` if `sensor_handle` did not match any sensors
+    fn bodies_within_sensor(&self, sensor_handle: SensorHandle) -> Option<Vec<BodyHandle>>;
+
     /// Sets how much time in seconds is simulated for each step.
     /// # Examples
     /// If you want to run a simulation with 60 steps per second, you
@@ -154,13 +167,27 @@ pub struct PhysicalBody {
 }
 
 /// A unique identifier that can be used to retrieve a [`PhysicalBody`] from a
-/// [`World`]. Don't construct any of these by yourself, only use the
+/// [`World`].
+///
+/// Don't construct any of these by yourself, only use the
 /// instances that [`World`] provides you
 ///
 /// [`PhysicalBody`]: ./struct.PhysicalBody.html
 /// [`World`]: ./trait.World.html
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct BodyHandle(pub usize);
+
+/// A unique identifier that can be used to retrieve [`PhysicalBodies`] that
+/// are within the range of a [`Sensor`].
+///
+/// Don't construct any of these by yourself, only use the
+/// instances that [`World`] provides you
+///
+/// [`PhysicalBodies`]: ./struct.PhysicalBody.html
+/// [`Sensor`]: ../object/struct.Sensor.html
+/// [`World`]: ./trait.World.html
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct SensorHandle(pub usize);
 
 #[cfg(test)]
 mod tests {
