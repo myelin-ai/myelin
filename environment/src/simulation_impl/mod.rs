@@ -500,6 +500,7 @@ mod tests {
                 panic!("body() was called unexpectedly")
             }
         }
+
         fn bodies_within_sensor(&self, sensor_handle: SensorHandle) -> Option<Vec<BodyHandle>> {
             *self.bodies_within_sensor_was_called.borrow_mut() = true;
             if let Some((ref expected_handle, ref return_value)) =
@@ -517,6 +518,7 @@ mod tests {
                 panic!("bodies_within_sensor() was called unexpectedly")
             }
         }
+
         fn set_simulated_timestep(&mut self, timestep: f64) {
             *self.set_simulated_timestep_was_called.borrow_mut() = true;
             if let Some(expected_timestep) = self.expect_set_simulated_timestep {
@@ -534,8 +536,11 @@ mod tests {
 
     #[derive(Debug, Default)]
     struct ObjectMock {
-        expects_step: bool,
+        expect_step_and_return: Option<(&'static [ObjectDescription], Vec<MovableAction>)>,
+        expect_sensors_and_return: Option<Vec<Sensor>>,
+
         step_was_called: RefCell<bool>,
+        sensors_was_called: RefCell<bool>,
     }
 
     impl ObjectMock {
@@ -543,31 +548,63 @@ mod tests {
             Default::default()
         }
 
-        fn expect_step(&mut self) {
-            self.expects_step = true
+        pub(crate) fn expect_step_and_return(
+            &mut self,
+            sensor_collisions: &'static [ObjectDescription],
+            returned_value: Vec<MovableAction>,
+        ) {
+            self.expect_step_and_return = Some((sensor_collisions, returned_value));
+        }
+
+        pub(crate) fn expect_sensors_and_return(&mut self, returned_value: Vec<Sensor>) {
+            self.expect_sensors_and_return = Some(returned_value)
         }
     }
 
     impl MovableObject for ObjectMock {
-        fn step(&mut self) -> Vec<MovableAction> {
-            if self.expects_step {
-                *self.step_was_called.borrow_mut() = true;
-                // Actions are currently ignored
-                Vec::new()
+        fn step(&mut self, sensor_collisions: &[ObjectDescription]) -> Vec<MovableAction> {
+            *self.step_was_called.borrow_mut() = true;
+            if let Some((ref expected_sensor_collisions, ref return_value)) =
+                self.expect_step_and_return
+            {
+                if sensor_collisions == *expected_sensor_collisions {
+                    return_value.clone()
+                } else {
+                    panic!(
+                        "step() was called with {:?}, expected {:?}",
+                        sensor_collisions, expected_sensor_collisions
+                    )
+                }
             } else {
                 panic!("step() was called unexpectedly")
             }
         }
+
+        fn sensors(&self) -> Vec<Sensor> {
+            *self.sensors_was_called.borrow_mut() = true;
+            if let Some(ref return_value) = self.expect_sensors_and_return {
+                return_value.clone()
+            } else {
+                panic!("step() was called unexpectedly")
+            }
+        }
+
         fn kind(&self) -> Kind {
             Kind::Organism
         }
     }
     impl Drop for ObjectMock {
         fn drop(&mut self) {
-            if self.expects_step {
+            if self.expect_step_and_return.is_some() {
                 assert!(
                     *self.step_was_called.borrow(),
                     "step() was not called, but was expected"
+                )
+            }
+            if self.expect_sensors_and_return.is_some() {
+                assert!(
+                    *self.sensors_was_called.borrow(),
+                    "sensor() was not called, but was expected"
                 )
             }
         }
