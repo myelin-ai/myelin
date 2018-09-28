@@ -74,7 +74,8 @@ impl NphysicsWorld {
             .map(|vertex| Vertex {
                 x: vertex.x.round() as i32,
                 y: vertex.y.round() as i32,
-            }).collect();
+            })
+            .collect();
         Polygon { vertices }
     }
 

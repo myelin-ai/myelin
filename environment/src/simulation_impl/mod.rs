@@ -19,6 +19,7 @@ pub mod world;
 pub struct SimulationImpl {
     world: Box<dyn World>,
     objects: HashMap<BodyHandle, ObjectBehavior>,
+    sensors: HashMap<BodyHandle, SensorHandle>,
 }
 
 impl SimulationImpl {
@@ -35,6 +36,7 @@ impl SimulationImpl {
         Self {
             world,
             objects: HashMap::new(),
+            sensors: HashMap::new(),
         }
     }
 
@@ -54,17 +56,53 @@ impl SimulationImpl {
             kind: object.kind(),
         }
     }
+
+    fn retrieve_objects_within_sensor(&self, body_handle: BodyHandle) -> Vec<ObjectDescription> {
+        if let Some(sensor_handle) = self.sensors.get(&body_handle) {
+            let object_handles = self
+                .world
+                .bodies_within_sensor(*sensor_handle)
+                .expect("Internal error: Stored invalid sensor handle");
+            object_handles
+                .iter()
+                .map(|handle| {
+                    let behavior = self
+                        .objects
+                        .get(handle)
+                        .expect("Internal error: World returned invalid object handles");
+                    self.convert_to_object_description(*handle, behavior)
+                })
+                .collect()
+        } else {
+            Vec::new()
+        }
+    }
 }
 
 impl Simulation for SimulationImpl {
     fn step(&mut self) {
-        for object in self.objects.values_mut() {
+        let object_handle_to_objects_within_sensor: HashMap<_, _> = self
+            .objects
+            .keys()
+            .map(|&object_handle| {
+                (
+                    object_handle,
+                    self.retrieve_objects_within_sensor(object_handle),
+                )
+            })
+            .collect();
+        for (object_handle, object) in &mut self.objects {
+            let objects_within_sensor = object_handle_to_objects_within_sensor
+                .get(object_handle)
+                // Unwrapping is safe because the keys of self.objects and
+                // object_handle_to_objects_within_sensor are identical
+                .unwrap();
             match object {
                 ObjectBehavior::Movable(object) => {
-                    object.step();
+                    object.step(&objects_within_sensor);
                 }
                 ObjectBehavior::Immovable(object) => {
-                    object.step();
+                    object.step(&objects_within_sensor);
                 }
             }
         }
@@ -82,6 +120,13 @@ impl Simulation for SimulationImpl {
             mobility,
         };
         let body_handle = self.world.add_body(physical_body);
+        if let Some(sensor) = object.object_behavior.sensor() {
+            let sensor_handle = self
+                .world
+                .attach_sensor(body_handle, sensor)
+                .expect("Internal error: World returned invalid handle");
+            self.sensors.insert(body_handle, sensor_handle);
+        }
         self.objects.insert(body_handle, object.object_behavior);
     }
 
