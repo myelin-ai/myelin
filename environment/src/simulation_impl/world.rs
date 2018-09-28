@@ -387,7 +387,7 @@ mod tests {
     #[test]
     fn sensors_do_not_work_without_step() {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let body = immovable_body(Radians::default());
+        let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
 
         let sensor_handle = world
@@ -399,7 +399,7 @@ mod tests {
                 location: Location { x: 6, y: 6 },
                 rotation: Radians::default(),
             },
-            ..immovable_body(Radians::default())
+            ..movable_body(Radians::default())
         };
         world.add_body(close_body);
 
@@ -413,7 +413,7 @@ mod tests {
     #[test]
     fn sensor_detects_close_bodies() {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let body = immovable_body(Radians::default());
+        let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
 
         let sensor_handle = world
@@ -425,7 +425,7 @@ mod tests {
                 location: Location { x: 6, y: 6 },
                 rotation: Radians::default(),
             },
-            ..immovable_body(Radians::default())
+            ..movable_body(Radians::default())
         };
         let expected_handle = world.add_body(close_body);
 
@@ -442,7 +442,7 @@ mod tests {
     #[test]
     fn sensor_does_not_detect_far_away_bodies() {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
-        let body = immovable_body(Radians::default());
+        let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
 
         let sensor_handle = world
@@ -454,7 +454,7 @@ mod tests {
                 location: Location { x: 60, y: 60 },
                 rotation: Radians::default(),
             },
-            ..immovable_body(Radians::default())
+            ..movable_body(Radians::default())
         };
         world.add_body(close_body);
 
