@@ -7,6 +7,7 @@
 use super::{BodyHandle, PhysicalBody, SensorHandle, World};
 use crate::object::*;
 use nalgebra::base::{Scalar, Vector2};
+use ncollide2d::events::ContactEvent;
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
 use ncollide2d::world::CollisionObjectHandle;
 use nphysics2d::math::{Isometry, Point, Vector};
@@ -16,7 +17,7 @@ use nphysics2d::object::{
 };
 use nphysics2d::volumetric::Volumetric;
 use nphysics2d::world::World as PhysicsWorld;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::f64::consts::PI;
 use std::fmt;
 
@@ -30,6 +31,7 @@ type PhysicsType = f64;
 pub struct NphysicsWorld {
     physics_world: PhysicsWorld<PhysicsType>,
     collider_handles: HashMap<ColliderHandle, Kind>,
+    sensor_collisions: HashMap<SensorHandle, HashSet<ColliderHandle>>,
 }
 
 impl NphysicsWorld {
@@ -47,6 +49,7 @@ impl NphysicsWorld {
         Self {
             physics_world,
             collider_handles: HashMap::new(),
+            sensor_collisions: HashMap::new(),
         }
     }
 
@@ -150,8 +153,40 @@ fn translate_shape(shape: &Polygon) -> ShapeHandle<PhysicsType> {
     ShapeHandle::new(ConvexPolygon::try_new(points).expect("Polygon was not convex"))
 }
 
+fn collision_with_sensor(
+    sensor_handle: SensorHandle,
+    first_handle: CollisionObjectHandle,
+    second_handle: CollisionObjectHandle,
+) -> Option<CollisionObjectHandle> {
+    match sensor_handle {
+        first_handle => Some(second_handle),
+        second_handle => Some(first_handle),
+        _ => None,
+    }
+}
+
 impl World for NphysicsWorld {
     fn step(&mut self) {
+        for (&sensor_handle, collisions) in &mut self.sensor_collisions {
+            for contact in self.physics_world.contact_events() {
+                match *contact {
+                    ContactEvent::Started(first_handle, second_handle) => {
+                        if let Some(collision) =
+                            collision_with_sensor(sensor_handle, first_handle, second_handle)
+                        {
+                            collisions.insert(collision);
+                        }
+                    }
+                    ContactEvent::Stopped(first_handle, second_handle) => {
+                        if let Some(collision) =
+                            collision_with_sensor(sensor_handle, first_handle, second_handle)
+                        {
+                            collisions.remove(&collision);
+                        }
+                    }
+                }
+            }
+        }
         self.physics_world.step();
     }
 
@@ -196,8 +231,7 @@ impl World for NphysicsWorld {
 
     fn attach_sensor(&mut self, body_handle: BodyHandle, sensor: Sensor) -> Option<SensorHandle> {
         let collider_handle = to_collider_handle(body_handle);
-        let collider = self.physics_world.collider(collider_handle)?;
-        let parent_handle = collider.data().body();
+        let parent_handle = self.physics_world.collider_body_handle(collider_handle)?;
 
         let shape = translate_shape(&sensor.shape);
         let position = translate_position(&sensor.position);
@@ -205,7 +239,9 @@ impl World for NphysicsWorld {
             .physics_world
             .add_sensor(shape, parent_handle, position);
 
-        Some(to_sensor_handle(sensor_handle))
+        let sensor_handle = to_sensor_handle(sensor_handle);
+        self.sensor_collisions.insert(sensor_handle, HashSet::new());
+        Some(sensor_handle)
     }
 
     fn body(&self, handle: BodyHandle) -> Option<PhysicalBody> {
