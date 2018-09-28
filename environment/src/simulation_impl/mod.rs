@@ -254,7 +254,7 @@ mod tests {
         let mut simulation = SimulationImpl::new(world);
 
         let mut object_behavior = ObjectMock::new();
-        object_behavior.expect_sensors_and_return(Vec::new());
+        object_behavior.expect_sensor_and_return(None);
         let object = Object {
             object_behavior: ObjectBehavior::Movable(Box::new(object_behavior)),
             position: expected_position,
@@ -290,7 +290,7 @@ mod tests {
                 rotation: Radians::default(),
             },
         };
-        object_behavior.expect_sensors_and_return(vec![sensor.clone()]);
+        object_behavior.expect_sensor_and_return(Some(sensor.clone()));
         let sensor_handle = Some(SensorHandle(69));
         world.expect_attach_sensor_and_return(returned_handle, sensor, sensor_handle);
 
@@ -332,7 +332,7 @@ mod tests {
                 rotation: Radians::default(),
             },
         };
-        object_behavior.expect_sensors_and_return(vec![sensor.clone()]);
+        object_behavior.expect_sensor_and_return(Some(sensor.clone()));
         world.expect_attach_sensor_and_return(returned_handle, sensor, None);
 
         let object = Object {
@@ -362,7 +362,7 @@ mod tests {
 
         let mut object = ObjectMock::new();
         let mut object_behavior = ObjectMock::new();
-        object_behavior.expect_sensors_and_return(Vec::new());
+        object_behavior.expect_sensor_and_return(None);
         object.expect_step_and_return(&[], Vec::new());
 
         let object = Object {
@@ -657,10 +657,10 @@ mod tests {
     #[derive(Debug, Default)]
     struct ObjectMock {
         expect_step_and_return: Option<(&'static [ObjectDescription], Vec<MovableAction>)>,
-        expect_sensors_and_return: Option<Vec<Sensor>>,
+        expect_sensor_and_return: Option<Option<Sensor>>,
 
         step_was_called: RefCell<bool>,
-        sensors_was_called: RefCell<bool>,
+        sensor_was_called: RefCell<bool>,
     }
 
     impl ObjectMock {
@@ -676,8 +676,8 @@ mod tests {
             self.expect_step_and_return = Some((sensor_collisions, returned_value));
         }
 
-        pub(crate) fn expect_sensors_and_return(&mut self, returned_value: Vec<Sensor>) {
-            self.expect_sensors_and_return = Some(returned_value)
+        pub(crate) fn expect_sensor_and_return(&mut self, returned_value: Option<Sensor>) {
+            self.expect_sensor_and_return = Some(returned_value)
         }
     }
 
@@ -700,9 +700,9 @@ mod tests {
             }
         }
 
-        fn sensors(&self) -> Vec<Sensor> {
-            *self.sensors_was_called.borrow_mut() = true;
-            if let Some(ref return_value) = self.expect_sensors_and_return {
+        fn sensor(&self) -> Option<Sensor> {
+            *self.sensor_was_called.borrow_mut() = true;
+            if let Some(ref return_value) = self.expect_sensor_and_return {
                 return_value.clone()
             } else {
                 panic!("step() was called unexpectedly")
@@ -721,9 +721,9 @@ mod tests {
                     "step() was not called, but was expected"
                 )
             }
-            if self.expect_sensors_and_return.is_some() {
+            if self.expect_sensor_and_return.is_some() {
                 assert!(
-                    *self.sensors_was_called.borrow(),
+                    *self.sensor_was_called.borrow(),
                     "sensor() was not called, but was expected"
                 )
             }

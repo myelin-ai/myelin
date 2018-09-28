@@ -19,7 +19,7 @@ impl ImmovableObject for StaticWater {
     fn kind(&self) -> Kind {
         Kind::Water
     }
-    fn sensors(&self) -> Vec<Sensor> {
+    fn sensor(&self) -> Sensor {
         Vec::new()
     }
 }
@@ -46,7 +46,7 @@ mod tests {
     #[test]
     fn has_no_sensors() {
         let object = StaticWater::new();
-        let sensor = object.sensors();
+        let sensor = object.sensor();
         assert!(sensor.is_empty());
     }
 }

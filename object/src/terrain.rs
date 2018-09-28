@@ -19,8 +19,8 @@ impl ImmovableObject for StaticTerrain {
     fn kind(&self) -> Kind {
         Kind::Terrain
     }
-    fn sensors(&self) -> Vec<Sensor> {
-        Vec::new()
+    fn sensor(&self) -> Option<Sensor> {
+        None
     }
 }
 
@@ -46,7 +46,7 @@ mod tests {
     #[test]
     fn has_no_sensors() {
         let object = StaticTerrain::new();
-        let sensor = object.sensors();
-        assert!(sensor.is_empty());
+        let sensor = object.sensor();
+        assert!(sensor.is_none());
     }
 }

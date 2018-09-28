@@ -64,12 +64,11 @@ impl ObjectBehavior {
         }
     }
 
-    /// Returns all sensors that are attached to the
-    /// object
-    pub fn sensors(&self) -> Vec<Sensor> {
+    /// Returns if a sensor is attached to the object
+    pub fn sensor(&self) -> Option<Sensor> {
         match self {
-            ObjectBehavior::Movable(object) => object.sensors(),
-            ObjectBehavior::Immovable(object) => object.sensors(),
+            ObjectBehavior::Movable(object) => object.sensor(),
+            ObjectBehavior::Immovable(object) => object.sensor(),
         }
     }
 }
@@ -85,9 +84,8 @@ pub trait MovableObject: Debug {
     /// as a tag for visualizers
     fn kind(&self) -> Kind;
 
-    /// Returns all sensors that are attached to the
-    /// object
-    fn sensors(&self) -> Vec<Sensor>;
+    /// Returns if a sensor is attached to the object
+    fn sensor(&self) -> Option<Sensor>;
 }
 
 /// Possible actions performed by a [`MovableObject`]
@@ -116,9 +114,8 @@ pub trait ImmovableObject: Debug {
     /// as a tag for visualizers
     fn kind(&self) -> Kind;
 
-    /// Returns all sensors that are attached to the
-    /// object
-    fn sensors(&self) -> Vec<Sensor>;
+    /// Returns if a sensor is attached to the object
+    fn sensor(&self) -> Option<Sensor>;
 }
 
 /// Possible actions performed by a [`ImmovableObject`]
