@@ -264,6 +264,88 @@ mod tests {
     }
 
     #[test]
+    fn attaches_sensors_to_body() {
+        let mut world = WorldMock::new();
+        let expected_shape = shape();
+        let expected_position = position();
+        let expected_physical_body = PhysicalBody {
+            shape: expected_shape.clone(),
+            position: expected_position.clone(),
+            mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
+        };
+        let returned_handle = BodyHandle(1337);
+        world.expect_add_body_and_return(expected_physical_body, returned_handle);
+
+        let mut object_behavior = ObjectMock::new();
+        let sensor = Sensor {
+            shape: PolygonBuilder::new()
+                .vertex(-5, -5)
+                .vertex(5, -5)
+                .vertex(5, 5)
+                .vertex(-5, 5)
+                .build()
+                .unwrap(),
+            position: Position {
+                location: Location::default(),
+                rotation: Radians::default(),
+            },
+        };
+        object_behavior.expect_sensors_and_return(vec![sensor.clone()]);
+        let sensor_handle = Some(SensorHandle(69));
+        world.expect_attach_sensor_and_return(returned_handle, sensor, sensor_handle);
+
+        let object = Object {
+            object_behavior: ObjectBehavior::Movable(Box::new(object_behavior)),
+            position: expected_position,
+            shape: expected_shape,
+        };
+
+        let mut simulation = SimulationImpl::new(Box::new(world));
+        simulation.add_object(object);
+    }
+
+    #[should_panic]
+    #[test]
+    fn panics_on_sensor_attachement_failure() {
+        let mut world = WorldMock::new();
+        let expected_shape = shape();
+        let expected_position = position();
+        let expected_physical_body = PhysicalBody {
+            shape: expected_shape.clone(),
+            position: expected_position.clone(),
+            mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
+        };
+        let returned_handle = BodyHandle(1337);
+        world.expect_add_body_and_return(expected_physical_body, returned_handle);
+
+        let mut object_behavior = ObjectMock::new();
+        let sensor = Sensor {
+            shape: PolygonBuilder::new()
+                .vertex(-5, -5)
+                .vertex(5, -5)
+                .vertex(5, 5)
+                .vertex(-5, 5)
+                .build()
+                .unwrap(),
+            position: Position {
+                location: Location::default(),
+                rotation: Radians::default(),
+            },
+        };
+        object_behavior.expect_sensors_and_return(vec![sensor.clone()]);
+        world.expect_attach_sensor_and_return(returned_handle, sensor, None);
+
+        let object = Object {
+            object_behavior: ObjectBehavior::Movable(Box::new(object_behavior)),
+            position: expected_position,
+            shape: expected_shape,
+        };
+
+        let mut simulation = SimulationImpl::new(Box::new(world));
+        simulation.add_object(object);
+    }
+
+    #[test]
     fn propagates_step_to_added_object() {
         let mut world = Box::new(WorldMock::new());
         world.expect_step();
@@ -405,12 +487,29 @@ mod tests {
             self.expect_add_body_and_return = Some((body, returned_value));
         }
 
+        pub(crate) fn expect_attach_sensor_and_return(
+            &mut self,
+            body_handle: BodyHandle,
+            sensor: Sensor,
+            returned_value: Option<SensorHandle>,
+        ) {
+            self.expect_attach_sensor_and_return = Some((body_handle, sensor, returned_value));
+        }
+
         pub(crate) fn expect_body_and_return(
             &mut self,
             handle: BodyHandle,
             returned_value: Option<PhysicalBody>,
         ) {
             self.expect_body_and_return = Some((handle, returned_value));
+        }
+
+        pub(crate) fn expect_bodies_within_sensor_and_return(
+            &mut self,
+            sensor_handle: SensorHandle,
+            returned_value: Option<Vec<BodyHandle>>,
+        ) {
+            self.expect_bodies_within_sensor_and_return = Some((sensor_handle, returned_value));
         }
 
         pub(crate) fn expect_set_simulated_timestep(&mut self, timestep: f64) {
@@ -432,12 +531,28 @@ mod tests {
                     "add_body() was not called, but was expected"
                 )
             }
+
+            if self.expect_attach_sensor_and_return.is_some() {
+                assert!(
+                    *self.attach_sensor_was_called.borrow(),
+                    "attach_sensor() was not called, but was expected"
+                )
+            }
+
             if self.expect_body_and_return.is_some() {
                 assert!(
                     *self.body_was_called.borrow(),
                     "body() was not called, but was expected"
                 )
             }
+
+            if self.expect_bodies_within_sensor_and_return.is_some() {
+                assert!(
+                    *self.bodies_within_sensor_was_called.borrow(),
+                    "bodies_within_sensor() was not called, but was expected"
+                )
+            }
+
             if self.expect_set_simulated_timestep.is_some() {
                 assert!(
                     *self.set_simulated_timestep_was_called.borrow(),

@@ -222,7 +222,7 @@ pub struct Radians(pub f64);
 /// the [`Simulation`]
 ///
 /// [`Simulation`]: ../simulation/trait.Simulation.html
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct Location {
     pub x: u32,
     pub y: u32,
