@@ -473,9 +473,11 @@ mod tests {
         world.expect_body_and_return(returned_handle, None);
         let mut simulation = SimulationImpl::new(world);
 
-        let object = Box::new(ObjectMock::default());
+        let mut object_behavior = Box::new(ObjectMock::default());
+        object_behavior.expect_sensor_and_return(None);
+
         let new_object = Object {
-            object_behavior: ObjectBehavior::Movable(object),
+            object_behavior: ObjectBehavior::Movable(object_behavior),
             position: expected_position.clone(),
             shape: expected_shape.clone(),
         };
