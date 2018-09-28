@@ -137,7 +137,7 @@ pub enum ImmovableAction {
 /// which will report any collisions to it.
 ///
 /// [`Object`]: ./enum.Object.html
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Sensor {
     /// The shape of the sensor
     pub shape: Polygon,

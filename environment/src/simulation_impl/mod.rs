@@ -372,10 +372,12 @@ mod tests {
         expect_step: Option<()>,
         expect_add_body_and_return: Option<(PhysicalBody, BodyHandle)>,
         expect_body_and_return: Option<(BodyHandle, Option<PhysicalBody>)>,
+        expect_attach_sensor_and_return: Option<(BodyHandle, Sensor, Option<SensorHandle>)>,
         expect_set_simulated_timestep: Option<f64>,
 
         step_was_called: RefCell<bool>,
         add_body_was_called: RefCell<bool>,
+        attach_sensor_was_called: RefCell<bool>,
         body_was_called: RefCell<bool>,
         set_simulated_timestep_was_called: RefCell<bool>,
     }
@@ -458,6 +460,27 @@ mod tests {
                 }
             } else {
                 panic!("add_body() was called unexpectedly")
+            }
+        }
+        fn attach_sensor(
+            &mut self,
+            body_handle: BodyHandle,
+            sensor: Sensor,
+        ) -> Option<SensorHandle> {
+            *self.attach_sensor_was_called.borrow_mut() = true;
+            if let Some((ref expected_handle, ref expected_sensor, ref return_value)) =
+                self.expect_attach_sensor_and_return
+            {
+                if body_handle == *expected_handle && sensor == *expected_sensor {
+                    return_value.clone()
+                } else {
+                    panic!(
+                        "attach_sensor() was called with {:?} and {:?}, expected {:?} and {:?}",
+                        body_handle, sensor, expected_handle, expected_sensor
+                    )
+                }
+            } else {
+                panic!("attach_sensor() was called unexpectedly")
             }
         }
         fn body(&self, handle: BodyHandle) -> Option<PhysicalBody> {
