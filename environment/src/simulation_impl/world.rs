@@ -12,6 +12,7 @@ use ncollide2d::world::CollisionObjectHandle;
 use nphysics2d::math::{Isometry, Point, Vector};
 use nphysics2d::object::{
     BodyHandle as NphysicsBodyHandle, Collider, ColliderHandle, Material, RigidBody,
+    SensorHandle as NphysicsSensorHandle,
 };
 use nphysics2d::volumetric::Volumetric;
 use nphysics2d::world::World as PhysicsWorld;
@@ -129,19 +130,18 @@ where
     (*iter.next().unwrap(), *iter.next().unwrap())
 }
 
-fn get_isometry(body: &PhysicalBody) -> Isometry<PhysicsType> {
+fn translate_position(position: &Position) -> Isometry<PhysicsType> {
     Isometry::new(
         Vector::new(
-            PhysicsType::from(body.position.location.x),
-            PhysicsType::from(body.position.location.y),
+            PhysicsType::from(position.location.x),
+            PhysicsType::from(position.location.y),
         ),
-        to_nphysics_rotation(body.position.rotation),
+        to_nphysics_rotation(position.rotation),
     )
 }
 
-fn get_shape(body: &PhysicalBody) -> ShapeHandle<PhysicsType> {
-    let points: Vec<_> = body
-        .shape
+fn translate_shape(shape: &Polygon) -> ShapeHandle<PhysicsType> {
+    let points: Vec<_> = shape
         .vertices
         .iter()
         .map(|vertex| Point::new(PhysicsType::from(vertex.x), PhysicsType::from(vertex.y)))
@@ -156,10 +156,10 @@ impl World for NphysicsWorld {
     }
 
     fn add_body(&mut self, body: PhysicalBody) -> BodyHandle {
-        let shape = get_shape(&body);
+        let shape = translate_shape(&body.shape);
         let local_inertia = shape.inertia(0.1);
         let local_center_of_mass = shape.center_of_mass();
-        let isometry = get_isometry(&body);
+        let isometry = translate_position(&body.position);
         let material = Material::default();
 
         let handle = match body.mobility {
@@ -195,7 +195,17 @@ impl World for NphysicsWorld {
     }
 
     fn attach_sensor(&mut self, body_handle: BodyHandle, sensor: Sensor) -> Option<SensorHandle> {
-        None
+        let collider_handle = to_collider_handle(body_handle);
+        let collider = self.physics_world.collider(collider_handle)?;
+        let parent_handle = collider.data().body();
+
+        let shape = translate_shape(&sensor.shape);
+        let position = translate_position(&sensor.position);
+        let sensor_handle = self
+            .physics_world
+            .add_sensor(shape, parent_handle, position);
+
+        Some(to_sensor_handle(sensor_handle))
     }
 
     fn body(&self, handle: BodyHandle) -> Option<PhysicalBody> {
@@ -226,6 +236,10 @@ fn to_object_handle(collider_handle: ColliderHandle) -> BodyHandle {
 
 fn to_collider_handle(object_handle: BodyHandle) -> ColliderHandle {
     CollisionObjectHandle(object_handle.0)
+}
+
+fn to_sensor_handle(sensor_handle: NphysicsSensorHandle) -> SensorHandle {
+    SensorHandle(sensor_handle.0)
 }
 
 impl fmt::Debug for NphysicsWorld {
