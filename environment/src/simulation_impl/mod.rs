@@ -431,7 +431,7 @@ mod tests {
             mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
         };
         let returned_handle = BodyHandle(1337);
-        world.expect_add_body_and_return(expected_physical_body, returned_handle);
+        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
 
         let mut object_behavior = ObjectMock::new();
         let sensor_shape = shape();
@@ -457,6 +457,7 @@ mod tests {
             kind: Kind::Organism,
         };
         object_behavior.expect_step_and_return(vec![expected_object_description], Vec::new());
+        world.expect_body_and_return(returned_handle, Some(expected_physical_body));
 
         let object = Object {
             object_behavior: ObjectBehavior::Movable(Box::new(object_behavior)),
