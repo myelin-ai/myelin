@@ -1,6 +1,6 @@
 //! Behaviours of various plants
 
-use myelin_environment::object::{ImmovableAction, ImmovableObject, Kind, Sensor};
+use myelin_environment::object::*;
 
 /// A purely static and non-interactive plant.
 /// This type will never perform any actions.
@@ -13,7 +13,7 @@ impl StaticPlant {
 }
 
 impl ImmovableObject for StaticPlant {
-    fn step(&mut self) -> Vec<ImmovableAction> {
+    fn step(&mut self, _sensor_collisions: &[ObjectDescription]) -> Vec<ImmovableAction> {
         Vec::new()
     }
     fn kind(&self) -> Kind {
@@ -32,7 +32,7 @@ mod tests {
     #[test]
     fn has_no_action() {
         let mut object = StaticPlant::new();
-        let actions = object.step();
+        let actions = object.step(&[]);
         assert!(actions.is_empty());
     }
 

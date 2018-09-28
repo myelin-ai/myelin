@@ -352,7 +352,7 @@ mod tests {
 
     #[test]
     fn returns_none_attaching_sensor_to_inhalid_body_handle() {
-        let world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
+        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         let invalid_handle = BodyHandle(132144);
         let sensor = Sensor {
             shape: PolygonBuilder::new()
@@ -373,7 +373,7 @@ mod tests {
 
     #[test]
     fn returns_none_when_calling_bodies_within_sensor_with_invalid_handle() {
-        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
+        let world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         let invalid_handle = SensorHandle(112358);
         let body_handles = world.bodies_within_sensor(invalid_handle);
 
