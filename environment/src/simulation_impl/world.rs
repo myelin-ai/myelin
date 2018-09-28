@@ -317,6 +317,41 @@ mod tests {
     }
 
     #[test]
+    fn returns_sensor_handle_when_attachment_is_valid() {
+        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
+        let body = immovable_body(Radians::default());
+        let handle = world.add_body(body);
+        let sensor_handle = world.attach_sensor(handle, sensor());
+        assert!(sensor_handle.is_some())
+    }
+
+    #[test]
+    fn sensors_do_not_work_without_step() {
+        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
+        let body = immovable_body(Radians::default());
+        let handle_one = world.add_body(body);
+
+        let sensor_handle = world
+            .attach_sensor(handle_one, sensor())
+            .expect("body handle was invalid");
+
+        let close_body = PhysicalBody {
+            position: Position {
+                location: Location { x: 6, y: 6 },
+                rotation: Radians::default(),
+            },
+            ..immovable_body(Radians::default())
+        };
+        world.add_body(close_body);
+
+        let bodies = world
+            .bodies_within_sensor(sensor_handle)
+            .expect("sensor handle was invalid");
+
+        assert!(bodies.is_empty());
+    }
+
+    #[test]
     fn returns_none_attaching_sensor_to_inhalid_body_handle() {
         let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP);
         let invalid_handle = BodyHandle(132144);
