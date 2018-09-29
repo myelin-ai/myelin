@@ -107,7 +107,6 @@ mod tests {
     #[test]
     fn returns_injected_sensor() {
         let mut random_chance_checker = RandomChanceCheckerMock::new();
-        random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, false);
         let expected_sensor = sensor();
         let object = StochasticSpreadingPlant::new(
             SPREADING_CHANGE,
