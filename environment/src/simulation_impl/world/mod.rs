@@ -180,6 +180,7 @@ fn collision_with_sensor(
 
 impl World for NphysicsWorld {
     fn step(&mut self) {
+        self.physics_world.step();
         for (&sensor_handle, collisions) in &mut self.sensor_collisions {
             for contact in self.physics_world.contact_events() {
                 match *contact {
@@ -200,7 +201,6 @@ impl World for NphysicsWorld {
                 }
             }
         }
-        self.physics_world.step();
     }
 
     fn add_body(&mut self, body: PhysicalBody) -> BodyHandle {
