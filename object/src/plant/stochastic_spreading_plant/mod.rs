@@ -1,4 +1,4 @@
-use myelin_environment::object::{ImmovableAction, ImmovableObject, Kind};
+use myelin_environment::object::*;
 use std::fmt;
 
 mod random_chance_checker_impl;
@@ -8,6 +8,7 @@ pub use self::random_chance_checker_impl::RandomChanceCheckerImpl;
 #[derive(Debug)]
 pub struct StochasticSpreadingPlant {
     random_chance_checker: Box<dyn RandomChanceChecker>,
+    spreading_sensor: Sensor,
     spreading_probability: f64,
 }
 
@@ -15,14 +16,18 @@ impl StochasticSpreadingPlant {
     /// Returns a plant that has a probability of `spreading_probability`
     /// in every step to spawn a new plant, using the injected [`RandomChanceChecker`]
     /// to check if the probability was met.
+    /// `spreading_sensor` is the area around the plant, in which it will try to
+    /// find a vacant spot to spread
     ///
     /// [`RandomChanceChecker`]: ./trait.RandomChanceChecker.html
-    pub fn with_spreading_probability(
+    pub fn new(
         spreading_probability: f64,
+        spreading_sensor: Sensor,
         random_chance_checker: Box<dyn RandomChanceChecker>,
     ) -> Self {
         Self {
             spreading_probability,
+            spreading_sensor,
             random_chance_checker,
         }
     }
@@ -32,21 +37,26 @@ impl StochasticSpreadingPlant {
             .flip_coin_with_probability(self.spreading_probability)
     }
 
-    fn spread(&self) -> Vec<ImmovableAction> {
+    fn spread(&self, _sensor_collisions: &[ObjectDescription]) -> Vec<ImmovableAction> {
         unimplemented!()
     }
 }
 
 impl ImmovableObject for StochasticSpreadingPlant {
-    fn step(&mut self) -> Vec<ImmovableAction> {
+    fn step(&mut self, sensor_collisions: &[ObjectDescription]) -> Vec<ImmovableAction> {
         if self.should_spread() {
-            self.spread()
+            self.spread(sensor_collisions)
         } else {
             Vec::new()
         }
     }
+
     fn kind(&self) -> Kind {
         Kind::Plant
+    }
+
+    fn sensor(&self) -> Option<Sensor> {
+        Some(self.spreading_sensor.clone())
     }
 }
 
@@ -64,14 +74,17 @@ pub trait RandomChanceChecker: fmt::Debug {
 mod tests {
     use super::*;
     use myelin_environment::object::Kind;
+    use myelin_environment::object_builder::PolygonBuilder;
     use std::cell::RefCell;
+
     const SPREADING_CHANGE: f64 = 1.0 / (60.0 * 30.0);
 
     #[test]
     fn is_correct_kind() {
         let random_chance_checker = RandomChanceCheckerMock::new();
-        let object = StochasticSpreadingPlant::with_spreading_probability(
+        let object = StochasticSpreadingPlant::new(
             SPREADING_CHANGE,
+            sensor(),
             Box::new(random_chance_checker),
         );
         let kind = object.kind();
@@ -82,12 +95,40 @@ mod tests {
     fn does_nothing_when_chance_is_not_hit() {
         let mut random_chance_checker = RandomChanceCheckerMock::new();
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, false);
-        let mut object = StochasticSpreadingPlant::with_spreading_probability(
+        let mut object = StochasticSpreadingPlant::new(
             SPREADING_CHANGE,
+            sensor(),
             Box::new(random_chance_checker),
         );
-        let actions = object.step();
+        let actions = object.step(&[]);
         assert!(actions.is_empty());
+    }
+
+    #[test]
+    fn returns_injected_sensor() {
+        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, false);
+        let expected_sensor = sensor();
+        let object = StochasticSpreadingPlant::new(
+            SPREADING_CHANGE,
+            expected_sensor.clone(),
+            Box::new(random_chance_checker),
+        );
+        let sensor = object.sensor().expect("Object has no sensor");
+        assert_eq!(expected_sensor, sensor);
+    }
+
+    fn sensor() -> Sensor {
+        Sensor {
+            shape: PolygonBuilder::new()
+                .vertex(-5, -5)
+                .vertex(5, -5)
+                .vertex(5, 5)
+                .vertex(-5, 5)
+                .build()
+                .unwrap(),
+            position: Position::default(),
+        }
     }
 
     #[derive(Debug, Default)]
