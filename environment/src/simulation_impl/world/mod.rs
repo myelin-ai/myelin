@@ -262,15 +262,6 @@ mod tests {
 
     const DEFAULT_TIMESTEP: f64 = 1.0;
 
-    #[derive(Debug, Default)]
-    struct NphysicsRotationTranslatorMock {
-        expect_to_nphysics_rotation_and_return: Option<(Radians, f64)>,
-        expect_to_radians_and_return: Option<(f64, Radians)>,
-
-        to_nphysics_rotation_was_called: RefCell<bool>,
-        to_radians_was_called: RefCell<bool>,
-    }
-
     fn movable_body(orientation: Radians) -> PhysicalBody {
         PhysicalBody {
             position: Position {
@@ -307,16 +298,19 @@ mod tests {
 
     #[test]
     fn panics_on_invalid_handle() {
-        let world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(DEFAULT_ROTATION_TRANSLATOR));
+        let rotation_translator = NphysicsRotationTranslatorMock::default();
+        let world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
         let body = world.body(BodyHandle(1337));
         assert!(body.is_none())
     }
 
     #[test]
     fn can_return_rigid_object_with_valid_handle() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(3.0), 3.0);
+        rotation_translator.expect_to_radians_and_return(3.0, Radians(3.0));
         let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(DEFAULT_ROTATION_TRANSLATOR));
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
         let movable_body = movable_body(Radians(3.0));
 
         let handle = world.add_body(movable_body);
@@ -325,8 +319,11 @@ mod tests {
 
     #[test]
     fn can_return_grounded_object_with_valid_handle() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(3.0), 3.0);
+        rotation_translator.expect_to_radians_and_return(3.0, Radians(3.0));
         let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(DEFAULT_ROTATION_TRANSLATOR));
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
         let body = immovable_body(Radians(3.0));
 
         let handle = world.add_body(body);
@@ -335,8 +332,11 @@ mod tests {
 
     #[test]
     fn can_return_mixed_objects_with_valid_handles() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(3.0), 3.0);
+        rotation_translator.expect_to_radians_and_return(3.0, Radians(3.0));
         let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(DEFAULT_ROTATION_TRANSLATOR));
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
         let rigid_object = movable_body(Radians(3.0));
         let grounded_object = immovable_body(Radians(3.0));
 
@@ -349,8 +349,11 @@ mod tests {
 
     #[test]
     fn returns_correct_rigid_body() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(3.0), 3.0);
+        rotation_translator.expect_to_radians_and_return(3.0, Radians(3.0));
         let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(DEFAULT_ROTATION_TRANSLATOR));
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
         let expected_body = movable_body(Radians(3.0));
         let handle = world.add_body(expected_body.clone());
         let actual_body = world.body(handle);
@@ -360,8 +363,11 @@ mod tests {
 
     #[test]
     fn returns_correct_grounded_body() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(3.0), 3.0);
+        rotation_translator.expect_to_radians_and_return(3.0, Radians(3.0));
         let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(DEFAULT_ROTATION_TRANSLATOR));
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
         let expected_body = immovable_body(Radians(3.0));
         let handle = world.add_body(expected_body.clone());
         let actual_body = world.body(handle);
@@ -371,8 +377,11 @@ mod tests {
 
     #[test]
     fn timestep_is_respected() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(0.0), 0.0);
+        rotation_translator.expect_to_radians_and_return(0.0, Radians(0.0));
         let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(DEFAULT_ROTATION_TRANSLATOR));
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
 
         let local_object = movable_body(Radians::default());
         let handle = world.add_body(local_object.clone());
@@ -394,8 +403,11 @@ mod tests {
 
     #[test]
     fn timestep_can_be_changed() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(0.0), 0.0);
+        rotation_translator.expect_to_radians_and_return(0.0, Radians(0.0));
         let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(DEFAULT_ROTATION_TRANSLATOR));
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
         world.set_simulated_timestep(2.0);
 
         let local_object = movable_body(Radians::default());
@@ -420,8 +432,11 @@ mod tests {
     fn step_is_ignored_for_rigid_objects_with_no_movement() {
         use std::f64::consts::FRAC_PI_2;
 
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(FRAC_PI_2), FRAC_PI_2);
+        rotation_translator.expect_to_radians_and_return(FRAC_PI_2, Radians(FRAC_PI_2));
         let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(DEFAULT_ROTATION_TRANSLATOR));
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
         let expected_body = immovable_body(Radians(FRAC_PI_2));
         let handle = world.add_body(expected_body.clone());
 
@@ -436,8 +451,11 @@ mod tests {
     fn step_is_ignored_for_grounded_objects() {
         use std::f64::consts::FRAC_PI_2;
 
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(FRAC_PI_2), FRAC_PI_2);
+        rotation_translator.expect_to_radians_and_return(FRAC_PI_2, Radians(FRAC_PI_2));
         let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(DEFAULT_ROTATION_TRANSLATOR));
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
         let body = immovable_body(Radians(FRAC_PI_2));
         let still_body = PhysicalBody {
             mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
@@ -450,6 +468,15 @@ mod tests {
 
         let actual_body = world.body(handle);
         assert_eq!(Some(still_body), actual_body)
+    }
+
+    #[derive(Debug, Default)]
+    struct NphysicsRotationTranslatorMock {
+        expect_to_nphysics_rotation_and_return: Option<(Radians, f64)>,
+        expect_to_radians_and_return: Option<(f64, Radians)>,
+
+        to_nphysics_rotation_was_called: RefCell<bool>,
+        to_radians_was_called: RefCell<bool>,
     }
 
     impl NphysicsRotationTranslatorMock {
