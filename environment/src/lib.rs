@@ -15,6 +15,7 @@ pub mod object_builder;
 pub mod simulation_impl;
 
 use crate::object::{Object, ObjectDescription};
+use std::fmt;
 
 /// A Simulation that can be filled with [`Object`] on
 /// which it will apply physical rules when calling [`step`].
@@ -22,7 +23,7 @@ use crate::object::{Object, ObjectDescription};
 ///
 /// [`Object`]: ./object/struct.Object.html
 /// [`step`]: ./trait.Simulation.html#tymethod.step
-pub trait Simulation {
+pub trait Simulation: fmt::Debug {
     /// Advance the simulation by one tick. This will apply
     /// forces to the objects, handle collisions and allow them to
     /// take action.
