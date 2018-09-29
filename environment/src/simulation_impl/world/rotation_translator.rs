@@ -5,7 +5,7 @@ use std::f64::consts::PI;
 /// We define the rotation as [0; 2π), whereas nphysics defines it as (-π; π]
 ///
 /// So 0°, 90°, 180° and 270° are as follows
-/// in npyhisics: 0, -0.5π, π, 0.5π
+/// in nphysics: 0, -0.5π, π, 0.5π
 /// in our notation: 0, 0.5π, π, 1.5π
 #[derive(Debug)]
 pub struct NphysicsRotationTranslatorImpl {}
@@ -33,53 +33,54 @@ mod tests {
     use super::*;
     use std::f64::consts::FRAC_PI_2;
 
-    fn test_to_nphysics_rotation(input: Radians, expected: f64) {
+    #[test]
+    fn to_nphysics_rotation_returns_0_when_passed_0() {
+        verify_to_nphysics_rotation_returns_exoected_result(Radians(0.0), 0.0)
+    }
+
+    #[test]
+    fn to_nphysics_rotation_returns_half_pi_when_passed_half_pi() {
+        verify_to_nphysics_rotation_returns_exoected_result(Radians(FRAC_PI_2), FRAC_PI_2)
+    }
+
+    #[test]
+    fn to_nphysics_rotation_returns_pi_when_passed_pi() {
+        verify_to_nphysics_rotation_returns_exoected_result(Radians(PI), PI)
+    }
+
+    #[test]
+    fn to_nphysics_rotation_returns_negative_half_pi_when_passed_one_and_a_half_pi() {
+        verify_to_nphysics_rotation_returns_exoected_result(Radians(3.0 * FRAC_PI_2), -FRAC_PI_2)
+    }
+
+    #[test]
+    fn to_radians_returns_0_when_passed_0() {
+        verify_to_radians_returns_expected_result(0.0, Radians(0.0))
+    }
+
+    #[test]
+    fn to_radians_returns_half_pi_when_passed_half_pi() {
+        verify_to_radians_returns_expected_result(FRAC_PI_2, Radians(FRAC_PI_2))
+    }
+
+    #[test]
+    fn to_radians_returns_returns_pi_when_passed_pi() {
+        verify_to_radians_returns_expected_result(PI, Radians(PI))
+    }
+
+    #[test]
+    fn to_radians_returns_one_and_a_half_pi_when_passed_negative_half_pi() {
+        verify_to_radians_returns_expected_result(-FRAC_PI_2, Radians(3.0 * FRAC_PI_2))
+    }
+
+    fn verify_to_nphysics_rotation_returns_exoected_result(input: Radians, expected: f64) {
         let translator = NphysicsRotationTranslatorImpl {};
         assert_eq!(expected, translator.to_nphysics_rotation(input));
     }
 
-    #[test]
-    fn test_to_nphysics_rotation_0() {
-        test_to_nphysics_rotation(Radians(0.0), 0.0)
-    }
-
-    #[test]
-    fn test_to_nphysics_rotation_90() {
-        test_to_nphysics_rotation(Radians(FRAC_PI_2), FRAC_PI_2)
-    }
-
-    #[test]
-    fn test_to_nphysics_rotation_180() {
-        test_to_nphysics_rotation(Radians(PI), PI)
-    }
-
-    #[test]
-    fn test_to_nphysics_rotation_270() {
-        test_to_nphysics_rotation(Radians(3.0 * FRAC_PI_2), -FRAC_PI_2)
-    }
-
-    fn test_to_radians(input: f64, expected: Radians) {
+    fn verify_to_radians_returns_expected_result(input: f64, expected: Radians) {
         let translator = NphysicsRotationTranslatorImpl {};
         assert_eq!(expected, translator.to_radians(input));
     }
 
-    #[test]
-    fn test_to_radians_0() {
-        test_to_radians(0.0, Radians(0.0))
-    }
-
-    #[test]
-    fn test_to_radians_90() {
-        test_to_radians(FRAC_PI_2, Radians(FRAC_PI_2))
-    }
-
-    #[test]
-    fn test_to_radians_180() {
-        test_to_radians(PI, Radians(PI))
-    }
-
-    #[test]
-    fn test_to_radians_270() {
-        test_to_radians(-FRAC_PI_2, Radians(3.0 * FRAC_PI_2))
-    }
 }
