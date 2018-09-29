@@ -1,10 +1,9 @@
+//! Implementation for NphysicsRotationTranslator
+
 use super::NphysicsRotationTranslator;
 use crate::object::Radians;
 use std::f64::consts::PI;
 
-/// Implementation for [`NphysicsRotationTranslator`]
-///
-/// [`NphysicsRotationTranslator`]: ../trait.NphysicsRotationTranslator.html
 #[derive(Default, Debug)]
 pub struct NphysicsRotationTranslatorImpl {}
 
