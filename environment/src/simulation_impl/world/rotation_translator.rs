@@ -4,6 +4,7 @@ use super::NphysicsRotationTranslator;
 use crate::object::Radians;
 use std::f64::consts::PI;
 
+/// Translates the rotation from Radians to the range (-π; π] defined by nphysics
 #[derive(Default, Debug)]
 pub struct NphysicsRotationTranslatorImpl {}
 
