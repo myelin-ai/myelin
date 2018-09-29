@@ -7,6 +7,7 @@ use crate::presenter::CanvasPresenter;
 use crate::view::constant::SIMULATED_TIMESTEP;
 use crate::view::CanvasView;
 use myelin_environment::object::{Kind, ObjectBehavior};
+use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
 use myelin_environment::simulation_impl::world::NphysicsWorld;
 use myelin_environment::{simulation_impl::SimulationImpl, Simulation};
 use myelin_object::{
@@ -41,7 +42,11 @@ pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
     let view = Box::new(CanvasView::new(canvas));
     let presenter = Box::new(CanvasPresenter::new(view));
     let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
-        let world = Box::new(NphysicsWorld::with_timestep(SIMULATED_TIMESTEP));
+        let rotation_translator = NphysicsRotationTranslatorImpl::default();
+        let world = Box::new(NphysicsWorld::with_timestep(
+            SIMULATED_TIMESTEP,
+            Box::new(rotation_translator),
+        ));
         Box::new(SimulationImpl::new(world))
     });
     let object_factory = Box::new(|kind: Kind| match kind {
