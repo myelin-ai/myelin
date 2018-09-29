@@ -328,12 +328,13 @@ mod tests {
     use super::*;
     use crate::object_builder::PolygonBuilder;
     use std::cell::RefCell;
+    use std::thread::panicking;
 
     const DEFAULT_TIMESTEP: f64 = 1.0;
 
     #[test]
     fn returns_none_when_calling_body_with_invalid_handle() {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        let rotation_translator = NphysicsRotationTranslatorMock::default();
         let world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
         let invalid_handle = BodyHandle(1337);
         let body = world.body(invalid_handle);
@@ -413,8 +414,10 @@ mod tests {
 
     #[test]
     fn returns_sensor_handle_when_attachment_is_valid() {
-        let rotation_translator = Box::new(NphysicsRotationTranslatorMock::default());
-        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, rotation_translator);
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
+        let mut world =
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
         let body = immovable_body(Radians::default());
         let handle = world.add_body(body);
         let sensor_handle = world.attach_sensor(handle, sensor());
@@ -423,8 +426,10 @@ mod tests {
 
     #[test]
     fn sensors_do_not_work_without_step() {
-        let rotation_translator = Box::new(NphysicsRotationTranslatorMock::default());
-        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, rotation_translator);
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
+        let mut world =
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
 
@@ -450,8 +455,11 @@ mod tests {
 
     #[test]
     fn sensor_detects_close_bodies() {
-        let rotation_translator = Box::new(NphysicsRotationTranslatorMock::default());
-        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, rotation_translator);
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
+        rotation_translator.expect_to_radians_and_return(0.0, Radians::default());
+        let mut world =
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
 
@@ -480,8 +488,10 @@ mod tests {
 
     #[test]
     fn sensor_does_not_detect_far_away_bodies() {
-        let rotation_translator = Box::new(NphysicsRotationTranslatorMock::default());
-        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, rotation_translator);
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
+        let mut world =
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
 
@@ -727,6 +737,9 @@ mod tests {
 
     impl Drop for NphysicsRotationTranslatorMock {
         fn drop(&mut self) {
+            if panicking() {
+                return;
+            }
             if self.expect_to_nphysics_rotation_and_return.is_some() {
                 assert!(
                     *self.to_nphysics_rotation_was_called.borrow(),
