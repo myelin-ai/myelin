@@ -86,6 +86,7 @@ mod tests {
     use std::cell::RefCell;
     use std::f64::consts::PI;
 
+    #[derive(Debug)]
     struct ViewMock {
         expected_view_model: ViewModel,
         flush_was_called: RefCell<bool>,
