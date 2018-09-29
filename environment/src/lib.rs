@@ -2,7 +2,13 @@
 //! the simulation, as well as the objects that reside
 //! within it.
 
-#![deny(rust_2018_idioms, missing_debug_implementations)]
+#![feature(tool_lints)]
+#![deny(
+    rust_2018_idioms,
+    missing_debug_implementations,
+    clippy::missing_doc,
+    clippy::doc_markdown
+)]
 
 pub mod object;
 pub mod object_builder;
