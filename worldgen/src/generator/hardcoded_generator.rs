@@ -36,7 +36,7 @@ impl HardcodedGenerator {
     /// };
     ///
     /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
-    ///     let rotation_translator = NphysicsRotationTranslatorImpl {};
+    ///     let rotation_translator = NphysicsRotationTranslatorImpl::default();
     ///     let world = Box::new(NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator)));
     ///     Box::new(SimulationImpl::new(world))
     /// });

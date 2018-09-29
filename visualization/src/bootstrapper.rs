@@ -42,7 +42,7 @@ pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
     let view = Box::new(CanvasView::new(canvas));
     let presenter = Box::new(CanvasPresenter::new(view));
     let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
-        let rotation_translator = NphysicsRotationTranslatorImpl {};
+        let rotation_translator = NphysicsRotationTranslatorImpl::default();
         let world = Box::new(NphysicsWorld::with_timestep(
             SIMULATED_TIMESTEP,
             Box::new(rotation_translator),

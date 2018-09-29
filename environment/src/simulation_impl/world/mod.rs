@@ -39,7 +39,7 @@ impl NphysicsWorld {
     /// use myelin_environment::simulation_impl::world::NphysicsWorld;
     /// use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
     ///
-    /// let rotation_translator = NphysicsRotationTranslatorImpl {};
+    /// let rotation_translator = NphysicsRotationTranslatorImpl::default();
     /// let mut world = NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator));
     /// ```
     pub fn with_timestep(

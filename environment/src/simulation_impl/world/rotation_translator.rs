@@ -5,7 +5,7 @@ use std::f64::consts::PI;
 /// Implementation for [`NphysicsRotationTranslator`]
 ///
 /// [`NphysicsRotationTranslator`]: ../trait.NphysicsRotationTranslator.html
-#[derive(Debug)]
+#[derive(Default, Debug)]
 pub struct NphysicsRotationTranslatorImpl {}
 
 impl NphysicsRotationTranslator for NphysicsRotationTranslatorImpl {
@@ -72,12 +72,12 @@ mod tests {
     }
 
     fn verify_to_nphysics_rotation_returns_exoected_result(input: Radians, expected: f64) {
-        let translator = NphysicsRotationTranslatorImpl {};
+        let translator = NphysicsRotationTranslatorImpl::default();
         assert_eq!(expected, translator.to_nphysics_rotation(input));
     }
 
     fn verify_to_radians_returns_expected_result(input: f64, expected: Radians) {
-        let translator = NphysicsRotationTranslatorImpl {};
+        let translator = NphysicsRotationTranslatorImpl::default();
         assert_eq!(expected, translator.to_radians(input));
     }
 
