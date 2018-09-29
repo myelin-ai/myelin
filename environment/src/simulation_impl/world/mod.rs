@@ -487,6 +487,38 @@ mod tests {
     }
 
     #[test]
+    fn sensor_detects_non_colliding_bodies() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
+        let mut world =
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let body = movable_body(Radians::default());
+        let handle_one = world.add_body(body);
+
+        let sensor_handle = world
+            .attach_sensor(handle_one, sensor())
+            .expect("body handle was invalid");
+
+        let close_body = PhysicalBody {
+            position: Position {
+                location: Location { x: 12, y: 12 },
+                rotation: Radians::default(),
+            },
+            ..movable_body(Radians::default())
+        };
+        let expected_handle = world.add_body(close_body);
+
+        world.step();
+
+        let bodies = world
+            .bodies_within_sensor(sensor_handle)
+            .expect("sensor handle was invalid");
+
+        assert_eq!(1, bodies.len());
+        assert_eq!(expected_handle, bodies[0]);
+    }
+
+    #[test]
     fn sensor_does_not_detect_far_away_bodies() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
@@ -634,10 +666,10 @@ mod tests {
     fn sensor() -> Sensor {
         Sensor {
             shape: PolygonBuilder::new()
-                .vertex(-5, -5)
-                .vertex(5, -5)
-                .vertex(5, 5)
-                .vertex(-5, 5)
+                .vertex(-10, -10)
+                .vertex(10, -10)
+                .vertex(10, 10)
+                .vertex(-10, 10)
                 .build()
                 .unwrap(),
             position: Position {
