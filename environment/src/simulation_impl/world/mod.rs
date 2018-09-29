@@ -7,7 +7,7 @@
 use super::{BodyHandle, PhysicalBody, SensorHandle, World};
 use crate::object::*;
 use nalgebra::base::{Scalar, Vector2};
-use ncollide2d::events::ContactEvent;
+use ncollide2d::query::Proximity;
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
 use ncollide2d::world::CollisionObjectHandle;
 use nphysics2d::math::{Isometry, Point, Vector};
@@ -173,7 +173,6 @@ fn collision_with_sensor(
     let sensor_handle = to_nphysics_sensor_handle(sensor_handle);
     match sensor_handle {
         _ if sensor_handle == first_handle => Some(second_handle),
-        _ if sensor_handle == second_handle => Some(first_handle),
         _ => None,
     }
 }
@@ -182,16 +181,18 @@ impl World for NphysicsWorld {
     fn step(&mut self) {
         self.physics_world.step();
         for (&sensor_handle, collisions) in &mut self.sensor_collisions {
-            for contact in self.physics_world.contact_events() {
-                match *contact {
-                    ContactEvent::Started(first_handle, second_handle) => {
+            for contact in self.physics_world.proximity_events() {
+                let first_handle = contact.collider1;
+                let second_handle = contact.collider2;
+                match contact.new_status {
+                    Proximity::WithinMargin | Proximity::Intersecting => {
                         if let Some(collision) =
                             collision_with_sensor(sensor_handle, first_handle, second_handle)
                         {
                             collisions.insert(collision);
                         }
                     }
-                    ContactEvent::Stopped(first_handle, second_handle) => {
+                    Proximity::Disjoint => {
                         if let Some(collision) =
                             collision_with_sensor(sensor_handle, first_handle, second_handle)
                         {
@@ -457,7 +458,6 @@ mod tests {
     fn sensor_detects_close_bodies() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
-        rotation_translator.expect_to_radians_and_return(0.0, Radians::default());
         let mut world =
             NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
         let body = movable_body(Radians::default());
