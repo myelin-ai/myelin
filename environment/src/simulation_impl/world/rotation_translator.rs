@@ -2,11 +2,9 @@ use super::NphysicsRotationTranslator;
 use crate::object::Radians;
 use std::f64::consts::PI;
 
-/// We define the rotation as [0; 2π), whereas nphysics defines it as (-π; π]
+/// Implementation for [`NphysicsRotationTranslator`]
 ///
-/// So 0°, 90°, 180° and 270° are as follows
-/// in nphysics: 0, -0.5π, π, 0.5π
-/// in our notation: 0, 0.5π, π, 1.5π
+/// [`NphysicsRotationTranslator`]: ../trait.NphysicsRotationTranslator.html
 #[derive(Debug)]
 pub struct NphysicsRotationTranslatorImpl {}
 

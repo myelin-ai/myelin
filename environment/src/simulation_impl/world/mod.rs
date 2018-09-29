@@ -121,6 +121,9 @@ impl NphysicsWorld {
     }
 }
 
+/// This trait translates the rotation from [`Radians`] to the range (-π; π] defined by nphysics
+///
+/// [`Radians`]: ../../object/struct.Radians.html
 pub trait NphysicsRotationTranslator: fmt::Debug {
     fn to_nphysics_rotation(&self, orientation: Radians) -> f64;
     fn to_radians(&self, nphysics_rotation: f64) -> Radians;
