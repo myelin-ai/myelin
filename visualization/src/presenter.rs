@@ -1,12 +1,14 @@
 use crate::controller::Presenter;
 use crate::view_model::{self, ViewModel};
 use myelin_environment::object as business_object;
+use std::fmt;
 
-pub(crate) trait View {
+pub(crate) trait View: fmt::Debug {
     fn draw_objects(&self, view_model: &ViewModel);
     fn flush(&self);
 }
 
+#[derive(Debug)]
 pub(crate) struct CanvasPresenter {
     view: Box<dyn View>,
 }
@@ -84,6 +86,7 @@ mod tests {
     use std::cell::RefCell;
     use std::f64::consts::PI;
 
+    #[derive(Debug)]
     struct ViewMock {
         expected_view_model: ViewModel,
         flush_was_called: RefCell<bool>,

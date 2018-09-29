@@ -8,6 +8,7 @@ use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement};
 
 /// The view object component that manipulates the DOM.
+#[derive(Debug)]
 pub(crate) struct CanvasView {
     context: CanvasRenderingContext2d,
 }

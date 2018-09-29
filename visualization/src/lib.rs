@@ -1,7 +1,12 @@
 //! In-browser visualization for myelin using a canvas with WASM
 
 #![feature(tool_lints)]
-#![deny(rust_2018_idioms)]
+#![deny(
+    rust_2018_idioms,
+    missing_debug_implementations,
+    clippy::missing_doc,
+    clippy::doc_markdown
+)]
 
 pub mod bootstrapper;
 pub(crate) mod controller;
