@@ -5,6 +5,7 @@ use myelin_environment::object::{Kind, Location, Object, ObjectBehavior, Positio
 use myelin_environment::object_builder::PolygonBuilder;
 use myelin_environment::Simulation;
 use std::f64::consts::FRAC_PI_2;
+use std::fmt;
 
 /// Simulation generation algorithm that creates a fixed simulation
 /// inhabited by two forests, a large central lake and
@@ -169,6 +170,12 @@ impl WorldGenerator for HardcodedGenerator {
         self.populate_with_plants(&mut *simulation);
         self.populate_with_organisms(&mut *simulation);
         simulation
+    }
+}
+
+impl fmt::Debug for HardcodedGenerator {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("HardcodedGenerator").finish()
     }
 }
 

@@ -2,13 +2,20 @@
 //! the simulation, as well as the objects that reside
 //! within it.
 
-#![deny(rust_2018_idioms, missing_debug_implementations)]
+#![feature(tool_lints)]
+#![deny(
+    rust_2018_idioms,
+    missing_debug_implementations,
+    clippy::missing_doc,
+    clippy::doc_markdown
+)]
 
 pub mod object;
 pub mod object_builder;
 pub mod simulation_impl;
 
 use crate::object::{Object, ObjectDescription};
+use std::fmt;
 
 /// A Simulation that can be filled with [`Object`] on
 /// which it will apply physical rules when calling [`step`].
@@ -16,7 +23,7 @@ use crate::object::{Object, ObjectDescription};
 ///
 /// [`Object`]: ./object/struct.Object.html
 /// [`step`]: ./trait.Simulation.html#tymethod.step
-pub trait Simulation {
+pub trait Simulation: fmt::Debug {
     /// Advance the simulation by one tick. This will apply
     /// forces to the objects, handle collisions and allow them to
     /// take action.

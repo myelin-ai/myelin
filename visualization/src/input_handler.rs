@@ -8,7 +8,9 @@ use wasm_bindgen::prelude::*;
 /// Created by [`bootstrapper::init()`].
 ///
 /// [`bootstrapper::init()`]: ../bootstrapper/fn.init.html
+
 #[wasm_bindgen]
+#[derive(Debug)]
 pub struct InputHandler {
     controller: Box<dyn Controller>,
 }
