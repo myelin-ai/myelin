@@ -171,9 +171,10 @@ fn collision_with_sensor(
     second_handle: CollisionObjectHandle,
 ) -> Option<CollisionObjectHandle> {
     let sensor_handle = to_nphysics_sensor_handle(sensor_handle);
-    match sensor_handle {
-        _ if sensor_handle == first_handle => Some(second_handle),
-        _ => None,
+    if first_handle == sensor_handle {
+        Some(second_handle)
+    } else {
+        None
     }
 }
 
@@ -182,20 +183,14 @@ impl World for NphysicsWorld {
         self.physics_world.step();
         for (&sensor_handle, collisions) in &mut self.sensor_collisions {
             for contact in self.physics_world.proximity_events() {
-                let first_handle = contact.collider1;
-                let second_handle = contact.collider2;
-                match contact.new_status {
-                    Proximity::WithinMargin | Proximity::Intersecting => {
-                        if let Some(collision) =
-                            collision_with_sensor(sensor_handle, first_handle, second_handle)
-                        {
+                if let Some(collision) =
+                    collision_with_sensor(sensor_handle, contact.collider1, contact.collider2)
+                {
+                    match contact.new_status {
+                        Proximity::WithinMargin | Proximity::Intersecting => {
                             collisions.insert(collision);
                         }
-                    }
-                    Proximity::Disjoint => {
-                        if let Some(collision) =
-                            collision_with_sensor(sensor_handle, first_handle, second_handle)
-                        {
+                        Proximity::Disjoint => {
                             collisions.remove(&collision);
                         }
                     }
