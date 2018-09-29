@@ -1,6 +1,6 @@
 //! Behaviours of various organisms
 
-use myelin_environment::object::{Kind, MovableAction, MovableObject};
+use myelin_environment::object::*;
 
 /// A purely static and non-interactive organism.
 /// This type will never perform any actions.
@@ -13,11 +13,14 @@ impl StaticOrganism {
 }
 
 impl MovableObject for StaticOrganism {
-    fn step(&mut self) -> Vec<MovableAction> {
+    fn step(&mut self, _sensor_collisions: &[ObjectDescription]) -> Vec<MovableAction> {
         Vec::new()
     }
     fn kind(&self) -> Kind {
         Kind::Organism
+    }
+    fn sensor(&self) -> Option<Sensor> {
+        None
     }
 }
 
@@ -29,7 +32,7 @@ mod tests {
     #[test]
     fn has_no_action() {
         let mut object = StaticOrganism::new();
-        let actions = object.step();
+        let actions = object.step(&[]);
         assert!(actions.is_empty());
     }
 
@@ -38,5 +41,12 @@ mod tests {
         let object = StaticOrganism::new();
         let kind = object.kind();
         assert_eq!(Kind::Organism, kind);
+    }
+
+    #[test]
+    fn has_no_sensors() {
+        let object = StaticOrganism::new();
+        let sensor = object.sensor();
+        assert!(sensor.is_none());
     }
 }

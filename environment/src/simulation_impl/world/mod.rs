@@ -4,18 +4,20 @@
 //!
 //! [`World`]: ./trait.World.html
 //! [`Objects`]: ../object/struct.Body.html
-use super::{BodyHandle, PhysicalBody, World};
+use super::{BodyHandle, PhysicalBody, SensorHandle, World};
 use crate::object::*;
 use nalgebra::base::{Scalar, Vector2};
+use ncollide2d::query::Proximity;
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
 use ncollide2d::world::CollisionObjectHandle;
 use nphysics2d::math::{Isometry, Point, Vector};
 use nphysics2d::object::{
     BodyHandle as NphysicsBodyHandle, Collider, ColliderHandle, Material, RigidBody,
+    SensorHandle as NphysicsSensorHandle,
 };
 use nphysics2d::volumetric::Volumetric;
 use nphysics2d::world::World as PhysicsWorld;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 
 type PhysicsType = f64;
@@ -29,6 +31,7 @@ pub mod rotation_translator;
 pub struct NphysicsWorld {
     physics_world: PhysicsWorld<PhysicsType>,
     collider_handles: HashMap<ColliderHandle, Kind>,
+    sensor_collisions: HashMap<SensorHandle, HashSet<ColliderHandle>>,
     rotation_translator: Box<dyn NphysicsRotationTranslator>,
 }
 
@@ -53,6 +56,7 @@ impl NphysicsWorld {
         Self {
             physics_world,
             collider_handles: HashMap::new(),
+            sensor_collisions: HashMap::new(),
             rotation_translator,
         }
     }
@@ -138,22 +142,21 @@ where
     (*iter.next().unwrap(), *iter.next().unwrap())
 }
 
-fn get_isometry(
-    body: &PhysicalBody,
+fn translate_position(
+    position: &Position,
     rotation_translator: &dyn NphysicsRotationTranslator,
 ) -> Isometry<PhysicsType> {
     Isometry::new(
         Vector::new(
-            PhysicsType::from(body.position.location.x),
-            PhysicsType::from(body.position.location.y),
+            PhysicsType::from(position.location.x),
+            PhysicsType::from(position.location.y),
         ),
-        rotation_translator.to_nphysics_rotation(body.position.rotation),
+        rotation_translator.to_nphysics_rotation(position.rotation),
     )
 }
 
-fn get_shape(body: &PhysicalBody) -> ShapeHandle<PhysicsType> {
-    let points: Vec<_> = body
-        .shape
+fn translate_shape(shape: &Polygon) -> ShapeHandle<PhysicsType> {
+    let points: Vec<_> = shape
         .vertices
         .iter()
         .map(|vertex| Point::new(PhysicsType::from(vertex.x), PhysicsType::from(vertex.y)))
@@ -162,16 +165,46 @@ fn get_shape(body: &PhysicalBody) -> ShapeHandle<PhysicsType> {
     ShapeHandle::new(ConvexPolygon::try_new(points).expect("Polygon was not convex"))
 }
 
+fn collision_with_sensor(
+    sensor_handle: SensorHandle,
+    first_handle: CollisionObjectHandle,
+    second_handle: CollisionObjectHandle,
+) -> Option<CollisionObjectHandle> {
+    let sensor_handle = to_nphysics_sensor_handle(sensor_handle);
+    if first_handle == sensor_handle {
+        Some(second_handle)
+    } else {
+        None
+    }
+}
+
 impl World for NphysicsWorld {
     fn step(&mut self) {
         self.physics_world.step();
+        for (&sensor_handle, collisions) in &mut self.sensor_collisions {
+            for contact in self.physics_world.proximity_events() {
+                if let Some(collision) =
+                    collision_with_sensor(sensor_handle, contact.collider1, contact.collider2)
+                {
+                    match contact.new_status {
+                        Proximity::WithinMargin | Proximity::Intersecting => {
+                            collisions.insert(collision);
+                        }
+                        Proximity::Disjoint => {
+                            collisions.remove(&collision);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     fn add_body(&mut self, body: PhysicalBody) -> BodyHandle {
-        let shape = get_shape(&body);
+        let shape = translate_shape(&body.shape);
         let local_inertia = shape.inertia(0.1);
         let local_center_of_mass = shape.center_of_mass();
-        let isometry = get_isometry(&body, &*self.rotation_translator);
+
+        let isometry = translate_position(&body.position, &*self.rotation_translator);
         let material = Material::default();
 
         let handle = match body.mobility {
@@ -203,12 +236,36 @@ impl World for NphysicsWorld {
             }
         };
 
-        to_object_handle(handle)
+        to_body_handle(handle)
+    }
+
+    fn attach_sensor(&mut self, body_handle: BodyHandle, sensor: Sensor) -> Option<SensorHandle> {
+        let collider_handle = to_collider_handle(body_handle);
+        let parent_handle = self.physics_world.collider_body_handle(collider_handle)?;
+
+        let shape = translate_shape(&sensor.shape);
+        let position = translate_position(&sensor.position, &*self.rotation_translator);
+        let sensor_handle = self
+            .physics_world
+            .add_sensor(shape, parent_handle, position);
+
+        let sensor_handle = to_sensor_handle(sensor_handle);
+        self.sensor_collisions.insert(sensor_handle, HashSet::new());
+        Some(sensor_handle)
     }
 
     fn body(&self, handle: BodyHandle) -> Option<PhysicalBody> {
         let collider_handle = to_collider_handle(handle);
         self.get_body_from_handle(collider_handle)
+    }
+
+    fn bodies_within_sensor(&self, sensor_handle: SensorHandle) -> Option<Vec<BodyHandle>> {
+        let collisions = self.sensor_collisions.get(&sensor_handle)?;
+        let bodies_within_sensor = collisions
+            .iter()
+            .map(|&collider_handle| to_body_handle(collider_handle))
+            .collect();
+        Some(bodies_within_sensor)
     }
 
     fn set_simulated_timestep(&mut self, timestep: f64) {
@@ -224,12 +281,20 @@ fn set_velocity(rigid_body: &mut RigidBody<PhysicsType>, velocity: &Velocity) {
     rigid_body.set_velocity(nphysics_velocity);
 }
 
-fn to_object_handle(collider_handle: ColliderHandle) -> BodyHandle {
+fn to_body_handle(collider_handle: ColliderHandle) -> BodyHandle {
     BodyHandle(collider_handle.uid())
 }
 
 fn to_collider_handle(object_handle: BodyHandle) -> ColliderHandle {
     CollisionObjectHandle(object_handle.0)
+}
+
+fn to_sensor_handle(sensor_handle: NphysicsSensorHandle) -> SensorHandle {
+    SensorHandle(sensor_handle.0)
+}
+
+fn to_nphysics_sensor_handle(sensor_handle: SensorHandle) -> NphysicsSensorHandle {
+    CollisionObjectHandle(sensor_handle.0)
 }
 
 impl fmt::Debug for NphysicsWorld {
@@ -259,48 +324,16 @@ mod tests {
     use super::*;
     use crate::object_builder::PolygonBuilder;
     use std::cell::RefCell;
+    use std::thread::panicking;
 
     const DEFAULT_TIMESTEP: f64 = 1.0;
 
-    fn movable_body(orientation: Radians) -> PhysicalBody {
-        PhysicalBody {
-            position: Position {
-                location: Location { x: 5, y: 5 },
-                rotation: orientation,
-            },
-            mobility: Mobility::Movable(Velocity { x: 1, y: 1 }),
-            shape: PolygonBuilder::new()
-                .vertex(-5, -5)
-                .vertex(-5, 5)
-                .vertex(5, 5)
-                .vertex(5, -5)
-                .build()
-                .unwrap(),
-        }
-    }
-
-    fn immovable_body(orientation: Radians) -> PhysicalBody {
-        PhysicalBody {
-            shape: PolygonBuilder::new()
-                .vertex(-100, -100)
-                .vertex(100, -100)
-                .vertex(100, 100)
-                .vertex(-100, 100)
-                .build()
-                .unwrap(),
-            mobility: Mobility::Immovable,
-            position: Position {
-                location: Location { x: 300, y: 200 },
-                rotation: orientation,
-            },
-        }
-    }
-
     #[test]
-    fn panics_on_invalid_handle() {
+    fn returns_none_when_calling_body_with_invalid_handle() {
         let rotation_translator = NphysicsRotationTranslatorMock::default();
         let world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
-        let body = world.body(BodyHandle(1337));
+        let invalid_handle = BodyHandle(1337);
+        let body = world.body(invalid_handle);
         assert!(body.is_none())
     }
 
@@ -373,6 +406,161 @@ mod tests {
         let actual_body = world.body(handle);
 
         assert_eq!(Some(expected_body), actual_body)
+    }
+
+    #[test]
+    fn returns_sensor_handle_when_attachment_is_valid() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
+        let mut world =
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let body = immovable_body(Radians::default());
+        let handle = world.add_body(body);
+        let sensor_handle = world.attach_sensor(handle, sensor());
+        assert!(sensor_handle.is_some())
+    }
+
+    #[test]
+    fn sensors_do_not_work_without_step() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
+        let mut world =
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let body = movable_body(Radians::default());
+        let handle_one = world.add_body(body);
+
+        let sensor_handle = world
+            .attach_sensor(handle_one, sensor())
+            .expect("body handle was invalid");
+
+        let close_body = PhysicalBody {
+            position: Position {
+                location: Location { x: 6, y: 6 },
+                rotation: Radians::default(),
+            },
+            ..movable_body(Radians::default())
+        };
+        world.add_body(close_body);
+
+        let bodies = world
+            .bodies_within_sensor(sensor_handle)
+            .expect("sensor handle was invalid");
+
+        assert!(bodies.is_empty());
+    }
+
+    #[test]
+    fn sensor_detects_close_bodies() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
+        let mut world =
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let body = movable_body(Radians::default());
+        let handle_one = world.add_body(body);
+
+        let sensor_handle = world
+            .attach_sensor(handle_one, sensor())
+            .expect("body handle was invalid");
+
+        let close_body = PhysicalBody {
+            position: Position {
+                location: Location { x: 6, y: 6 },
+                rotation: Radians::default(),
+            },
+            ..movable_body(Radians::default())
+        };
+        let expected_handle = world.add_body(close_body);
+
+        world.step();
+
+        let bodies = world
+            .bodies_within_sensor(sensor_handle)
+            .expect("sensor handle was invalid");
+
+        assert_eq!(1, bodies.len());
+        assert_eq!(expected_handle, bodies[0]);
+    }
+
+    #[test]
+    fn sensor_detects_non_colliding_bodies() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
+        let mut world =
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let body = movable_body(Radians::default());
+        let handle_one = world.add_body(body);
+
+        let sensor_handle = world
+            .attach_sensor(handle_one, sensor())
+            .expect("body handle was invalid");
+
+        let close_body = PhysicalBody {
+            position: Position {
+                location: Location { x: 12, y: 12 },
+                rotation: Radians::default(),
+            },
+            ..movable_body(Radians::default())
+        };
+        let expected_handle = world.add_body(close_body);
+
+        world.step();
+
+        let bodies = world
+            .bodies_within_sensor(sensor_handle)
+            .expect("sensor handle was invalid");
+
+        assert_eq!(1, bodies.len());
+        assert_eq!(expected_handle, bodies[0]);
+    }
+
+    #[test]
+    fn sensor_does_not_detect_far_away_bodies() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
+        let mut world =
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let body = movable_body(Radians::default());
+        let handle_one = world.add_body(body);
+
+        let sensor_handle = world
+            .attach_sensor(handle_one, sensor())
+            .expect("body handle was invalid");
+
+        let close_body = PhysicalBody {
+            position: Position {
+                location: Location { x: 60, y: 60 },
+                rotation: Radians::default(),
+            },
+            ..movable_body(Radians::default())
+        };
+        world.add_body(close_body);
+
+        world.step();
+
+        let bodies = world
+            .bodies_within_sensor(sensor_handle)
+            .expect("sensor handle was invalid");
+
+        assert!(bodies.is_empty());
+    }
+
+    #[test]
+    fn returns_none_attaching_sensor_to_inhalid_body_handle() {
+        let rotation_translator = Box::new(NphysicsRotationTranslatorMock::default());
+        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, rotation_translator);
+        let invalid_handle = BodyHandle(132144);
+        let sensor_handle = world.attach_sensor(invalid_handle, sensor());
+        assert!(sensor_handle.is_none())
+    }
+
+    #[test]
+    fn returns_none_when_calling_bodies_within_sensor_with_invalid_handle() {
+        let rotation_translator = Box::new(NphysicsRotationTranslatorMock::default());
+        let world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, rotation_translator);
+        let invalid_handle = SensorHandle(112358);
+        let body_handles = world.bodies_within_sensor(invalid_handle);
+
+        assert!(body_handles.is_none())
     }
 
     #[test]
@@ -470,6 +658,55 @@ mod tests {
         assert_eq!(Some(still_body), actual_body)
     }
 
+    fn sensor() -> Sensor {
+        Sensor {
+            shape: PolygonBuilder::new()
+                .vertex(-10, -10)
+                .vertex(10, -10)
+                .vertex(10, 10)
+                .vertex(-10, 10)
+                .build()
+                .unwrap(),
+            position: Position {
+                location: Location { x: 0, y: 0 },
+                rotation: Radians::default(),
+            },
+        }
+    }
+
+    fn movable_body(orientation: Radians) -> PhysicalBody {
+        PhysicalBody {
+            position: Position {
+                location: Location { x: 5, y: 5 },
+                rotation: orientation,
+            },
+            mobility: Mobility::Movable(Velocity { x: 1, y: 1 }),
+            shape: PolygonBuilder::new()
+                .vertex(-5, -5)
+                .vertex(-5, 5)
+                .vertex(5, 5)
+                .vertex(5, -5)
+                .build()
+                .unwrap(),
+        }
+    }
+
+    fn immovable_body(orientation: Radians) -> PhysicalBody {
+        PhysicalBody {
+            shape: PolygonBuilder::new()
+                .vertex(-100, -100)
+                .vertex(100, -100)
+                .vertex(100, 100)
+                .vertex(-100, 100)
+                .build()
+                .unwrap(),
+            mobility: Mobility::Immovable,
+            position: Position {
+                location: Location { x: 300, y: 200 },
+                rotation: orientation,
+            },
+        }
+    }
     #[derive(Debug, Default)]
     struct NphysicsRotationTranslatorMock {
         expect_to_nphysics_rotation_and_return: Option<(Radians, f64)>,
@@ -527,6 +764,9 @@ mod tests {
 
     impl Drop for NphysicsRotationTranslatorMock {
         fn drop(&mut self) {
+            if panicking() {
+                return;
+            }
             if self.expect_to_nphysics_rotation_and_return.is_some() {
                 assert!(
                     *self.to_nphysics_rotation_was_called.borrow(),

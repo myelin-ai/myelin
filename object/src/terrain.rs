@@ -1,6 +1,6 @@
 //! Behaviours of various terrains
 
-use myelin_environment::object::{ImmovableAction, ImmovableObject, Kind};
+use myelin_environment::object::*;
 
 /// A purely static and non-interactive terrain.
 /// This type will never perform any actions.
@@ -13,11 +13,14 @@ impl StaticTerrain {
 }
 
 impl ImmovableObject for StaticTerrain {
-    fn step(&mut self) -> Vec<ImmovableAction> {
+    fn step(&mut self, _sensor_collisions: &[ObjectDescription]) -> Vec<ImmovableAction> {
         Vec::new()
     }
     fn kind(&self) -> Kind {
         Kind::Terrain
+    }
+    fn sensor(&self) -> Option<Sensor> {
+        None
     }
 }
 
@@ -29,7 +32,7 @@ mod tests {
     #[test]
     fn has_no_action() {
         let mut object = StaticTerrain::new();
-        let actions = object.step();
+        let actions = object.step(&[]);
         assert!(actions.is_empty());
     }
 
@@ -38,5 +41,12 @@ mod tests {
         let object = StaticTerrain::new();
         let kind = object.kind();
         assert_eq!(Kind::Terrain, kind);
+    }
+
+    #[test]
+    fn has_no_sensors() {
+        let object = StaticTerrain::new();
+        let sensor = object.sensor();
+        assert!(sensor.is_none());
     }
 }
