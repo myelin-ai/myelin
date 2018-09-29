@@ -1,14 +1,16 @@
 use myelin_environment::object::ObjectDescription;
 use myelin_environment::Simulation;
 use myelin_worldgen::WorldGenerator;
+use std::fmt;
 
-pub(crate) trait Controller {
+pub(crate) trait Controller: fmt::Debug {
     fn step(&mut self);
 }
-pub(crate) trait Presenter {
+pub(crate) trait Presenter: fmt::Debug {
     fn present_objects(&self, objects: &[ObjectDescription]);
 }
 
+#[derive(Debug)]
 pub(crate) struct ControllerImpl {
     presenter: Box<dyn Presenter>,
     simulation: Box<dyn Simulation>,

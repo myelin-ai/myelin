@@ -5,6 +5,7 @@ use myelin_environment::object::{Kind, Location, Object, ObjectBehavior, Positio
 use myelin_environment::object_builder::PolygonBuilder;
 use myelin_environment::Simulation;
 use std::f64::consts::FRAC_PI_2;
+use std::fmt;
 
 /// Simulation generation algorithm that creates a fixed simulation
 /// inhabited by two forests, a large central lake and
@@ -27,7 +28,7 @@ impl HardcodedGenerator {
     /// # Examples
     /// ```
     /// use myelin_environment::Simulation;
-    /// use myelin_environment::simulation_impl::{SimulationImpl, world::NphysicsWorld};
+    /// use myelin_environment::simulation_impl::{SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl};
     /// use myelin_environment::object::{Kind, ObjectBehavior};
     /// use myelin_worldgen::WorldGenerator;
     /// use myelin_worldgen::generator::HardcodedGenerator;
@@ -36,7 +37,8 @@ impl HardcodedGenerator {
     /// };
     ///
     /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
-    ///     let world = Box::new(NphysicsWorld::with_timestep(1.0));
+    ///     let rotation_translator = NphysicsRotationTranslatorImpl::default();
+    ///     let world = Box::new(NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator)));
     ///     Box::new(SimulationImpl::new(world))
     /// });
     ///
@@ -171,13 +173,16 @@ impl WorldGenerator for HardcodedGenerator {
     }
 }
 
+impl fmt::Debug for HardcodedGenerator {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("HardcodedGenerator").finish()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::Object;
-    use myelin_environment::object::{
-        ImmovableAction, ImmovableObject, Kind, ObjectBehavior, ObjectDescription,
-    };
+    use myelin_environment::object::*;
 
     #[derive(Debug, Default)]
     struct SimulationMock {
@@ -207,11 +212,14 @@ mod tests {
     #[derive(Debug)]
     struct ObjectMock;
     impl ImmovableObject for ObjectMock {
-        fn step(&mut self) -> Vec<ImmovableAction> {
+        fn step(&mut self, _sensor_collisions: &[ObjectDescription]) -> Vec<ImmovableAction> {
             panic!("step() was called unexpectedly")
         }
         fn kind(&self) -> Kind {
             panic!("kind() was called unexpectedly")
+        }
+        fn sensor(&self) -> Option<Sensor> {
+            panic!("sensor() was called unexpectedly")
         }
     }
 
