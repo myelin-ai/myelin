@@ -156,7 +156,7 @@ mod tests {
             if self.expect_flip_coin_with_probability_and_return.is_some() {
                 assert!(
                     *self.flip_coin_with_probability_was_called.borrow(),
-                    "body() was not called, but was expected"
+                    "flip_coin_with_probability() was not called, but was expected"
                 )
             }
         }
@@ -177,7 +177,7 @@ mod tests {
                     )
                 }
             } else {
-                panic!("body() was called unexpectedly")
+                panic!("flip_coin_with_probability() was called unexpectedly")
             }
         }
     }
