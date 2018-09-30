@@ -106,7 +106,7 @@ mod tests {
 
     #[test]
     fn returns_injected_sensor() {
-        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        let random_chance_checker = RandomChanceCheckerMock::new();
         let expected_sensor = sensor();
         let object = StochasticSpreadingPlant::new(
             SPREADING_CHANGE,
