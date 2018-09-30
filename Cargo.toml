@@ -5,10 +5,3 @@ members = [
     "worldgen",
     "object",
 ]
-
-# This entire section can be removed once https://github.com/rustwasm/wasm-bindgen/issues/613 is done.
-# Tracking issue: https://github.com/myelin-ai/myelin/issues/29
-[patch.crates-io]
-wasm-bindgen = { git = "https://github.com/rustwasm/wasm-bindgen", rev = "d10ca579e43a9d072d1aa9880fa873fd59a8f0c2" }
-js-sys = { git = "https://github.com/rustwasm/wasm-bindgen", rev = "d10ca579e43a9d072d1aa9880fa873fd59a8f0c2" }
-web-sys = { git = "https://github.com/rustwasm/wasm-bindgen", rev = "d10ca579e43a9d072d1aa9880fa873fd59a8f0c2" }
