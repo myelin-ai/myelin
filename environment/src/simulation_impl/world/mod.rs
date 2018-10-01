@@ -52,6 +52,7 @@ impl NphysicsWorld {
         let mut physics_world = PhysicsWorld::new();
 
         physics_world.set_timestep(timestep);
+        physics_world.set_gravity(Vector2::new(0.0, 9.81));
 
         Self {
             physics_world,
