@@ -688,25 +688,70 @@ mod tests {
     #[test]
     fn zero_force_is_ignored() {
         let object = stationary_object(Radians::default());
-        let expected_position = object.position.clone();
         let force = Force {
             linear: LinearForce { x: 0, y: 0 },
             torque: Torque(0.0),
         };
+        let expected_position = object.position.clone();
         test_force(object, expected_position, force);
     }
 
     #[test]
     fn torque_with_no_linear_force_only_changes_rotation() {
         let object = stationary_object(Radians::default());
+        let force = Force {
+            linear: LinearForce { x: 0, y: 0 },
+            torque: Torque(1.0),
+        };
         let expected_position = Position {
             // To do: Use actual values
             rotation: Radians(1.1),
             ..object.position.clone()
         };
+        test_force(object, expected_position, force);
+    }
+
+    #[test]
+    fn negative_torque_results_in_negative_rotation() {
+        let object = stationary_object(Radians::default());
         let force = Force {
             linear: LinearForce { x: 0, y: 0 },
-            torque: Torque(1.0),
+            torque: Torque(-2.0),
+        };
+        let expected_position = Position {
+            // To do: Use actual values
+            rotation: Radians(-1.1),
+            ..object.position.clone()
+        };
+        test_force(object, expected_position, force);
+    }
+
+    #[test]
+    fn linear_force_with_no_torque_changes_only_location() {
+        let object = stationary_object(Radians::default());
+        let force = Force {
+            linear: LinearForce { x: 5, y: 5 },
+            torque: Torque(0.0),
+        };
+        let expected_position = Position {
+            // To do: Use actual values
+            location: Location { x: 10, y: 10 },
+            ..object.position.clone()
+        };
+        test_force(object, expected_position, force);
+    }
+
+    #[test]
+    fn negative_linear_force_results_in_lower_location() {
+        let object = stationary_object(Radians::default());
+        let force = Force {
+            linear: LinearForce { x: -5, y: -5 },
+            torque: Torque(0.0),
+        };
+        let expected_position = Position {
+            // To do: Use actual values
+            location: Location { x: 1, y: 1 },
+            ..object.position.clone()
         };
         test_force(object, expected_position, force);
     }
