@@ -4,7 +4,7 @@ use myelin_environment::object::*;
 
 /// A purely static and non-interactive water.
 /// This type will never perform any actions.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct StaticWater;
 impl StaticWater {
     pub fn new() -> Self {

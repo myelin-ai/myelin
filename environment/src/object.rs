@@ -32,7 +32,7 @@ use std::fmt::Debug;
 /// A new object that is going to be placed in the [`Simulation`]
 ///
 /// [`Simulation`]: ../trait.Simulation.html
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Object {
     /// The object's behavior, which determines its kind and what the object is going to do every step
     pub object_behavior: ObjectBehavior,
@@ -51,6 +51,15 @@ pub enum ObjectBehavior {
     Movable(Box<dyn MovableObject>),
     /// The behaviour of an object that can never be moved
     Immovable(Box<dyn ImmovableObject>),
+}
+
+impl Clone for ObjectBehavior {
+    fn clone(&self) -> Self {
+        match self {
+            ObjectBehavior::Movable(object) => ObjectBehavior::Movable(object.clone_box()),
+            ObjectBehavior::Immovable(object) => ObjectBehavior::Immovable(object.clone_box()),
+        }
+    }
 }
 
 impl ObjectBehavior {
@@ -74,7 +83,7 @@ impl ObjectBehavior {
 }
 
 /// Behaviour of an object that can be moved
-pub trait MovableObject: Debug {
+pub trait MovableObject: MovableObjectClone + Debug {
     /// Returns all actions performed by the object
     /// in the current simulation tick
     fn step(&mut self, sensor_collisions: &[ObjectDescription]) -> Vec<MovableAction>;
@@ -92,7 +101,7 @@ pub trait MovableObject: Debug {
 /// during a simulation step
 ///
 /// [`MovableObject`]: ./trait.MovableObject.html
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum MovableAction {
     /// Apply the specified force to the object
     ApplyForce(Force),
@@ -103,7 +112,7 @@ pub enum MovableAction {
 }
 
 /// Behaviour of an object that can never be moved
-pub trait ImmovableObject: Debug {
+pub trait ImmovableObject: ImmovableObjectClone + Debug {
     /// Returns all actions performed by the object
     /// in the current simulation tick
     fn step(&mut self, sensor_collisions: &[ObjectDescription]) -> Vec<ImmovableAction>;
@@ -120,7 +129,7 @@ pub trait ImmovableObject: Debug {
 /// during a simulation step
 ///
 /// [`ImmovableObject`]: ./trait.ImmovableObject.html
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ImmovableAction {
     /// Create a new object at the specified location
     Reproduce(Object),
@@ -263,3 +272,29 @@ pub struct LinearForce {
 /// Force of rotation
 #[derive(Debug, PartialEq, Clone, Default)]
 pub struct Torque(f64);
+
+pub trait MovableObjectClone {
+    fn clone_box(&self) -> Box<dyn MovableObject>;
+}
+
+impl<T> MovableObjectClone for T
+where
+    T: MovableObject + Clone + 'static,
+{
+    default fn clone_box(&self) -> Box<dyn MovableObject> {
+        Box::new(self.clone())
+    }
+}
+
+pub trait ImmovableObjectClone {
+    fn clone_box(&self) -> Box<dyn ImmovableObject>;
+}
+
+impl<T> ImmovableObjectClone for T
+where
+    T: ImmovableObject + Clone + 'static,
+{
+    default fn clone_box(&self) -> Box<dyn ImmovableObject> {
+        Box::new(self.clone())
+    }
+}

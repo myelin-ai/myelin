@@ -4,7 +4,7 @@ use myelin_environment::object::*;
 
 /// A purely static and non-interactive plant.
 /// This type will never perform any actions.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct StaticPlant;
 impl StaticPlant {
     pub fn new() -> Self {

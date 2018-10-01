@@ -796,7 +796,7 @@ mod tests {
         }
     }
 
-    #[derive(Debug, Default)]
+    #[derive(Debug, Default, Clone)]
     struct ObjectMock {
         expect_step_and_return: Option<(Vec<ObjectDescription>, Vec<MovableAction>)>,
         expect_sensor_and_return: Option<Option<Sensor>>,

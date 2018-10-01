@@ -4,7 +4,7 @@ use myelin_environment::object::*;
 
 /// A purely static and non-interactive organism.
 /// This type will never perform any actions.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct StaticOrganism;
 impl StaticOrganism {
     pub fn new() -> Self {
