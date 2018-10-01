@@ -1,9 +1,7 @@
 //! A `Simulation` that outsources all physical
 //! behaviour into a separate `World` type
 
-use crate::object::{
-    Mobility, Object, ObjectBehavior, ObjectDescription, Polygon, Position, Sensor, Velocity,
-};
+use crate::object::*;
 use crate::Simulation;
 use std::collections::HashMap;
 use std::fmt;
@@ -566,6 +564,7 @@ mod tests {
         expect_body_and_return: Option<(BodyHandle, Option<PhysicalBody>)>,
         expect_attach_sensor_and_return: Option<(BodyHandle, Sensor, Option<SensorHandle>)>,
         expect_bodies_within_sensor_and_return: Option<(SensorHandle, Option<Vec<BodyHandle>>)>,
+        expect_apply_force_and_return: Option<(BodyHandle, Force, Option<()>)>,
         expect_set_simulated_timestep: Option<f64>,
 
         step_was_called: RefCell<bool>,
@@ -573,6 +572,7 @@ mod tests {
         attach_sensor_was_called: RefCell<bool>,
         body_was_called: RefCell<bool>,
         bodies_within_sensor_was_called: RefCell<bool>,
+        apply_force_was_called: RefCell<bool>,
         set_simulated_timestep_was_called: RefCell<bool>,
     }
     impl WorldMock {
@@ -617,6 +617,15 @@ mod tests {
             self.expect_bodies_within_sensor_and_return = Some((sensor_handle, returned_value));
         }
 
+        pub(crate) fn expect_apply_force_and_return(
+            &mut self,
+            body_handle: BodyHandle,
+            force: Force,
+            returned_value: Option<()>,
+        ) {
+            self.expect_apply_force_and_return = Some((body_handle, force, returned_value));
+        }
+
         pub(crate) fn expect_set_simulated_timestep(&mut self, timestep: f64) {
             self.expect_set_simulated_timestep = Some(timestep);
         }
@@ -658,6 +667,13 @@ mod tests {
                 assert!(
                     *self.bodies_within_sensor_was_called.borrow(),
                     "bodies_within_sensor() was not called, but was expected"
+                )
+            }
+
+            if self.expect_apply_force_and_return.is_some() {
+                assert!(
+                    *self.apply_force_was_called.borrow(),
+                    "apply_force() was not called, but was expected"
                 )
             }
 
@@ -744,6 +760,24 @@ mod tests {
                 }
             } else {
                 panic!("bodies_within_sensor() was called unexpectedly")
+            }
+        }
+
+        fn apply_force(&mut self, body_handle: BodyHandle, force: Force) -> Option<()> {
+            *self.apply_force_was_called.borrow_mut() = true;
+            if let Some((ref expected_body_handle, ref expected_force, ref return_value)) =
+                self.expect_apply_force_and_return
+            {
+                if body_handle == *expected_body_handle && force == *expected_force {
+                    return_value.clone()
+                } else {
+                    panic!(
+                        "apply_force() was called with {:?} and {:?}, expected {:?} and {:?}",
+                        body_handle, force, expected_body_handle, expected_force
+                    )
+                }
+            } else {
+                panic!("set_simulated_timestep() was called unexpectedly")
             }
         }
 

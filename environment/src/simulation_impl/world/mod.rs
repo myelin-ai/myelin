@@ -268,6 +268,10 @@ impl World for NphysicsWorld {
         Some(bodies_within_sensor)
     }
 
+    fn apply_force(&mut self, body_handle: BodyHandle, force: Force) -> Option<()> {
+        unimplemented!()
+    }
+
     fn set_simulated_timestep(&mut self, timestep: f64) {
         self.physics_world.set_timestep(timestep);
     }
