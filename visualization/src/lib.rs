@@ -12,5 +12,6 @@ pub mod bootstrapper;
 pub(crate) mod controller;
 pub mod input_handler;
 pub(crate) mod presenter;
+pub(crate) mod serialize;
 pub mod view;
 pub(crate) mod view_model;
