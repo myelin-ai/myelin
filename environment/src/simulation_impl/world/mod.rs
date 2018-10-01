@@ -662,6 +662,55 @@ mod tests {
         assert_eq!(Some(still_body), actual_body)
     }
 
+    #[test]
+    fn force_does_nothing_before_step() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(0.0), 0.0);
+        rotation_translator.expect_to_radians_and_return(0.0, Radians(0.0));
+        let mut world =
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+
+        let expected_object = stationary_object(Radians::default());
+        let handle = world.add_body(expected_object.clone());
+
+        let force = Force {
+            linear: LinearForce { x: 1000, y: 2000 },
+            torque: Torque(9.0),
+        };
+        world
+            .apply_force(handle, force)
+            .expect("Invalid object handle");
+
+        let actual_body = world.body(handle);
+        assert_eq!(Some(expected_object), actual_body);
+    }
+
+    #[test]
+    fn zero_force_is_ignored() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(0.0), 0.0);
+        rotation_translator.expect_to_radians_and_return(0.0, Radians(0.0));
+        let mut world =
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+
+        let expected_object = stationary_object(Radians::default());
+        let handle = world.add_body(expected_object.clone());
+
+        let force = Force {
+            linear: LinearForce { x: 0, y: 0 },
+            torque: Torque(0.0),
+        };
+        world
+            .apply_force(handle, force)
+            .expect("Invalid object handle");
+
+        world.step();
+        world.step();
+
+        let actual_body = world.body(handle);
+        assert_eq!(Some(expected_object), actual_body);
+    }
+
     fn sensor() -> Sensor {
         Sensor {
             shape: PolygonBuilder::new()
@@ -692,6 +741,13 @@ mod tests {
                 .vertex(5, -5)
                 .build()
                 .unwrap(),
+        }
+    }
+
+    fn stationary_object(orientation: Radians) -> PhysicalBody {
+        PhysicalBody {
+            mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
+            ..movable_body(orientation)
         }
     }
 
