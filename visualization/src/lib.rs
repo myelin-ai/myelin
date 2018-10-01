@@ -8,6 +8,7 @@
     clippy::doc_markdown
 )]
 
+pub mod benchmark;
 pub(crate) mod benchmark_utils;
 pub mod bootstrapper;
 pub(crate) mod controller;

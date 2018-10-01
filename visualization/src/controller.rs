@@ -1,3 +1,4 @@
+use crate::benchmark_utils;
 use myelin_environment::object::ObjectDescription;
 use myelin_environment::Simulation;
 use myelin_worldgen::WorldGenerator;
@@ -17,29 +18,22 @@ pub(crate) trait Presenter: fmt::Debug {
 pub(crate) struct ControllerImpl {
     presenter: Box<dyn Presenter>,
     simulation: Box<dyn Simulation>,
-    step_durations: Vec<f64>,
+    step_durations: benchmark_utils::Durations,
 }
 
 impl Controller for ControllerImpl {
     fn step(&mut self) {
-        let performance = window().unwrap().performance().unwrap();
-        let before = performance.now();
+        let now = benchmark_utils::Instant::now();
 
         self.simulation.step();
         let objects = self.simulation.objects();
         self.presenter.present_objects(&objects);
 
-        let after = performance.now();
+        self.step_durations.add_duration(now.elapsed());
 
-        self.step_durations.push(after - before);
-
-        if self.step_durations.len() == 100 {
-            console::log_1(&JsValue::from(&format!(
-                "{}ms",
-                self.step_durations.iter().map(|i| *i).sum::<f64>()
-                    / self.step_durations.len() as f64
-            )));
-
+        if self.step_durations.count() == 100 {
+            eprintln!("{:?}", objects);
+            benchmark_utils::print(self.step_durations.average());
             self.step_durations.clear();
         }
     }
@@ -50,7 +44,7 @@ impl ControllerImpl {
         Self {
             presenter,
             simulation: world_generator.generate(),
-            step_durations: Vec::new(),
+            step_durations: Default::default(),
         }
     }
 }
