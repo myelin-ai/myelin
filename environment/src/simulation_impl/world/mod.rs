@@ -687,62 +687,51 @@ mod tests {
 
     #[test]
     fn zero_force_is_ignored() {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(0.0), 0.0);
-        rotation_translator.expect_to_radians_and_return(0.0, Radians(0.0));
-        let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
-
-        let expected_object = stationary_object(Radians::default());
-        let handle = world.add_body(expected_object.clone());
-
+        let object = stationary_object(Radians::default());
+        let expected_position = object.position.clone();
         let force = Force {
             linear: LinearForce { x: 0, y: 0 },
             torque: Torque(0.0),
         };
-        world
-            .apply_force(handle, force)
-            .expect("Invalid object handle");
-
-        world.step();
-        world.step();
-
-        let actual_body = world.body(handle);
-        assert_eq!(Some(expected_object), actual_body);
+        test_force(object, expected_position, force);
     }
 
     #[test]
     fn torque_with_no_linear_force_only_changes_rotation() {
+        let object = stationary_object(Radians::default());
+        let expected_position = Position {
+            // To do: Use actual values
+            rotation: Radians(1.1),
+            ..object.position.clone()
+        };
+        let force = Force {
+            linear: LinearForce { x: 0, y: 0 },
+            torque: Torque(1.0),
+        };
+        test_force(object, expected_position, force);
+    }
+
+    fn test_force(body: PhysicalBody, expected_position: Position, force: Force) {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians(0.0), 0.0);
         rotation_translator.expect_to_radians_and_return(0.0, Radians(0.0));
         let mut world =
             NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
 
-        let object = stationary_object(Radians::default());
-        let handle = world.add_body(object.clone());
+        let handle = world.add_body(body.clone());
 
-        let force = Force {
-            linear: LinearForce { x: 0, y: 0 },
-            torque: Torque(1.0),
-        };
-        world
-            .apply_force(handle, force)
-            .expect("Invalid object handle");
+        const BODY_HANDLE_ERROR: &str = "Invalid object handle";
+        world.apply_force(handle, force).expect(BODY_HANDLE_ERROR);
 
         world.step();
         world.step();
 
-        let actual_body = world.body(handle);
-        let expected_object = PhysicalBody {
-            position: Position {
-                // To do: Use actual values
-                rotation: Radians(1.1),
-                ..object.position
-            },
-            ..object
+        let actual_body = world.body(handle).expect(BODY_HANDLE_ERROR);
+        let expected_body = PhysicalBody {
+            position: expected_position,
+            ..body
         };
-        assert_eq!(Some(expected_object), actual_body);
+        assert_eq!(expected_body, actual_body);
     }
 
     fn sensor() -> Sensor {
