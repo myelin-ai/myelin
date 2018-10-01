@@ -10,18 +10,18 @@ pub struct NphysicsRotationTranslatorImpl {}
 
 impl NphysicsRotationTranslator for NphysicsRotationTranslatorImpl {
     fn to_nphysics_rotation(&self, orientation: Radians) -> f64 {
-        if orientation.0 <= PI {
-            orientation.0
+        if orientation.value() <= PI {
+            orientation.value()
         } else {
-            orientation.0 - (2.0 * PI)
+            orientation.value() - (2.0 * PI)
         }
     }
 
-    fn to_radians(&self, nphysics_rotation: f64) -> Radians {
+    fn to_radians(&self, nphysics_rotation: f64) -> Option<Radians> {
         if nphysics_rotation >= 0.0 {
-            Radians(nphysics_rotation)
+            Radians::new(nphysics_rotation)
         } else {
-            Radians((2.0 * PI) + nphysics_rotation)
+            Radians::new((2.0 * PI) + nphysics_rotation)
         }
     }
 }

@@ -48,7 +48,7 @@ fn to_global_rotated_vertex(
     // algorithm source: https://stackoverflow.com/questions/786472/rotate-a-point-by-another-point-in-2d/786508#786508
     let center_x = f64::from(object.position.location.x);
     let center_y = f64::from(object.position.location.y);
-    let rotation = object.position.rotation.0;
+    let rotation = object.position.rotation.value();
     let global_x = center_x + f64::from(vertex.x);
     let global_y = center_y + f64::from(vertex.y);
     let rotated_global_x =

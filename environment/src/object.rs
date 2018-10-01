@@ -27,6 +27,7 @@
 //! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
 //! [`ObjectDescription`]: ./struct.ObjectDescription.html
 
+use std::f64::consts::PI;
 use std::fmt::Debug;
 
 /// A new object that is going to be placed in the [`Simulation`]
@@ -212,7 +213,23 @@ pub struct Position {
 
 /// A radian confined to the range of [0.0; 2π)
 #[derive(Debug, PartialEq, Copy, Clone, Default)]
-pub struct Radians(pub f64);
+pub struct Radians {
+    value: f64,
+}
+
+impl Radians {
+    pub fn new(value: f64) -> Option<Radians> {
+        if value >= 0.0 && value < 2.0 * PI {
+            Some(Radians { value })
+        } else {
+            None
+        }
+    }
+
+    pub fn value(&self) -> f64 {
+        self.value
+    }
+}
 
 /// An absolute location within the world, where
 /// [0; 0] is defined as the upper left corner of

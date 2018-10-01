@@ -120,7 +120,10 @@ impl NphysicsWorld {
                 x: x as u32,
                 y: y as u32,
             },
-            rotation: self.rotation_translator.to_radians(rotation),
+            rotation: self
+                .rotation_translator
+                .to_radians(rotation)
+                .expect("Cannot be None as we get the rotation from an existing object"),
         }
     }
 }
@@ -130,7 +133,7 @@ impl NphysicsWorld {
 /// [`Radians`]: ../../object/struct.Radians.html
 pub trait NphysicsRotationTranslator: fmt::Debug {
     fn to_nphysics_rotation(&self, orientation: Radians) -> f64;
-    fn to_radians(&self, nphysics_rotation: f64) -> Radians;
+    fn to_radians(&self, nphysics_rotation: f64) -> Option<Radians>;
 }
 
 fn elements<N>(vector: &Vector2<N>) -> (N, N)
