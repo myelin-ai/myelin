@@ -94,15 +94,12 @@ pub trait MovableObject: Debug {
 /// [`MovableObject`]: ./trait.MovableObject.html
 #[derive(Debug)]
 pub enum MovableAction {
-    /// Apply the specified linear force to the object's center
-    Move(Force),
-    /// Apply the specified torque to the object to rotate it
-    /// around its center
-    Rotate(Torque),
-    /// Destroy the object
-    Die,
+    /// Apply the specified force to the object
+    ApplyForce(Force),
     /// Create a new object at the specified location
     Reproduce(Object),
+    /// Destroy the object
+    Die,
 }
 
 /// Behaviour of an object that can never be moved
@@ -125,10 +122,10 @@ pub trait ImmovableObject: Debug {
 /// [`ImmovableObject`]: ./trait.ImmovableObject.html
 #[derive(Debug)]
 pub enum ImmovableAction {
-    /// Destroy the object
-    Die,
     /// Create a new object at the specified location
     Reproduce(Object),
+    /// Destroy the object
+    Die,
 }
 
 /// A sensor that can be attached to an [`Object`],
@@ -248,13 +245,21 @@ pub enum Kind {
     Terrain,
 }
 
-/// A linear force
-#[derive(Debug, Eq, PartialEq, Clone, Default)]
+/// Combination of a linear force and its torque,
+/// resulting in a rotated force applied to an object
+#[derive(Debug, PartialEq, Clone, Default)]
 pub struct Force {
+    pub linear: LinearForce,
+    pub torque: Torque,
+}
+
+/// Vector describing linear force
+#[derive(Debug, Eq, PartialEq, Clone, Default)]
+pub struct LinearForce {
     pub x: i32,
     pub y: i32,
 }
 
-/// A force of rotation
+/// Force of rotation
 #[derive(Debug, PartialEq, Clone, Default)]
 pub struct Torque(f64);
