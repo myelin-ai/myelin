@@ -50,7 +50,7 @@ pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
         Box::new(SimulationImpl::new(world))
     });
     let object_factory = Box::new(|kind: Kind| match kind {
-        Kind::Plant => ObjectBehavior::Immovable(Box::new(StaticPlant::new())),
+        Kind::Plant => ObjectBehavior::Movable(Box::new(StaticPlant::new())),
         Kind::Organism => ObjectBehavior::Movable(Box::new(StaticOrganism::new())),
         Kind::Water => ObjectBehavior::Immovable(Box::new(StaticWater::new())),
         Kind::Terrain => ObjectBehavior::Immovable(Box::new(StaticTerrain::new())),
