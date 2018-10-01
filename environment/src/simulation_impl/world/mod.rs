@@ -711,6 +711,7 @@ mod tests {
             },
         }
     }
+
     #[derive(Debug, Default)]
     struct NphysicsRotationTranslatorMock {
         expect_to_nphysics_rotation_and_return: Option<(Radians, f64)>,
