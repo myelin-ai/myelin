@@ -92,16 +92,17 @@ pub trait MovableObject: Debug {
 /// during a simulation step
 ///
 /// [`MovableObject`]: ./trait.MovableObject.html
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum MovableAction {
-    /// Move the object to the specified Location
-    Move,
-    /// Rotate the object by the specified radians
-    Rotate,
+    /// Apply the specified linear force to the object's center
+    Move(Force),
+    /// Apply the specified torque to the object to rotate it
+    /// around its center
+    Rotate(Torque),
     /// Destroy the object
     Die,
     /// Create a new object at the specified location
-    Reproduce,
+    Reproduce(Object),
 }
 
 /// Behaviour of an object that can never be moved
@@ -122,12 +123,12 @@ pub trait ImmovableObject: Debug {
 /// during a simulation step
 ///
 /// [`ImmovableObject`]: ./trait.ImmovableObject.html
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum ImmovableAction {
     /// Destroy the object
     Die,
     /// Create a new object at the specified location
-    Reproduce,
+    Reproduce(Object),
 }
 
 /// A sensor that can be attached to an [`Object`],
@@ -246,3 +247,14 @@ pub enum Kind {
     /// Impassable terrain
     Terrain,
 }
+
+/// A linear force
+#[derive(Debug, Eq, PartialEq, Clone, Default)]
+pub struct Force {
+    pub x: i32,
+    pub y: i32,
+}
+
+/// A force of rotation
+#[derive(Debug, PartialEq, Clone, Default)]
+pub struct Torque(f64);

@@ -790,7 +790,7 @@ mod tests {
                 self.expect_step_and_return
             {
                 if sensor_collisions.to_vec() == *expected_sensor_collisions {
-                    return_value.clone()
+                    return_value.to_vec()
                 } else {
                     panic!(
                         "step() was called with {:?}, expected {:?}",
