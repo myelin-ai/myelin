@@ -756,6 +756,21 @@ mod tests {
         test_force(object, expected_position, force);
     }
 
+    #[test]
+    fn linear_force_and_torque_can_be_combined() {
+        let object = stationary_object(Radians::default());
+        let force = Force {
+            linear: LinearForce { x: -5, y: -5 },
+            torque: Torque(1.5),
+        };
+        let expected_position = Position {
+            // To do: Use actual values
+            location: Location { x: 1, y: 1 },
+            rotation: Radians(2.0),
+        };
+        test_force(object, expected_position, force);
+    }
+
     fn test_force(body: PhysicalBody, expected_position: Position, force: Force) {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians(0.0), 0.0);
