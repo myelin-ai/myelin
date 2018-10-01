@@ -168,7 +168,7 @@ mod tests {
             },
             position: Position {
                 location: Location { x: 20, y: 40 },
-                rotation: Radians(6.0),
+                rotation: Radians::new(6.0).unwrap(),
             },
             mobility: Mobility::Movable(Velocity { x: 0, y: -1 }),
             kind: Kind::Organism,

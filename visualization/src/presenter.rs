@@ -170,7 +170,7 @@ mod tests {
 
     #[test]
     fn converts_to_global_object_with_pi_orientation() {
-        let object_description = [object_description(Radians(PI))];
+        let object_description = [object_description(Radians::new(PI).unwrap())];
         let expected_view_model = ViewModel {
             objects: vec![view_model::Object {
                 shape: view_model::Polygon {
@@ -191,7 +191,7 @@ mod tests {
 
     #[test]
     fn converts_to_global_object_with_arbitrary_orientation() {
-        let object_description = [object_description(Radians(3.0))];
+        let object_description = [object_description(Radians::new(3.0).unwrap())];
         let expected_view_model = ViewModel {
             objects: vec![view_model::Object {
                 shape: view_model::Polygon {

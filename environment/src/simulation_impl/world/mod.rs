@@ -343,11 +343,11 @@ mod tests {
     #[test]
     fn can_return_rigid_object_with_valid_handle() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(3.0), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians(3.0));
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::new(3.0).unwrap(), 3.0);
+        rotation_translator.expect_to_radians_and_return(3.0, Radians::new(3.0));
         let mut world =
             NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
-        let movable_body = movable_body(Radians(3.0));
+        let movable_body = movable_body(Radians::new(3.0).unwrap());
 
         let handle = world.add_body(movable_body);
         world.body(handle);
@@ -356,11 +356,11 @@ mod tests {
     #[test]
     fn can_return_grounded_object_with_valid_handle() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(3.0), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians(3.0));
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::new(3.0).unwrap(), 3.0);
+        rotation_translator.expect_to_radians_and_return(3.0, Radians::new(3.0));
         let mut world =
             NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
-        let body = immovable_body(Radians(3.0));
+        let body = immovable_body(Radians::new(3.0).unwrap());
 
         let handle = world.add_body(body);
         world.body(handle);
@@ -369,12 +369,12 @@ mod tests {
     #[test]
     fn can_return_mixed_objects_with_valid_handles() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(3.0), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians(3.0));
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::new(3.0).unwrap(), 3.0);
+        rotation_translator.expect_to_radians_and_return(3.0, Radians::new(3.0));
         let mut world =
             NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
-        let rigid_object = movable_body(Radians(3.0));
-        let grounded_object = immovable_body(Radians(3.0));
+        let rigid_object = movable_body(Radians::new(3.0).unwrap());
+        let grounded_object = immovable_body(Radians::new(3.0).unwrap());
 
         let rigid_handle = world.add_body(rigid_object);
         let grounded_handle = world.add_body(grounded_object);
@@ -386,11 +386,11 @@ mod tests {
     #[test]
     fn returns_correct_rigid_body() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(3.0), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians(3.0));
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::new(3.0).unwrap(), 3.0);
+        rotation_translator.expect_to_radians_and_return(3.0, Radians::new(3.0));
         let mut world =
             NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
-        let expected_body = movable_body(Radians(3.0));
+        let expected_body = movable_body(Radians::new(3.0).unwrap());
         let handle = world.add_body(expected_body.clone());
         let actual_body = world.body(handle);
 
@@ -400,11 +400,11 @@ mod tests {
     #[test]
     fn returns_correct_grounded_body() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(3.0), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians(3.0));
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::new(3.0).unwrap(), 3.0);
+        rotation_translator.expect_to_radians_and_return(3.0, Radians::new(3.0));
         let mut world =
             NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
-        let expected_body = immovable_body(Radians(3.0));
+        let expected_body = immovable_body(Radians::new(3.0).unwrap());
         let handle = world.add_body(expected_body.clone());
         let actual_body = world.body(handle);
 
@@ -569,8 +569,8 @@ mod tests {
     #[test]
     fn timestep_is_respected() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(0.0), 0.0);
-        rotation_translator.expect_to_radians_and_return(0.0, Radians(0.0));
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::new(0.0).unwrap(), 0.0);
+        rotation_translator.expect_to_radians_and_return(0.0, Radians::new(0.0));
         let mut world =
             NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
 
@@ -595,8 +595,8 @@ mod tests {
     #[test]
     fn timestep_can_be_changed() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(0.0), 0.0);
-        rotation_translator.expect_to_radians_and_return(0.0, Radians(0.0));
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::new(0.0).unwrap(), 0.0);
+        rotation_translator.expect_to_radians_and_return(0.0, Radians::new(0.0));
         let mut world =
             NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
         world.set_simulated_timestep(2.0);
@@ -624,11 +624,12 @@ mod tests {
         use std::f64::consts::FRAC_PI_2;
 
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(FRAC_PI_2), FRAC_PI_2);
-        rotation_translator.expect_to_radians_and_return(FRAC_PI_2, Radians(FRAC_PI_2));
+        rotation_translator
+            .expect_to_nphysics_rotation_and_return(Radians::new(FRAC_PI_2).unwrap(), FRAC_PI_2);
+        rotation_translator.expect_to_radians_and_return(FRAC_PI_2, Radians::new(FRAC_PI_2));
         let mut world =
             NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
-        let expected_body = immovable_body(Radians(FRAC_PI_2));
+        let expected_body = immovable_body(Radians::new(FRAC_PI_2).unwrap());
         let handle = world.add_body(expected_body.clone());
 
         world.step();
@@ -643,11 +644,12 @@ mod tests {
         use std::f64::consts::FRAC_PI_2;
 
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(FRAC_PI_2), FRAC_PI_2);
-        rotation_translator.expect_to_radians_and_return(FRAC_PI_2, Radians(FRAC_PI_2));
+        rotation_translator
+            .expect_to_nphysics_rotation_and_return(Radians::new(FRAC_PI_2).unwrap(), FRAC_PI_2);
+        rotation_translator.expect_to_radians_and_return(FRAC_PI_2, Radians::new(FRAC_PI_2));
         let mut world =
             NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
-        let body = immovable_body(Radians(FRAC_PI_2));
+        let body = immovable_body(Radians::new(FRAC_PI_2).unwrap());
         let still_body = PhysicalBody {
             mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
             ..body
@@ -713,7 +715,7 @@ mod tests {
     #[derive(Debug, Default)]
     struct NphysicsRotationTranslatorMock {
         expect_to_nphysics_rotation_and_return: Option<(Radians, f64)>,
-        expect_to_radians_and_return: Option<(f64, Radians)>,
+        expect_to_radians_and_return: Option<(f64, Option<Radians>)>,
 
         to_nphysics_rotation_was_called: RefCell<bool>,
         to_radians_was_called: RefCell<bool>,
@@ -728,7 +730,11 @@ mod tests {
             self.expect_to_nphysics_rotation_and_return = Some((input_value, return_value))
         }
 
-        fn expect_to_radians_and_return(&mut self, input_value: f64, return_value: Radians) {
+        fn expect_to_radians_and_return(
+            &mut self,
+            input_value: f64,
+            return_value: Option<Radians>,
+        ) {
             self.expect_to_radians_and_return = Some((input_value, return_value))
         }
     }
@@ -750,7 +756,7 @@ mod tests {
             }
         }
 
-        fn to_radians(&self, nphysics_rotation: f64) -> Radians {
+        fn to_radians(&self, nphysics_rotation: f64) -> Option<Radians> {
             *self.to_radians_was_called.borrow_mut() = true;
 
             if let Some((expected_input, expected_output)) = self.expect_to_radians_and_return {

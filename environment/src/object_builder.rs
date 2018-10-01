@@ -15,7 +15,7 @@
 //!             .build()
 //!             .unwrap(),
 //!     ).location(300, 450)
-//!     .orientation(Radians(FRAC_PI_2))
+//!     .orientation(Radians::new(FRAC_PI_2).unwrap())
 //!     .kind(Kind::Organism)
 //!     .mobility(Mobility::Movable(Velocity{x: 3, y: 5}))
 //!     .build()
@@ -128,7 +128,7 @@ impl ObjectBuilder {
     /// use myelin_environment::object_builder::ObjectBuilder;
     /// use myelin_environment::object::Radians;
     /// ObjectBuilder::new()
-    ///     .orientation(Radians(4.5));
+    ///     .orientation(Radians::new(4.5).unwrap());
     /// ```
     pub fn orientation(&mut self, orientation: Radians) -> &mut Self {
         self.orientation = Some(orientation);
@@ -156,7 +156,7 @@ impl ObjectBuilder {
     ///             .build()
     ///             .unwrap(),
     ///     ).location(300, 450)
-    ///     .orientation(Radians(FRAC_PI_2))
+    ///     .orientation(Radians::new(FRAC_PI_2).unwrap())
     ///     .kind(Kind::Organism)
     ///     .mobility(Mobility::Movable(Velocity{x: 3, y: 5}))
     ///     .build()
@@ -306,7 +306,7 @@ mod test {
     fn test_object_builder_should_error_for_missing_shape() {
         let result = ObjectBuilder::new()
             .location(10, 10)
-            .orientation(Radians(0.0))
+            .orientation(Radians::new(0.0).unwrap())
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
             .build();
@@ -333,7 +333,7 @@ mod test {
                     .unwrap(),
             )
             .location(10, 10)
-            .orientation(Radians(0.0))
+            .orientation(Radians::new(0.0).unwrap())
             .mobility(Mobility::Immovable)
             .build();
         assert_eq!(
@@ -357,7 +357,7 @@ mod test {
                     .build()
                     .unwrap(),
             )
-            .orientation(Radians(0.0))
+            .orientation(Radians::new(0.0).unwrap())
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
             .build();
@@ -383,7 +383,7 @@ mod test {
                     .build()
                     .unwrap(),
             )
-            .orientation(Radians(0.0))
+            .orientation(Radians::new(0.0).unwrap())
             .location(30, 40)
             .kind(Kind::Plant)
             .build();
@@ -424,7 +424,7 @@ mod test {
                 ],
             },
             position: Position {
-                rotation: Radians(0.0),
+                rotation: Radians::new(0.0).unwrap(),
                 location: Location { x: 30, y: 40 },
             },
             kind: Kind::Terrain,
@@ -464,13 +464,13 @@ mod test {
             .mobility(Mobility::Movable(Velocity { x: -12, y: 5 }))
             .kind(Kind::Organism)
             .location(30, 40)
-            .orientation(Radians(1.1))
+            .orientation(Radians::new(1.1).unwrap())
             .build();
 
         let expected = ObjectDescription {
             position: Position {
                 location: Location { x: 30, y: 40 },
-                rotation: Radians(1.1),
+                rotation: Radians::new(1.1).unwrap(),
             },
             mobility: Mobility::Movable(Velocity { x: -12, y: 5 }),
             kind: Kind::Organism,

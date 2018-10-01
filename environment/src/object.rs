@@ -14,7 +14,7 @@
 //!         ],
 //!     },
 //!     position: Position {
-//!         rotation: Radians(0.0),
+//!         rotation: Radians::new(0.0).unwrap(),
 //!         location: Location { x: 100, y: 100 },
 //!     },
 //!     kind: Kind::Terrain,
