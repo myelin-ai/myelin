@@ -1,4 +1,4 @@
-//! Implementation for NphysicsRotationTranslator
+//! Implementation for `NphysicsRotationTranslator`
 
 use super::NphysicsRotationTranslator;
 use crate::object::Radians;

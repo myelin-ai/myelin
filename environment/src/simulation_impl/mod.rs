@@ -93,11 +93,9 @@ impl Simulation for SimulationImpl {
             })
             .collect();
         for (object_handle, object) in &mut self.objects {
-            let objects_within_sensor = object_handle_to_objects_within_sensor
-                .get(object_handle)
-                // Unwrapping is safe because the keys of self.objects and
-                // object_handle_to_objects_within_sensor are identical
-                .unwrap();
+            // This is safe because the keys of self.objects and
+            // object_handle_to_objects_within_sensor are identical
+            let objects_within_sensor = &object_handle_to_objects_within_sensor[object_handle];
             match object {
                 ObjectBehavior::Movable(object) => {
                     object.step(&objects_within_sensor);
