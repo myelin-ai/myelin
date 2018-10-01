@@ -13,8 +13,8 @@ impl StaticWater {
 }
 
 impl ImmovableObject for StaticWater {
-    fn step(&mut self, _sensor_collisions: &[ObjectDescription]) -> Vec<ImmovableAction> {
-        Vec::new()
+    fn step(&mut self, _sensor_collisions: &[ObjectDescription]) -> Option<ImmovableAction> {
+        None
     }
     fn kind(&self) -> Kind {
         Kind::Water
@@ -32,8 +32,8 @@ mod tests {
     #[test]
     fn has_no_action() {
         let mut object = StaticWater::new();
-        let actions = object.step(&[]);
-        assert!(actions.is_empty());
+        let action = object.step(&[]);
+        assert!(action.is_none());
     }
 
     #[test]

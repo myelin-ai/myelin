@@ -411,7 +411,7 @@ mod tests {
 
         let mut object_behavior = ObjectMock::new();
         object_behavior.expect_sensor_and_return(None);
-        object_behavior.expect_step_and_return(Vec::new(), Vec::new());
+        object_behavior.expect_step_and_return(Vec::new(), None);
 
         let object = Object {
             object_behavior: ObjectBehavior::Movable(Box::new(object_behavior)),
@@ -459,7 +459,7 @@ mod tests {
             mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
             kind: Kind::Organism,
         };
-        object_behavior.expect_step_and_return(vec![expected_object_description], Vec::new());
+        object_behavior.expect_step_and_return(vec![expected_object_description], None);
         world.expect_body_and_return(returned_handle, Some(expected_physical_body));
 
         let object = Object {
@@ -798,7 +798,7 @@ mod tests {
 
     #[derive(Debug, Default, Clone)]
     struct ObjectMock {
-        expect_step_and_return: Option<(Vec<ObjectDescription>, Vec<MovableAction>)>,
+        expect_step_and_return: Option<(Vec<ObjectDescription>, Option<MovableAction>)>,
         expect_sensor_and_return: Option<Option<Sensor>>,
 
         step_was_called: RefCell<bool>,
@@ -813,7 +813,7 @@ mod tests {
         pub(crate) fn expect_step_and_return(
             &mut self,
             sensor_collisions: Vec<ObjectDescription>,
-            returned_value: Vec<MovableAction>,
+            returned_value: Option<MovableAction>,
         ) {
             self.expect_step_and_return = Some((sensor_collisions, returned_value));
         }
@@ -824,13 +824,13 @@ mod tests {
     }
 
     impl MovableObject for ObjectMock {
-        fn step(&mut self, sensor_collisions: &[ObjectDescription]) -> Vec<MovableAction> {
+        fn step(&mut self, sensor_collisions: &[ObjectDescription]) -> Option<MovableAction> {
             *self.step_was_called.borrow_mut() = true;
             if let Some((ref expected_sensor_collisions, ref return_value)) =
                 self.expect_step_and_return
             {
                 if sensor_collisions.to_vec() == *expected_sensor_collisions {
-                    return_value.to_vec()
+                    return_value.clone()
                 } else {
                     panic!(
                         "step() was called with {:?}, expected {:?}",

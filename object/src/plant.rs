@@ -13,8 +13,8 @@ impl StaticPlant {
 }
 
 impl ImmovableObject for StaticPlant {
-    fn step(&mut self, _sensor_collisions: &[ObjectDescription]) -> Vec<ImmovableAction> {
-        Vec::new()
+    fn step(&mut self, _sensor_collisions: &[ObjectDescription]) -> Option<ImmovableAction> {
+        None
     }
     fn kind(&self) -> Kind {
         Kind::Plant
@@ -32,8 +32,8 @@ mod tests {
     #[test]
     fn has_no_action() {
         let mut object = StaticPlant::new();
-        let actions = object.step(&[]);
-        assert!(actions.is_empty());
+        let action = object.step(&[]);
+        assert!(action.is_none());
     }
 
     #[test]

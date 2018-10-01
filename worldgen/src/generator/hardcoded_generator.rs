@@ -212,7 +212,7 @@ mod tests {
     #[derive(Debug, Clone)]
     struct ObjectMock;
     impl ImmovableObject for ObjectMock {
-        fn step(&mut self, _sensor_collisions: &[ObjectDescription]) -> Vec<ImmovableAction> {
+        fn step(&mut self, _sensor_collisions: &[ObjectDescription]) -> Option<ImmovableAction> {
             panic!("step() was called unexpectedly")
         }
         fn kind(&self) -> Kind {

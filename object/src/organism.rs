@@ -13,8 +13,8 @@ impl StaticOrganism {
 }
 
 impl MovableObject for StaticOrganism {
-    fn step(&mut self, _sensor_collisions: &[ObjectDescription]) -> Vec<MovableAction> {
-        Vec::new()
+    fn step(&mut self, _sensor_collisions: &[ObjectDescription]) -> Option<MovableAction> {
+        None
     }
     fn kind(&self) -> Kind {
         Kind::Organism
@@ -32,8 +32,8 @@ mod tests {
     #[test]
     fn has_no_action() {
         let mut object = StaticOrganism::new();
-        let actions = object.step(&[]);
-        assert!(actions.is_empty());
+        let action = object.step(&[]);
+        assert!(action.is_none());
     }
 
     #[test]
