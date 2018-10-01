@@ -162,7 +162,7 @@ pub trait World: fmt::Debug {
 
     /// Attaches a sensor to the body identified by `body_handle`.
     /// # Errors
-    /// Returns `None` if `body_handle` did not match any bodies
+    /// Returns `None` if `body_handle` did not match any bodies.
     fn attach_sensor(&mut self, body_handle: BodyHandle, sensor: Sensor) -> Option<SensorHandle>;
 
     /// Returns a [`PhysicalBody`] that has previously been
@@ -180,8 +180,14 @@ pub trait World: fmt::Debug {
     /// Retrieves the handles of all bodies that are within the range of
     /// a sensor, excluding the parent body it is attached to.
     /// # Errors
-    /// Returns `None` if `sensor_handle` did not match any sensors
+    /// Returns `None` if `sensor_handle` did not match any sensors.
     fn bodies_within_sensor(&self, sensor_handle: SensorHandle) -> Option<Vec<BodyHandle>>;
+
+    /// Register a force that will be applied to a body on the next
+    /// step.
+    /// # Errors
+    /// Returns `None` if `body_handle` did not match any sensors.
+    fn apply_force(&mut self, body_handle: BodyHandle, force: Force) -> Option<()>;
 
     /// Sets how much time in seconds is simulated for each step.
     /// # Examples
