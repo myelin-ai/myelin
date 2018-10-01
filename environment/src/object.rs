@@ -271,7 +271,7 @@ pub struct LinearForce {
 
 /// Force of rotation
 #[derive(Debug, PartialEq, Clone, Default)]
-pub struct Torque(f64);
+pub struct Torque(pub f64);
 
 pub trait MovableObjectClone {
     fn clone_box(&self) -> Box<dyn MovableObject>;
