@@ -4,7 +4,7 @@ set -e
 application_name=myelin_visualization
 target_dir=visualization/out
 
-cargo build --target wasm32-unknown-unknown
+cargo build --target wasm32-unknown-unknown --release
 
 rm -rf $target_dir
 mkdir $target_dir

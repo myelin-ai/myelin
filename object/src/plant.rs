@@ -12,8 +12,8 @@ impl StaticPlant {
     }
 }
 
-impl ImmovableObject for StaticPlant {
-    fn step(&mut self, _sensor_collisions: &[ObjectDescription]) -> Vec<ImmovableAction> {
+impl MovableObject for StaticPlant {
+    fn step(&mut self, _sensor_collisions: &[ObjectDescription]) -> Vec<MovableAction> {
         Vec::new()
     }
     fn kind(&self) -> Kind {

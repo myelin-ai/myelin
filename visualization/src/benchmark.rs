@@ -1,11 +1,8 @@
-//! Entrypoint for the crate,
-//! used to setup the entire visualization
-
-use crate::controller::ControllerImpl;
-use crate::input_handler::InputHandler;
+use crate::controller::{Controller, ControllerImpl};
 use crate::presenter::CanvasPresenter;
+use crate::presenter::View;
 use crate::view::constant::SIMULATED_TIMESTEP;
-use crate::view::CanvasView;
+use crate::view_model::ViewModel;
 use myelin_environment::object::{Kind, ObjectBehavior};
 use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
 use myelin_environment::simulation_impl::world::NphysicsWorld;
@@ -14,32 +11,17 @@ use myelin_object::{
     organism::StaticOrganism, plant::StaticPlant, terrain::StaticTerrain, water::StaticWater,
 };
 use myelin_worldgen::generator::HardcodedGenerator;
-use wasm_bindgen::prelude::*;
-use web_sys::HtmlCanvasElement;
 
-/// Initializes all components with explicit implementations
-/// and returns a [`InputHandler`] that one can use to signal
-/// user interaction. This function is intended to be called from
-/// JavaScript or, preferably, TypeScript.
-/// # Examples
-/// ```ts
-///    import('../out/myelin_visualization').then((wasm) => {
-///        const canvas = document.getElementById('visualization') as HTMLCanvasElement
-///        const inputHandler = wasm.init(canvas)
-///        inputHandler.on_timer()
-///    }).catch((reason) => {
-///        console.error(reason)
-///        document.body.appendChild(document.createTextNode('Failed to load WASM'))
-///        const reasonElement = document.createElement('pre')
-///        reasonElement.innerText = reason
-///        document.body.appendChild(reasonElement)
-///    })
-/// ```
-///
-/// [`InputHandler`]: ../input_handler/struct.InputHandler.html
-#[wasm_bindgen]
-pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
-    let view = Box::new(CanvasView::new(canvas));
+#[derive(Debug)]
+struct TerminalView;
+
+impl View for TerminalView {
+    fn draw_objects(&self, _view_model: &ViewModel) {}
+    fn flush(&self) {}
+}
+
+pub fn run_benchmark() {
+    let view = Box::new(TerminalView);
     let presenter = Box::new(CanvasPresenter::new(view));
     let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
         let rotation_translator = NphysicsRotationTranslatorImpl::default();
@@ -56,6 +38,9 @@ pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
         Kind::Terrain => ObjectBehavior::Immovable(Box::new(StaticTerrain::new())),
     });
     let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
-    let controller = Box::new(ControllerImpl::new(presenter, &worldgen));
-    InputHandler::new(controller)
+    let mut controller = ControllerImpl::new(presenter, &worldgen);
+
+    loop {
+        controller.step();
+    }
 }

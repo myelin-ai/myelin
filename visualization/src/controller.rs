@@ -1,7 +1,11 @@
+use crate::benchmark_utils;
 use myelin_environment::object::ObjectDescription;
 use myelin_environment::Simulation;
 use myelin_worldgen::WorldGenerator;
 use std::fmt;
+use wasm_bindgen::JsValue;
+use web_sys::console;
+use web_sys::window;
 
 pub(crate) trait Controller: fmt::Debug {
     fn step(&mut self);
@@ -14,13 +18,24 @@ pub(crate) trait Presenter: fmt::Debug {
 pub(crate) struct ControllerImpl {
     presenter: Box<dyn Presenter>,
     simulation: Box<dyn Simulation>,
+    step_durations: benchmark_utils::Durations,
 }
 
 impl Controller for ControllerImpl {
     fn step(&mut self) {
+        let now = benchmark_utils::Instant::now();
+
         self.simulation.step();
         let objects = self.simulation.objects();
         self.presenter.present_objects(&objects);
+
+        self.step_durations.add_duration(now.elapsed());
+
+        if self.step_durations.count() == 100 {
+            eprintln!("{:?}", objects);
+            benchmark_utils::print(self.step_durations.average());
+            self.step_durations.clear();
+        }
     }
 }
 
@@ -29,6 +44,7 @@ impl ControllerImpl {
         Self {
             presenter,
             simulation: world_generator.generate(),
+            step_durations: Default::default(),
         }
     }
 }

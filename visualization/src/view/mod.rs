@@ -21,12 +21,12 @@ impl View for CanvasView {
     }
 
     fn flush(&self) {
-        let canvas = self
+        /*let canvas = self
             .context
             .canvas()
             .expect("No association with a <canvas> element");
         self.context
-            .clear_rect(0.0, 0.0, canvas.width().into(), canvas.height().into());
+            .clear_rect(0.0, 0.0, canvas.width().into(), canvas.height().into());*/
     }
 }
 
@@ -40,22 +40,22 @@ impl CanvasView {
     }
 
     fn draw_object(&self, object: &Object) {
-        self.context.begin_path();
-
+        /*self.context.begin_path();
+        
         let first_vertex = &object.shape.vertices[0];
         self.context
             .move_to(f64::from(first_vertex.x), f64::from(first_vertex.y));
-
+        
         for vertex in &object.shape.vertices[1..] {
             self.context
                 .line_to(f64::from(vertex.x), f64::from(vertex.y));
         }
-
+        
         self.context.close_path();
-
+        
         let color = map_kind_to_color(&object.kind);
         self.context.set_fill_style(&JsValue::from_str(color));
-        self.context.fill();
+        self.context.fill();*/
     }
 }
 
