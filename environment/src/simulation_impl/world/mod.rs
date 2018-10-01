@@ -689,8 +689,8 @@ mod tests {
     fn zero_force_is_ignored() {
         let object = stationary_object(Radians::default());
         let force = Force {
-            linear: LinearForce { x: 0, y: 0 },
-            torque: Torque(0.0),
+            linear: LinearForce::default(),
+            torque: Torque::default(),
         };
         let expected_position = object.position.clone();
         test_force(object, expected_position, force);
@@ -700,7 +700,7 @@ mod tests {
     fn torque_with_no_linear_force_only_changes_rotation() {
         let object = stationary_object(Radians::default());
         let force = Force {
-            linear: LinearForce { x: 0, y: 0 },
+            linear: LinearForce::default(),
             torque: Torque(1.0),
         };
         let expected_position = Position {
@@ -715,7 +715,7 @@ mod tests {
     fn negative_torque_results_in_negative_rotation() {
         let object = stationary_object(Radians::default());
         let force = Force {
-            linear: LinearForce { x: 0, y: 0 },
+            linear: LinearForce::default(),
             torque: Torque(-2.0),
         };
         let expected_position = Position {
@@ -731,7 +731,7 @@ mod tests {
         let object = stationary_object(Radians::default());
         let force = Force {
             linear: LinearForce { x: 5, y: 5 },
-            torque: Torque(0.0),
+            torque: Torque::default(),
         };
         let expected_position = Position {
             // To do: Use actual values
@@ -746,7 +746,7 @@ mod tests {
         let object = stationary_object(Radians::default());
         let force = Force {
             linear: LinearForce { x: -5, y: -5 },
-            torque: Torque(0.0),
+            torque: Torque::default(),
         };
         let expected_position = Position {
             // To do: Use actual values
