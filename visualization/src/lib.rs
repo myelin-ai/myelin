@@ -1,6 +1,6 @@
 //! In-browser visualization for myelin using a canvas with WASM
 
-#![feature(tool_lints)]
+#![feature(tool_lints, duration_as_u128)]
 #![deny(
     rust_2018_idioms,
     missing_debug_implementations,
@@ -8,6 +8,7 @@
     clippy::doc_markdown
 )]
 
+pub(crate) mod benchmark_utils;
 pub mod bootstrapper;
 pub(crate) mod controller;
 pub mod input_handler;
