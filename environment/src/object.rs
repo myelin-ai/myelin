@@ -109,6 +109,7 @@ pub trait ImmovableObject: Debug {
     /// Returns all actions performed by the object
     /// in the current simulation tick
     fn step(&mut self, sensor_collisions: &[ObjectDescription]) -> Vec<ImmovableAction>;
+
     /// Returns the object's kind.
     /// This information is arbitrary and is only used
     /// as a tag for visualizers
