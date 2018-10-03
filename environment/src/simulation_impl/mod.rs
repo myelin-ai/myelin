@@ -1,9 +1,7 @@
 //! A `Simulation` that outsources all physical
 //! behaviour into a separate `World` type
 
-use crate::object::{
-    Mobility, Object, ObjectBehavior, ObjectDescription, Polygon, Position, Sensor, Velocity,
-};
+use crate::object::*;
 use crate::Simulation;
 use std::collections::HashMap;
 use std::fmt;
@@ -18,8 +16,15 @@ pub mod world;
 #[derive(Debug)]
 pub struct SimulationImpl {
     world: Box<dyn World>,
-    objects: HashMap<BodyHandle, BeObjectBehavior>,
-    sensors: HashMap<BodyHandle, SensorHandle>,
+    non_physical_object_data: HashMap<BodyHandle, NonPhysicalObjectData>,
+}
+
+#[derive(Debug)]
+struct NonPhysicalObjectData {
+    pub(crate) sensor_handle: SensorHandle,
+    pub(crate) sensor: Option<Sensor>,
+    pub(crate) kind: Kind,
+    pub(crate) behavior: Box<dyn ObjectBehavior>,
 }
 
 impl SimulationImpl {
@@ -36,42 +41,33 @@ impl SimulationImpl {
     pub fn new(world: Box<dyn World>) -> Self {
         Self {
             world,
-            objects: HashMap::new(),
-            sensors: HashMap::new(),
+            non_physical_object_data: HashMap::new(),
         }
     }
 
-    fn convert_to_object_description(
-        &self,
-        body_handle: BodyHandle,
-        object: &ObjectBehavior,
-    ) -> ObjectDescription {
-        let physics_body = self
-            .world
-            .body(body_handle)
-            .expect("Internal error: Stored body handle was invalid");
-        ObjectDescription {
+    fn convert_to_object_description(&self, body_handle: BodyHandle) -> Option<ObjectDescription> {
+        let physics_body = self.world.body(body_handle)?;
+        let non_physical_object_data = self.non_physical_object_data.get(&body_handle)?;
+        Some(ObjectDescription {
             shape: physics_body.shape,
             position: physics_body.position,
             mobility: physics_body.mobility,
-            kind: object.kind(),
-        }
+            kind: non_physical_object_data.kind,
+            sensor: non_physical_object_data.sensor,
+        })
     }
 
     fn retrieve_objects_within_sensor(&self, body_handle: BodyHandle) -> Vec<ObjectDescription> {
-        if let Some(sensor_handle) = self.sensors.get(&body_handle) {
+        if let Some(non_physical_object_data) = self.non_physical_object_data.get(&body_handle) {
             let object_handles = self
                 .world
-                .bodies_within_sensor(*sensor_handle)
+                .bodies_within_sensor(non_physical_object_data.sensor_handle)
                 .expect("Internal error: Stored invalid sensor handle");
             object_handles
                 .iter()
                 .map(|handle| {
-                    let behavior = self
-                        .objects
-                        .get(handle)
-                        .expect("Internal error: World returned invalid object handles");
-                    self.convert_to_object_description(*handle, behavior)
+                    self.convert_to_object_description(*handle)
+                        .expect("Object handle returned by world was not found in simulation")
                 })
                 .collect()
         } else {
@@ -83,7 +79,7 @@ impl SimulationImpl {
 impl Simulation for SimulationImpl {
     fn step(&mut self) {
         let object_handle_to_objects_within_sensor: HashMap<_, _> = self
-            .objects
+            .non_physical_object_data
             .keys()
             .map(|&object_handle| {
                 (
@@ -92,34 +88,29 @@ impl Simulation for SimulationImpl {
                 )
             })
             .collect();
-        for (object_handle, object) in &mut self.objects {
+        for (object_handle, non_physical_object_data) in &mut self.non_physical_object_data {
             // This is safe because the keys of self.objects and
             // object_handle_to_objects_within_sensor are identical
             let objects_within_sensor = &object_handle_to_objects_within_sensor[object_handle];
-            match object {
-                ObjectBehavior::Movable(object) => {
-                    object.step(&objects_within_sensor);
-                }
-                ObjectBehavior::Immovable(object) => {
-                    object.step(&objects_within_sensor);
-                }
-            }
+            non_physical_object_data
+                .behavior
+                .step(&objects_within_sensor);
         }
         self.world.step()
     }
 
-    fn add_object(&mut self, object: Object) {
-        let mobility = match object.object_behavior {
-            ObjectBehavior::Immovable(_) => Mobility::Immovable,
-            ObjectBehavior::Movable(_) => Mobility::Movable(Velocity::default()),
-        };
+    fn add_object(
+        &mut self,
+        object_description: ObjectDescription,
+        object_behavior: Box<dyn ObjectBehavior>,
+    ) {
         let physical_body = PhysicalBody {
-            shape: object.shape,
-            position: object.position,
-            mobility,
+            shape: object_description.shape,
+            position: object_description.position,
+            mobility: object_description.mobility,
         };
         let body_handle = self.world.add_body(physical_body);
-        if let Some(sensor) = object.object_behavior.sensor() {
+        if let Some(sensor) = object_description.sensor {
             let sensor_handle = self
                 .world
                 .attach_sensor(body_handle, sensor)
@@ -130,9 +121,12 @@ impl Simulation for SimulationImpl {
     }
 
     fn objects(&self) -> Vec<ObjectDescription> {
-        self.objects
-            .iter()
-            .map(|(&handle, object)| self.convert_to_object_description(handle, object))
+        self.non_physical_object_data
+            .keys()
+            .map(|(&handle)| {
+                self.convert_to_object_description(handle)
+                    .expect("Handle stored in simulation was not found in world")
+            })
             .collect()
     }
 

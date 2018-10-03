@@ -29,24 +29,6 @@
 
 use std::fmt::Debug;
 
-/// A new object that is going to be placed in the [`Simulation`]
-///
-/// [`Simulation`]: ../trait.Simulation.html
-#[derive(Debug)]
-pub struct Object {
-    /// The object's behavior, which determines its kind and what the object is going to do every step
-    pub object_behavior: Box<dyn ObjectBehavior>,
-
-    /// The object's initial position
-    pub position: Position,
-
-    /// The object's shape
-    pub shape: Polygon,
-
-    /// The object's mobility
-    pub mobility: Mobility,
-}
-
 /// Behaviour of an object that can never be moved
 pub trait ObjectBehavior: Debug {
     /// Returns all actions performed by the object
