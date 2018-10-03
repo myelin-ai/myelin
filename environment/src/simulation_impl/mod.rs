@@ -18,7 +18,7 @@ pub mod world;
 #[derive(Debug)]
 pub struct SimulationImpl {
     world: Box<dyn World>,
-    objects: HashMap<BodyHandle, ObjectBehavior>,
+    objects: HashMap<BodyHandle, BeObjectBehavior>,
     sensors: HashMap<BodyHandle, SensorHandle>,
 }
 
