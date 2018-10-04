@@ -1,29 +1,5 @@
 //! Objects that can be placed in a world and their components.
-//! # Examples
-//! The following defines a stationary square terrain:
-//! ```
-//! use myelin_environment::object::*;
-//!
-//! let square = ObjectDescription {
-//!     shape: Polygon {
-//!         vertices: vec![
-//!             Vertex { x: -50, y: -50 },
-//!             Vertex { x: -50, y: 50 },
-//!             Vertex { x: 50, y: 50 },
-//!             Vertex { x: 50, y: -50 },
-//!         ],
-//!     },
-//!     position: Position {
-//!         rotation: Radians(0.0),
-//!         location: Location { x: 100, y: 100 },
-//!     },
-//!     kind: Kind::Terrain,
-//!     mobility: Mobility::Immovable,
-//!     sensor: None,
-//! };
-//! ```
-//! The prefered way of constructing a [`ObjectDescription`] however
-//! is by using an [`ObjectBuilder`].
+//! You can construct a [`ObjectDescription`] by using an [`ObjectBuilder`].
 //!
 //! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
 //! [`ObjectDescription`]: ./struct.ObjectDescription.html
