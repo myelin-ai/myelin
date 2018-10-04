@@ -236,19 +236,22 @@ impl fmt::Debug for HardcodedGenerator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::*;
 
     #[derive(Debug, Default)]
     struct SimulationMock {
-        objects: Vec<Object>,
+        objects: Vec<(ObjectDescription, Box<dyn ObjectBehavior>)>,
     }
 
     impl Simulation for SimulationMock {
         fn step(&mut self) {
             panic!("step() called unexpectedly")
         }
-        fn add_object(&mut self, object: Object) {
-            self.objects.push(object)
+        fn add_object(
+            &mut self,
+            object_description: ObjectDescription,
+            object_behavior: Box<dyn ObjectBehavior>,
+        ) {
+            self.objects.push((object_description, object_behavior))
         }
         fn objects(&self) -> Vec<ObjectDescription> {
             panic!("objects() called unexpectedly")
@@ -264,16 +267,14 @@ mod tests {
     }
 
     #[derive(Debug)]
-    struct ObjectMock;
-    impl ObjectBehavior for ObjectMock {
-        fn step(&mut self, _sensor_collisions: &[ObjectDescription]) -> Vec<Action> {
+    struct ObjectBehaviorMock;
+    impl ObjectBehavior for ObjectBehaviorMock {
+        fn step(
+            &mut self,
+            _own_description: &ObjectDescription,
+            _sensor_collisions: &[ObjectDescription],
+        ) -> Vec<Action> {
             panic!("step() was called unexpectedly")
-        }
-        fn kind(&self) -> Kind {
-            panic!("kind() was called unexpectedly")
-        }
-        fn sensor(&self) -> Option<Sensor> {
-            panic!("sensor() was called unexpectedly")
         }
     }
 
@@ -281,7 +282,8 @@ mod tests {
     fn generates_simulation() {
         let simulation_factory =
             Box::new(|| -> Box<dyn Simulation> { Box::new(SimulationMock::default()) });
-        let object_factory = Box::new(|_: Kind| ObjectBehavior::Immovable(Box::new(ObjectMock {})));
+        let object_factory =
+            Box::new(|_: Kind| -> Box<dyn ObjectBehavior> { Box::new(ObjectBehaviorMock {}) });
         let generator = HardcodedGenerator::new(simulation_factory, object_factory);
 
         let _simulation = generator.generate();
