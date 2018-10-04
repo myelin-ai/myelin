@@ -127,7 +127,7 @@ impl ObjectBuilder {
     /// # Examples
     /// ```
     /// use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
-    /// use myelin_environment::object::{Sensor, Location};
+    /// use myelin_environment::object::{Sensor, Position};
     /// ObjectBuilder::new()
     ///     .sensor( Sensor {
     ///         shape: PolygonBuilder::new()
@@ -137,7 +137,7 @@ impl ObjectBuilder {
     ///             .vertex(-50, 50)
     ///             .build()
     ///             .unwrap(),
-    ///         location: Location::default()
+    ///         position: Position::default()
     ///     });
     /// ```
     pub fn sensor(&mut self, sensor: Sensor) -> &mut Self {

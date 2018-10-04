@@ -18,7 +18,8 @@
 //!         location: Location { x: 100, y: 100 },
 //!     },
 //!     kind: Kind::Terrain,
-//!     mobility: Mobility::Immovable
+//!     mobility: Mobility::Immovable,
+//!     sensor: None,
 //! };
 //! ```
 //! The prefered way of constructing a [`ObjectDescription`] however
