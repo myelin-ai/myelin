@@ -38,14 +38,6 @@ pub trait ObjectBehavior: Debug {
         own_description: &ObjectDescription,
         sensor_collisions: &[ObjectDescription],
     ) -> Vec<Action>;
-
-    /// Returns the object's kind.
-    /// This information is arbitrary and is only used
-    /// as a tag for visualizers
-    fn kind(&self) -> Kind;
-
-    /// Returns if a sensor is attached to the object
-    fn sensor(&self) -> Option<Sensor>;
 }
 
 /// Possible actions performed by an [`Object`]

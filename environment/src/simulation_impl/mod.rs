@@ -331,14 +331,14 @@ mod tests {
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
 
         let object_description = ObjectBuilder::new()
-            .location(expected_position.location)
+            .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
             .kind(Kind::Organism)
             .mobility(expected_mobility)
             .build()
             .unwrap();
-        let object_behavior = ObjectMock::new();
+        let object_behavior = ObjectBehaviorMock::new();
 
         let mut simulation = SimulationImpl::new(world);
         simulation.add_object(object_description, Box::new(object_behavior));
@@ -373,10 +373,14 @@ mod tests {
             },
         };
         let sensor_handle = Some(SensorHandle(69));
-        world.expect_attach_sensor_and_return(returned_handle, expected_sensor, sensor_handle);
+        world.expect_attach_sensor_and_return(
+            returned_handle,
+            expected_sensor.clone(),
+            sensor_handle,
+        );
 
         let object_description = ObjectBuilder::new()
-            .location(expected_position.location)
+            .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
             .kind(Kind::Organism)
@@ -384,7 +388,7 @@ mod tests {
             .sensor(expected_sensor)
             .build()
             .unwrap();
-        let object_behavior = ObjectMock::new();
+        let object_behavior = ObjectBehaviorMock::new();
 
         let mut simulation = SimulationImpl::new(Box::new(world));
         simulation.add_object(object_description, Box::new(object_behavior));
@@ -422,14 +426,14 @@ mod tests {
         world.expect_attach_sensor_and_return(returned_handle, sensor, None);
 
         let object_description = ObjectBuilder::new()
-            .location(expected_position.location)
+            .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
             .kind(Kind::Organism)
             .mobility(expected_mobility)
             .build()
             .unwrap();
-        let object_behavior = ObjectMock::new();
+        let object_behavior = ObjectBehaviorMock::new();
 
         let mut simulation = SimulationImpl::new(Box::new(world));
         simulation.add_object(object_description, Box::new(object_behavior));
@@ -437,7 +441,7 @@ mod tests {
 
     #[test]
     fn propagates_step_to_added_object() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = WorldMock::new();
         world.expect_step();
         let expected_shape = shape();
         let expected_position = position();
@@ -451,11 +455,8 @@ mod tests {
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
 
-        let mut object_behavior = ObjectMock::new();
-        object_behavior.expect_step_and_return(Vec::new(), Vec::new());
-
-        let object_description = ObjectBuilder::new()
-            .location(expected_position.location)
+        let expected_object_description = ObjectBuilder::new()
+            .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
             .kind(Kind::Organism)
@@ -463,8 +464,15 @@ mod tests {
             .build()
             .unwrap();
 
+        let mut object_behavior = ObjectBehaviorMock::new();
+        object_behavior.expect_step_and_return(
+            expected_object_description.clone(),
+            Vec::new(),
+            Vec::new(),
+        );
+
         let mut simulation = SimulationImpl::new(Box::new(world));
-        simulation.add_object(object_description, Box::new(object_behavior));
+        simulation.add_object(expected_object_description, Box::new(object_behavior));
     }
 
     #[test]
@@ -483,7 +491,7 @@ mod tests {
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
 
-        let mut object_behavior = ObjectMock::new();
+        let mut object_behavior = ObjectBehaviorMock::new();
         let sensor_shape = shape();
         let expected_sensor = Sensor {
             shape: sensor_shape,
@@ -500,18 +508,8 @@ mod tests {
             Some(vec![returned_handle]),
         );
 
-        let expected_object_description = ObjectDescription {
-            shape: expected_shape.clone(),
-            position: expected_position.clone(),
-            mobility: expected_mobility.clone(),
-            kind: Kind::Organism,
-        };
-
-        object_behavior.expect_step_and_return(vec![expected_object_description], Vec::new());
-        world.expect_body_and_return(returned_handle, Some(expected_physical_body));
-
-        let object_description = ObjectBuilder::new()
-            .location(expected_position.location)
+        let expected_object_description = ObjectBuilder::new()
+            .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
             .kind(Kind::Organism)
@@ -520,8 +518,15 @@ mod tests {
             .build()
             .unwrap();
 
+        object_behavior.expect_step_and_return(
+            expected_object_description.clone(),
+            vec![expected_object_description.clone()],
+            Vec::new(),
+        );
+        world.expect_body_and_return(returned_handle, Some(expected_physical_body));
+
         let mut simulation = SimulationImpl::new(world);
-        simulation.add_object(object_description);
+        simulation.add_object(expected_object_description, Box::new(object_behavior));
         simulation.step();
     }
 
@@ -542,10 +547,10 @@ mod tests {
         world.expect_body_and_return(returned_handle, Some(expected_physical_body));
         let mut simulation = SimulationImpl::new(world);
 
-        let object_behavior = ObjectMock::new();
+        let object_behavior = ObjectBehaviorMock::new();
 
-        let object_description = ObjectBuilder::new()
-            .location(expected_position.location)
+        let expected_object_description = ObjectBuilder::new()
+            .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
             .kind(Kind::Organism)
@@ -553,17 +558,14 @@ mod tests {
             .build()
             .unwrap();
 
-        simulation.add_object(object_description);
+        simulation.add_object(
+            expected_object_description.clone(),
+            Box::new(object_behavior),
+        );
 
         let objects = simulation.objects();
         assert_eq!(1, objects.len());
 
-        let expected_object_description = ObjectDescription {
-            position: expected_position,
-            shape: expected_shape,
-            kind: Kind::Organism,
-            mobility: expected_mobility.clone(),
-        };
         let object_description = &objects[0];
         assert_eq!(expected_object_description, *object_description);
     }
@@ -586,11 +588,8 @@ mod tests {
         world.expect_body_and_return(returned_handle, None);
         let mut simulation = SimulationImpl::new(world);
 
-        let mut object_behavior = Box::new(ObjectMock::default());
-        object_behavior.expect_sensor_and_return(None);
-
         let object_description = ObjectBuilder::new()
-            .location(expected_position.location)
+            .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
             .kind(Kind::Organism)
@@ -598,7 +597,8 @@ mod tests {
             .build()
             .unwrap();
 
-        simulation.add_object(object_description);
+        let object_behavior = ObjectBehaviorMock::default();
+        simulation.add_object(object_description, Box::new(object_behavior));
         simulation.objects();
     }
 
@@ -823,65 +823,60 @@ mod tests {
     }
 
     #[derive(Debug, Default)]
-    struct ObjectMock {
-        expect_step_and_return: Option<(Vec<ObjectDescription>, Vec<MovableAction>)>,
-        expect_sensor_and_return: Option<Option<Sensor>>,
+    struct ObjectBehaviorMock {
+        expect_step_and_return: Option<(ObjectDescription, Vec<ObjectDescription>, Vec<Action>)>,
 
         step_was_called: RefCell<bool>,
-        sensor_was_called: RefCell<bool>,
     }
 
-    impl ObjectMock {
-        fn new() -> ObjectMock {
+    impl ObjectBehaviorMock {
+        fn new() -> ObjectBehaviorMock {
             Default::default()
         }
 
         pub(crate) fn expect_step_and_return(
             &mut self,
+            own_description: ObjectDescription,
             sensor_collisions: Vec<ObjectDescription>,
-            returned_value: Vec<MovableAction>,
+            returned_value: Vec<Action>,
         ) {
-            self.expect_step_and_return = Some((sensor_collisions, returned_value));
-        }
-
-        pub(crate) fn expect_sensor_and_return(&mut self, returned_value: Option<Sensor>) {
-            self.expect_sensor_and_return = Some(returned_value)
+            self.expect_step_and_return =
+                Some((own_description, sensor_collisions, returned_value));
         }
     }
 
-    impl MovableObject for ObjectMock {
-        fn step(&mut self, sensor_collisions: &[ObjectDescription]) -> Vec<MovableAction> {
+    impl ObjectBehavior for ObjectBehaviorMock {
+        fn step(
+            &mut self,
+            own_description: &ObjectDescription,
+            sensor_collisions: &[ObjectDescription],
+        ) -> Vec<Action> {
             *self.step_was_called.borrow_mut() = true;
-            if let Some((ref expected_sensor_collisions, ref return_value)) =
-                self.expect_step_and_return
+            if let Some((
+                ref expected_own_description,
+                ref expected_sensor_collisions,
+                ref return_value,
+            )) = self.expect_step_and_return
             {
-                if sensor_collisions.to_vec() == *expected_sensor_collisions {
+                if sensor_collisions.to_vec() == *expected_sensor_collisions
+                    && expected_own_description == own_description
+                {
                     return_value.clone()
                 } else {
                     panic!(
-                        "step() was called with {:?}, expected {:?}",
-                        sensor_collisions, expected_sensor_collisions
+                        "step() was called with {:?} and {:?}, expected {:?} and {:?}",
+                        own_description,
+                        sensor_collisions,
+                        expected_own_description,
+                        expected_sensor_collisions
                     )
                 }
             } else {
                 panic!("step() was called unexpectedly")
             }
         }
-
-        fn sensor(&self) -> Option<Sensor> {
-            *self.sensor_was_called.borrow_mut() = true;
-            if let Some(ref return_value) = self.expect_sensor_and_return {
-                return_value.clone()
-            } else {
-                panic!("step() was called unexpectedly")
-            }
-        }
-
-        fn kind(&self) -> Kind {
-            Kind::Organism
-        }
     }
-    impl Drop for ObjectMock {
+    impl Drop for ObjectBehaviorMock {
         fn drop(&mut self) {
             if panicking() {
                 return;
@@ -890,12 +885,6 @@ mod tests {
                 assert!(
                     *self.step_was_called.borrow(),
                     "step() was not called, but was expected"
-                )
-            }
-            if self.expect_sensor_and_return.is_some() {
-                assert!(
-                    *self.sensor_was_called.borrow(),
-                    "sensor() was not called, but was expected"
                 )
             }
         }
