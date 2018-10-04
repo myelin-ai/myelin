@@ -53,6 +53,7 @@ pub struct ObjectBuilder {
     orientation: Option<Radians>,
     mobility: Option<Mobility>,
     kind: Option<Kind>,
+    sensor: Option<Sensor>,
 }
 
 impl ObjectBuilder {
@@ -125,6 +126,27 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
+    /// use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+    /// use myelin_environment::object::{Sensor, Location};
+    /// ObjectBuilder::new()
+    ///     .sensor( Sensor {
+    ///         shape: PolygonBuilder::new()
+    ///             .vertex(-50, -50)
+    ///             .vertex(50, -50)
+    ///             .vertex(50, 50)
+    ///             .vertex(-50, 50)
+    ///             .build()
+    ///             .unwrap(),
+    ///         location: Location::default()
+    ///     });
+    /// ```
+    pub fn sensor(&mut self, sensor: Sensor) -> &mut Self {
+        self.sensor = Some(sensor);
+        self
+    }
+
+    /// # Examples
+    /// ```
     /// use myelin_environment::object_builder::ObjectBuilder;
     /// use myelin_environment::object::Radians;
     /// ObjectBuilder::new()
@@ -180,6 +202,7 @@ impl ObjectBuilder {
             },
             kind: self.kind.take().ok_or_else(|| error.clone())?,
             mobility: self.mobility.take().ok_or(error)?,
+            sensor: self.sensor.take(),
         };
 
         Ok(object)
