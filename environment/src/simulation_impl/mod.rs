@@ -269,7 +269,7 @@ pub struct SensorHandle(pub usize);
 mod tests {
     use super::*;
     use crate::object::*;
-    use crate::object_builder::PolygonBuilder;
+    use crate::object_builder::{ObjectBuilder, PolygonBuilder};
     use std::cell::RefCell;
     use std::thread::panicking;
 
@@ -321,23 +321,27 @@ mod tests {
         let mut world = Box::new(WorldMock::new());
         let expected_shape = shape();
         let expected_position = position();
+        let expected_mobility = Mobility::Movable(Velocity::default());
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
-            mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
+            mobility: expected_mobility.clone(),
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
-        let mut simulation = SimulationImpl::new(world);
 
-        let mut object_behavior = ObjectMock::new();
-        object_behavior.expect_sensor_and_return(None);
-        let object = Object {
-            object_behavior: ObjectBehavior::Movable(Box::new(object_behavior)),
-            position: expected_position,
-            shape: expected_shape,
-        };
-        simulation.add_object(object);
+        let object_description = ObjectBuilder::new()
+            .location(expected_position.location)
+            .rotation(expected_position.rotation)
+            .shape(expected_shape)
+            .kind(Kind::Organism)
+            .mobility(expected_mobility)
+            .build()
+            .unwrap();
+        let object_behavior = ObjectMock::new();
+
+        let mut simulation = SimulationImpl::new(world);
+        simulation.add_object(object_description, Box::new(object_behavior));
     }
 
     #[test]
@@ -345,16 +349,17 @@ mod tests {
         let mut world = WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
+        let expected_mobility = Mobility::Movable(Velocity::default());
+
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
-            mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
+            mobility: expected_mobility.clone(),
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
 
-        let mut object_behavior = ObjectMock::new();
-        let sensor = Sensor {
+        let expected_sensor = Sensor {
             shape: PolygonBuilder::new()
                 .vertex(-5, -5)
                 .vertex(5, -5)
@@ -367,18 +372,22 @@ mod tests {
                 rotation: Radians::default(),
             },
         };
-        object_behavior.expect_sensor_and_return(Some(sensor.clone()));
         let sensor_handle = Some(SensorHandle(69));
-        world.expect_attach_sensor_and_return(returned_handle, sensor, sensor_handle);
+        world.expect_attach_sensor_and_return(returned_handle, expected_sensor, sensor_handle);
 
-        let object = Object {
-            object_behavior: ObjectBehavior::Movable(Box::new(object_behavior)),
-            position: expected_position,
-            shape: expected_shape,
-        };
+        let object_description = ObjectBuilder::new()
+            .location(expected_position.location)
+            .rotation(expected_position.rotation)
+            .shape(expected_shape)
+            .kind(Kind::Organism)
+            .mobility(expected_mobility)
+            .sensor(expected_sensor)
+            .build()
+            .unwrap();
+        let object_behavior = ObjectMock::new();
 
         let mut simulation = SimulationImpl::new(Box::new(world));
-        simulation.add_object(object);
+        simulation.add_object(object_description, Box::new(object_behavior));
     }
 
     #[should_panic]
@@ -387,15 +396,16 @@ mod tests {
         let mut world = WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
+        let expected_mobility = Mobility::Movable(Velocity::default());
+
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
-            mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
+            mobility: expected_mobility.clone(),
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
 
-        let mut object_behavior = ObjectMock::new();
         let sensor = Sensor {
             shape: PolygonBuilder::new()
                 .vertex(-5, -5)
@@ -409,17 +419,20 @@ mod tests {
                 rotation: Radians::default(),
             },
         };
-        object_behavior.expect_sensor_and_return(Some(sensor.clone()));
         world.expect_attach_sensor_and_return(returned_handle, sensor, None);
 
-        let object = Object {
-            object_behavior: ObjectBehavior::Movable(Box::new(object_behavior)),
-            position: expected_position,
-            shape: expected_shape,
-        };
+        let object_description = ObjectBuilder::new()
+            .location(expected_position.location)
+            .rotation(expected_position.rotation)
+            .shape(expected_shape)
+            .kind(Kind::Organism)
+            .mobility(expected_mobility)
+            .build()
+            .unwrap();
+        let object_behavior = ObjectMock::new();
 
         let mut simulation = SimulationImpl::new(Box::new(world));
-        simulation.add_object(object);
+        simulation.add_object(object_description, Box::new(object_behavior));
     }
 
     #[test]
@@ -428,26 +441,30 @@ mod tests {
         world.expect_step();
         let expected_shape = shape();
         let expected_position = position();
+        let expected_mobility = Mobility::Movable(Velocity::default());
+
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
-            mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
+            mobility: expected_mobility.clone(),
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
-        let mut simulation = SimulationImpl::new(world);
 
         let mut object_behavior = ObjectMock::new();
-        object_behavior.expect_sensor_and_return(None);
         object_behavior.expect_step_and_return(Vec::new(), Vec::new());
 
-        let object = Object {
-            object_behavior: ObjectBehavior::Movable(Box::new(object_behavior)),
-            position: expected_position,
-            shape: expected_shape,
-        };
-        simulation.add_object(object);
-        simulation.step();
+        let object_description = ObjectBuilder::new()
+            .location(expected_position.location)
+            .rotation(expected_position.rotation)
+            .shape(expected_shape)
+            .kind(Kind::Organism)
+            .mobility(expected_mobility)
+            .build()
+            .unwrap();
+
+        let mut simulation = SimulationImpl::new(Box::new(world));
+        simulation.add_object(object_description, Box::new(object_behavior));
     }
 
     #[test]
@@ -456,10 +473,12 @@ mod tests {
         world.expect_step();
         let expected_shape = shape();
         let expected_position = position();
+        let expected_mobility = Mobility::Movable(Velocity::default());
+
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
-            mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
+            mobility: expected_mobility.clone(),
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
@@ -480,24 +499,29 @@ mod tests {
             expected_sensor_handle,
             Some(vec![returned_handle]),
         );
-        object_behavior.expect_sensor_and_return(Some(expected_sensor));
+
         let expected_object_description = ObjectDescription {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
-            mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
+            mobility: expected_mobility.clone(),
             kind: Kind::Organism,
         };
+
         object_behavior.expect_step_and_return(vec![expected_object_description], Vec::new());
         world.expect_body_and_return(returned_handle, Some(expected_physical_body));
 
-        let object = Object {
-            object_behavior: ObjectBehavior::Movable(Box::new(object_behavior)),
-            position: expected_position,
-            shape: expected_shape,
-        };
+        let object_description = ObjectBuilder::new()
+            .location(expected_position.location)
+            .rotation(expected_position.rotation)
+            .shape(expected_shape)
+            .kind(Kind::Organism)
+            .mobility(expected_mobility)
+            .sensor(expected_sensor)
+            .build()
+            .unwrap();
 
         let mut simulation = SimulationImpl::new(world);
-        simulation.add_object(object);
+        simulation.add_object(object_description);
         simulation.step();
     }
 
@@ -506,26 +530,30 @@ mod tests {
         let mut world = Box::new(WorldMock::new());
         let expected_shape = shape();
         let expected_position = position();
+        let expected_mobility = Mobility::Movable(Velocity::default());
+
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
-            mobility: Mobility::Movable(Velocity::default()),
+            mobility: expected_mobility.clone(),
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
         world.expect_body_and_return(returned_handle, Some(expected_physical_body));
         let mut simulation = SimulationImpl::new(world);
 
-        let mut object_behavior = ObjectMock::new();
-        object_behavior.expect_sensor_and_return(None);
+        let object_behavior = ObjectMock::new();
 
-        let expected_kind = object_behavior.kind();
-        let new_object = Object {
-            object_behavior: ObjectBehavior::Movable(Box::new(object_behavior)),
-            position: expected_position.clone(),
-            shape: expected_shape.clone(),
-        };
-        simulation.add_object(new_object);
+        let object_description = ObjectBuilder::new()
+            .location(expected_position.location)
+            .rotation(expected_position.rotation)
+            .shape(expected_shape)
+            .kind(Kind::Organism)
+            .mobility(expected_mobility)
+            .build()
+            .unwrap();
+
+        simulation.add_object(object_description);
 
         let objects = simulation.objects();
         assert_eq!(1, objects.len());
@@ -533,8 +561,8 @@ mod tests {
         let expected_object_description = ObjectDescription {
             position: expected_position,
             shape: expected_shape,
-            kind: expected_kind,
-            mobility: Mobility::Movable(Velocity::default()),
+            kind: Kind::Organism,
+            mobility: expected_mobility.clone(),
         };
         let object_description = &objects[0];
         assert_eq!(expected_object_description, *object_description);
@@ -546,10 +574,12 @@ mod tests {
         let mut world = Box::new(WorldMock::new());
         let expected_shape = shape();
         let expected_position = position();
+        let expected_mobility = Mobility::Movable(Velocity::default());
+
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
-            mobility: Mobility::Movable(Velocity::default()),
+            mobility: expected_mobility.clone(),
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
@@ -559,12 +589,16 @@ mod tests {
         let mut object_behavior = Box::new(ObjectMock::default());
         object_behavior.expect_sensor_and_return(None);
 
-        let new_object = Object {
-            object_behavior: ObjectBehavior::Movable(object_behavior),
-            position: expected_position.clone(),
-            shape: expected_shape.clone(),
-        };
-        simulation.add_object(new_object);
+        let object_description = ObjectBuilder::new()
+            .location(expected_position.location)
+            .rotation(expected_position.rotation)
+            .shape(expected_shape)
+            .kind(Kind::Organism)
+            .mobility(expected_mobility)
+            .build()
+            .unwrap();
+
+        simulation.add_object(object_description);
         simulation.objects();
     }
 
