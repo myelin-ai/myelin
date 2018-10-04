@@ -489,6 +489,18 @@ mod test {
             .kind(Kind::Organism)
             .location(30, 40)
             .rotation(Radians(1.1))
+            .sensor(Sensor {
+                shape: PolygonBuilder::new()
+                    .vertex(2, 0)
+                    .vertex(-2, 0)
+                    .vertex(0, 1)
+                    .build()
+                    .unwrap(),
+                position: Position {
+                    location: Location { x: 12, y: 42 },
+                    rotation: Radians(1.2),
+                },
+            })
             .build();
 
         let expected = ObjectDescription {
@@ -506,7 +518,19 @@ mod test {
                     Vertex { x: 1, y: 1 },
                 ],
             },
-            sensor: None,
+            sensor: Some(Sensor {
+                shape: Polygon {
+                    vertices: vec![
+                        Vertex { x: 2, y: 0 },
+                        Vertex { x: -2, y: 0 },
+                        Vertex { x: 0, y: 1 },
+                    ],
+                },
+                position: Position {
+                    location: Location { x: 12, y: 42 },
+                    rotation: Radians(1.2),
+                },
+            }),
         };
 
         assert_eq!(Ok(expected), result);
