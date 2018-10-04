@@ -11,4 +11,3 @@ edition = "2018"
 
 [dependencies]
 myelin-environment = { path = "../environment" }
-myelin-object = { path = "../object" }

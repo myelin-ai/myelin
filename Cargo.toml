@@ -3,5 +3,5 @@ members = [
     "environment",
     "visualization",
     "worldgen",
-    "object",
+    "object-behavior",
 ]
