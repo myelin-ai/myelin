@@ -194,7 +194,7 @@ fn build_organism(x: u32, y: u32) -> ObjectDescription {
         .location(x, y)
         .rotation(Radians(FRAC_PI_2))
         .mobility(Mobility::Movable(Velocity::default()))
-        .kind(Kind::Plant)
+        .kind(Kind::Organism)
         .sensor(Sensor {
             shape: PolygonBuilder::new()
                 .vertex(-25, -25)
