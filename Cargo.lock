@@ -244,6 +244,7 @@ name = "myelin-worldgen"
 version = "0.1.0"
 dependencies = [
  "myelin-environment 0.1.0",
+ "myelin-object-behavior 0.1.0",
 ]
 
 [[package]]

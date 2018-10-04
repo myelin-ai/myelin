@@ -32,9 +32,7 @@ impl HardcodedGenerator {
     /// use myelin_environment::object::{Kind, ObjectBehavior};
     /// use myelin_worldgen::WorldGenerator;
     /// use myelin_worldgen::generator::HardcodedGenerator;
-    /// use myelin_object::{
-    ///     organism::StaticOrganism, plant::StaticPlant, terrain::StaticTerrain, water::StaticWater,
-    /// };
+    /// use myelin_object_behavior::Static;
     ///
     /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
     ///     let rotation_translator = NphysicsRotationTranslatorImpl::default();
@@ -42,14 +40,9 @@ impl HardcodedGenerator {
     ///     Box::new(SimulationImpl::new(world))
     /// });
     ///
-    /// let object_factory = Box::new(|kind: Kind| match kind {
-    ///     Kind::Plant => ObjectBehavior::Immovable(Box::new(StaticPlant::new())),
-    ///     Kind::Organism => ObjectBehavior::Movable(Box::new(StaticOrganism::new())),
-    ///     Kind::Water => ObjectBehavior::Immovable(Box::new(StaticWater::new())),
-    ///     Kind::Terrain => ObjectBehavior::Immovable(Box::new(StaticTerrain::new())),
-    /// });
-    /// let simulationgen = HardcodedGenerator::new(simulation_factory, object_factory);
-    /// let generated_simulation = simulationgen.generate();
+    /// let object_factory = Box::new(|_: Kind| -> Box<dyn ObjectBehavior> { Box::new(Static::new()) });
+    /// let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
+    /// let generated_simulation = worldgen.generate();
     pub fn new(simulation_factory: SimulationFactory, object_factory: ObjectFactory) -> Self {
         Self {
             simulation_factory,
