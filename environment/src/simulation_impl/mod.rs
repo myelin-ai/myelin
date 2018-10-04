@@ -52,7 +52,7 @@ impl SimulationImpl {
             position: physics_body.position,
             mobility: physics_body.mobility,
             kind: non_physical_object_data.kind,
-            sensor: sensor_without_handle(non_physical_object_data.sensor),
+            sensor: sensor_without_handle(non_physical_object_data.sensor.clone()),
         })
     }
 
@@ -81,12 +81,12 @@ impl SimulationImpl {
     fn attach_sensor_if_available(
         &mut self,
         body_handle: BodyHandle,
-        object_description: ObjectDescription,
+        sensor: Option<Sensor>,
     ) -> Option<(SensorHandle, Sensor)> {
-        if let Some(sensor) = object_description.sensor {
+        if let Some(sensor) = sensor {
             let sensor_handle = self
                 .world
-                .attach_sensor(body_handle, sensor)
+                .attach_sensor(body_handle, sensor.clone())
                 .expect("Internal error: World returned invalid handle");
             Some((sensor_handle, sensor))
         } else {
@@ -111,10 +111,22 @@ impl Simulation for SimulationImpl {
                 )
             })
             .collect();
+        let object_handle_to_own_description: HashMap<_, _> = self
+            .non_physical_object_data
+            .keys()
+            .map(|&object_handle| {
+                (
+                    object_handle,
+                    // This is safe because the keys of self.objects and
+                    // object_handle_to_objects_within_sensor are identical
+                    self.convert_to_object_description(object_handle).unwrap(),
+                )
+            })
+            .collect();
         for (object_handle, non_physical_object_data) in &mut self.non_physical_object_data {
             // This is safe because the keys of self.objects and
             // object_handle_to_objects_within_sensor are identical
-            let own_description = self.convert_to_object_description(*object_handle).unwrap();
+            let own_description = &object_handle_to_own_description[object_handle];
             let objects_within_sensor = &object_handle_to_objects_within_sensor[object_handle];
             non_physical_object_data
                 .behavior
@@ -136,7 +148,7 @@ impl Simulation for SimulationImpl {
 
         let body_handle = self.world.add_body(physical_body);
 
-        let sensor = self.attach_sensor_if_available(body_handle, object_description);
+        let sensor = self.attach_sensor_if_available(body_handle, object_description.sensor);
         let non_physical_object_data = NonPhysicalObjectData {
             sensor,
             kind: object_description.kind,
