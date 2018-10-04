@@ -268,7 +268,6 @@ pub struct SensorHandle(pub usize);
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::object::*;
     use crate::object_builder::{ObjectBuilder, PolygonBuilder};
     use std::cell::RefCell;
     use std::thread::panicking;
@@ -453,7 +452,8 @@ mod tests {
             mobility: expected_mobility.clone(),
         };
         let returned_handle = BodyHandle(1337);
-        world.expect_add_body_and_return(expected_physical_body, returned_handle);
+        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
+        world.expect_body_and_return(returned_handle, Some(expected_physical_body));
 
         let expected_object_description = ObjectBuilder::new()
             .location(expected_position.location.x, expected_position.location.y)
@@ -473,6 +473,7 @@ mod tests {
 
         let mut simulation = SimulationImpl::new(Box::new(world));
         simulation.add_object(expected_object_description, Box::new(object_behavior));
+        simulation.step();
     }
 
     #[test]
