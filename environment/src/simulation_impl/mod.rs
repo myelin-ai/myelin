@@ -21,8 +21,7 @@ pub struct SimulationImpl {
 
 #[derive(Debug)]
 struct NonPhysicalObjectData {
-    pub(crate) sensor_handle: SensorHandle,
-    pub(crate) sensor: Option<Sensor>,
+    pub(crate) sensor: Option<(SensorHandle, Sensor)>,
     pub(crate) kind: Kind,
     pub(crate) behavior: Box<dyn ObjectBehavior>,
 }
@@ -53,27 +52,51 @@ impl SimulationImpl {
             position: physics_body.position,
             mobility: physics_body.mobility,
             kind: non_physical_object_data.kind,
-            sensor: non_physical_object_data.sensor,
+            sensor: sensor_without_handle(non_physical_object_data.sensor),
         })
     }
 
     fn retrieve_objects_within_sensor(&self, body_handle: BodyHandle) -> Vec<ObjectDescription> {
         if let Some(non_physical_object_data) = self.non_physical_object_data.get(&body_handle) {
-            let object_handles = self
-                .world
-                .bodies_within_sensor(non_physical_object_data.sensor_handle)
-                .expect("Internal error: Stored invalid sensor handle");
-            object_handles
-                .iter()
-                .map(|handle| {
-                    self.convert_to_object_description(*handle)
-                        .expect("Object handle returned by world was not found in simulation")
-                })
-                .collect()
+            if let Some((sensor_handle, _)) = non_physical_object_data.sensor {
+                let object_handles = self
+                    .world
+                    .bodies_within_sensor(sensor_handle)
+                    .expect("Internal error: Stored invalid sensor handle");
+                object_handles
+                    .iter()
+                    .map(|handle| {
+                        self.convert_to_object_description(*handle)
+                            .expect("Object handle returned by world was not found in simulation")
+                    })
+                    .collect()
+            } else {
+                Vec::new()
+            }
         } else {
             Vec::new()
         }
     }
+
+    fn attach_sensor_if_available(
+        &mut self,
+        body_handle: BodyHandle,
+        object_description: ObjectDescription,
+    ) -> Option<(SensorHandle, Sensor)> {
+        if let Some(sensor) = object_description.sensor {
+            let sensor_handle = self
+                .world
+                .attach_sensor(body_handle, sensor)
+                .expect("Internal error: World returned invalid handle");
+            Some((sensor_handle, sensor))
+        } else {
+            None
+        }
+    }
+}
+
+fn sensor_without_handle(sensor: Option<(SensorHandle, Sensor)>) -> Option<Sensor> {
+    Some(sensor?.1)
 }
 
 impl Simulation for SimulationImpl {
@@ -91,10 +114,11 @@ impl Simulation for SimulationImpl {
         for (object_handle, non_physical_object_data) in &mut self.non_physical_object_data {
             // This is safe because the keys of self.objects and
             // object_handle_to_objects_within_sensor are identical
+            let own_description = self.convert_to_object_description(*object_handle).unwrap();
             let objects_within_sensor = &object_handle_to_objects_within_sensor[object_handle];
             non_physical_object_data
                 .behavior
-                .step(&objects_within_sensor);
+                .step(&own_description, &objects_within_sensor);
         }
         self.world.step()
     }
@@ -109,15 +133,17 @@ impl Simulation for SimulationImpl {
             position: object_description.position,
             mobility: object_description.mobility,
         };
+
         let body_handle = self.world.add_body(physical_body);
-        if let Some(sensor) = object_description.sensor {
-            let sensor_handle = self
-                .world
-                .attach_sensor(body_handle, sensor)
-                .expect("Internal error: World returned invalid handle");
-            self.sensors.insert(body_handle, sensor_handle);
-        }
-        self.objects.insert(body_handle, object.object_behavior);
+
+        let sensor = self.attach_sensor_if_available(body_handle, object_description);
+        let non_physical_object_data = NonPhysicalObjectData {
+            sensor,
+            kind: object_description.kind,
+            behavior: object_behavior,
+        };
+        self.non_physical_object_data
+            .insert(body_handle, non_physical_object_data);
     }
 
     fn objects(&self) -> Vec<ObjectDescription> {
