@@ -186,6 +186,11 @@ pub struct LinearForce {
 #[derive(Debug, PartialEq, Clone, Default)]
 pub struct Torque(pub f64);
 
+/// Supertrait used to make sure that all implementors
+/// of [`ObjectBehavior`] are [`Clone`]
+///
+/// [`ObjectBehavior`]: ./trait.ObjectBehavior.html
+/// [`Clone`]: https://doc.rust-lang.org/nightly/std/clone/trait.Clone.html
 pub trait ObjectBehaviorClone {
     fn clone_box(&self) -> Box<dyn ObjectBehavior>;
 }
