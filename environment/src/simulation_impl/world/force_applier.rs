@@ -81,7 +81,7 @@ mod tests {
     fn can_be_injected() {
         let rotation_translator = NphysicsRotationTranslatorMock::default();
         let force_applier = SingleTimeForceApplierImpl::new();
-        let world = NphysicsWorld::with_timestep(
+        let _world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
