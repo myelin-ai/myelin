@@ -611,6 +611,155 @@ mod tests {
         assert_eq!(expected_object_description, *object_description);
     }
 
+    #[test]
+    fn reproducing_spawns_object() {
+        let mut world = Box::new(WorldMock::new());
+        let expected_shape = shape();
+        let expected_position = position();
+        let expected_mobility = Mobility::Movable(Velocity::default());
+
+        let expected_physical_body = PhysicalBody {
+            shape: expected_shape.clone(),
+            position: expected_position.clone(),
+            mobility: expected_mobility.clone(),
+        };
+        let returned_handle = BodyHandle(1984);
+        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
+        world.expect_body_and_return(returned_handle, Some(expected_physical_body));
+        world.expect_step();
+
+        let mut simulation = SimulationImpl::new(world);
+
+        let mut object_behavior = ObjectBehaviorMock::new();
+
+        let expected_object_description = ObjectBuilder::new()
+            .location(expected_position.location.x, expected_position.location.y)
+            .rotation(expected_position.rotation)
+            .shape(expected_shape)
+            .kind(Kind::Organism)
+            .mobility(expected_mobility)
+            .build()
+            .unwrap();
+
+        let mut child_object_behavior = ObjectBehaviorMock::new();
+        child_object_behavior.expect_step_and_return(
+            expected_object_description.clone(),
+            Vec::new(),
+            None,
+        );
+
+        object_behavior.expect_step_and_return(
+            expected_object_description.clone(),
+            Vec::new(),
+            Some(Action::Reproduce(
+                expected_object_description.clone(),
+                Box::new(child_object_behavior),
+            )),
+        );
+
+        simulation.add_object(
+            expected_object_description.clone(),
+            Box::new(object_behavior),
+        );
+
+        simulation.step();
+        simulation.step();
+    }
+
+    #[test]
+    fn dying_removes_object() {
+        let mut world = Box::new(WorldMock::new());
+        let expected_shape = shape();
+        let expected_position = position();
+        let expected_mobility = Mobility::Movable(Velocity::default());
+
+        let expected_physical_body = PhysicalBody {
+            shape: expected_shape.clone(),
+            position: expected_position.clone(),
+            mobility: expected_mobility.clone(),
+        };
+        let returned_handle = BodyHandle(1984);
+        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
+        world.expect_body_and_return(returned_handle, Some(expected_physical_body.clone()));
+        world.expect_step();
+        world.expect_remove_body_and_return(returned_handle, Some(expected_physical_body));
+
+        let mut simulation = SimulationImpl::new(world);
+
+        let mut object_behavior = ObjectBehaviorMock::new();
+
+        let expected_object_description = ObjectBuilder::new()
+            .location(expected_position.location.x, expected_position.location.y)
+            .rotation(expected_position.rotation)
+            .shape(expected_shape)
+            .kind(Kind::Organism)
+            .mobility(expected_mobility)
+            .build()
+            .unwrap();
+
+        object_behavior.expect_step_and_return(
+            expected_object_description.clone(),
+            Vec::new(),
+            Some(Action::Die),
+        );
+
+        simulation.add_object(
+            expected_object_description.clone(),
+            Box::new(object_behavior),
+        );
+
+        simulation.step();
+    }
+
+    #[test]
+    fn force_application_is_propagated() {
+        let mut world = Box::new(WorldMock::new());
+        let expected_shape = shape();
+        let expected_position = position();
+        let expected_mobility = Mobility::Movable(Velocity::default());
+
+        let expected_physical_body = PhysicalBody {
+            shape: expected_shape.clone(),
+            position: expected_position.clone(),
+            mobility: expected_mobility.clone(),
+        };
+        let returned_handle = BodyHandle(1984);
+        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
+        world.expect_body_and_return(returned_handle, Some(expected_physical_body.clone()));
+        world.expect_step();
+        let expected_force = Force {
+            linear: LinearForce { x: 20, y: -5 },
+            torque: Torque(-8.0),
+        };
+        world.expect_apply_force_and_return(returned_handle, expected_force.clone(), Some(()));
+
+        let mut simulation = SimulationImpl::new(world);
+
+        let mut object_behavior = ObjectBehaviorMock::new();
+
+        let expected_object_description = ObjectBuilder::new()
+            .location(expected_position.location.x, expected_position.location.y)
+            .rotation(expected_position.rotation)
+            .shape(expected_shape)
+            .kind(Kind::Organism)
+            .mobility(expected_mobility)
+            .build()
+            .unwrap();
+
+        object_behavior.expect_step_and_return(
+            expected_object_description.clone(),
+            Vec::new(),
+            Some(Action::ApplyForce(expected_force)),
+        );
+
+        simulation.add_object(
+            expected_object_description.clone(),
+            Box::new(object_behavior),
+        );
+
+        simulation.step();
+    }
+
     #[should_panic]
     #[test]
     fn panics_on_invalid_body() {
