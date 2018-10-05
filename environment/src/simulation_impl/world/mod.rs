@@ -668,6 +668,7 @@ mod tests {
     fn timestep_can_be_changed() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_radians_and_return(0.0, Radians(0.0));
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(0.0), 0.0);
         let force_applier = SingleTimeForceApplierMock::default();
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
