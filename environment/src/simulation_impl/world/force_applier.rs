@@ -120,105 +120,126 @@ mod tests {
 
     #[test]
     fn zero_force_is_ignored() {
-        let object = physical_body();
+        let body = physical_body();
         let force = Force {
             linear: LinearForce::default(),
             torque: Torque::default(),
         };
-        let expected_position = object.position.clone();
-        test_force(object, expected_position, force);
+        let expected_body = body.clone();
+        test_force(body, expected_body, force);
     }
 
     #[test]
-    fn torque_with_no_linear_force_only_changes_rotation() {
-        let object = physical_body();
+    fn torque_with_no_linear_force_changes_rotation() {
+        let body = physical_body();
         let force = Force {
             linear: LinearForce::default(),
             torque: Torque(1.0),
         };
-        let expected_position = Position {
-            // To do: Use actual values
-            rotation: Radians(1.1),
-            ..object.position.clone()
+        let expected_body = PhysicalBody {
+            position: Position {
+                // To do: Use actual values
+                rotation: Radians(1.1),
+                ..body.position.clone()
+            },
+            ..body
         };
-        test_force(object, expected_position, force);
+        test_force(physical_body(), expected_body, force);
     }
 
     #[test]
     fn negative_torque_results_in_negative_rotation() {
-        let object = physical_body();
+        let body = physical_body();
         let force = Force {
             linear: LinearForce::default(),
             torque: Torque(-2.0),
         };
-        let expected_position = Position {
-            // To do: Use actual values
-            rotation: Radians(-1.1),
-            ..object.position.clone()
+        let expected_body = PhysicalBody {
+            position: Position {
+                // To do: Use actual values
+                rotation: Radians(-1.1),
+                ..body.position.clone()
+            },
+            ..body
         };
-        test_force(object, expected_position, force);
+        test_force(physical_body(), expected_body, force);
     }
 
     #[test]
-    fn linear_force_with_no_torque_changes_only_location() {
-        let object = physical_body();
+    fn linear_force_with_no_torque_changes_location_and_speed() {
+        let body = physical_body();
         let force = Force {
             linear: LinearForce { x: 100, y: 100 },
             torque: Torque::default(),
         };
-        let expected_position = Position {
-            location: Location { x: 14, y: 14 },
-            ..object.position.clone()
+        let expected_body = PhysicalBody {
+            position: Position {
+                location: Location { x: 14, y: 14 },
+                ..body.position.clone()
+            },
+            mobility: Mobility::Movable(Velocity { x: 34, y: 324 }),
+            ..body
         };
-        test_force(object, expected_position, force);
+        test_force(physical_body(), expected_body, force);
     }
 
     #[test]
     fn negative_linear_force_results_in_lower_location() {
-        let object = physical_body();
+        let body = physical_body();
         let force = Force {
             linear: LinearForce { x: -50, y: -50 },
             torque: Torque::default(),
         };
-        let expected_position = Position {
-            // To do: Use actual values
-            location: Location { x: 0, y: 0 },
-            ..object.position.clone()
+        let expected_body = PhysicalBody {
+            position: Position {
+                location: Location { x: 0, y: 0 },
+                ..body.position.clone()
+            },
+            mobility: Mobility::Movable(Velocity { x: -9, y: 32 - 44 }),
+            ..body
         };
-        test_force(object, expected_position, force);
+        test_force(physical_body(), expected_body, force);
     }
 
     #[test]
     fn location_can_underflow() {
-        let object = physical_body();
+        let body = physical_body();
         let force = Force {
             linear: LinearForce { x: -100, y: -200 },
             torque: Torque::default(),
         };
-        let expected_position = Position {
-            // To do: Use actual values
-            location: Location {
-                x: 4294967292,
-                y: 4294967282,
+        let expected_body = PhysicalBody {
+            position: Position {
+                location: Location {
+                    x: 4294967292,
+                    y: 4294967282,
+                },
+                ..body.position.clone()
             },
-            ..object.position.clone()
+            mobility: Mobility::Movable(Velocity { x: -9, y: 32 - 44 }),
+            ..body
         };
-        test_force(object, expected_position, force);
+        test_force(physical_body(), expected_body, force);
     }
 
     #[test]
     fn linear_force_and_torque_can_be_combined() {
-        let object = physical_body();
+        let body = physical_body();
         let force = Force {
             linear: LinearForce { x: -5, y: -5 },
             torque: Torque(1.5),
         };
-        let expected_position = Position {
-            // To do: Use actual values
-            location: Location { x: 1, y: 1 },
-            rotation: Radians(2.0),
+
+        let expected_body = PhysicalBody {
+            position: Position {
+                // To do: Use actual values
+                location: Location { x: 1, y: 1 },
+                rotation: Radians(2.0),
+            },
+            mobility: Mobility::Movable(Velocity { x: -9, y: 32 - 44 }),
+            ..body
         };
-        test_force(object, expected_position, force);
+        test_force(physical_body(), expected_body, force);
     }
 
     fn physical_body() -> PhysicalBody {
@@ -238,7 +259,7 @@ mod tests {
         }
     }
 
-    fn test_force(body: PhysicalBody, expected_position: Position, force: Force) {
+    fn test_force(body: PhysicalBody, expected_body: PhysicalBody, force: Force) {
         let rotation_translator = NphysicsRotationTranslatorImpl::default();
         let force_applier = SingleTimeForceApplierImpl::default();
         let mut world = NphysicsWorld::with_timestep(
@@ -256,10 +277,6 @@ mod tests {
         world.step();
 
         let actual_body = world.body(handle).expect(BODY_HANDLE_ERROR);
-        let expected_body = PhysicalBody {
-            position: expected_position,
-            ..body
-        };
         assert_eq!(expected_body, actual_body);
     }
 
