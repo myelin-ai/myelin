@@ -10,6 +10,7 @@ use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::query::Proximity;
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
 use ncollide2d::world::CollisionObjectHandle;
+use nphysics2d::force_generator::{ForceGenerator, ForceGeneratorHandle};
 use nphysics2d::math::{Isometry, Point, Vector};
 use nphysics2d::object::{
     BodyHandle as NphysicsBodyHandle, Collider, ColliderHandle, Material, RigidBody,
@@ -22,7 +23,9 @@ use std::fmt;
 
 type PhysicsType = f64;
 
+pub mod force_applier;
 pub mod rotation_translator;
+use self::force_applier::GenericSingleTimeForceApplierWrapper;
 
 /// An implementation of [`World`] that uses nphysics
 /// in the background.
@@ -30,9 +33,12 @@ pub mod rotation_translator;
 /// [`World`]: ./trait.World.html
 pub struct NphysicsWorld {
     physics_world: PhysicsWorld<PhysicsType>,
-    collider_handles: HashMap<ColliderHandle, Kind>,
     sensor_collisions: HashMap<SensorHandle, HashSet<ColliderHandle>>,
+    /// Only used to track active sensors so that we can remove them
+    /// when removing an object
+    body_sensors: HashMap<BodyHandle, SensorHandle>,
     rotation_translator: Box<dyn NphysicsRotationTranslator>,
+    force_generator_handle: ForceGeneratorHandle,
 }
 
 impl NphysicsWorld {
@@ -41,23 +47,29 @@ impl NphysicsWorld {
     /// ```
     /// use myelin_environment::simulation_impl::world::NphysicsWorld;
     /// use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
+    /// use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
     ///
     /// let rotation_translator = NphysicsRotationTranslatorImpl::default();
-    /// let mut world = NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator));
+    /// let force_applier = SingleTimeForceApplierImpl::default();
+    /// let mut world = NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator), Box::new(force_applier));
     /// ```
     pub fn with_timestep(
         timestep: f64,
         rotation_translator: Box<dyn NphysicsRotationTranslator>,
+        force_applier: Box<dyn SingleTimeForceApplier>,
     ) -> Self {
         let mut physics_world = PhysicsWorld::new();
 
         physics_world.set_timestep(timestep);
+        let generic_wrapper = GenericSingleTimeForceApplierWrapper::new(force_applier);
+        let force_generator_handle = physics_world.add_force_generator(generic_wrapper);
 
         Self {
             physics_world,
-            collider_handles: HashMap::new(),
             sensor_collisions: HashMap::new(),
+            body_sensors: HashMap::new(),
             rotation_translator,
+            force_generator_handle,
         }
     }
 
@@ -131,6 +143,10 @@ impl NphysicsWorld {
 pub trait NphysicsRotationTranslator: fmt::Debug {
     fn to_nphysics_rotation(&self, orientation: Radians) -> f64;
     fn to_radians(&self, nphysics_rotation: f64) -> Radians;
+}
+
+pub trait SingleTimeForceApplier: fmt::Debug + ForceGenerator<PhysicsType> {
+    fn register_force(&mut self, handle: NphysicsBodyHandle, force: Force);
 }
 
 fn elements<N>(vector: &Vector2<N>) -> (N, N)
@@ -239,6 +255,17 @@ impl World for NphysicsWorld {
         to_body_handle(handle)
     }
 
+    fn remove_body(&mut self, body_handle: BodyHandle) -> Option<PhysicalBody> {
+        let physical_body = self.body(body_handle)?;
+        let collider_handle = to_collider_handle(body_handle);
+        let nphysics_body_handle = self.physics_world.collider_body_handle(collider_handle)?;
+        if let Some(sensor_handle) = self.body_sensors.remove(&body_handle) {
+            self.sensor_collisions.remove(&sensor_handle)?;
+        }
+        self.physics_world.remove_bodies(&[nphysics_body_handle]);
+        Some(physical_body)
+    }
+
     fn attach_sensor(&mut self, body_handle: BodyHandle, sensor: Sensor) -> Option<SensorHandle> {
         let collider_handle = to_collider_handle(body_handle);
         let parent_handle = self.physics_world.collider_body_handle(collider_handle)?;
@@ -251,6 +278,7 @@ impl World for NphysicsWorld {
 
         let sensor_handle = to_sensor_handle(sensor_handle);
         self.sensor_collisions.insert(sensor_handle, HashSet::new());
+        self.body_sensors.insert(body_handle, sensor_handle);
         Some(sensor_handle)
     }
 
@@ -267,6 +295,18 @@ impl World for NphysicsWorld {
             .map(|&collider_handle| to_body_handle(collider_handle))
             .collect();
         Some(bodies_within_sensor)
+    }
+
+    fn apply_force(&mut self, body_handle: BodyHandle, force: Force) -> Option<()> {
+        let collider_handle = to_collider_handle(body_handle);
+        let nphysics_body_handle = self.physics_world.collider_body_handle(collider_handle)?;
+        self.physics_world
+            .force_generator_mut(self.force_generator_handle)
+            .downcast_mut::<GenericSingleTimeForceApplierWrapper>()
+            .expect("Stored force generator was not of type GenericSingleTimeForceApplierWrapper")
+            .inner_mut()
+            .register_force(nphysics_body_handle, force);
+        Some(())
     }
 
     fn set_simulated_timestep(&mut self, timestep: f64) {
@@ -308,7 +348,6 @@ fn to_nphysics_sensor_handle(sensor_handle: SensorHandle) -> NphysicsSensorHandl
 impl fmt::Debug for NphysicsWorld {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("NphysicsWorld")
-            .field("collider_handles", &self.collider_handles)
             .field("physics", &DebugPhysicsWorld(&self.physics_world))
             .finish()
     }
@@ -329,9 +368,13 @@ impl<'a> fmt::Debug for DebugPhysicsWorld<'a> {
 
 #[cfg(test)]
 mod tests {
+    use super::rotation_translator::mock::NphysicsRotationTranslatorMock;
     use super::*;
     use crate::object_builder::PolygonBuilder;
-    use std::cell::RefCell;
+    use nphysics2d::object::BodySet;
+    use nphysics2d::solver::IntegrationParameters;
+    use std::f64::consts::FRAC_PI_2;
+    use std::sync::RwLock;
     use std::thread::panicking;
 
     const DEFAULT_TIMESTEP: f64 = 1.0;
@@ -339,10 +382,29 @@ mod tests {
     #[test]
     fn returns_none_when_calling_body_with_invalid_handle() {
         let rotation_translator = NphysicsRotationTranslatorMock::default();
-        let world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let force_applier = SingleTimeForceApplierMock::default();
+        let world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
         let invalid_handle = BodyHandle(1337);
         let body = world.body(invalid_handle);
         assert!(body.is_none())
+    }
+
+    #[test]
+    fn returns_none_when_removing_invalid_object() {
+        let rotation_translator = NphysicsRotationTranslatorMock::default();
+        let force_applier = SingleTimeForceApplierMock::default();
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
+        let invalid_handle = BodyHandle(123);
+        let physical_body = world.remove_body(invalid_handle);
+        assert!(physical_body.is_none())
     }
 
     #[test]
@@ -350,8 +412,12 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians(3.0), 3.0);
         rotation_translator.expect_to_radians_and_return(3.0, Radians(3.0));
-        let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let force_applier = SingleTimeForceApplierMock::default();
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
         let movable_body = movable_body(Radians(3.0));
 
         let handle = world.add_body(movable_body);
@@ -363,8 +429,12 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians(3.0), 3.0);
         rotation_translator.expect_to_radians_and_return(3.0, Radians(3.0));
-        let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let force_applier = SingleTimeForceApplierMock::default();
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
         let body = immovable_body(Radians(3.0));
 
         let handle = world.add_body(body);
@@ -372,12 +442,74 @@ mod tests {
     }
 
     #[test]
+    fn removing_object_returns_physical_body() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(3.0), 3.0);
+        rotation_translator.expect_to_radians_and_return(3.0, Radians(3.0));
+        let force_applier = SingleTimeForceApplierMock::default();
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
+        let expected_body = movable_body(Radians(3.0));
+
+        let handle = world.add_body(expected_body.clone());
+        let physical_body = world.remove_body(handle).expect("Invalid handle");
+        assert_eq!(expected_body, physical_body);
+    }
+
+    #[test]
+    fn can_remove_object_with_sensor() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
+        rotation_translator.expect_to_radians_and_return(0.0, Radians::default());
+        let force_applier = SingleTimeForceApplierMock::default();
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
+        let expected_body = movable_body(Radians::default());
+
+        let handle = world.add_body(expected_body.clone());
+        world
+            .attach_sensor(handle, sensor())
+            .expect("Invalid handle");
+        let physical_body = world.remove_body(handle).expect("Invalid handle");
+        assert_eq!(expected_body, physical_body);
+    }
+
+    #[test]
+    fn removed_object_cannot_be_accessed() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(3.0), 3.0);
+        rotation_translator.expect_to_radians_and_return(3.0, Radians(3.0));
+        let force_applier = SingleTimeForceApplierMock::default();
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
+        let expected_body = movable_body(Radians(3.0));
+
+        let handle = world.add_body(expected_body.clone());
+        let _physical_body = world.remove_body(handle).expect("Invalid handle");
+        let removed_body = world.body(handle);
+        assert!(removed_body.is_none())
+    }
+
+    #[test]
     fn can_return_mixed_objects_with_valid_handles() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians(3.0), 3.0);
         rotation_translator.expect_to_radians_and_return(3.0, Radians(3.0));
-        let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let force_applier = SingleTimeForceApplierMock::default();
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
         let rigid_object = movable_body(Radians(3.0));
         let grounded_object = immovable_body(Radians(3.0));
 
@@ -393,8 +525,12 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians(3.0), 3.0);
         rotation_translator.expect_to_radians_and_return(3.0, Radians(3.0));
-        let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let force_applier = SingleTimeForceApplierMock::default();
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
         let expected_body = movable_body(Radians(3.0));
         let handle = world.add_body(expected_body.clone());
         let actual_body = world.body(handle);
@@ -407,8 +543,12 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians(3.0), 3.0);
         rotation_translator.expect_to_radians_and_return(3.0, Radians(3.0));
-        let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let force_applier = SingleTimeForceApplierMock::default();
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
         let expected_body = immovable_body(Radians(3.0));
         let handle = world.add_body(expected_body.clone());
         let actual_body = world.body(handle);
@@ -420,8 +560,12 @@ mod tests {
     fn returns_sensor_handle_when_attachment_is_valid() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
-        let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let force_applier = SingleTimeForceApplierMock::default();
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
         let body = immovable_body(Radians::default());
         let handle = world.add_body(body);
         let sensor_handle = world.attach_sensor(handle, sensor());
@@ -432,8 +576,12 @@ mod tests {
     fn sensors_do_not_work_without_step() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
-        let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let force_applier = SingleTimeForceApplierMock::default();
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );;
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
 
@@ -461,8 +609,13 @@ mod tests {
     fn sensor_detects_close_bodies() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
-        let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let mut force_applier = SingleTimeForceApplierMock::default();
+        force_applier.expect_apply_and_return(true);
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
 
@@ -493,8 +646,13 @@ mod tests {
     fn sensor_detects_non_colliding_bodies() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
-        let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let mut force_applier = SingleTimeForceApplierMock::default();
+        force_applier.expect_apply_and_return(true);
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
 
@@ -525,8 +683,13 @@ mod tests {
     fn sensor_does_not_detect_far_away_bodies() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
-        let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let mut force_applier = SingleTimeForceApplierMock::default();
+        force_applier.expect_apply_and_return(true);
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
 
@@ -565,8 +728,13 @@ mod tests {
     fn test_close_sensors(close_body_location: Location) {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
-        let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let mut force_applier = SingleTimeForceApplierMock::default();
+        force_applier.expect_apply_and_return(true);
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
 
@@ -598,8 +766,13 @@ mod tests {
 
     #[test]
     fn returns_none_attaching_sensor_to_inhalid_body_handle() {
-        let rotation_translator = Box::new(NphysicsRotationTranslatorMock::default());
-        let mut world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, rotation_translator);
+        let rotation_translator = NphysicsRotationTranslatorMock::default();
+        let force_applier = SingleTimeForceApplierMock::default();
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
         let invalid_handle = BodyHandle(132144);
         let sensor_handle = world.attach_sensor(invalid_handle, sensor());
         assert!(sensor_handle.is_none())
@@ -607,8 +780,13 @@ mod tests {
 
     #[test]
     fn returns_none_when_calling_bodies_within_sensor_with_invalid_handle() {
-        let rotation_translator = Box::new(NphysicsRotationTranslatorMock::default());
-        let world = NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, rotation_translator);
+        let rotation_translator = NphysicsRotationTranslatorMock::default();
+        let force_applier = SingleTimeForceApplierMock::default();
+        let world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
         let invalid_handle = SensorHandle(112358);
         let body_handles = world.bodies_within_sensor(invalid_handle);
 
@@ -620,8 +798,13 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians(0.0), 0.0);
         rotation_translator.expect_to_radians_and_return(0.0, Radians(0.0));
-        let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let mut force_applier = SingleTimeForceApplierMock::default();
+        force_applier.expect_apply_and_return(true);
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
 
         let local_object = movable_body(Radians::default());
         let handle = world.add_body(local_object.clone());
@@ -644,10 +827,15 @@ mod tests {
     #[test]
     fn timestep_can_be_changed() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(0.0), 0.0);
         rotation_translator.expect_to_radians_and_return(0.0, Radians(0.0));
-        let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(0.0), 0.0);
+        let mut force_applier = SingleTimeForceApplierMock::default();
+        force_applier.expect_apply_and_return(true);
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
         world.set_simulated_timestep(2.0);
 
         let local_object = movable_body(Radians::default());
@@ -670,13 +858,16 @@ mod tests {
 
     #[test]
     fn step_is_ignored_for_rigid_objects_with_no_movement() {
-        use std::f64::consts::FRAC_PI_2;
-
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians(FRAC_PI_2), FRAC_PI_2);
         rotation_translator.expect_to_radians_and_return(FRAC_PI_2, Radians(FRAC_PI_2));
-        let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let mut force_applier = SingleTimeForceApplierMock::default();
+        force_applier.expect_apply_and_return(true);
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
         let expected_body = immovable_body(Radians(FRAC_PI_2));
         let handle = world.add_body(expected_body.clone());
 
@@ -689,13 +880,16 @@ mod tests {
 
     #[test]
     fn step_is_ignored_for_grounded_objects() {
-        use std::f64::consts::FRAC_PI_2;
-
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians(FRAC_PI_2), FRAC_PI_2);
         rotation_translator.expect_to_radians_and_return(FRAC_PI_2, Radians(FRAC_PI_2));
-        let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let mut force_applier = SingleTimeForceApplierMock::default();
+        force_applier.expect_apply_and_return(true);
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
         let body = immovable_body(Radians(FRAC_PI_2));
         let still_body = PhysicalBody {
             mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
@@ -708,6 +902,28 @@ mod tests {
 
         let actual_body = world.body(handle);
         assert_eq!(Some(still_body), actual_body)
+    }
+
+    #[test]
+    fn applied_force_is_propagated() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(FRAC_PI_2), FRAC_PI_2);
+        let mut force_applier = SingleTimeForceApplierMock::default();
+        let expected_force = Force {
+            linear: LinearForce { x: 4, y: 10 },
+            torque: Torque(2.0),
+        };
+        force_applier.expect_register_force(expected_force.clone());
+
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
+        let expected_body = movable_body(Radians(FRAC_PI_2));
+        let handle = world.add_body(expected_body.clone());
+
+        world.apply_force(handle, expected_force);
     }
 
     fn sensor() -> Sensor {
@@ -759,79 +975,90 @@ mod tests {
             },
         }
     }
-    #[derive(Debug, Default)]
-    struct NphysicsRotationTranslatorMock {
-        expect_to_nphysics_rotation_and_return: Option<(Radians, f64)>,
-        expect_to_radians_and_return: Option<(f64, Radians)>,
 
-        to_nphysics_rotation_was_called: RefCell<bool>,
-        to_radians_was_called: RefCell<bool>,
+    #[derive(Default)]
+    struct SingleTimeForceApplierMock {
+        expect_register_force: Option<(Force,)>,
+        expect_apply_and_return: Option<(bool,)>,
+
+        register_force_was_called: RwLock<bool>,
+        apply_was_called: RwLock<bool>,
     }
 
-    impl NphysicsRotationTranslatorMock {
-        fn expect_to_nphysics_rotation_and_return(
+    impl fmt::Debug for SingleTimeForceApplierMock {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            f.debug_struct("SingleTimeForceApplierMock").finish()
+        }
+    }
+
+    impl SingleTimeForceApplierMock {
+        fn expect_register_force(&mut self, force: Force) {
+            self.expect_register_force = Some((force,))
+        }
+
+        fn expect_apply_and_return(&mut self, return_value: bool) {
+            self.expect_apply_and_return = Some((return_value,))
+        }
+    }
+
+    impl SingleTimeForceApplier for SingleTimeForceApplierMock {
+        fn register_force(&mut self, _handle: NphysicsBodyHandle, force: Force) {
+            *self
+                .register_force_was_called
+                .write()
+                .expect("RwLock was poisoned") = true;
+
+            if let Some((ref expected_force,)) = self.expect_register_force {
+                // handles cannot be compared
+                if force != *expected_force {
+                    panic!(
+                        "register_force() was called with {:?}, expected {:?}",
+                        force, expected_force
+                    )
+                }
+            } else {
+                panic!("register_force() was called unexpectedly")
+            }
+        }
+    }
+
+    impl ForceGenerator<PhysicsType> for SingleTimeForceApplierMock {
+        fn apply(
             &mut self,
-            input_value: Radians,
-            return_value: f64,
-        ) {
-            self.expect_to_nphysics_rotation_and_return = Some((input_value, return_value))
-        }
+            _: &IntegrationParameters<PhysicsType>,
+            _: &mut BodySet<PhysicsType>,
+        ) -> bool {
+            *self.apply_was_called.write().expect("RwLock was poisoned") = true;
 
-        fn expect_to_radians_and_return(&mut self, input_value: f64, return_value: Radians) {
-            self.expect_to_radians_and_return = Some((input_value, return_value))
-        }
-    }
-
-    impl NphysicsRotationTranslator for NphysicsRotationTranslatorMock {
-        fn to_nphysics_rotation(&self, orientation: Radians) -> f64 {
-            *self.to_nphysics_rotation_was_called.borrow_mut() = true;
-
-            if let Some((expected_input, expected_output)) =
-                self.expect_to_nphysics_rotation_and_return
-            {
-                if orientation != expected_input {
-                    panic!("to_nphysics_rotation() was called with an unexpected input value: {:?}")
-                }
-
-                expected_output
+            if let Some((return_value,)) = self.expect_apply_and_return {
+                // IntegrationParameters and BodySet have no comparison functionality
+                return_value
             } else {
-                panic!("to_nphysics_rotation() was called unexpectedly")
-            }
-        }
-
-        fn to_radians(&self, nphysics_rotation: f64) -> Radians {
-            *self.to_radians_was_called.borrow_mut() = true;
-
-            if let Some((expected_input, expected_output)) = self.expect_to_radians_and_return {
-                if nphysics_rotation != expected_input {
-                    panic!("to_radians() was called with an unexpected input value: {:?}")
-                }
-
-                expected_output
-            } else {
-                panic!("to_radians() was called unexpectedly")
+                panic!("apply() was called unexpectedly")
             }
         }
     }
 
-    impl Drop for NphysicsRotationTranslatorMock {
+    impl Drop for SingleTimeForceApplierMock {
         fn drop(&mut self) {
             if panicking() {
                 return;
             }
-            if self.expect_to_nphysics_rotation_and_return.is_some() {
+            if self.expect_register_force.is_some() {
                 assert!(
-                    *self.to_nphysics_rotation_was_called.borrow(),
-                    "to_nphysics_rotation() was not called, but was expected"
+                    *self
+                        .register_force_was_called
+                        .read()
+                        .expect("RwLock was poisoned"),
+                    "expect_register_force() was not called, but was expected"
                 )
             }
-            if self.expect_to_radians_and_return.is_some() {
+            if self.expect_apply_and_return.is_some() {
                 assert!(
-                    *self.to_radians_was_called.borrow(),
-                    "to_radians() was not called, but was expected"
+                    *self.apply_was_called.read().expect("RwLock was poisoned"),
+                    "expect_apply_and_return() was not called, but was expected"
                 )
             }
         }
     }
-
 }

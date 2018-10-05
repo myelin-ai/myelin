@@ -28,7 +28,10 @@ impl HardcodedGenerator {
     /// # Examples
     /// ```
     /// use myelin_environment::Simulation;
-    /// use myelin_environment::simulation_impl::{SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl};
+    /// use myelin_environment::simulation_impl::{
+    ///     SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl
+    /// };
+    /// use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
     /// use myelin_environment::object::{Kind, ObjectBehavior};
     /// use myelin_worldgen::WorldGenerator;
     /// use myelin_worldgen::generator::HardcodedGenerator;
@@ -36,7 +39,12 @@ impl HardcodedGenerator {
     ///
     /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
     ///     let rotation_translator = NphysicsRotationTranslatorImpl::default();
-    ///     let world = Box::new(NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator)));
+    ///     let force_applier = SingleTimeForceApplierImpl::default();
+    ///     let world = Box::new(NphysicsWorld::with_timestep(
+    ///         1.0,
+    ///         Box::new(rotation_translator),
+    ///         Box::new(force_applier),
+    ///     ));
     ///     Box::new(SimulationImpl::new(world))
     /// });
     ///
@@ -259,14 +267,14 @@ mod tests {
         }
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     struct ObjectBehaviorMock;
     impl ObjectBehavior for ObjectBehaviorMock {
         fn step(
             &mut self,
             _own_description: &ObjectDescription,
             _sensor_collisions: &[ObjectDescription],
-        ) -> Vec<Action> {
+        ) -> Option<Action> {
             panic!("step() was called unexpectedly")
         }
     }

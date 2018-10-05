@@ -7,30 +7,40 @@
 use std::fmt::Debug;
 
 /// Behaviour of an object that can never be moved
-pub trait ObjectBehavior: Debug {
+pub trait ObjectBehavior: Debug + ObjectBehaviorClone {
     /// Returns all actions performed by the object
     /// in the current simulation tick
     fn step(
         &mut self,
         own_description: &ObjectDescription,
         sensor_collisions: &[ObjectDescription],
-    ) -> Vec<Action>;
+    ) -> Option<Action>;
 }
 
 /// Possible actions performed by an [`Object`]
 /// during a simulation step
 ///
 /// [`Object`]: ./trait.Object.html
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum Action {
-    /// Move the object to the specified Location
-    Move,
-    /// Rotate the object by the specified radians
-    Rotate,
+    /// Apply the specified force to the object
+    ApplyForce(Force),
+    /// Create a new object at the specified location
+    Reproduce(ObjectDescription, Box<dyn ObjectBehavior>),
     /// Destroy the object
     Die,
-    /// Create a new object at the specified location
-    Reproduce,
+}
+
+impl Clone for Action {
+    fn clone(&self) -> Action {
+        match self {
+            Action::ApplyForce(force) => Action::ApplyForce(force.clone()),
+            Action::Reproduce(object_description, object_behavior) => {
+                Action::Reproduce(object_description.clone(), object_behavior.clone_box())
+            }
+            Action::Die => Action::Die,
+        }
+    }
 }
 
 /// A sensor that can be attached to an [`Object`],
@@ -155,4 +165,43 @@ pub enum Kind {
     Water,
     /// Impassable terrain
     Terrain,
+}
+
+/// Combination of a linear force and its torque,
+/// resulting in a rotated force applied to an object
+#[derive(Debug, PartialEq, Clone, Default)]
+pub struct Force {
+    pub linear: LinearForce,
+    pub torque: Torque,
+}
+
+/// Vector describing linear force
+#[derive(Debug, Eq, PartialEq, Clone, Default)]
+pub struct LinearForce {
+    pub x: i32,
+    pub y: i32,
+}
+
+/// Force of rotation
+#[derive(Debug, PartialEq, Clone, Default)]
+pub struct Torque(pub f64);
+
+/// Supertrait used to make sure that all implementors
+/// of [`ObjectBehavior`] are [`Clone`]. You don't need
+/// to care about this type.
+///
+/// [`ObjectBehavior`]: ./trait.ObjectBehavior.html
+/// [`Clone`]: https://doc.rust-lang.org/nightly/std/clone/trait.Clone.html
+#[doc(hidden)]
+pub trait ObjectBehaviorClone {
+    fn clone_box(&self) -> Box<dyn ObjectBehavior>;
+}
+
+impl<T> ObjectBehaviorClone for T
+where
+    T: ObjectBehavior + Clone + 'static,
+{
+    default fn clone_box(&self) -> Box<dyn ObjectBehavior> {
+        Box::new(self.clone())
+    }
 }
