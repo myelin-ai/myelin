@@ -30,10 +30,14 @@ impl SimulationImpl {
     /// Create a new SimulationImpl by injecting a [`World`]
     /// # Examples
     /// ```
-    /// use myelin_environment::simulation_impl::{SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl};
+    /// use myelin_environment::simulation_impl::{
+    ///     SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl
+    /// };
+    /// use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
     ///
     /// let rotation_translator = NphysicsRotationTranslatorImpl::default();
-    /// let world = Box::new(NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator)));
+    /// let force_applier = SingleTimeForceApplierImpl::default();
+    /// let world = Box::new(NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator), Box::new(force_applier)));
     /// let simulation = SimulationImpl::new(world);
     /// ```
     /// [`World`]: ./trait.World.html
