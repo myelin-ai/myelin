@@ -3,9 +3,11 @@ use myelin_environment::Simulation;
 use myelin_worldgen::WorldGenerator;
 use std::error::Error;
 use std::fmt;
+use std::thread;
+use std::time::{Duration, Instant};
 
 pub(crate) trait Controller: fmt::Debug {
-    fn step(&mut self) -> Result<(), Box<dyn Error>>;
+    fn run(&mut self);
 }
 
 pub(crate) trait Presenter: fmt::Debug {
@@ -16,9 +18,28 @@ pub(crate) trait Presenter: fmt::Debug {
 pub(crate) struct ControllerImpl {
     presenter: Box<dyn Presenter>,
     simulation: Box<dyn Simulation>,
+    expected_delta: Duration,
 }
 
 impl Controller for ControllerImpl {
+    fn run(&mut self) {
+        loop {
+            let now = Instant::now();
+
+            if let Err(err) = self.step() {
+                error!("Error during step: {}", err);
+            }
+
+            let delta = now.elapsed();
+
+            if delta < self.expected_delta {
+                thread::sleep(self.expected_delta - delta);
+            }
+        }
+    }
+}
+
+impl ControllerImpl {
     fn step(&mut self) -> Result<(), Box<dyn Error>> {
         self.simulation.step();
         let objects = self.simulation.objects();
@@ -28,10 +49,15 @@ impl Controller for ControllerImpl {
 }
 
 impl ControllerImpl {
-    pub(crate) fn new(presenter: Box<dyn Presenter>, world_generator: &dyn WorldGenerator) -> Self {
+    pub(crate) fn new(
+        presenter: Box<dyn Presenter>,
+        world_generator: &dyn WorldGenerator,
+        expected_delta: Duration,
+    ) -> Self {
         Self {
             presenter,
             simulation: world_generator.generate(),
+            expected_delta,
         }
     }
 }
@@ -151,14 +177,18 @@ mod tests {
         });
         let world_generator = WorldGeneratorMock::new(simulation_factory, expected_objects.clone());
         let presenter: PresenterMock = PresenterMock::new(expected_objects);
-        ControllerImpl::new(Box::new(presenter), &world_generator)
+        ControllerImpl::new(
+            Box::new(presenter),
+            &world_generator,
+            Duration::from_secs(1),
+        )
     }
 
     #[test]
     fn propagates_empty_step() {
         let expected_objects = vec![];
         let mut controller = mock_controller(expected_objects);
-        controller.step();
+        controller.step().unwrap();
     }
 
     #[test]
@@ -182,6 +212,6 @@ mod tests {
                 .expect("Failed to create object"),
         ];
         let mut controller = mock_controller(expected_objects);
-        controller.step();
+        controller.step().unwrap();
     }
 }
