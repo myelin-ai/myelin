@@ -10,18 +10,18 @@ pub struct NphysicsRotationTranslatorImpl {}
 
 impl NphysicsRotationTranslator for NphysicsRotationTranslatorImpl {
     fn to_nphysics_rotation(&self, orientation: Radians) -> f64 {
-        if orientation.0 <= PI {
-            orientation.0
+        if orientation.0 < PI {
+            -orientation.0
         } else {
-            orientation.0 - (2.0 * PI)
+            (2.0 * PI) - orientation.0
         }
     }
 
     fn to_radians(&self, nphysics_rotation: f64) -> Radians {
-        if nphysics_rotation >= 0.0 {
-            Radians(nphysics_rotation)
+        if nphysics_rotation <= 0.0 {
+            Radians(-nphysics_rotation)
         } else {
-            Radians((2.0 * PI) + nphysics_rotation)
+            Radians((2.0 * PI) - nphysics_rotation)
         }
     }
 }
@@ -125,8 +125,8 @@ mod tests {
     }
 
     #[test]
-    fn to_nphysics_rotation_returns_half_pi_when_passed_half_pi() {
-        verify_to_nphysics_rotation_returns_exoected_result(Radians(FRAC_PI_2), FRAC_PI_2)
+    fn to_nphysics_rotation_returns_negative_half_pi_when_passed_half_pi() {
+        verify_to_nphysics_rotation_returns_exoected_result(Radians(FRAC_PI_2), -FRAC_PI_2)
     }
 
     #[test]
@@ -135,8 +135,8 @@ mod tests {
     }
 
     #[test]
-    fn to_nphysics_rotation_returns_negative_half_pi_when_passed_one_and_a_half_pi() {
-        verify_to_nphysics_rotation_returns_exoected_result(Radians(3.0 * FRAC_PI_2), -FRAC_PI_2)
+    fn to_nphysics_rotation_returns_half_pi_when_passed_one_and_a_half_pi() {
+        verify_to_nphysics_rotation_returns_exoected_result(Radians(3.0 * FRAC_PI_2), FRAC_PI_2)
     }
 
     #[test]
@@ -145,8 +145,8 @@ mod tests {
     }
 
     #[test]
-    fn to_radians_returns_half_pi_when_passed_half_pi() {
-        verify_to_radians_returns_expected_result(FRAC_PI_2, Radians(FRAC_PI_2))
+    fn to_radians_returns_half_pi_when_passed_negative_half_pi() {
+        verify_to_radians_returns_expected_result(-FRAC_PI_2, Radians(FRAC_PI_2))
     }
 
     #[test]
@@ -155,8 +155,8 @@ mod tests {
     }
 
     #[test]
-    fn to_radians_returns_one_and_a_half_pi_when_passed_negative_half_pi() {
-        verify_to_radians_returns_expected_result(-FRAC_PI_2, Radians(3.0 * FRAC_PI_2))
+    fn to_radians_returns_one_and_a_half_pi_when_passed_half_pi() {
+        verify_to_radians_returns_expected_result(FRAC_PI_2, Radians(3.0 * FRAC_PI_2))
     }
 
     fn verify_to_nphysics_rotation_returns_exoected_result(input: Radians, expected: f64) {
