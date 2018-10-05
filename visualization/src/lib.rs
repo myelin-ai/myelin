@@ -8,6 +8,9 @@
     clippy::doc_markdown
 )]
 
+#[macro_use]
+extern crate serde_derive;
+
 pub mod bootstrapper;
 pub(crate) mod controller;
 pub mod input_handler;
