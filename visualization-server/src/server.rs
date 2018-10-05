@@ -1,8 +1,8 @@
+use crate::constant::SIMULATED_TIMESTEP;
 use crate::controller::{Controller, ControllerImpl};
 use crate::presenter::CanvasPresenter;
 use crate::serialize::JsonSerializer;
 use crate::transmitter::ViewModelTransmitter;
-use crate::view::constant::SIMULATED_TIMESTEP;
 use myelin_environment::object::{Kind, ObjectBehavior};
 use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
 use myelin_environment::simulation_impl::world::NphysicsWorld;

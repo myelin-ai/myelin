@@ -1,7 +1,7 @@
 #![feature(const_ip)]
 
 use clap::{App, Arg};
-use myelin_visualization::server::start_server;
+use myelin_visualization_server::start_server;
 use std::net::{IpAddr, Ipv4Addr};
 
 struct Arguments {

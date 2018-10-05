@@ -1,27 +1,27 @@
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
-pub(crate) struct ViewModel {
-    pub(crate) objects: Vec<Object>,
+pub struct ViewModel {
+    pub objects: Vec<Object>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
-pub(crate) struct Object {
-    pub(crate) shape: Polygon,
-    pub(crate) kind: Kind,
+pub struct Object {
+    pub shape: Polygon,
+    pub kind: Kind,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
-pub(crate) struct Polygon {
-    pub(crate) vertices: Vec<Vertex>,
+pub struct Polygon {
+    pub vertices: Vec<Vertex>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
-pub(crate) struct Vertex {
-    pub(crate) x: u32,
-    pub(crate) y: u32,
+pub struct Vertex {
+    pub x: u32,
+    pub y: u32,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
-pub(crate) enum Kind {
+pub enum Kind {
     Organism,
     Plant,
     Water,

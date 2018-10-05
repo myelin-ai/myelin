@@ -9,17 +9,13 @@
 )]
 
 #[macro_use]
-extern crate serde_derive;
-
-#[macro_use]
 extern crate log;
 
-pub mod bootstrapper;
-pub(crate) mod controller;
-pub mod input_handler;
-pub(crate) mod presenter;
-pub(crate) mod serialize;
-pub mod server;
-pub(crate) mod transmitter;
-pub mod view;
-pub(crate) mod view_model;
+mod constant;
+mod controller;
+mod presenter;
+mod serialize;
+mod server;
+mod transmitter;
+
+pub use self::server::start_server;

@@ -1,4 +1,4 @@
-use crate::view_model::ViewModel;
+use myelin_visualization_core::view_model::ViewModel;
 use serde_json as json;
 use std::error::Error;
 use std::fmt::Debug;
@@ -32,7 +32,7 @@ impl ViewModelSerializer for JsonSerializer {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::view_model::*;
+    use myelin_visualization_core::view_model::*;
 
     #[test]
     fn serialize_works() {

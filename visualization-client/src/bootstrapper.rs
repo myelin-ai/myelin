@@ -11,17 +11,16 @@ use web_sys::HtmlCanvasElement;
 /// JavaScript or, preferably, TypeScript.
 /// # Examples
 /// ```ts
-///    import('../out/myelin_visualization').then((wasm) => {
-///        const canvas = document.getElementById('visualization') as HTMLCanvasElement
-///        const inputHandler = wasm.init(canvas)
-///        inputHandler.on_timer()
-///    }).catch((reason) => {
-///        console.error(reason)
-///        document.body.appendChild(document.createTextNode('Failed to load WASM'))
-///        const reasonElement = document.createElement('pre')
-///        reasonElement.innerText = reason
-///        document.body.appendChild(reasonElement)
-///    })
+/// import('../out/myelin_visualization_client').then((wasm) => {
+///   const canvas = document.getElementById('visualization') as HTMLCanvasElement
+///   wasm.init(canvas)
+/// }).catch((reason) => {
+///   console.error(reason)
+///   document.body.appendChild(document.createTextNode('Failed to load WASM'))
+///   const reasonElement = document.createElement('pre')
+///   reasonElement.innerText = reason
+///   document.body.appendChild(reasonElement)
+/// })
 /// ```
 ///
 /// [`InputHandler`]: ../input_handler/struct.InputHandler.html
