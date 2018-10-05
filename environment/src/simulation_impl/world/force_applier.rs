@@ -205,7 +205,7 @@ mod tests {
         PhysicalBody {
             position: Position {
                 location: Location { x: 5, y: 5 },
-                rotation: Radians(3.0),
+                rotation: Radians::default(),
             },
             mobility: Mobility::Movable(Velocity::default()),
             shape: PolygonBuilder::new()
