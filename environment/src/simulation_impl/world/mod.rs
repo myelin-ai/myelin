@@ -778,13 +778,6 @@ mod tests {
         }
     }
 
-    fn stationary_object(orientation: Radians) -> PhysicalBody {
-        PhysicalBody {
-            mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
-            ..movable_body(orientation)
-        }
-    }
-
     fn immovable_body(orientation: Radians) -> PhysicalBody {
         PhysicalBody {
             shape: PolygonBuilder::new()

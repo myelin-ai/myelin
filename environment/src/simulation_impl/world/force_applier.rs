@@ -186,7 +186,7 @@ mod tests {
                 location: Location { x: 5, y: 5 },
                 rotation: Radians(3.0),
             },
-            mobility: Mobility::Movable(Velocity { x: 1, y: 1 }),
+            mobility: Mobility::Movable(Velocity::default()),
             shape: PolygonBuilder::new()
                 .vertex(-5, -5)
                 .vertex(-5, 5)
