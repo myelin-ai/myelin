@@ -80,7 +80,10 @@ pub mod mock {
 
             if let Some((expected_input, expected_output)) = self.expect_to_radians_and_return {
                 if nphysics_rotation != expected_input {
-                    panic!("to_radians() was called with an unexpected input value: {:?}")
+                    panic!(
+                        "to_radians() was called with {:?}, expected {:?}",
+                        nphysics_rotation, expected_input
+                    )
                 }
 
                 expected_output
