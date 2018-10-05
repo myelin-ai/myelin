@@ -331,11 +331,11 @@ impl<'a> fmt::Debug for DebugPhysicsWorld<'a> {
 
 #[cfg(test)]
 mod tests {
+    use super::rotation_translator::mock::NphysicsRotationTranslatorMock;
     use super::*;
     use crate::object_builder::PolygonBuilder;
     use nphysics2d::object::BodySet;
     use nphysics2d::solver::IntegrationParameters;
-    use std::cell::RefCell;
     use std::sync::RwLock;
     use std::thread::panicking;
 
@@ -857,81 +857,6 @@ mod tests {
                 location: Location { x: 300, y: 200 },
                 rotation: orientation,
             },
-        }
-    }
-
-    #[derive(Debug, Default)]
-    struct NphysicsRotationTranslatorMock {
-        expect_to_nphysics_rotation_and_return: Option<(Radians, f64)>,
-        expect_to_radians_and_return: Option<(f64, Radians)>,
-
-        to_nphysics_rotation_was_called: RefCell<bool>,
-        to_radians_was_called: RefCell<bool>,
-    }
-
-    impl NphysicsRotationTranslatorMock {
-        fn expect_to_nphysics_rotation_and_return(
-            &mut self,
-            input_value: Radians,
-            return_value: f64,
-        ) {
-            self.expect_to_nphysics_rotation_and_return = Some((input_value, return_value))
-        }
-
-        fn expect_to_radians_and_return(&mut self, input_value: f64, return_value: Radians) {
-            self.expect_to_radians_and_return = Some((input_value, return_value))
-        }
-    }
-
-    impl NphysicsRotationTranslator for NphysicsRotationTranslatorMock {
-        fn to_nphysics_rotation(&self, orientation: Radians) -> f64 {
-            *self.to_nphysics_rotation_was_called.borrow_mut() = true;
-
-            if let Some((expected_input, expected_output)) =
-                self.expect_to_nphysics_rotation_and_return
-            {
-                if orientation != expected_input {
-                    panic!("to_nphysics_rotation() was called with an unexpected input value: {:?}")
-                }
-
-                expected_output
-            } else {
-                panic!("to_nphysics_rotation() was called unexpectedly")
-            }
-        }
-
-        fn to_radians(&self, nphysics_rotation: f64) -> Radians {
-            *self.to_radians_was_called.borrow_mut() = true;
-
-            if let Some((expected_input, expected_output)) = self.expect_to_radians_and_return {
-                if nphysics_rotation != expected_input {
-                    panic!("to_radians() was called with an unexpected input value: {:?}")
-                }
-
-                expected_output
-            } else {
-                panic!("to_radians() was called unexpectedly")
-            }
-        }
-    }
-
-    impl Drop for NphysicsRotationTranslatorMock {
-        fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            if self.expect_to_nphysics_rotation_and_return.is_some() {
-                assert!(
-                    *self.to_nphysics_rotation_was_called.borrow(),
-                    "to_nphysics_rotation() was not called, but was expected"
-                )
-            }
-            if self.expect_to_radians_and_return.is_some() {
-                assert!(
-                    *self.to_radians_was_called.borrow(),
-                    "to_radians() was not called, but was expected"
-                )
-            }
         }
     }
 

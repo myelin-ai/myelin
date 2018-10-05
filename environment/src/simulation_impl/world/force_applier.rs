@@ -45,3 +45,21 @@ impl ForceGenerator<PhysicsType> for SingleTimeForceApplierImpl {
         KEEP_FORCE_GENERATOR_AFTER_APPLICATION
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::simulation_impl::world::rotation_translator::mock::NphysicsRotationTranslatorMock;
+    use crate::simulation_impl::world::NphysicsWorld;
+
+    const DEFAULT_TIMESTEP: f64 = 1.0;
+
+    #[test]
+    fn can_be_added() {
+        let rotation_translator = NphysicsRotationTranslatorMock::default();
+        let force_applier = SingleTimeForceApplierImpl::new();
+        let mut world =
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+    }
+
+}
