@@ -95,7 +95,7 @@ mod tests {
 
     #[test]
     fn force_does_nothing_before_step() {
-        let mut rotation_translator = NphysicsRotationTranslatorImpl::default();
+        let rotation_translator = NphysicsRotationTranslatorImpl::default();
         let force_applier = SingleTimeForceApplierImpl::default();
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
@@ -222,7 +222,7 @@ mod tests {
     }
 
     fn test_force(body: PhysicalBody, expected_position: Position, force: Force) {
-        let mut rotation_translator = NphysicsRotationTranslatorImpl::default();
+        let rotation_translator = NphysicsRotationTranslatorImpl::default();
         let force_applier = SingleTimeForceApplierImpl::default();
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
