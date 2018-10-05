@@ -10,6 +10,7 @@ use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::query::Proximity;
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
 use ncollide2d::world::CollisionObjectHandle;
+use nphysics2d::force_generator::ForceGenerator;
 use nphysics2d::math::{Isometry, Point, Vector};
 use nphysics2d::object::{
     BodyHandle as NphysicsBodyHandle, Collider, ColliderHandle, Material, RigidBody,
@@ -22,6 +23,7 @@ use std::fmt;
 
 type PhysicsType = f64;
 
+pub mod force_applier;
 pub mod rotation_translator;
 
 /// An implementation of [`World`] that uses nphysics
@@ -131,6 +133,10 @@ impl NphysicsWorld {
 pub trait NphysicsRotationTranslator: fmt::Debug {
     fn to_nphysics_rotation(&self, orientation: Radians) -> f64;
     fn to_radians(&self, nphysics_rotation: f64) -> Radians;
+}
+
+pub trait SingleTimeForceApplier: fmt::Debug + ForceGenerator<PhysicsType> {
+    fn register_force(&mut self, handle: NphysicsBodyHandle, force: Force);
 }
 
 fn elements<N>(vector: &Vector2<N>) -> (N, N)
