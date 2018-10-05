@@ -554,43 +554,15 @@ mod tests {
 
     #[test]
     fn sensor_does_not_detect_touching_sensors() {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
-        let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
-        let body = movable_body(Radians::default());
-        let handle_one = world.add_body(body);
-
-        let sensor_handle = world
-            .attach_sensor(handle_one, sensor())
-            .expect("body handle was invalid");
-
-        let close_body = PhysicalBody {
-            position: Position {
-                location: Location { x: 25, y: 0 },
-                rotation: Radians::default(),
-            },
-            ..movable_body(Radians::default())
-        };
-        let close_body_handle = world.add_body(close_body);
-
-        world
-            .attach_sensor(close_body_handle, sensor())
-            .expect("body handle was invalid");
-
-        world.step();
-
-        let bodies = world
-            .bodies_within_sensor(sensor_handle)
-            .expect("sensor handle was invalid");
-
-        println!("{:?}", bodies);
-
-        assert!(bodies.is_empty());
+        test_close_sensors(Location { x: 25, y: 0 });
     }
 
     #[test]
     fn sensor_does_not_detect_overlapping_sensors() {
+        test_close_sensors(Location { x: 25 - 2, y: 0 });
+    }
+
+    fn test_close_sensors(close_body_location: Location) {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
         let mut world =
@@ -604,7 +576,7 @@ mod tests {
 
         let close_body = PhysicalBody {
             position: Position {
-                location: Location { x: 25 - 2, y: 0 },
+                location: close_body_location,
                 rotation: Radians::default(),
             },
             ..movable_body(Radians::default())
@@ -620,8 +592,6 @@ mod tests {
         let bodies = world
             .bodies_within_sensor(sensor_handle)
             .expect("sensor handle was invalid");
-
-        println!("{:?}", bodies);
 
         assert!(bodies.is_empty());
     }
