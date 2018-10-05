@@ -97,6 +97,21 @@ impl SimulationImpl {
             None
         }
     }
+
+    fn handle_action(&mut self, body_handle: BodyHandle, action: Action) {
+        match action {
+            Action::Reproduce(object_description, object_behavior) => {
+                self.add_object(object_description, object_behavior);
+            }
+            Action::ApplyForce(force) => self
+                .world
+                .apply_force(body_handle, force)
+                .expect("Invalid body_handle"),
+            Action::Die => {
+                // Remove object
+            }
+        }
+    }
 }
 
 fn sensor_without_handle(sensor: Option<(SensorHandle, Sensor)>) -> Option<Sensor> {
@@ -127,14 +142,21 @@ impl Simulation for SimulationImpl {
                 )
             })
             .collect();
+        let mut actions = HashMap::new();
         for (object_handle, non_physical_object_data) in &mut self.non_physical_object_data {
             // This is safe because the keys of self.objects and
             // object_handle_to_objects_within_sensor are identical
             let own_description = &object_handle_to_own_description[object_handle];
             let objects_within_sensor = &object_handle_to_objects_within_sensor[object_handle];
-            non_physical_object_data
+            let action = non_physical_object_data
                 .behavior
                 .step(&own_description, &objects_within_sensor);
+            if let Some(action) = action {
+                actions.insert(*object_handle, action);
+            }
+        }
+        for (body_handle, action) in actions {
+            self.handle_action(body_handle, action);
         }
         self.world.step()
     }

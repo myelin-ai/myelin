@@ -762,6 +762,28 @@ mod tests {
         assert_eq!(Some(still_body), actual_body)
     }
 
+    #[test]
+    fn applied_force_is_propagated() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(FRAC_PI_2), FRAC_PI_2);
+        let mut force_applier = SingleTimeForceApplierMock::default();
+        let expected_force = Force {
+            linear: LinearForce { x: 4, y: 10 },
+            torque: Torque(2.0),
+        };
+        force_applier.expect_register_force(expected_force.clone());
+
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
+        let expected_body = movable_body(Radians(FRAC_PI_2));
+        let handle = world.add_body(expected_body.clone());
+
+        world.apply_force(handle, expected_force);
+    }
+
     fn sensor() -> Sensor {
         Sensor {
             shape: PolygonBuilder::new()
@@ -814,7 +836,7 @@ mod tests {
 
     #[derive(Default)]
     struct SingleTimeForceApplierMock {
-        expect_register_force: Option<(NphysicsBodyHandle, Force)>,
+        expect_register_force: Option<(Force,)>,
         expect_apply_and_return: Option<(bool,)>,
 
         register_force_was_called: RwLock<bool>,
@@ -828,8 +850,8 @@ mod tests {
     }
 
     impl SingleTimeForceApplierMock {
-        fn expect_register_force(&mut self, body_handle: NphysicsBodyHandle, force: Force) {
-            self.expect_register_force = Some((body_handle, force))
+        fn expect_register_force(&mut self, force: Force) {
+            self.expect_register_force = Some((force,))
         }
 
         fn expect_apply_and_return(&mut self, return_value: bool) {
@@ -838,17 +860,18 @@ mod tests {
     }
 
     impl SingleTimeForceApplier for SingleTimeForceApplierMock {
-        fn register_force(&mut self, handle: NphysicsBodyHandle, force: Force) {
+        fn register_force(&mut self, _handle: NphysicsBodyHandle, force: Force) {
             *self
                 .register_force_was_called
                 .write()
                 .expect("RwLock was poisoned") = true;
 
-            if let Some((ref expected_handle, ref expected_force)) = self.expect_register_force {
-                if handle != *expected_handle || force != *expected_force {
+            if let Some((ref expected_force,)) = self.expect_register_force {
+                // handles cannot be compared
+                if force != *expected_force {
                     panic!(
-                        "register_force() was called with {:?} and {:?}, expected {:?} and {:?}",
-                        handle, force, expected_handle, expected_force
+                        "register_force() was called with {:?}, expected {:?}",
+                        force, expected_force
                     )
                 }
             } else {
