@@ -63,7 +63,10 @@ pub mod mock {
                 self.expect_to_nphysics_rotation_and_return
             {
                 if orientation != expected_input {
-                    panic!("to_nphysics_rotation() was called with an unexpected input value: {:?}")
+                    panic!(
+                        "to_nphysics_rotation() was called with {:?}, expected {:?}",
+                        orientation, expected_input
+                    )
                 }
 
                 expected_output
