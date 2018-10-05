@@ -47,7 +47,11 @@ impl StochasticSpreading {
             .flip_coin_with_probability(self.spreading_probability)
     }
 
-    fn spread(&self, _sensor_collisions: &[ObjectDescription]) -> Option<Action> {
+    fn spread(
+        &self,
+        _own_description: &ObjectDescription,
+        _sensor_collisions: &[ObjectDescription],
+    ) -> Option<Action> {
         unimplemented!()
     }
 }
@@ -59,7 +63,7 @@ impl ObjectBehavior for StochasticSpreading {
         sensor_collisions: &[ObjectDescription],
     ) -> Option<Action> {
         if self.should_spread() {
-            self.spread(sensor_collisions)
+            self.spread(own_description, sensor_collisions)
         } else {
             None
         }
