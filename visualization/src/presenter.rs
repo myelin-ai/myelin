@@ -1,6 +1,9 @@
 use crate::controller::Presenter;
+use crate::serialize::ViewModelSerializer;
+use crate::transmitter::ViewModelTransmitter;
 use crate::view_model::{self, ViewModel};
 use myelin_environment::object as business_object;
+use std::error::Error;
 use std::fmt;
 
 pub(crate) trait View: fmt::Debug {
@@ -10,11 +13,15 @@ pub(crate) trait View: fmt::Debug {
 
 #[derive(Debug)]
 pub(crate) struct CanvasPresenter {
-    view: Box<dyn View>,
+    serializer: Box<dyn ViewModelSerializer>,
+    transmitter: Box<dyn ViewModelTransmitter>,
 }
 
 impl Presenter for CanvasPresenter {
-    fn present_objects(&self, objects: &[business_object::ObjectDescription]) {
+    fn present_objects(
+        &self,
+        objects: &[business_object::ObjectDescription],
+    ) -> Result<(), Box<dyn Error>> {
         let view_model = ViewModel {
             objects: objects
                 .iter()
@@ -22,8 +29,10 @@ impl Presenter for CanvasPresenter {
                 .collect(),
         };
 
-        self.view.flush();
-        self.view.draw_objects(&view_model);
+        self.transmitter
+            .send_view_model(self.serializer.serialize_view_model(&view_model)?)?;
+
+        Ok(())
     }
 }
 
@@ -72,8 +81,14 @@ fn map_kind(kind: business_object::Kind) -> view_model::Kind {
 }
 
 impl CanvasPresenter {
-    pub(crate) fn new(view: Box<dyn View>) -> Self {
-        Self { view }
+    pub(crate) fn new(
+        serializer: Box<dyn ViewModelSerializer>,
+        transmitter: Box<dyn ViewModelTransmitter>,
+    ) -> Self {
+        Self {
+            transmitter,
+            serializer,
+        }
     }
 }
 
@@ -84,36 +99,75 @@ mod tests {
     use myelin_environment::object::{Kind, Mobility, ObjectDescription, Radians};
     use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
     use std::cell::RefCell;
+    use std::error::Error;
     use std::f64::consts::PI;
+    use std::thread;
 
     #[derive(Debug)]
-    struct ViewMock {
-        expected_view_model: ViewModel,
-        flush_was_called: RefCell<bool>,
+    struct TransmitterMock {
+        expected_data: Vec<u8>,
+        send_view_model_was_called: RefCell<bool>,
     }
 
-    impl ViewMock {
-        fn new(expected_view_model: ViewModel) -> Self {
+    impl TransmitterMock {
+        fn new(expected_data: Vec<u8>) -> Self {
             Self {
-                expected_view_model,
-                flush_was_called: RefCell::new(false),
+                expected_data,
+                send_view_model_was_called: RefCell::new(false),
             }
         }
     }
 
-    impl View for ViewMock {
-        fn draw_objects(&self, view_model: &ViewModel) {
-            assert_eq!(self.expected_view_model, *view_model);
-        }
+    impl ViewModelTransmitter for TransmitterMock {
+        fn send_view_model(&self, view_model: Vec<u8>) -> Result<(), Box<dyn Error>> {
+            assert_eq!(self.expected_data, view_model);
 
-        fn flush(&self) {
-            *self.flush_was_called.borrow_mut() = true;
+            *self.send_view_model_was_called.borrow_mut() = true;
+
+            Ok(())
         }
     }
 
-    impl Drop for ViewMock {
+    impl Drop for TransmitterMock {
         fn drop(&mut self) {
-            assert!(*self.flush_was_called.borrow());
+            if !thread::panicking() {
+                assert!(*self.send_view_model_was_called.borrow());
+            }
+        }
+    }
+
+    #[derive(Debug)]
+    struct SerializerMock {
+        expected_view_model: ViewModel,
+        return_value: Vec<u8>,
+        serialize_view_model_was_called: RefCell<bool>,
+    }
+
+    impl SerializerMock {
+        fn new(expected_view_model: ViewModel, return_value: Vec<u8>) -> Self {
+            Self {
+                expected_view_model,
+                return_value,
+                serialize_view_model_was_called: RefCell::new(false),
+            }
+        }
+    }
+
+    impl ViewModelSerializer for SerializerMock {
+        fn serialize_view_model(&self, view_model: &ViewModel) -> Result<Vec<u8>, Box<dyn Error>> {
+            assert_eq!(&self.expected_view_model, view_model);
+
+            *self.serialize_view_model_was_called.borrow_mut() = true;
+
+            Ok(self.return_value.clone())
+        }
+    }
+
+    impl Drop for SerializerMock {
+        fn drop(&mut self) {
+            if !thread::panicking() {
+                assert!(*self.serialize_view_model_was_called.borrow());
+            }
         }
     }
 
@@ -142,9 +196,11 @@ mod tests {
         let expected_view_model = ViewModel {
             objects: Vec::new(),
         };
-        let view_mock = ViewMock::new(expected_view_model);
-        let presenter = CanvasPresenter::new(Box::new(view_mock));
-        presenter.present_objects(&objects);
+        let expected_data = vec![1, 2, 3];
+        let serializer_mock = SerializerMock::new(expected_view_model, expected_data.clone());
+        let transmitter_mock = TransmitterMock::new(expected_data);
+        let presenter = CanvasPresenter::new(Box::new(serializer_mock), Box::new(transmitter_mock));
+        presenter.present_objects(&objects).unwrap();
     }
 
     #[test]
@@ -163,9 +219,11 @@ mod tests {
                 kind: view_model::Kind::Plant,
             }],
         };
-        let view_mock = ViewMock::new(expected_view_model);
-        let presenter = CanvasPresenter::new(Box::new(view_mock));
-        presenter.present_objects(&object_description);
+        let expected_data = vec![1, 2, 3];
+        let serializer_mock = SerializerMock::new(expected_view_model, expected_data.clone());
+        let transmitter_mock = TransmitterMock::new(expected_data);
+        let presenter = CanvasPresenter::new(Box::new(serializer_mock), Box::new(transmitter_mock));
+        presenter.present_objects(&object_description).unwrap();
     }
 
     #[test]
@@ -184,9 +242,11 @@ mod tests {
                 kind: view_model::Kind::Plant,
             }],
         };
-        let view_mock = ViewMock::new(expected_view_model);
-        let presenter = CanvasPresenter::new(Box::new(view_mock));
-        presenter.present_objects(&object_description);
+        let expected_data = vec![1, 2, 3];
+        let serializer_mock = SerializerMock::new(expected_view_model, expected_data.clone());
+        let transmitter_mock = TransmitterMock::new(expected_data);
+        let presenter = CanvasPresenter::new(Box::new(serializer_mock), Box::new(transmitter_mock));
+        presenter.present_objects(&object_description).unwrap();
     }
 
     #[test]
@@ -217,8 +277,10 @@ mod tests {
                 kind: view_model::Kind::Plant,
             }],
         };
-        let view_mock = ViewMock::new(expected_view_model);
-        let presenter = CanvasPresenter::new(Box::new(view_mock));
-        presenter.present_objects(&object_description);
+        let expected_data = vec![1, 2, 3];
+        let serializer_mock = SerializerMock::new(expected_view_model, expected_data.clone());
+        let transmitter_mock = TransmitterMock::new(expected_data);
+        let presenter = CanvasPresenter::new(Box::new(serializer_mock), Box::new(transmitter_mock));
+        presenter.present_objects(&object_description).unwrap();
     }
 }

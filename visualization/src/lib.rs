@@ -13,5 +13,6 @@ pub(crate) mod controller;
 pub mod input_handler;
 pub(crate) mod presenter;
 pub(crate) mod serialize;
+pub(crate) mod transmitter;
 pub mod view;
 pub(crate) mod view_model;

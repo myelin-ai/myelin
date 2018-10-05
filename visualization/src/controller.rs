@@ -1,13 +1,15 @@
 use myelin_environment::object::ObjectDescription;
 use myelin_environment::Simulation;
 use myelin_worldgen::WorldGenerator;
+use std::error::Error;
 use std::fmt;
 
 pub(crate) trait Controller: fmt::Debug {
-    fn step(&mut self);
+    fn step(&mut self) -> Result<(), Box<dyn Error>>;
 }
+
 pub(crate) trait Presenter: fmt::Debug {
-    fn present_objects(&self, objects: &[ObjectDescription]);
+    fn present_objects(&self, objects: &[ObjectDescription]) -> Result<(), Box<dyn Error>>;
 }
 
 #[derive(Debug)]
@@ -17,10 +19,11 @@ pub(crate) struct ControllerImpl {
 }
 
 impl Controller for ControllerImpl {
-    fn step(&mut self) {
+    fn step(&mut self) -> Result<(), Box<dyn Error>> {
         self.simulation.step();
         let objects = self.simulation.objects();
-        self.presenter.present_objects(&objects);
+        self.presenter.present_objects(&objects)?;
+        Ok(())
     }
 }
 
@@ -39,6 +42,7 @@ mod tests {
     use myelin_environment::object::Object;
     use myelin_environment::object::*;
     use std::cell::RefCell;
+    use std::error::Error;
 
     #[derive(Debug)]
     struct SimulationMock {
@@ -92,7 +96,7 @@ mod tests {
         }
     }
     impl Presenter for PresenterMock {
-        fn present_objects(&self, objects: &[ObjectDescription]) {
+        fn present_objects(&self, objects: &[ObjectDescription]) -> Result<(), Box<dyn Error>> {
             *self.present_objects_was_called.borrow_mut() = true;
             self.expected_objects
                 .iter()
@@ -100,6 +104,8 @@ mod tests {
                 .for_each(|(expected, actual)| {
                     assert_eq!(expected, actual);
                 });
+
+            Ok(())
         }
     }
 
