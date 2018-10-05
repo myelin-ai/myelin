@@ -98,19 +98,19 @@ impl SimulationImpl {
         }
     }
 
-    fn handle_action(&mut self, body_handle: BodyHandle, action: Action) {
+    fn handle_action(&mut self, body_handle: BodyHandle, action: Action) -> Option<()> {
         match action {
             Action::Reproduce(object_description, object_behavior) => {
                 self.add_object(object_description, object_behavior);
             }
-            Action::ApplyForce(force) => self
-                .world
-                .apply_force(body_handle, force)
-                .expect("Invalid body_handle"),
-            Action::Die => {
-                // Remove object
+            Action::ApplyForce(force) => {
+                self.world.apply_force(body_handle, force)?;
             }
-        }
+            Action::Die => {
+                self.world.remove_body(body_handle)?;
+            }
+        };
+        Some(())
     }
 }
 
@@ -156,7 +156,8 @@ impl Simulation for SimulationImpl {
             }
         }
         for (body_handle, action) in actions {
-            self.handle_action(body_handle, action);
+            self.handle_action(body_handle, action)
+                .expect("Body handle was not found within world");
         }
         self.world.step()
     }
