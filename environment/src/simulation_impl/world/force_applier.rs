@@ -177,7 +177,7 @@ mod tests {
                 location: Location { x: 14, y: 14 },
                 ..body.position.clone()
             },
-            mobility: Mobility::Movable(Velocity { x: 34, y: 324 }),
+            mobility: Mobility::Movable(Velocity { x: 9, y: 9 }),
             ..body
         };
         test_force(physical_body(), expected_body, force);
@@ -195,7 +195,7 @@ mod tests {
                 location: Location { x: 0, y: 0 },
                 ..body.position.clone()
             },
-            mobility: Mobility::Movable(Velocity { x: -9, y: 32 - 44 }),
+            mobility: Mobility::Movable(Velocity { x: -4, y: -4 }),
             ..body
         };
         test_force(physical_body(), expected_body, force);
@@ -216,7 +216,7 @@ mod tests {
                 },
                 ..body.position.clone()
             },
-            mobility: Mobility::Movable(Velocity { x: -9, y: 32 - 44 }),
+            mobility: Mobility::Movable(Velocity { x: -9, y: -19 }),
             ..body
         };
         test_force(physical_body(), expected_body, force);
