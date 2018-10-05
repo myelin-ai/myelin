@@ -10,7 +10,7 @@ use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::query::Proximity;
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
 use ncollide2d::world::CollisionObjectHandle;
-use nphysics2d::force_generator::ForceGenerator;
+use nphysics2d::force_generator::{ForceGenerator, ForceGeneratorHandle};
 use nphysics2d::math::{Isometry, Point, Vector};
 use nphysics2d::object::{
     BodyHandle as NphysicsBodyHandle, Collider, ColliderHandle, Material, RigidBody,
@@ -36,6 +36,7 @@ pub struct NphysicsWorld {
     collider_handles: HashMap<ColliderHandle, Kind>,
     sensor_collisions: HashMap<SensorHandle, HashSet<ColliderHandle>>,
     rotation_translator: Box<dyn NphysicsRotationTranslator>,
+    force_generator_handle: ForceGeneratorHandle,
 }
 
 impl NphysicsWorld {
@@ -51,18 +52,20 @@ impl NphysicsWorld {
     pub fn with_timestep(
         timestep: f64,
         rotation_translator: Box<dyn NphysicsRotationTranslator>,
-        force_applier: GenericSingleTimeForceApplierWrapper,
+        force_applier: Box<dyn SingleTimeForceApplier>,
     ) -> Self {
         let mut physics_world = PhysicsWorld::new();
 
         physics_world.set_timestep(timestep);
-        physics_world.add_force_generator(force_applier);
+        let generic_wrapper = GenericSingleTimeForceApplierWrapper::new(force_applier);
+        let force_generator_handle = physics_world.add_force_generator(generic_wrapper);
 
         Self {
             physics_world,
             collider_handles: HashMap::new(),
             sensor_collisions: HashMap::new(),
             rotation_translator,
+            force_generator_handle,
         }
     }
 
@@ -352,7 +355,7 @@ mod tests {
         let world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
         let invalid_handle = BodyHandle(1337);
         let body = world.body(invalid_handle);
@@ -368,7 +371,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
         let movable_body = movable_body(Radians(3.0));
 
@@ -385,7 +388,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
         let body = immovable_body(Radians(3.0));
 
@@ -402,7 +405,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
         let rigid_object = movable_body(Radians(3.0));
         let grounded_object = immovable_body(Radians(3.0));
@@ -423,7 +426,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
         let expected_body = movable_body(Radians(3.0));
         let handle = world.add_body(expected_body.clone());
@@ -441,7 +444,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
         let expected_body = immovable_body(Radians(3.0));
         let handle = world.add_body(expected_body.clone());
@@ -458,7 +461,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
         let body = immovable_body(Radians::default());
         let handle = world.add_body(body);
@@ -474,7 +477,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );;
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
@@ -508,7 +511,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
@@ -545,7 +548,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
@@ -582,7 +585,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
@@ -616,7 +619,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
         let invalid_handle = BodyHandle(132144);
         let sensor_handle = world.attach_sensor(invalid_handle, sensor());
@@ -630,7 +633,7 @@ mod tests {
         let world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
         let invalid_handle = SensorHandle(112358);
         let body_handles = world.bodies_within_sensor(invalid_handle);
@@ -648,7 +651,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
 
         let local_object = movable_body(Radians::default());
@@ -679,7 +682,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
         world.set_simulated_timestep(2.0);
 
@@ -711,7 +714,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
         let expected_body = immovable_body(Radians(FRAC_PI_2));
         let handle = world.add_body(expected_body.clone());
@@ -733,7 +736,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
         let body = immovable_body(Radians(FRAC_PI_2));
         let still_body = PhysicalBody {

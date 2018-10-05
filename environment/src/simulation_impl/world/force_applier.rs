@@ -4,6 +4,7 @@ use nphysics2d::force_generator::ForceGenerator;
 use nphysics2d::math::Force as NphysicsForce;
 use nphysics2d::object::{BodyHandle, BodySet};
 use nphysics2d::solver::IntegrationParameters;
+use std::borrow::BorrowMut;
 use std::collections::HashMap;
 
 #[derive(Default, Debug)]
@@ -55,6 +56,10 @@ impl GenericSingleTimeForceApplierWrapper {
     pub fn new(force_applier: Box<dyn SingleTimeForceApplier>) -> Self {
         Self { force_applier }
     }
+
+    pub(crate) fn inner_mut(&mut self) -> &mut dyn SingleTimeForceApplier {
+        self.force_applier.borrow_mut()
+    }
 }
 
 impl ForceGenerator<PhysicsType> for GenericSingleTimeForceApplierWrapper {
@@ -84,7 +89,7 @@ mod tests {
         let _world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
     }
 
@@ -97,7 +102,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
 
         let expected_object = physical_body();
@@ -226,7 +231,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         );
 
         let handle = world.add_body(body.clone());

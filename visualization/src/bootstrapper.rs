@@ -7,9 +7,7 @@ use crate::presenter::CanvasPresenter;
 use crate::view::constant::SIMULATED_TIMESTEP;
 use crate::view::CanvasView;
 use myelin_environment::object::{Kind, ObjectBehavior};
-use myelin_environment::simulation_impl::world::force_applier::{
-    GenericSingleTimeForceApplierWrapper, SingleTimeForceApplierImpl,
-};
+use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
 use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
 use myelin_environment::simulation_impl::world::NphysicsWorld;
 use myelin_environment::{simulation_impl::SimulationImpl, Simulation};
@@ -48,7 +46,7 @@ pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
         let world = Box::new(NphysicsWorld::with_timestep(
             SIMULATED_TIMESTEP,
             Box::new(rotation_translator),
-            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
+            Box::new(force_applier),
         ));
         Box::new(SimulationImpl::new(world))
     });
