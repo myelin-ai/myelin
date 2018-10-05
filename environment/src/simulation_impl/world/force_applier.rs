@@ -163,12 +163,11 @@ mod tests {
     fn linear_force_with_no_torque_changes_only_location() {
         let object = physical_body();
         let force = Force {
-            linear: LinearForce { x: 5, y: 5 },
+            linear: LinearForce { x: 100, y: 100 },
             torque: Torque::default(),
         };
         let expected_position = Position {
-            // To do: Use actual values
-            location: Location { x: 10, y: 10 },
+            location: Location { x: 14, y: 14 },
             ..object.position.clone()
         };
         test_force(object, expected_position, force);
@@ -178,12 +177,30 @@ mod tests {
     fn negative_linear_force_results_in_lower_location() {
         let object = physical_body();
         let force = Force {
-            linear: LinearForce { x: -5, y: -5 },
+            linear: LinearForce { x: -50, y: -50 },
             torque: Torque::default(),
         };
         let expected_position = Position {
             // To do: Use actual values
-            location: Location { x: 1, y: 1 },
+            location: Location { x: 0, y: 0 },
+            ..object.position.clone()
+        };
+        test_force(object, expected_position, force);
+    }
+
+    #[test]
+    fn location_can_underflow() {
+        let object = physical_body();
+        let force = Force {
+            linear: LinearForce { x: -100, y: -200 },
+            torque: Torque::default(),
+        };
+        let expected_position = Position {
+            // To do: Use actual values
+            location: Location {
+                x: 4294967292,
+                y: 4294967282,
+            },
             ..object.position.clone()
         };
         test_force(object, expected_position, force);
