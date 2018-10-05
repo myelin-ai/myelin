@@ -123,7 +123,7 @@ impl NphysicsWorld {
             rotation: self
                 .rotation_translator
                 .to_radians(rotation)
-                .expect("Cannot be None as we get the rotation from an existing object"),
+                .expect("Rotation of a collider could not be translated into Radians"),
         }
     }
 }
