@@ -619,8 +619,6 @@ mod tests {
             .bodies_within_sensor(sensor_handle)
             .expect("sensor handle was invalid");
 
-        println!("{:?}", bodies);
-
         assert!(bodies.is_empty());
     }
 
