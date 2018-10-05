@@ -339,6 +339,7 @@ mod tests {
     use crate::object_builder::PolygonBuilder;
     use nphysics2d::object::BodySet;
     use nphysics2d::solver::IntegrationParameters;
+    use std::f64::consts::FRAC_PI_2;
     use std::sync::RwLock;
     use std::thread::panicking;
 
@@ -702,8 +703,6 @@ mod tests {
 
     #[test]
     fn step_is_ignored_for_rigid_objects_with_no_movement() {
-        use std::f64::consts::FRAC_PI_2;
-
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians(FRAC_PI_2), FRAC_PI_2);
         rotation_translator.expect_to_radians_and_return(FRAC_PI_2, Radians(FRAC_PI_2));
@@ -726,8 +725,6 @@ mod tests {
 
     #[test]
     fn step_is_ignored_for_grounded_objects() {
-        use std::f64::consts::FRAC_PI_2;
-
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians(FRAC_PI_2), FRAC_PI_2);
         rotation_translator.expect_to_radians_and_return(FRAC_PI_2, Radians(FRAC_PI_2));
