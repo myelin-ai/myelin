@@ -699,8 +699,13 @@ mod tests {
     fn test_close_sensors(close_body_location: Location) {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
-        let mut world =
-            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let mut force_applier = SingleTimeForceApplierMock::default();
+        force_applier.expect_apply_and_return(true);
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
 
