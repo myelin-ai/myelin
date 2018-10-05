@@ -13,7 +13,7 @@ pub(crate) trait ViewModelDeserializer: Debug {
 }
 
 #[derive(Debug)]
-struct JsonSerializer(PhantomData<()>);
+pub(crate) struct JsonSerializer(PhantomData<()>);
 
 impl JsonSerializer {
     pub(crate) fn new() -> Self {
