@@ -143,7 +143,7 @@ impl Simulation for SimulationImpl {
                 )
             })
             .collect();
-        let mut actions = HashMap::new();
+        let mut actions = Vec::new();
         for (object_handle, non_physical_object_data) in &mut self.non_physical_object_data {
             // This is safe because the keys of self.objects and
             // object_handle_to_objects_within_sensor are identical
@@ -153,7 +153,7 @@ impl Simulation for SimulationImpl {
                 .behavior
                 .step(&own_description, &objects_within_sensor);
             if let Some(action) = action {
-                actions.insert(*object_handle, action);
+                actions.push((*object_handle, action));
             }
         }
         for (body_handle, action) in actions {
