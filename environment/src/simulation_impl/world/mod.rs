@@ -263,6 +263,7 @@ impl World for NphysicsWorld {
         let collisions = self.sensor_collisions.get(&sensor_handle)?;
         let bodies_within_sensor = collisions
             .iter()
+            .filter(|&&collider_handle| !self.is_sensor_handle(collider_handle))
             .map(|&collider_handle| to_body_handle(collider_handle))
             .collect();
         Some(bodies_within_sensor)
@@ -270,6 +271,13 @@ impl World for NphysicsWorld {
 
     fn set_simulated_timestep(&mut self, timestep: f64) {
         self.physics_world.set_timestep(timestep);
+    }
+}
+
+impl NphysicsWorld {
+    fn is_sensor_handle(&self, handle: NphysicsSensorHandle) -> bool {
+        self.sensor_collisions
+            .contains_key(&to_sensor_handle(handle))
     }
 }
 
@@ -540,6 +548,80 @@ mod tests {
         let bodies = world
             .bodies_within_sensor(sensor_handle)
             .expect("sensor handle was invalid");
+
+        assert!(bodies.is_empty());
+    }
+
+    #[test]
+    fn sensor_does_not_detect_touching_sensors() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
+        let mut world =
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let body = movable_body(Radians::default());
+        let handle_one = world.add_body(body);
+
+        let sensor_handle = world
+            .attach_sensor(handle_one, sensor())
+            .expect("body handle was invalid");
+
+        let close_body = PhysicalBody {
+            position: Position {
+                location: Location { x: 25, y: 0 },
+                rotation: Radians::default(),
+            },
+            ..movable_body(Radians::default())
+        };
+        let close_body_handle = world.add_body(close_body);
+
+        world
+            .attach_sensor(close_body_handle, sensor())
+            .expect("body handle was invalid");
+
+        world.step();
+
+        let bodies = world
+            .bodies_within_sensor(sensor_handle)
+            .expect("sensor handle was invalid");
+
+        println!("{:?}", bodies);
+
+        assert!(bodies.is_empty());
+    }
+
+    #[test]
+    fn sensor_does_not_detect_overlapping_sensors() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
+        let mut world =
+            NphysicsWorld::with_timestep(DEFAULT_TIMESTEP, Box::new(rotation_translator));
+        let body = movable_body(Radians::default());
+        let handle_one = world.add_body(body);
+
+        let sensor_handle = world
+            .attach_sensor(handle_one, sensor())
+            .expect("body handle was invalid");
+
+        let close_body = PhysicalBody {
+            position: Position {
+                location: Location { x: 25 - 2, y: 0 },
+                rotation: Radians::default(),
+            },
+            ..movable_body(Radians::default())
+        };
+        let close_body_handle = world.add_body(close_body);
+
+        world
+            .attach_sensor(close_body_handle, sensor())
+            .expect("body handle was invalid");
+
+        world.step();
+
+        let bodies = world
+            .bodies_within_sensor(sensor_handle)
+            .expect("sensor handle was invalid");
+
+        println!("{:?}", bodies);
 
         assert!(bodies.is_empty());
     }
