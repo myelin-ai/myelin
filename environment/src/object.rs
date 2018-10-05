@@ -1,141 +1,46 @@
 //! Objects that can be placed in a world and their components.
-//! # Examples
-//! The following defines a stationary square terrain:
-//! ```
-//! use myelin_environment::object::*;
-//!
-//! let square = ObjectDescription {
-//!     shape: Polygon {
-//!         vertices: vec![
-//!             Vertex { x: -50, y: -50 },
-//!             Vertex { x: -50, y: 50 },
-//!             Vertex { x: 50, y: 50 },
-//!             Vertex { x: 50, y: -50 },
-//!         ],
-//!     },
-//!     position: Position {
-//!         rotation: Radians(0.0),
-//!         location: Location { x: 100, y: 100 },
-//!     },
-//!     kind: Kind::Terrain,
-//!     mobility: Mobility::Immovable
-//! };
-//! ```
-//! The prefered way of constructing a [`ObjectDescription`] however
-//! is by using an [`ObjectBuilder`].
+//! You can construct a [`ObjectDescription`] by using an [`ObjectBuilder`].
 //!
 //! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
 //! [`ObjectDescription`]: ./struct.ObjectDescription.html
 
 use std::fmt::Debug;
 
-/// A new object that is going to be placed in the [`Simulation`]
-///
-/// [`Simulation`]: ../trait.Simulation.html
-#[derive(Debug, Clone)]
-pub struct Object {
-    /// The object's behavior, which determines its kind and what the object is going to do every step
-    pub object_behavior: ObjectBehavior,
-    /// The object's initial position
-    pub position: Position,
-    /// The object's shape
-    pub shape: Polygon,
-}
-
-/// Custom behaviour of an object,
-/// defining its interactions and whether it is
-/// able to be moved by the physics engine or not
-#[derive(Debug)]
-pub enum ObjectBehavior {
-    /// The behaviour of an object that can be moved
-    Movable(Box<dyn MovableObject>),
-    /// The behaviour of an object that can never be moved
-    Immovable(Box<dyn ImmovableObject>),
-}
-
-impl Clone for ObjectBehavior {
-    fn clone(&self) -> Self {
-        match self {
-            ObjectBehavior::Movable(object) => ObjectBehavior::Movable(object.clone_box()),
-            ObjectBehavior::Immovable(object) => ObjectBehavior::Immovable(object.clone_box()),
-        }
-    }
-}
-
-impl ObjectBehavior {
-    /// Returns the object's kind.
-    /// This information is arbitrary and is only used
-    /// as a tag for visualizers
-    pub fn kind(&self) -> Kind {
-        match self {
-            ObjectBehavior::Movable(object) => object.kind(),
-            ObjectBehavior::Immovable(object) => object.kind(),
-        }
-    }
-
-    /// Returns if a sensor is attached to the object
-    pub fn sensor(&self) -> Option<Sensor> {
-        match self {
-            ObjectBehavior::Movable(object) => object.sensor(),
-            ObjectBehavior::Immovable(object) => object.sensor(),
-        }
-    }
-}
-
-/// Behaviour of an object that can be moved
-pub trait MovableObject: MovableObjectClone + Debug {
+/// Behaviour of an object that can never be moved
+pub trait ObjectBehavior: Debug + ObjectBehaviorClone {
     /// Returns all actions performed by the object
     /// in the current simulation tick
-    fn step(&mut self, sensor_collisions: &[ObjectDescription]) -> Option<MovableAction>;
-
-    /// Returns the object's kind.
-    /// This information is arbitrary and is only used
-    /// as a tag for visualizers
-    fn kind(&self) -> Kind;
-
-    /// Returns if a sensor is attached to the object
-    fn sensor(&self) -> Option<Sensor>;
+    fn step(
+        &mut self,
+        own_description: &ObjectDescription,
+        sensor_collisions: &[ObjectDescription],
+    ) -> Vec<Action>;
 }
 
-/// Possible actions performed by a [`MovableObject`]
+/// Possible actions performed by an [`Object`]
 /// during a simulation step
 ///
-/// [`MovableObject`]: ./trait.MovableObject.html
-#[derive(Debug, Clone)]
-pub enum MovableAction {
+/// [`Object`]: ./trait.Object.html
+#[derive(Debug)]
+pub enum Action {
     /// Apply the specified force to the object
     ApplyForce(Force),
     /// Create a new object at the specified location
-    Reproduce(Object),
+    Reproduce(ObjectDescription, Box<dyn ObjectBehavior>),
     /// Destroy the object
     Die,
 }
 
-/// Behaviour of an object that can never be moved
-pub trait ImmovableObject: ImmovableObjectClone + Debug {
-    /// Returns all actions performed by the object
-    /// in the current simulation tick
-    fn step(&mut self, sensor_collisions: &[ObjectDescription]) -> Option<ImmovableAction>;
-
-    /// Returns the object's kind.
-    /// This information is arbitrary and is only used
-    /// as a tag for visualizers
-    fn kind(&self) -> Kind;
-
-    /// Returns if a sensor is attached to the object
-    fn sensor(&self) -> Option<Sensor>;
-}
-
-/// Possible actions performed by a [`ImmovableObject`]
-/// during a simulation step
-///
-/// [`ImmovableObject`]: ./trait.ImmovableObject.html
-#[derive(Debug, Clone)]
-pub enum ImmovableAction {
-    /// Create a new object at the specified location
-    Reproduce(Object),
-    /// Destroy the object
-    Die,
+impl Clone for Action {
+    fn clone(&self) -> Action {
+        match self {
+            Action::ApplyForce(force) => Action::ApplyForce(force.clone()),
+            Action::Reproduce(object_description, object_behavior) => {
+                Action::Reproduce(object_description.clone(), object_behavior.clone_box())
+            }
+            Action::Die => Action::Die,
+        }
+    }
 }
 
 /// A sensor that can be attached to an [`Object`],
@@ -158,20 +63,27 @@ pub struct Sensor {
 ///
 /// [`Simulation`]: ../simulation/trait.Simulation.html
 #[derive(Debug, PartialEq, Clone)]
+#[non_exhaustive]
 pub struct ObjectDescription {
     /// The vertices defining the shape of the object
     /// in relation to its [`position`]
     ///
     /// [`position`]: ./struct.ObjectDescription.html#structfield.location
     pub shape: Polygon,
+
     /// The current position of the object
     pub position: Position,
+
     /// The current velocity of the object, defined
     /// as a two dimensional vector relative to the
     /// objects center
     pub mobility: Mobility,
+
     /// The object's kind
     pub kind: Kind,
+
+    /// The object's sensor
+    pub sensor: Option<Sensor>,
 }
 
 /// An object's mobility and, if present, its
@@ -274,28 +186,15 @@ pub struct LinearForce {
 #[derive(Debug, PartialEq, Clone, Default)]
 pub struct Torque(pub f64);
 
-pub trait MovableObjectClone {
-    fn clone_box(&self) -> Box<dyn MovableObject>;
+pub trait ObjectBehaviorClone {
+    fn clone_box(&self) -> Box<dyn ObjectBehavior>;
 }
 
-impl<T> MovableObjectClone for T
+impl<T> ObjectBehaviorClone for T
 where
-    T: MovableObject + Clone + 'static,
+    T: ObjectBehavior + Clone + 'static,
 {
-    default fn clone_box(&self) -> Box<dyn MovableObject> {
-        Box::new(self.clone())
-    }
-}
-
-pub trait ImmovableObjectClone {
-    fn clone_box(&self) -> Box<dyn ImmovableObject>;
-}
-
-impl<T> ImmovableObjectClone for T
-where
-    T: ImmovableObject + Clone + 'static,
-{
-    default fn clone_box(&self) -> Box<dyn ImmovableObject> {
+    default fn clone_box(&self) -> Box<dyn ObjectBehavior> {
         Box::new(self.clone())
     }
 }

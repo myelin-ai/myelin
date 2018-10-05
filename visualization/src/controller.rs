@@ -36,8 +36,8 @@ impl ControllerImpl {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::Object;
     use myelin_environment::object::*;
+    use myelin_environment::object_builder::*;
     use std::cell::RefCell;
 
     #[derive(Debug)]
@@ -59,7 +59,7 @@ mod tests {
         fn step(&mut self) {
             self.step_was_called = true;
         }
-        fn add_object(&mut self, _: Object) {
+        fn add_object(&mut self, _: ObjectDescription, _: Box<dyn ObjectBehavior>) {
             panic!("add_object() was called unexpectedly")
         }
         fn set_simulated_timestep(&mut self, _: f64) {
@@ -157,22 +157,24 @@ mod tests {
 
     #[test]
     fn propagates_step() {
-        let expected_objects = vec![ObjectDescription {
-            shape: Polygon {
-                vertices: vec![
-                    Vertex { x: -5, y: -5 },
-                    Vertex { x: 5, y: -5 },
-                    Vertex { x: 5, y: 5 },
-                    Vertex { x: -5, y: 5 },
-                ],
-            },
-            position: Position {
-                location: Location { x: 20, y: 40 },
-                rotation: Radians(6.0),
-            },
-            mobility: Mobility::Movable(Velocity { x: 0, y: -1 }),
-            kind: Kind::Organism,
-        }];
+        let expected_objects = vec![
+            ObjectBuilder::new()
+                .shape(
+                    PolygonBuilder::new()
+                        .vertex(-5, -5)
+                        .vertex(5, -5)
+                        .vertex(5, 5)
+                        .vertex(-5, 5)
+                        .build()
+                        .expect("Created invalid vertex"),
+                )
+                .location(20, 40)
+                .rotation(Radians(6.0))
+                .mobility(Mobility::Movable(Velocity { x: 0, y: -1 }))
+                .kind(Kind::Organism)
+                .build()
+                .expect("Failed to create object"),
+        ];
         let mut controller = mock_controller(expected_objects);
         controller.step();
     }
