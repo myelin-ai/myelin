@@ -77,14 +77,14 @@ mod tests {
     use super::*;
     use crate::object::*;
     use crate::object_builder::PolygonBuilder;
-    use crate::simulation_impl::world::rotation_translator::mock::NphysicsRotationTranslatorMock;
+    use crate::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
     use crate::simulation_impl::world::{NphysicsWorld, PhysicalBody, World};
 
     const DEFAULT_TIMESTEP: f64 = 1.0;
 
     #[test]
     fn can_be_injected() {
-        let rotation_translator = NphysicsRotationTranslatorMock::default();
+        let rotation_translator = NphysicsRotationTranslatorImpl::default();
         let force_applier = SingleTimeForceApplierImpl::new();
         let _world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
@@ -95,9 +95,7 @@ mod tests {
 
     #[test]
     fn force_does_nothing_before_step() {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(0.0), 0.0);
-        rotation_translator.expect_to_radians_and_return(0.0, Radians(0.0));
+        let mut rotation_translator = NphysicsRotationTranslatorImpl::default();
         let force_applier = SingleTimeForceApplierImpl::default();
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
@@ -224,9 +222,7 @@ mod tests {
     }
 
     fn test_force(body: PhysicalBody, expected_position: Position, force: Force) {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(Radians(0.0), 0.0);
-        rotation_translator.expect_to_radians_and_return(0.0, Radians(0.0));
+        let mut rotation_translator = NphysicsRotationTranslatorImpl::default();
         let force_applier = SingleTimeForceApplierImpl::default();
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
