@@ -55,10 +55,10 @@ mod tests {
     const DEFAULT_TIMESTEP: f64 = 1.0;
 
     #[test]
-    fn can_be_added() {
+    fn can_be_injected() {
         let rotation_translator = NphysicsRotationTranslatorMock::default();
         let force_applier = SingleTimeForceApplierImpl::new();
-        let mut world = NphysicsWorld::with_timestep(
+        let world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
