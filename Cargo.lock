@@ -221,7 +221,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "myelin-object"
+name = "myelin-object-behavior"
 version = "0.1.0"
 dependencies = [
  "myelin-environment 0.1.0",
@@ -234,7 +234,7 @@ version = "0.1.0"
 dependencies = [
  "js-sys 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "myelin-environment 0.1.0",
- "myelin-object 0.1.0",
+ "myelin-object-behavior 0.1.0",
  "myelin-worldgen 0.1.0",
  "wasm-bindgen 0.2.23 (registry+https://github.com/rust-lang/crates.io-index)",
  "web-sys 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -245,7 +245,7 @@ name = "myelin-worldgen"
 version = "0.1.0"
 dependencies = [
  "myelin-environment 0.1.0",
- "myelin-object 0.1.0",
+ "myelin-object-behavior 0.1.0",
 ]
 
 [[package]]

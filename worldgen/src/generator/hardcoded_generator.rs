@@ -1,8 +1,8 @@
 //! A generator for a hardcoded simulation
 
 use crate::WorldGenerator;
-use myelin_environment::object::{Kind, Location, Object, ObjectBehavior, Position, Radians};
-use myelin_environment::object_builder::PolygonBuilder;
+use myelin_environment::object::*;
+use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
 use myelin_environment::Simulation;
 use std::f64::consts::FRAC_PI_2;
 use std::fmt;
@@ -16,7 +16,7 @@ pub struct HardcodedGenerator {
 }
 
 pub type SimulationFactory = Box<dyn Fn() -> Box<dyn Simulation>>;
-pub type ObjectFactory = Box<dyn Fn(Kind) -> ObjectBehavior>;
+pub type ObjectFactory = Box<dyn Fn(Kind) -> Box<dyn ObjectBehavior>>;
 
 impl HardcodedGenerator {
     /// Creates a new generator, injecting a simulation factory, i.e.
@@ -28,28 +28,29 @@ impl HardcodedGenerator {
     /// # Examples
     /// ```
     /// use myelin_environment::Simulation;
-    /// use myelin_environment::simulation_impl::{SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl};
+    /// use myelin_environment::simulation_impl::{
+    ///     SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl
+    /// };
+    /// use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
     /// use myelin_environment::object::{Kind, ObjectBehavior};
     /// use myelin_worldgen::WorldGenerator;
     /// use myelin_worldgen::generator::HardcodedGenerator;
-    /// use myelin_object::{
-    ///     organism::StaticOrganism, plant::StaticPlant, terrain::StaticTerrain, water::StaticWater,
-    /// };
+    /// use myelin_object_behavior::Static;
     ///
     /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
     ///     let rotation_translator = NphysicsRotationTranslatorImpl::default();
-    ///     let world = Box::new(NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator)));
+    ///     let force_applier = SingleTimeForceApplierImpl::default();
+    ///     let world = Box::new(NphysicsWorld::with_timestep(
+    ///         1.0,
+    ///         Box::new(rotation_translator),
+    ///         Box::new(force_applier),
+    ///     ));
     ///     Box::new(SimulationImpl::new(world))
     /// });
     ///
-    /// let object_factory = Box::new(|kind: Kind| match kind {
-    ///     Kind::Plant => ObjectBehavior::Immovable(Box::new(StaticPlant::new())),
-    ///     Kind::Organism => ObjectBehavior::Movable(Box::new(StaticOrganism::new())),
-    ///     Kind::Water => ObjectBehavior::Immovable(Box::new(StaticWater::new())),
-    ///     Kind::Terrain => ObjectBehavior::Immovable(Box::new(StaticTerrain::new())),
-    /// });
-    /// let simulationgen = HardcodedGenerator::new(simulation_factory, object_factory);
-    /// let generated_simulation = simulationgen.generate();
+    /// let object_factory = Box::new(|_: Kind| -> Box<dyn ObjectBehavior> { Box::new(Static::new()) });
+    /// let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
+    /// let generated_simulation = worldgen.generate();
     pub fn new(simulation_factory: SimulationFactory, object_factory: ObjectFactory) -> Self {
         Self {
             simulation_factory,
@@ -58,108 +59,162 @@ impl HardcodedGenerator {
     }
 
     fn populate_with_terrain(&self, simulation: &mut dyn Simulation) {
-        simulation.add_object(self.build_terrain((25, 500), 50, 1000));
-        simulation.add_object(self.build_terrain((500, 25), 1000, 50));
-        simulation.add_object(self.build_terrain((975, 500), 50, 1000));
-        simulation.add_object(self.build_terrain((500, 975), 1000, 50));
+        simulation.add_object(
+            build_terrain((25, 500), 50, 1000),
+            (self.object_factory)(Kind::Terrain),
+        );
+        simulation.add_object(
+            build_terrain((500, 25), 1000, 50),
+            (self.object_factory)(Kind::Terrain),
+        );
+        simulation.add_object(
+            build_terrain((975, 500), 50, 1000),
+            (self.object_factory)(Kind::Terrain),
+        );
+        simulation.add_object(
+            build_terrain((500, 975), 1000, 50),
+            (self.object_factory)(Kind::Terrain),
+        );
     }
 
-    fn build_terrain(&self, location: (u32, u32), width: i32, length: i32) -> Object {
-        let x_offset = width / 2;
-        let y_offset = length / 2;
+    fn populate_with_water(&self, simulation: &mut dyn Simulation) {
+        let object_description = ObjectBuilder::new()
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(-180, 60)
+                    .vertex(0, 200)
+                    .vertex(180, 60)
+                    .vertex(100, -150)
+                    .vertex(-100, -150)
+                    .build()
+                    .expect("Generated an invalid vertex"),
+            )
+            .location(500, 500)
+            .mobility(Mobility::Immovable)
+            .kind(Kind::Water)
+            .build()
+            .expect("Failed to build water");
 
-        Object {
-            object_behavior: (self.object_factory)(Kind::Terrain),
-            shape: PolygonBuilder::new()
+        simulation.add_object(object_description, (self.object_factory)(Kind::Water));
+    }
+
+    fn populate_with_plants(&self, simulation: &mut dyn Simulation) {
+        for i in 0..=10 {
+            for j in 0..=7 {
+                simulation.add_object(
+                    build_plant(100 + i * 30, 100 + j * 30),
+                    (self.object_factory)(Kind::Plant),
+                );
+            }
+        }
+        for i in 0..=10 {
+            for j in 0..=7 {
+                simulation.add_object(
+                    build_plant(600 + i * 30, 100 + j * 30),
+                    (self.object_factory)(Kind::Plant),
+                );
+            }
+        }
+    }
+
+    fn populate_with_organisms(&self, simulation: &mut dyn Simulation) {
+        simulation.add_object(
+            build_organism(300, 800),
+            (self.object_factory)(Kind::Organism),
+        );
+        simulation.add_object(
+            build_organism(400, 800),
+            (self.object_factory)(Kind::Organism),
+        );
+        simulation.add_object(
+            build_organism(500, 800),
+            (self.object_factory)(Kind::Organism),
+        );
+        simulation.add_object(
+            build_organism(600, 800),
+            (self.object_factory)(Kind::Organism),
+        );
+        simulation.add_object(
+            build_organism(700, 800),
+            (self.object_factory)(Kind::Organism),
+        );
+    }
+}
+fn build_terrain(location: (u32, u32), width: i32, length: i32) -> ObjectDescription {
+    let x_offset = width / 2;
+    let y_offset = length / 2;
+    ObjectBuilder::new()
+        .shape(
+            PolygonBuilder::new()
                 .vertex(-x_offset, -y_offset)
                 .vertex(x_offset, -y_offset)
                 .vertex(x_offset, y_offset)
                 .vertex(-x_offset, y_offset)
                 .build()
                 .expect("Generated an invalid vertex"),
-            position: Position {
-                location: Location {
-                    x: location.0,
-                    y: location.1,
-                },
-                rotation: Radians::default(),
-            },
-        }
-    }
+        )
+        .location(location.0, location.1)
+        .mobility(Mobility::Immovable)
+        .kind(Kind::Terrain)
+        .build()
+        .expect("Failed to build water")
+}
 
-    fn populate_with_water(&self, simulation: &mut dyn Simulation) {
-        let object = Object {
-            object_behavior: (self.object_factory)(Kind::Water),
-            shape: PolygonBuilder::new()
-                .vertex(-180, 60)
-                .vertex(0, 200)
-                .vertex(180, 60)
-                .vertex(100, -150)
-                .vertex(-100, -150)
-                .build()
-                .expect("Generated an invalid vertex"),
-            position: Position {
-                location: Location { x: 500, y: 500 },
-                rotation: Radians::default(),
-            },
-        };
-        simulation.add_object(object);
-    }
-
-    fn populate_with_plants(&self, simulation: &mut dyn Simulation) {
-        for i in 0..=10 {
-            for j in 0..=7 {
-                simulation.add_object(self.build_plant(100 + i * 30, 100 + j * 30));
-            }
-        }
-        for i in 0..=10 {
-            for j in 0..=7 {
-                simulation.add_object(self.build_plant(600 + i * 30, 100 + j * 30));
-            }
-        }
-    }
-
-    fn build_plant(&self, x: u32, y: u32) -> Object {
-        Object {
-            object_behavior: (self.object_factory)(Kind::Plant),
-            shape: PolygonBuilder::new()
+fn build_plant(x: u32, y: u32) -> ObjectDescription {
+    ObjectBuilder::new()
+        .shape(
+            PolygonBuilder::new()
                 .vertex(-10, -10)
                 .vertex(10, -10)
                 .vertex(10, 10)
                 .vertex(-10, 10)
                 .build()
                 .expect("Generated an invalid vertex"),
-            position: Position {
-                location: Location { x, y },
-                rotation: Radians::default(),
-            },
-        }
-    }
-
-    fn populate_with_organisms(&self, simulation: &mut dyn Simulation) {
-        simulation.add_object(self.build_organism(300, 800));
-        simulation.add_object(self.build_organism(400, 800));
-        simulation.add_object(self.build_organism(500, 800));
-        simulation.add_object(self.build_organism(600, 800));
-        simulation.add_object(self.build_organism(700, 800));
-    }
-
-    fn build_organism(&self, x: u32, y: u32) -> Object {
-        Object {
-            object_behavior: (self.object_factory)(Kind::Organism),
+        )
+        .location(x, y)
+        .mobility(Mobility::Immovable)
+        .kind(Kind::Plant)
+        .sensor(Sensor {
             shape: PolygonBuilder::new()
+                .vertex(-25, -25)
+                .vertex(25, -25)
+                .vertex(25, 25)
+                .vertex(-25, 25)
+                .build()
+                .expect("Generated an invalid vertex"),
+            position: Position::default(),
+        })
+        .build()
+        .expect("Failed to build water")
+}
+
+fn build_organism(x: u32, y: u32) -> ObjectDescription {
+    ObjectBuilder::new()
+        .shape(
+            PolygonBuilder::new()
                 .vertex(25, 0)
                 .vertex(-25, 20)
                 .vertex(-5, 0)
                 .vertex(-25, -20)
                 .build()
                 .expect("Generated an invalid vertex"),
-            position: Position {
-                location: Location { x, y },
-                rotation: Radians(FRAC_PI_2),
-            },
-        }
-    }
+        )
+        .location(x, y)
+        .rotation(Radians(FRAC_PI_2))
+        .mobility(Mobility::Movable(Velocity::default()))
+        .kind(Kind::Organism)
+        .sensor(Sensor {
+            shape: PolygonBuilder::new()
+                .vertex(-25, -25)
+                .vertex(25, -25)
+                .vertex(25, 25)
+                .vertex(-25, 25)
+                .build()
+                .expect("Generated an invalid vertex"),
+            position: Position::default(),
+        })
+        .build()
+        .expect("Failed to build water")
 }
 
 impl WorldGenerator for HardcodedGenerator {
@@ -182,19 +237,22 @@ impl fmt::Debug for HardcodedGenerator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::*;
 
     #[derive(Debug, Default)]
     struct SimulationMock {
-        objects: Vec<Object>,
+        objects: Vec<(ObjectDescription, Box<dyn ObjectBehavior>)>,
     }
 
     impl Simulation for SimulationMock {
         fn step(&mut self) {
             panic!("step() called unexpectedly")
         }
-        fn add_object(&mut self, object: Object) {
-            self.objects.push(object)
+        fn add_object(
+            &mut self,
+            object_description: ObjectDescription,
+            object_behavior: Box<dyn ObjectBehavior>,
+        ) {
+            self.objects.push((object_description, object_behavior))
         }
         fn objects(&self) -> Vec<ObjectDescription> {
             panic!("objects() called unexpectedly")
@@ -209,17 +267,15 @@ mod tests {
         }
     }
 
-    #[derive(Debug)]
-    struct ObjectMock;
-    impl ImmovableObject for ObjectMock {
-        fn step(&mut self, _sensor_collisions: &[ObjectDescription]) -> Vec<ImmovableAction> {
+    #[derive(Debug, Clone)]
+    struct ObjectBehaviorMock;
+    impl ObjectBehavior for ObjectBehaviorMock {
+        fn step(
+            &mut self,
+            _own_description: &ObjectDescription,
+            _sensor_collisions: &[ObjectDescription],
+        ) -> Option<Action> {
             panic!("step() was called unexpectedly")
-        }
-        fn kind(&self) -> Kind {
-            panic!("kind() was called unexpectedly")
-        }
-        fn sensor(&self) -> Option<Sensor> {
-            panic!("sensor() was called unexpectedly")
         }
     }
 
@@ -227,7 +283,8 @@ mod tests {
     fn generates_simulation() {
         let simulation_factory =
             Box::new(|| -> Box<dyn Simulation> { Box::new(SimulationMock::default()) });
-        let object_factory = Box::new(|_: Kind| ObjectBehavior::Immovable(Box::new(ObjectMock {})));
+        let object_factory =
+            Box::new(|_: Kind| -> Box<dyn ObjectBehavior> { Box::new(ObjectBehaviorMock {}) });
         let generator = HardcodedGenerator::new(simulation_factory, object_factory);
 
         let _simulation = generator.generate();

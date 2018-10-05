@@ -6,13 +6,23 @@ pub use self::random_chance_checker_impl::RandomChanceCheckerImpl;
 
 /// Plant that spreads in stochastic intervals
 #[derive(Debug)]
-pub struct StochasticSpreadingPlant {
+pub struct StochasticSpreading {
     random_chance_checker: Box<dyn RandomChanceChecker>,
     spreading_sensor: Sensor,
     spreading_probability: f64,
 }
 
-impl StochasticSpreadingPlant {
+impl Clone for StochasticSpreading {
+    fn clone(&self) -> StochasticSpreading {
+        Self {
+            random_chance_checker: self.random_chance_checker.clone_box(),
+            spreading_sensor: self.spreading_sensor.clone(),
+            spreading_probability: self.spreading_probability.clone(),
+        }
+    }
+}
+
+impl StochasticSpreading {
     /// Returns a plant that has a probability of `spreading_probability`
     /// in every step to spawn a new plant, using the injected [`RandomChanceChecker`]
     /// to check if the probability was met.
@@ -37,31 +47,27 @@ impl StochasticSpreadingPlant {
             .flip_coin_with_probability(self.spreading_probability)
     }
 
-    fn spread(&self, _sensor_collisions: &[ObjectDescription]) -> Vec<ImmovableAction> {
+    fn spread(&self, _sensor_collisions: &[ObjectDescription]) -> Option<Action> {
         unimplemented!()
     }
 }
 
-impl ImmovableObject for StochasticSpreadingPlant {
-    fn step(&mut self, sensor_collisions: &[ObjectDescription]) -> Vec<ImmovableAction> {
+impl ObjectBehavior for StochasticSpreading {
+    fn step(
+        &mut self,
+        own_description: &ObjectDescription,
+        sensor_collisions: &[ObjectDescription],
+    ) -> Option<Action> {
         if self.should_spread() {
             self.spread(sensor_collisions)
         } else {
-            Vec::new()
+            None
         }
-    }
-
-    fn kind(&self) -> Kind {
-        Kind::Plant
-    }
-
-    fn sensor(&self) -> Option<Sensor> {
-        Some(self.spreading_sensor.clone())
     }
 }
 
 /// Dedicated random number generator
-pub trait RandomChanceChecker: fmt::Debug {
+pub trait RandomChanceChecker: fmt::Debug + RandomChanceCheckerClone {
     /// Returns a random boolean with a given probability of returning true.
     /// The probability is defined in the range `[0.0; 1.0]` where `0.0` means
     /// always return `false` and `1.0` means always return `true`.
@@ -70,67 +76,77 @@ pub trait RandomChanceChecker: fmt::Debug {
     fn flip_coin_with_probability(&mut self, probability: f64) -> bool;
 }
 
+/// Supertrait used to make sure that all implementors
+/// of [`RandomChanceChecker`] are [`Clone`]. You don't need
+/// to care about this type.
+///
+/// [`ObjectBehavior`]: ./trait.RandomChanceChecker.html
+/// [`Clone`]: https://doc.rust-lang.org/nightly/std/clone/trait.Clone.html
+#[doc(hidden)]
+pub trait RandomChanceCheckerClone {
+    fn clone_box(&self) -> Box<dyn RandomChanceChecker>;
+}
+
+impl<T> RandomChanceCheckerClone for T
+where
+    T: RandomChanceChecker + Clone + 'static,
+{
+    default fn clone_box(&self) -> Box<dyn RandomChanceChecker> {
+        Box::new(self.clone())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::Kind;
-    use myelin_environment::object_builder::PolygonBuilder;
+    use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
     use std::cell::RefCell;
 
     const SPREADING_CHANGE: f64 = 1.0 / (60.0 * 30.0);
 
     #[test]
-    fn is_correct_kind() {
-        let random_chance_checker = RandomChanceCheckerMock::new();
-        let object = StochasticSpreadingPlant::new(
-            SPREADING_CHANGE,
-            sensor(),
-            Box::new(random_chance_checker),
-        );
-        let kind = object.kind();
-        assert_eq!(Kind::Plant, kind);
-    }
-
-    #[test]
     fn does_nothing_when_chance_is_not_hit() {
         let mut random_chance_checker = RandomChanceCheckerMock::new();
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, false);
-        let mut object = StochasticSpreadingPlant::new(
-            SPREADING_CHANGE,
-            sensor(),
-            Box::new(random_chance_checker),
-        );
-        let actions = object.step(&[]);
-        assert!(actions.is_empty());
+        let mut object =
+            StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
+        let own_description = object_description();
+        let action = object.step(&own_description, &[]);
+        assert!(action.is_none());
     }
 
-    #[test]
-    fn returns_injected_sensor() {
-        let random_chance_checker = RandomChanceCheckerMock::new();
-        let expected_sensor = sensor();
-        let object = StochasticSpreadingPlant::new(
-            SPREADING_CHANGE,
-            expected_sensor.clone(),
-            Box::new(random_chance_checker),
-        );
-        let sensor = object.sensor().expect("Object has no sensor");
-        assert_eq!(expected_sensor, sensor);
+    fn object_description() -> ObjectDescription {
+        ObjectBuilder::new()
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(-5, -5)
+                    .vertex(5, -5)
+                    .vertex(5, 5)
+                    .vertex(-5, 5)
+                    .build()
+                    .unwrap(),
+            )
+            .location(50, 50)
+            .mobility(Mobility::Immovable)
+            .kind(Kind::Plant)
+            .build()
+            .unwrap()
     }
 
     fn sensor() -> Sensor {
         Sensor {
             shape: PolygonBuilder::new()
-                .vertex(-5, -5)
-                .vertex(5, -5)
-                .vertex(5, 5)
-                .vertex(-5, 5)
+                .vertex(-20, -20)
+                .vertex(20, -20)
+                .vertex(20, 20)
+                .vertex(-20, 20)
                 .build()
                 .unwrap(),
             position: Position::default(),
         }
     }
 
-    #[derive(Debug, Default)]
+    #[derive(Debug, Default, Clone)]
     struct RandomChanceCheckerMock {
         expect_flip_coin_with_probability_and_return: Option<(f64, bool)>,
         flip_coin_with_probability_was_called: RefCell<bool>,

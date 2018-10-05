@@ -1,5 +1,5 @@
 [package]
-name = "myelin-object"
+name = "myelin-object-behavior"
 version = "0.1.0"
 authors = [    
     "Jan Nils Ferner <jan@myelin.ch>",

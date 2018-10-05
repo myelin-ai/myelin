@@ -2,7 +2,7 @@ use super::RandomChanceChecker;
 use rand::{thread_rng, Rng, ThreadRng};
 
 /// Random number generator implementation that uses the `rand` crate
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RandomChanceCheckerImpl {
     rng: ThreadRng,
 }

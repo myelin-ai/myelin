@@ -2,7 +2,7 @@
 //! the simulation, as well as the objects that reside
 //! within it.
 
-#![feature(tool_lints)]
+#![feature(tool_lints, specialization, non_exhaustive)]
 #![deny(
     rust_2018_idioms,
     missing_debug_implementations,
@@ -14,7 +14,7 @@ pub mod object;
 pub mod object_builder;
 pub mod simulation_impl;
 
-use crate::object::{Object, ObjectDescription};
+use crate::object::{ObjectBehavior, ObjectDescription};
 use std::fmt;
 
 /// A Simulation that can be filled with [`Object`] on
@@ -29,7 +29,11 @@ pub trait Simulation: fmt::Debug {
     /// take action.
     fn step(&mut self);
     /// Add a new object to the world.
-    fn add_object(&mut self, object: Object);
+    fn add_object(
+        &mut self,
+        object_description: ObjectDescription,
+        object_behavior: Box<dyn ObjectBehavior>,
+    );
     /// Returns a read-only description of all objects currently inhabiting the simulation.
     fn objects(&self) -> Vec<ObjectDescription>;
     /// Sets how much time in seconds is simulated for each step.
