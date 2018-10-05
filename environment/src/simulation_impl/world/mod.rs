@@ -460,6 +460,27 @@ mod tests {
     }
 
     #[test]
+    fn can_remove_object_with_sensor() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
+        rotation_translator.expect_to_radians_and_return(0.0, Radians::default());
+        let force_applier = SingleTimeForceApplierMock::default();
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+        );
+        let expected_body = movable_body(Radians::default());
+
+        let handle = world.add_body(expected_body.clone());
+        world
+            .attach_sensor(handle, sensor())
+            .expect("Invalid handle");
+        let physical_body = world.remove_body(handle).expect("Invalid handle");
+        assert_eq!(expected_body, physical_body);
+    }
+
+    #[test]
     fn removed_object_cannot_be_accessed() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians(3.0), 3.0);
