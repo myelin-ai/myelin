@@ -33,7 +33,6 @@ use self::force_applier::GenericSingleTimeForceApplierWrapper;
 /// [`World`]: ./trait.World.html
 pub struct NphysicsWorld {
     physics_world: PhysicsWorld<PhysicsType>,
-    collider_handles: HashMap<ColliderHandle, Kind>,
     sensor_collisions: HashMap<SensorHandle, HashSet<ColliderHandle>>,
     rotation_translator: Box<dyn NphysicsRotationTranslator>,
     force_generator_handle: ForceGeneratorHandle,
@@ -64,7 +63,6 @@ impl NphysicsWorld {
 
         Self {
             physics_world,
-            collider_handles: HashMap::new(),
             sensor_collisions: HashMap::new(),
             rotation_translator,
             force_generator_handle,
@@ -254,7 +252,11 @@ impl World for NphysicsWorld {
     }
 
     fn remove_body(&mut self, body_handle: BodyHandle) -> Option<PhysicalBody> {
-        unimplemented!()
+        let physical_body = self.body(body_handle)?;
+        let collider_handle = to_collider_handle(body_handle);
+        let nphysics_body_handle = self.physics_world.collider_body_handle(collider_handle)?;
+        self.physics_world.remove_bodies(&[nphysics_body_handle]);
+        Some(physical_body)
     }
 
     fn attach_sensor(&mut self, body_handle: BodyHandle, sensor: Sensor) -> Option<SensorHandle> {
@@ -288,7 +290,7 @@ impl World for NphysicsWorld {
 
     fn apply_force(&mut self, body_handle: BodyHandle, force: Force) -> Option<()> {
         let collider_handle = to_collider_handle(body_handle);
-        let nphysics_body_handle = self.physics_world.collider(collider_handle)?.data().body();
+        let nphysics_body_handle = self.physics_world.collider_body_handle(collider_handle)?;
         self.physics_world
             .force_generator_mut(self.force_generator_handle)
             .downcast_mut::<GenericSingleTimeForceApplierWrapper>()
@@ -330,7 +332,6 @@ fn to_nphysics_sensor_handle(sensor_handle: SensorHandle) -> NphysicsSensorHandl
 impl fmt::Debug for NphysicsWorld {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("NphysicsWorld")
-            .field("collider_handles", &self.collider_handles)
             .field("physics", &DebugPhysicsWorld(&self.physics_world))
             .finish()
     }
