@@ -134,12 +134,11 @@ mod tests {
         let body = physical_body();
         let force = Force {
             linear: LinearForce::default(),
-            torque: Torque(1.0),
+            torque: Torque(101.55),
         };
         let expected_body = PhysicalBody {
             position: Position {
-                // To do: Use actual values
-                rotation: Radians(1.1),
+                rotation: Radians(0.6093),
                 ..body.position.clone()
             },
             ..body
@@ -152,12 +151,11 @@ mod tests {
         let body = physical_body();
         let force = Force {
             linear: LinearForce::default(),
-            torque: Torque(-2.0),
+            torque: Torque(-202.0),
         };
         let expected_body = PhysicalBody {
             position: Position {
-                // To do: Use actual values
-                rotation: Radians(-1.1),
+                rotation: Radians(5.0711853071795865),
                 ..body.position.clone()
             },
             ..body
@@ -226,17 +224,16 @@ mod tests {
     fn linear_force_and_torque_can_be_combined() {
         let body = physical_body();
         let force = Force {
-            linear: LinearForce { x: -5, y: -5 },
+            linear: LinearForce { x: 50, y: 100 },
             torque: Torque(1.5),
         };
 
         let expected_body = PhysicalBody {
             position: Position {
-                // To do: Use actual values
-                location: Location { x: 1, y: 1 },
-                rotation: Radians(2.0),
+                location: Location { x: 10, y: 15 },
+                rotation: Radians(0.009000000000000001),
             },
-            mobility: Mobility::Movable(Velocity { x: -9, y: 32 - 44 }),
+            mobility: Mobility::Movable(Velocity { x: 4, y: 9 }),
             ..body
         };
         test_force(physical_body(), expected_body, force);
