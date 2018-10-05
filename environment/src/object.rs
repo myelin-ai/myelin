@@ -187,10 +187,12 @@ pub struct LinearForce {
 pub struct Torque(pub f64);
 
 /// Supertrait used to make sure that all implementors
-/// of [`ObjectBehavior`] are [`Clone`]
+/// of [`ObjectBehavior`] are [`Clone`]. You don't need
+/// to care about this type.
 ///
 /// [`ObjectBehavior`]: ./trait.ObjectBehavior.html
 /// [`Clone`]: https://doc.rust-lang.org/nightly/std/clone/trait.Clone.html
+#[doc(hidden)]
 pub trait ObjectBehaviorClone {
     fn clone_box(&self) -> Box<dyn ObjectBehavior>;
 }
