@@ -552,6 +552,16 @@ mod tests {
         assert!(bodies.is_empty());
     }
 
+    #[test]
+    fn sensor_does_not_detect_touching_sensors() {
+        test_close_sensors(Location { x: 25, y: 0 });
+    }
+
+    #[test]
+    fn sensor_does_not_detect_overlapping_sensors() {
+        test_close_sensors(Location { x: 25 - 2, y: 0 });
+    }
+
     fn test_close_sensors(close_body_location: Location) {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
@@ -584,16 +594,6 @@ mod tests {
             .expect("sensor handle was invalid");
 
         assert!(bodies.is_empty());
-    }
-
-    #[test]
-    fn sensor_does_not_detect_touching_sensors() {
-        test_close_sensors(Location { x: 25, y: 0 });
-    }
-
-    #[test]
-    fn sensor_does_not_detect_overlapping_sensors() {
-        test_close_sensors(Location { x: 25 - 2, y: 0 });
     }
 
     #[test]
