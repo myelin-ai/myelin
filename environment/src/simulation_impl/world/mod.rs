@@ -34,6 +34,9 @@ use self::force_applier::GenericSingleTimeForceApplierWrapper;
 pub struct NphysicsWorld {
     physics_world: PhysicsWorld<PhysicsType>,
     sensor_collisions: HashMap<SensorHandle, HashSet<ColliderHandle>>,
+    /// Only used to track active sensors so that we can remove them
+    /// when removing an object
+    body_sensors: HashMap<BodyHandle, SensorHandle>,
     rotation_translator: Box<dyn NphysicsRotationTranslator>,
     force_generator_handle: ForceGeneratorHandle,
 }
@@ -64,6 +67,7 @@ impl NphysicsWorld {
         Self {
             physics_world,
             sensor_collisions: HashMap::new(),
+            body_sensors: HashMap::new(),
             rotation_translator,
             force_generator_handle,
         }
@@ -255,6 +259,9 @@ impl World for NphysicsWorld {
         let physical_body = self.body(body_handle)?;
         let collider_handle = to_collider_handle(body_handle);
         let nphysics_body_handle = self.physics_world.collider_body_handle(collider_handle)?;
+        if let Some(sensor_handle) = self.body_sensors.remove(&body_handle) {
+            self.sensor_collisions.remove(&sensor_handle)?;
+        }
         self.physics_world.remove_bodies(&[nphysics_body_handle]);
         Some(physical_body)
     }
@@ -271,6 +278,7 @@ impl World for NphysicsWorld {
 
         let sensor_handle = to_sensor_handle(sensor_handle);
         self.sensor_collisions.insert(sensor_handle, HashSet::new());
+        self.body_sensors.insert(body_handle, sensor_handle);
         Some(sensor_handle)
     }
 
