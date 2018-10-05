@@ -1,129 +1,32 @@
 //! Objects that can be placed in a world and their components.
-//! # Examples
-//! The following defines a stationary square terrain:
-//! ```
-//! use myelin_environment::object::*;
-//!
-//! let square = ObjectDescription {
-//!     shape: Polygon {
-//!         vertices: vec![
-//!             Vertex { x: -50, y: -50 },
-//!             Vertex { x: -50, y: 50 },
-//!             Vertex { x: 50, y: 50 },
-//!             Vertex { x: 50, y: -50 },
-//!         ],
-//!     },
-//!     position: Position {
-//!         rotation: Radians(0.0),
-//!         location: Location { x: 100, y: 100 },
-//!     },
-//!     kind: Kind::Terrain,
-//!     mobility: Mobility::Immovable
-//! };
-//! ```
-//! The prefered way of constructing a [`ObjectDescription`] however
-//! is by using an [`ObjectBuilder`].
+//! You can construct a [`ObjectDescription`] by using an [`ObjectBuilder`].
 //!
 //! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
 //! [`ObjectDescription`]: ./struct.ObjectDescription.html
 
 use std::fmt::Debug;
 
-/// A new object that is going to be placed in the [`Simulation`]
-///
-/// [`Simulation`]: ../trait.Simulation.html
-#[derive(Debug)]
-pub struct Object {
-    /// The object's behavior, which determines its kind and what the object is going to do every step
-    pub object_behavior: ObjectBehavior,
-    /// The object's initial position
-    pub position: Position,
-    /// The object's shape
-    pub shape: Polygon,
-}
-
-/// Custom behaviour of an object,
-/// defining its interactions and whether it is
-/// able to be moved by the physics engine or not
-#[derive(Debug)]
-pub enum ObjectBehavior {
-    /// The behaviour of an object that can be moved
-    Movable(Box<dyn MovableObject>),
-    /// The behaviour of an object that can never be moved
-    Immovable(Box<dyn ImmovableObject>),
-}
-
-impl ObjectBehavior {
-    /// Returns the object's kind.
-    /// This information is arbitrary and is only used
-    /// as a tag for visualizers
-    pub fn kind(&self) -> Kind {
-        match self {
-            ObjectBehavior::Movable(object) => object.kind(),
-            ObjectBehavior::Immovable(object) => object.kind(),
-        }
-    }
-
-    /// Returns if a sensor is attached to the object
-    pub fn sensor(&self) -> Option<Sensor> {
-        match self {
-            ObjectBehavior::Movable(object) => object.sensor(),
-            ObjectBehavior::Immovable(object) => object.sensor(),
-        }
-    }
-}
-
-/// Behaviour of an object that can be moved
-pub trait MovableObject: Debug {
+/// Behaviour of an object that can never be moved
+pub trait ObjectBehavior: Debug {
     /// Returns all actions performed by the object
     /// in the current simulation tick
-    fn step(&mut self, sensor_collisions: &[ObjectDescription]) -> Vec<MovableAction>;
-
-    /// Returns the object's kind.
-    /// This information is arbitrary and is only used
-    /// as a tag for visualizers
-    fn kind(&self) -> Kind;
-
-    /// Returns if a sensor is attached to the object
-    fn sensor(&self) -> Option<Sensor>;
+    fn step(
+        &mut self,
+        own_description: &ObjectDescription,
+        sensor_collisions: &[ObjectDescription],
+    ) -> Vec<Action>;
 }
 
-/// Possible actions performed by a [`MovableObject`]
+/// Possible actions performed by an [`Object`]
 /// during a simulation step
 ///
-/// [`MovableObject`]: ./trait.MovableObject.html
+/// [`Object`]: ./trait.Object.html
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum MovableAction {
+pub enum Action {
     /// Move the object to the specified Location
     Move,
     /// Rotate the object by the specified radians
     Rotate,
-    /// Destroy the object
-    Die,
-    /// Create a new object at the specified location
-    Reproduce,
-}
-
-/// Behaviour of an object that can never be moved
-pub trait ImmovableObject: Debug {
-    /// Returns all actions performed by the object
-    /// in the current simulation tick
-    fn step(&mut self, sensor_collisions: &[ObjectDescription]) -> Vec<ImmovableAction>;
-    /// Returns the object's kind.
-    /// This information is arbitrary and is only used
-    /// as a tag for visualizers
-    fn kind(&self) -> Kind;
-
-    /// Returns if a sensor is attached to the object
-    fn sensor(&self) -> Option<Sensor>;
-}
-
-/// Possible actions performed by a [`ImmovableObject`]
-/// during a simulation step
-///
-/// [`ImmovableObject`]: ./trait.ImmovableObject.html
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum ImmovableAction {
     /// Destroy the object
     Die,
     /// Create a new object at the specified location
@@ -150,20 +53,27 @@ pub struct Sensor {
 ///
 /// [`Simulation`]: ../simulation/trait.Simulation.html
 #[derive(Debug, PartialEq, Clone)]
+#[non_exhaustive]
 pub struct ObjectDescription {
     /// The vertices defining the shape of the object
     /// in relation to its [`position`]
     ///
     /// [`position`]: ./struct.ObjectDescription.html#structfield.location
     pub shape: Polygon,
+
     /// The current position of the object
     pub position: Position,
+
     /// The current velocity of the object, defined
     /// as a two dimensional vector relative to the
     /// objects center
     pub mobility: Mobility,
+
     /// The object's kind
     pub kind: Kind,
+
+    /// The object's sensor
+    pub sensor: Option<Sensor>,
 }
 
 /// An object's mobility and, if present, its
