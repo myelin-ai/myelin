@@ -108,6 +108,7 @@ impl SimulationImpl {
             }
             Action::Die => {
                 self.world.remove_body(body_handle)?;
+                self.non_physical_object_data.remove(&body_handle)?;
             }
         };
         Some(())
