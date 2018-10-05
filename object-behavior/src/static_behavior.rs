@@ -17,8 +17,8 @@ impl ObjectBehavior for Static {
         &mut self,
         _own_description: &ObjectDescription,
         _sensor_collisions: &[ObjectDescription],
-    ) -> Vec<Action> {
-        Vec::new()
+    ) -> Option<Action> {
+        None
     }
 }
 
@@ -48,8 +48,8 @@ mod tests {
             .build()
             .unwrap();
         let mut object = Static::new();
-        let actions = object.step(&own_description, &[]);
-        assert!(actions.is_empty());
+        let action = object.step(&own_description, &[]);
+        assert!(action.is_none());
     }
 
 }

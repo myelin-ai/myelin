@@ -14,7 +14,7 @@ pub trait ObjectBehavior: Debug + ObjectBehaviorClone {
         &mut self,
         own_description: &ObjectDescription,
         sensor_collisions: &[ObjectDescription],
-    ) -> Vec<Action>;
+    ) -> Option<Action>;
 }
 
 /// Possible actions performed by an [`Object`]

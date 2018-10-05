@@ -274,7 +274,7 @@ mod tests {
             &mut self,
             _own_description: &ObjectDescription,
             _sensor_collisions: &[ObjectDescription],
-        ) -> Vec<Action> {
+        ) -> Option<Action> {
             panic!("step() was called unexpectedly")
         }
     }

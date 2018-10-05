@@ -478,7 +478,7 @@ mod tests {
         object_behavior.expect_step_and_return(
             expected_object_description.clone(),
             Vec::new(),
-            Vec::new(),
+            None,
         );
 
         let mut simulation = SimulationImpl::new(Box::new(world));
@@ -532,7 +532,7 @@ mod tests {
         object_behavior.expect_step_and_return(
             expected_object_description.clone(),
             vec![expected_object_description.clone()],
-            Vec::new(),
+            None,
         );
         world.expect_body_and_return(returned_handle, Some(expected_physical_body));
 
@@ -871,7 +871,7 @@ mod tests {
 
     #[derive(Debug, Default, Clone)]
     struct ObjectBehaviorMock {
-        expect_step_and_return: Option<(ObjectDescription, Vec<ObjectDescription>, Vec<Action>)>,
+        expect_step_and_return: Option<(ObjectDescription, Vec<ObjectDescription>, Option<Action>)>,
 
         step_was_called: RefCell<bool>,
     }
@@ -885,7 +885,7 @@ mod tests {
             &mut self,
             own_description: ObjectDescription,
             sensor_collisions: Vec<ObjectDescription>,
-            returned_value: Vec<Action>,
+            returned_value: Option<Action>,
         ) {
             self.expect_step_and_return =
                 Some((own_description, sensor_collisions, returned_value));
@@ -897,7 +897,7 @@ mod tests {
             &mut self,
             own_description: &ObjectDescription,
             sensor_collisions: &[ObjectDescription],
-        ) -> Vec<Action> {
+        ) -> Option<Action> {
             *self.step_was_called.borrow_mut() = true;
             if let Some((
                 ref expected_own_description,
