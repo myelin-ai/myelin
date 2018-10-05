@@ -15,7 +15,7 @@
 //!             .build()
 //!             .unwrap(),
 //!     ).location(300, 450)
-//!     .orientation(Radians(FRAC_PI_2))
+//!     .rotation(Radians(FRAC_PI_2))
 //!     .kind(Kind::Organism)
 //!     .mobility(Mobility::Movable(Velocity{x: 3, y: 5}))
 //!     .build()
@@ -50,9 +50,10 @@ pub struct ObjectBuilderError {
 pub struct ObjectBuilder {
     shape: Option<Polygon>,
     location: Option<Location>,
-    orientation: Option<Radians>,
+    rotation: Option<Radians>,
     mobility: Option<Mobility>,
     kind: Option<Kind>,
+    sensor: Option<Sensor>,
 }
 
 impl ObjectBuilder {
@@ -125,13 +126,34 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
+    /// use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+    /// use myelin_environment::object::{Sensor, Position};
+    /// ObjectBuilder::new()
+    ///     .sensor( Sensor {
+    ///         shape: PolygonBuilder::new()
+    ///             .vertex(-50, -50)
+    ///             .vertex(50, -50)
+    ///             .vertex(50, 50)
+    ///             .vertex(-50, 50)
+    ///             .build()
+    ///             .unwrap(),
+    ///         position: Position::default()
+    ///     });
+    /// ```
+    pub fn sensor(&mut self, sensor: Sensor) -> &mut Self {
+        self.sensor = Some(sensor);
+        self
+    }
+
+    /// # Examples
+    /// ```
     /// use myelin_environment::object_builder::ObjectBuilder;
     /// use myelin_environment::object::Radians;
     /// ObjectBuilder::new()
-    ///     .orientation(Radians(4.5));
+    ///     .rotation(Radians(4.5));
     /// ```
-    pub fn orientation(&mut self, orientation: Radians) -> &mut Self {
-        self.orientation = Some(orientation);
+    pub fn rotation(&mut self, rotation: Radians) -> &mut Self {
+        self.rotation = Some(rotation);
         self
     }
 
@@ -156,7 +178,7 @@ impl ObjectBuilder {
     ///             .build()
     ///             .unwrap(),
     ///     ).location(300, 450)
-    ///     .orientation(Radians(FRAC_PI_2))
+    ///     .rotation(Radians(FRAC_PI_2))
     ///     .kind(Kind::Organism)
     ///     .mobility(Mobility::Movable(Velocity{x: 3, y: 5}))
     ///     .build()
@@ -176,10 +198,11 @@ impl ObjectBuilder {
             shape: self.shape.take().ok_or_else(|| error.clone())?,
             position: Position {
                 location: self.location.take().ok_or_else(|| error.clone())?,
-                rotation: self.orientation.take().unwrap_or_else(Default::default),
+                rotation: self.rotation.take().unwrap_or_else(Default::default),
             },
             kind: self.kind.take().ok_or_else(|| error.clone())?,
             mobility: self.mobility.take().ok_or(error)?,
+            sensor: self.sensor.take(),
         };
 
         Ok(object)
@@ -306,7 +329,7 @@ mod test {
     fn test_object_builder_should_error_for_missing_shape() {
         let result = ObjectBuilder::new()
             .location(10, 10)
-            .orientation(Radians(0.0))
+            .rotation(Radians(0.0))
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
             .build();
@@ -333,7 +356,7 @@ mod test {
                     .unwrap(),
             )
             .location(10, 10)
-            .orientation(Radians(0.0))
+            .rotation(Radians(0.0))
             .mobility(Mobility::Immovable)
             .build();
         assert_eq!(
@@ -357,7 +380,7 @@ mod test {
                     .build()
                     .unwrap(),
             )
-            .orientation(Radians(0.0))
+            .rotation(Radians(0.0))
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
             .build();
@@ -383,7 +406,7 @@ mod test {
                     .build()
                     .unwrap(),
             )
-            .orientation(Radians(0.0))
+            .rotation(Radians(0.0))
             .location(30, 40)
             .kind(Kind::Plant)
             .build();
@@ -398,7 +421,7 @@ mod test {
     }
 
     #[test]
-    fn test_object_builder_should_use_default_orientation() {
+    fn test_object_builder_should_use_default_rotation() {
         let result = ObjectBuilder::new()
             .shape(
                 PolygonBuilder::new()
@@ -429,6 +452,7 @@ mod test {
             },
             kind: Kind::Terrain,
             mobility: Mobility::Immovable,
+            sensor: None,
         };
 
         assert_eq!(Ok(expected), result);
@@ -464,7 +488,19 @@ mod test {
             .mobility(Mobility::Movable(Velocity { x: -12, y: 5 }))
             .kind(Kind::Organism)
             .location(30, 40)
-            .orientation(Radians(1.1))
+            .rotation(Radians(1.1))
+            .sensor(Sensor {
+                shape: PolygonBuilder::new()
+                    .vertex(2, 0)
+                    .vertex(-2, 0)
+                    .vertex(0, 1)
+                    .build()
+                    .unwrap(),
+                position: Position {
+                    location: Location { x: 12, y: 42 },
+                    rotation: Radians(1.2),
+                },
+            })
             .build();
 
         let expected = ObjectDescription {
@@ -482,6 +518,19 @@ mod test {
                     Vertex { x: 1, y: 1 },
                 ],
             },
+            sensor: Some(Sensor {
+                shape: Polygon {
+                    vertices: vec![
+                        Vertex { x: 2, y: 0 },
+                        Vertex { x: -2, y: 0 },
+                        Vertex { x: 0, y: 1 },
+                    ],
+                },
+                position: Position {
+                    location: Location { x: 12, y: 42 },
+                    rotation: Radians(1.2),
+                },
+            }),
         };
 
         assert_eq!(Ok(expected), result);

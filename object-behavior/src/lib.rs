@@ -9,7 +9,6 @@
     clippy::doc_markdown
 )]
 
-pub mod organism;
-pub mod plant;
-pub mod terrain;
-pub mod water;
+// Not named "static" because that would be a keyword
+mod static_behavior;
+pub use self::static_behavior::Static;

@@ -10,9 +10,7 @@ use myelin_environment::object::{Kind, ObjectBehavior};
 use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
 use myelin_environment::simulation_impl::world::NphysicsWorld;
 use myelin_environment::{simulation_impl::SimulationImpl, Simulation};
-use myelin_object::{
-    organism::StaticOrganism, plant::StaticPlant, terrain::StaticTerrain, water::StaticWater,
-};
+use myelin_object_behavior::Static;
 use myelin_worldgen::generator::HardcodedGenerator;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
@@ -49,12 +47,7 @@ pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
         ));
         Box::new(SimulationImpl::new(world))
     });
-    let object_factory = Box::new(|kind: Kind| match kind {
-        Kind::Plant => ObjectBehavior::Immovable(Box::new(StaticPlant::new())),
-        Kind::Organism => ObjectBehavior::Movable(Box::new(StaticOrganism::new())),
-        Kind::Water => ObjectBehavior::Immovable(Box::new(StaticWater::new())),
-        Kind::Terrain => ObjectBehavior::Immovable(Box::new(StaticTerrain::new())),
-    });
+    let object_factory = Box::new(|_: Kind| -> Box<dyn ObjectBehavior> { Box::new(Static::new()) });
     let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
     let controller = Box::new(ControllerImpl::new(presenter, &worldgen));
     InputHandler::new(controller)
