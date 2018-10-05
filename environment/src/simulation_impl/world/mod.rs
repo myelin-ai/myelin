@@ -281,7 +281,15 @@ impl World for NphysicsWorld {
     }
 
     fn apply_force(&mut self, body_handle: BodyHandle, force: Force) -> Option<()> {
-        unimplemented!()
+        let collider_handle = to_collider_handle(body_handle);
+        let nphysics_body_handle = self.physics_world.collider(collider_handle)?.data().body();
+        self.physics_world
+            .force_generator_mut(self.force_generator_handle)
+            .downcast_mut::<GenericSingleTimeForceApplierWrapper>()
+            .expect("Stored force generator was not of type GenericSingleTimeForceApplierWrapper")
+            .inner_mut()
+            .register_force(nphysics_body_handle, force);
+        Some(())
     }
 
     fn set_simulated_timestep(&mut self, timestep: f64) {
