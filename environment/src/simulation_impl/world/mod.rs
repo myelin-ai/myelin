@@ -333,7 +333,10 @@ impl<'a> fmt::Debug for DebugPhysicsWorld<'a> {
 mod tests {
     use super::*;
     use crate::object_builder::PolygonBuilder;
+    use nphysics2d::object::BodySet;
+    use nphysics2d::solver::IntegrationParameters;
     use std::cell::RefCell;
+    use std::sync::RwLock;
     use std::thread::panicking;
 
     const DEFAULT_TIMESTEP: f64 = 1.0;
@@ -932,4 +935,88 @@ mod tests {
         }
     }
 
+    #[derive(Default)]
+    struct SingleTimeForceApplierMock {
+        expect_register_force: Option<(NphysicsBodyHandle, Force)>,
+        expect_apply_and_return: Option<(bool,)>,
+
+        register_force_was_called: RwLock<bool>,
+        apply_was_called: RwLock<bool>,
+    }
+
+    impl fmt::Debug for SingleTimeForceApplierMock {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            f.debug_struct("SingleTimeForceApplierMock").finish()
+        }
+    }
+
+    impl SingleTimeForceApplierMock {
+        fn expect_register_force(&mut self, body_handle: NphysicsBodyHandle, force: Force) {
+            self.expect_register_force = Some((body_handle, force))
+        }
+
+        fn expect_apply_and_return(&mut self, return_value: bool) {
+            self.expect_apply_and_return = Some((return_value,))
+        }
+    }
+
+    impl SingleTimeForceApplier for SingleTimeForceApplierMock {
+        fn register_force(&mut self, handle: NphysicsBodyHandle, force: Force) {
+            *self
+                .register_force_was_called
+                .write()
+                .expect("RwLock was poisoned") = true;
+
+            if let Some((ref expected_handle, ref expected_force)) = self.expect_register_force {
+                if handle != *expected_handle || force != *expected_force {
+                    panic!(
+                        "register_force() was called with {:?} and {:?}, expected {:?} and {:?}",
+                        handle, force, expected_handle, expected_force
+                    )
+                }
+            } else {
+                panic!("register_force() was called unexpectedly")
+            }
+        }
+    }
+
+    impl ForceGenerator<PhysicsType> for SingleTimeForceApplierMock {
+        fn apply(
+            &mut self,
+            _: &IntegrationParameters<PhysicsType>,
+            _: &mut BodySet<PhysicsType>,
+        ) -> bool {
+            *self.apply_was_called.write().expect("RwLock was poisoned") = true;
+
+            if let Some((return_value,)) = self.expect_apply_and_return {
+                // IntegrationParameters and BodySet have no comparison functionality
+                return_value
+            } else {
+                panic!("apply() was called unexpectedly")
+            }
+        }
+    }
+
+    impl Drop for SingleTimeForceApplierMock {
+        fn drop(&mut self) {
+            if panicking() {
+                return;
+            }
+            if self.expect_register_force.is_some() {
+                assert!(
+                    *self
+                        .register_force_was_called
+                        .read()
+                        .expect("RwLock was poisoned"),
+                    "expect_register_force() was not called, but was expected"
+                )
+            }
+            if self.expect_apply_and_return.is_some() {
+                assert!(
+                    *self.apply_was_called.read().expect("RwLock was poisoned"),
+                    "expect_apply_and_return() was not called, but was expected"
+                )
+            }
+        }
+    }
 }
