@@ -46,6 +46,27 @@ impl ForceGenerator<PhysicsType> for SingleTimeForceApplierImpl {
     }
 }
 
+#[derive(Debug)]
+pub struct GenericSingleTimeForceApplierWrapper {
+    force_applier: Box<dyn SingleTimeForceApplier>,
+}
+
+impl GenericSingleTimeForceApplierWrapper {
+    pub fn new(force_applier: Box<dyn SingleTimeForceApplier>) -> Self {
+        Self { force_applier }
+    }
+}
+
+impl ForceGenerator<PhysicsType> for GenericSingleTimeForceApplierWrapper {
+    fn apply(
+        &mut self,
+        integration_parameters: &IntegrationParameters<PhysicsType>,
+        body_set: &mut BodySet<PhysicsType>,
+    ) -> bool {
+        self.force_applier.apply(integration_parameters, body_set)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -63,7 +84,7 @@ mod tests {
         let world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            Box::new(force_applier),
+            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
         );
     }
 
@@ -76,7 +97,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            Box::new(force_applier),
+            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
         );
 
         let expected_object = physical_body();
@@ -205,7 +226,7 @@ mod tests {
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
-            Box::new(force_applier),
+            GenericSingleTimeForceApplierWrapper::new(Box::new(force_applier)),
         );
 
         let handle = world.add_body(body.clone());
