@@ -218,6 +218,12 @@ pub trait World: fmt::Debug {
     /// [`body()`]: ./trait.World.html#tymethod.body
     fn add_body(&mut self, body: PhysicalBody) -> BodyHandle;
 
+    /// Removes a previously added [`PhysicalBody`] from the world.
+    /// If `body_handle` was valid, this will return the removed physical body.
+    ///
+    /// [`PhysicalBody`]: ./struct.PhysicalBody.html
+    fn remove_body(&mut self, body_handle: BodyHandle) -> Option<PhysicalBody>;
+
     /// Attaches a sensor to the body identified by `body_handle`.
     /// # Errors
     /// Returns `None` if `body_handle` did not match any bodies.
@@ -656,6 +662,7 @@ mod tests {
     struct WorldMock {
         expect_step: Option<()>,
         expect_add_body_and_return: Option<(PhysicalBody, BodyHandle)>,
+        expect_remove_body_and_return: Option<(BodyHandle, Option<PhysicalBody>)>,
         expect_body_and_return: Option<(BodyHandle, Option<PhysicalBody>)>,
         expect_attach_sensor_and_return: Option<(BodyHandle, Sensor, Option<SensorHandle>)>,
         expect_bodies_within_sensor_and_return: Option<(SensorHandle, Option<Vec<BodyHandle>>)>,
@@ -664,6 +671,7 @@ mod tests {
 
         step_was_called: RefCell<bool>,
         add_body_was_called: RefCell<bool>,
+        remove_body_was_called: RefCell<bool>,
         attach_sensor_was_called: RefCell<bool>,
         body_was_called: RefCell<bool>,
         bodies_within_sensor_was_called: RefCell<bool>,
@@ -685,6 +693,14 @@ mod tests {
             returned_value: BodyHandle,
         ) {
             self.expect_add_body_and_return = Some((body, returned_value));
+        }
+
+        pub(crate) fn expect_remove_body_and_return(
+            &mut self,
+            body_handle: BodyHandle,
+            returned_value: Option<PhysicalBody>,
+        ) {
+            self.expect_remove_body_and_return = Some((body_handle, returned_value));
         }
 
         pub(crate) fn expect_attach_sensor_and_return(
@@ -778,6 +794,13 @@ mod tests {
                     "set_simulated_timestep() was not called, but was expected"
                 )
             }
+
+            if self.expect_remove_body_and_return.is_some() {
+                assert!(
+                    *self.remove_body_was_called.borrow(),
+                    "remove_body() was not called, but was expected"
+                )
+            }
         }
     }
 
@@ -803,6 +826,25 @@ mod tests {
                 panic!("add_body() was called unexpectedly")
             }
         }
+
+        fn remove_body(&mut self, body_handle: BodyHandle) -> Option<PhysicalBody> {
+            *self.remove_body_was_called.borrow_mut() = true;
+            if let Some((ref expected_body_handle, ref return_value)) =
+                self.expect_remove_body_and_return
+            {
+                if body_handle == *expected_body_handle {
+                    return_value.clone()
+                } else {
+                    panic!(
+                        "remove_body() was called with {:?}, expected {:?}",
+                        body_handle, expected_body_handle
+                    )
+                }
+            } else {
+                panic!("remove_body() was called unexpectedly")
+            }
+        }
+
         fn attach_sensor(
             &mut self,
             body_handle: BodyHandle,
