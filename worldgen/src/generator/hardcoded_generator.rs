@@ -157,7 +157,7 @@ fn build_terrain(location: (u32, u32), width: i32, length: i32) -> ObjectDescrip
         .mobility(Mobility::Immovable)
         .kind(Kind::Terrain)
         .build()
-        .expect("Failed to build water")
+        .expect("Failed to build terrain")
 }
 
 fn build_plant(x: u32, y: u32) -> ObjectDescription {
@@ -185,7 +185,7 @@ fn build_plant(x: u32, y: u32) -> ObjectDescription {
             position: Position::default(),
         })
         .build()
-        .expect("Failed to build water")
+        .expect("Failed to build plant")
 }
 
 fn build_organism(x: u32, y: u32) -> ObjectDescription {
@@ -214,7 +214,7 @@ fn build_organism(x: u32, y: u32) -> ObjectDescription {
             position: Position::default(),
         })
         .build()
-        .expect("Failed to build water")
+        .expect("Failed to build organism")
 }
 
 impl WorldGenerator for HardcodedGenerator {
