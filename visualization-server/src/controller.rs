@@ -1,13 +1,11 @@
 use crate::connection::Connection;
 use crate::snapshot::{Snapshot, SnapshotSlice};
 use myelin_environment::Simulation;
-use myelin_worldgen::WorldGenerator;
 use std::error::Error;
 use std::fmt::{self, Debug};
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, RwLock};
-use std::thread;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 pub(crate) trait Controller: Debug {
     fn run(&mut self);
@@ -31,10 +29,10 @@ pub(crate) trait Client: Debug + Send {
     fn run(&mut self, current_snapshot_fn: Box<CurrentSnapshotFn>);
 }
 
-pub(crate) type SimulationFactoryFn = dyn Fn() -> Box<dyn Simulation>;
+pub(crate) type SimulationFactory = dyn Fn() -> Box<dyn Simulation>;
 pub(crate) type CurrentSnapshotFnFactory = dyn Fn() -> CurrentSnapshotFn;
 
-pub(crate) trait ClientFactory {
+pub(crate) trait ClientSpawner {
     fn accept_new_connections(
         &self,
         receiver: Receiver<Connection>,
@@ -43,16 +41,17 @@ pub(crate) trait ClientFactory {
 }
 
 pub(crate) struct ControllerImpl {
-    simulation_factory: Box<SimulationFactoryFn>,
-    connection_acceptor: Box<dyn ConnectionAccepter>,
+    simulation_factory: Box<SimulationFactory>,
+    connection_accepter: Box<dyn ConnectionAccepter>,
     expected_delta: Duration,
     current_snapshot: Arc<RwLock<Snapshot>>,
+    client_spawner: Box<dyn ClientSpawner>,
 }
 
 impl Debug for ControllerImpl {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("ControllerImpl")
-            .field("connection_acceptor", &self.connection_acceptor)
+            .field("connection_accepter", &self.connection_accepter)
             .field("expected_delta", &self.expected_delta)
             .finish()
     }
@@ -60,41 +59,23 @@ impl Debug for ControllerImpl {
 
 impl Controller for ControllerImpl {
     fn run(&mut self) {
-        loop {
-            let now = Instant::now();
-
-            if let Err(err) = self.step() {
-                error!("Error during step: {}", err);
-            }
-
-            let delta = now.elapsed();
-
-            if delta < self.expected_delta {
-                thread::sleep(self.expected_delta - delta);
-            }
-        }
-    }
-}
-
-impl ControllerImpl {
-    fn step(&mut self) -> Result<(), Box<dyn Error>> {
-        self.simulation.step();
-        let objects = self.simulation.objects();
-        self.presenter.present_objects(&objects)?;
-        Ok(())
+        unimplemented!()
     }
 }
 
 impl ControllerImpl {
     pub(crate) fn new(
-        presenter: Box<dyn Presenter>,
-        world_generator: &dyn WorldGenerator,
+        simulation_factory: Box<SimulationFactory>,
+        connection_accepter: Box<dyn ConnectionAccepter>,
+        client_spawner: Box<dyn ClientSpawner>,
         expected_delta: Duration,
     ) -> Self {
         Self {
-            presenter,
-            simulation: world_generator.generate(),
+            simulation_factory,
+            connection_accepter,
             expected_delta,
+            client_spawner,
+            current_snapshot: Default::default(),
         }
     }
 }
@@ -106,6 +87,21 @@ mod tests {
     use myelin_environment::object_builder::*;
     use std::cell::RefCell;
     use std::error::Error;
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::thread::panicking;
+
+    const EXPECTED_DELTA: Duration = Duration::from_millis(1.0 / 60.0);
+
+    #[test]
+    fn assembles_stuff() {
+        let controller = ControllerImpl::new(
+            Box::new(|| SimulationMock::new(Vec::new())),
+            Box::new(ConnectionAccepterMock::new()),
+            Box::new(ClientSpawnerMock::new()),
+            EXPECTED_DELTA,
+        );
+        controller.run();
+    }
 
     #[derive(Debug)]
     struct SimulationMock {
@@ -250,5 +246,62 @@ mod tests {
         ];
         let mut controller = mock_controller(expected_objects);
         controller.step().unwrap();
+    }
+
+    struct ConnectionAccepterMock {
+        connection: Connection,
+        run_was_called: AtomicBool,
+    }
+
+    impl ConnectionAccepter for ConnectionAccepterMock {
+        fn run(&mut self, sender: Sender<Connection>) {}
+    }
+
+    struct ClientSpawnerMock {
+        expected_connection: Option<Connection>,
+        accept_new_connections_was_called: AtomicBool,
+    }
+
+    impl ClientSpawnerMock {
+        fn expect_connection(&mut self, connection: Connection) {
+            *self.expected_connection = Some(connection)
+        }
+    }
+
+    impl ClientSpawner for ClientSpawnerMock {
+        fn accept_new_connections(
+            &self,
+            receiver: Receiver<Connection>,
+            current_snapshot_fn_factory: Box<CurrentSnapshotFnFactory>,
+        ) {
+            accept_new_connections_was_called.store(true, Ordering::SeqCst);
+            if let Some(expected_connection) = self.expected_connection {
+                assert_eq!(
+                    expected_connection,
+                    receiver.recv().expect("Sender disconnected")
+                )
+            } else {
+                match receiver.try_recv() {
+                    Err(std::sync::mpsc::TryRecvError::Empty) => {}
+                    otherwise => panic!("No connection expected, but got {:#?}", otherwise),
+                }
+            }
+        }
+    }
+
+    impl Drop for ClientSpawnerMock {
+        fn drop(&mut self) {
+            if panicking() {
+                return;
+            }
+
+            if self.expected_connection.is_some() {
+                assert!(
+                    self.accept_new_connections_was_called
+                        .load(Ordering::SeqCst),
+                    "accept_new_connections was not called but was expected"
+                );
+            }
+        }
     }
 }
