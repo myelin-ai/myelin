@@ -1,4 +1,5 @@
 use myelin_environment::object::*;
+use myelin_environment::object_builder::ObjectBuilder;
 use std::fmt;
 
 mod random_chance_checker_impl;
@@ -49,10 +50,22 @@ impl StochasticSpreading {
 
     fn spread(
         &self,
-        _own_description: &ObjectDescription,
+        own_description: &ObjectDescription,
         _sensor_collisions: &[ObjectDescription],
     ) -> Option<Action> {
-        unimplemented!()
+        let object_description = ObjectBuilder::new()
+            .location(
+                own_description.position.location.x + 10,
+                own_description.position.location.y + 10,
+            )
+            .rotation(own_description.position.rotation)
+            .shape(own_description.shape.clone())
+            .kind(own_description.kind)
+            .mobility(own_description.mobility.clone())
+            .build()
+            .unwrap();
+        let object_behavior = Box::new(self.clone());
+        Some(Action::Reproduce(object_description, object_behavior))
     }
 }
 
