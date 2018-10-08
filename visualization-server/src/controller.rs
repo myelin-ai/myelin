@@ -1,24 +1,61 @@
-use myelin_environment::object::ObjectDescription;
+use crate::connection::Connection;
+use crate::snapshot::{Snapshot, SnapshotSlice};
 use myelin_environment::Simulation;
 use myelin_worldgen::WorldGenerator;
 use std::error::Error;
-use std::fmt;
+use std::fmt::{self, Debug};
+use std::sync::mpsc::{Receiver, Sender};
+use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::{Duration, Instant};
 
-pub(crate) trait Controller: fmt::Debug {
+pub(crate) trait Controller: Debug {
     fn run(&mut self);
 }
 
-pub(crate) trait Presenter: fmt::Debug {
-    fn present_objects(&self, objects: &[ObjectDescription]) -> Result<(), Box<dyn Error>>;
+pub(crate) trait Presenter: Debug {
+    fn present_objects(
+        &self,
+        last_objects: &SnapshotSlice,
+        current_objects: &SnapshotSlice,
+    ) -> Result<(), Box<dyn Error>>;
 }
 
-#[derive(Debug)]
+pub(crate) trait ConnectionAccepter: Debug + Send {
+    fn run(&mut self, sender: Sender<Connection>);
+}
+
+pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send;
+
+pub(crate) trait Client: Debug + Send {
+    fn run(&mut self, current_snapshot_fn: Box<CurrentSnapshotFn>);
+}
+
+pub(crate) type SimulationFactoryFn = dyn Fn() -> Box<dyn Simulation>;
+pub(crate) type CurrentSnapshotFnFactory = dyn Fn() -> CurrentSnapshotFn;
+
+pub(crate) trait ClientFactory {
+    fn accept_new_connections(
+        &self,
+        receiver: Receiver<Connection>,
+        current_snapshot_fn_factory: Box<CurrentSnapshotFnFactory>,
+    );
+}
+
 pub(crate) struct ControllerImpl {
-    presenter: Box<dyn Presenter>,
-    simulation: Box<dyn Simulation>,
+    simulation_factory: Box<SimulationFactoryFn>,
+    connection_acceptor: Box<dyn ConnectionAccepter>,
     expected_delta: Duration,
+    current_snapshot: Arc<RwLock<Snapshot>>,
+}
+
+impl Debug for ControllerImpl {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ControllerImpl")
+            .field("connection_acceptor", &self.connection_acceptor)
+            .field("expected_delta", &self.expected_delta)
+            .finish()
+    }
 }
 
 impl Controller for ControllerImpl {

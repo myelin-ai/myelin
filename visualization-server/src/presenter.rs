@@ -1,5 +1,6 @@
 use crate::controller::Presenter;
 use crate::serialize::ViewModelSerializer;
+use crate::snapshot::SnapshotSlice;
 use crate::transmitter::ViewModelTransmitter;
 use myelin_environment::object as business_object;
 use myelin_visualization_core::view_model::{self, ViewModel};
@@ -14,7 +15,8 @@ pub(crate) struct CanvasPresenter {
 impl Presenter for CanvasPresenter {
     fn present_objects(
         &self,
-        objects: &[business_object::ObjectDescription],
+        last_objects: &SnapshotSlice,
+        current_objects: &SnapshotSlice,
     ) -> Result<(), Box<dyn Error>> {
         let view_model = ViewModel {
             objects: objects
