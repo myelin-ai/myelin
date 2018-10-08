@@ -3,32 +3,22 @@ use crate::serialize::ViewModelSerializer;
 use crate::snapshot::SnapshotSlice;
 use crate::transmitter::ViewModelTransmitter;
 use myelin_environment::object as business_object;
-use myelin_visualization_core::view_model::{self, ViewModel};
+use myelin_visualization_core::view_model;
 use std::error::Error;
 
 #[derive(Debug)]
-pub(crate) struct CanvasPresenter {
+pub(crate) struct DeltaPresenter {
     serializer: Box<dyn ViewModelSerializer>,
     transmitter: Box<dyn ViewModelTransmitter>,
 }
 
-impl Presenter for CanvasPresenter {
-    fn present_objects(
+impl Presenter for DeltaPresenter {
+    fn calculate_deltas(
         &self,
         last_objects: &SnapshotSlice,
         current_objects: &SnapshotSlice,
     ) -> Result<(), Box<dyn Error>> {
-        let view_model = ViewModel {
-            objects: objects
-                .iter()
-                .map(|object| to_global_object(object))
-                .collect(),
-        };
-
-        self.transmitter
-            .send_view_model(self.serializer.serialize_view_model(&view_model)?)?;
-
-        Ok(())
+        unimplemented!()
     }
 }
 
@@ -76,7 +66,7 @@ fn map_kind(kind: business_object::Kind) -> view_model::Kind {
     }
 }
 
-impl CanvasPresenter {
+impl DeltaPresenter {
     pub(crate) fn new(
         serializer: Box<dyn ViewModelSerializer>,
         transmitter: Box<dyn ViewModelTransmitter>,
@@ -195,8 +185,9 @@ mod tests {
         let expected_data = vec![1, 2, 3];
         let serializer_mock = SerializerMock::new(expected_view_model, expected_data.clone());
         let transmitter_mock = TransmitterMock::new(expected_data);
-        let presenter = CanvasPresenter::new(Box::new(serializer_mock), Box::new(transmitter_mock));
-        presenter.present_objects(&objects).unwrap();
+        let presenter = DeltaPresenter::new(Box::new(serializer_mock), Box::new(transmitter_mock));
+        //presenter.present_objects(&objects).unwrap();
+        unimplemented!()
     }
 
     #[test]
@@ -218,8 +209,9 @@ mod tests {
         let expected_data = vec![1, 2, 3];
         let serializer_mock = SerializerMock::new(expected_view_model, expected_data.clone());
         let transmitter_mock = TransmitterMock::new(expected_data);
-        let presenter = CanvasPresenter::new(Box::new(serializer_mock), Box::new(transmitter_mock));
-        presenter.present_objects(&object_description).unwrap();
+        let presenter = DeltaPresenter::new(Box::new(serializer_mock), Box::new(transmitter_mock));
+        //presenter.present_objects(&object_description).unwrap();
+        unimplemented!()
     }
 
     #[test]
@@ -241,8 +233,9 @@ mod tests {
         let expected_data = vec![1, 2, 3];
         let serializer_mock = SerializerMock::new(expected_view_model, expected_data.clone());
         let transmitter_mock = TransmitterMock::new(expected_data);
-        let presenter = CanvasPresenter::new(Box::new(serializer_mock), Box::new(transmitter_mock));
-        presenter.present_objects(&object_description).unwrap();
+        let presenter = DeltaPresenter::new(Box::new(serializer_mock), Box::new(transmitter_mock));
+        //presenter.present_objects(&object_description).unwrap();
+        unimplemented!()
     }
 
     #[test]
@@ -276,7 +269,8 @@ mod tests {
         let expected_data = vec![1, 2, 3];
         let serializer_mock = SerializerMock::new(expected_view_model, expected_data.clone());
         let transmitter_mock = TransmitterMock::new(expected_data);
-        let presenter = CanvasPresenter::new(Box::new(serializer_mock), Box::new(transmitter_mock));
-        presenter.present_objects(&object_description).unwrap();
+        let presenter = DeltaPresenter::new(Box::new(serializer_mock), Box::new(transmitter_mock));
+        //presenter.present_objects(&object_description).unwrap();
+        unimplemented!()
     }
 }

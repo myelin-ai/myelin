@@ -1,6 +1,6 @@
 use crate::constant::SIMULATED_TIMESTEP;
 use crate::controller::{Controller, ControllerImpl};
-use crate::presenter::CanvasPresenter;
+use crate::presenter::DeltaPresenter;
 use crate::serialize::JsonSerializer;
 use crate::transmitter::ViewModelTransmitter;
 use myelin_environment::object::{Kind, ObjectBehavior};
@@ -39,7 +39,7 @@ fn run_simulation(tx: Sender<Vec<u8>>) {
     thread::spawn(move || {
         let transmitter = Box::new(ChannelTransmitter(tx));
         let serializer = Box::new(JsonSerializer::new());
-        let presenter = Box::new(CanvasPresenter::new(serializer, transmitter));
+        let presenter = Box::new(DeltaPresenter::new(serializer, transmitter));
         let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
             let rotation_translator = NphysicsRotationTranslatorImpl::default();
             let world = Box::new(NphysicsWorld::with_timestep(
@@ -52,13 +52,16 @@ fn run_simulation(tx: Sender<Vec<u8>>) {
             Box::new(|_: Kind| -> Box<dyn ObjectBehavior> { Box::new(Static::new()) });
         let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
 
+        /*
         let mut controller = ControllerImpl::new(
             presenter,
             &worldgen,
             Duration::from_float_secs(SIMULATED_TIMESTEP),
         );
-
+        
         controller.run();
+        */
+        unimplemented!()
     });
 }
 

@@ -12,14 +12,16 @@ pub(crate) trait Controller: Debug {
 }
 
 pub(crate) trait Presenter: Debug {
-    fn present_objects(
+    fn calculate_deltas(
         &self,
         last_objects: &SnapshotSlice,
         current_objects: &SnapshotSlice,
-    ) -> Result<(), Box<dyn Error>>;
+    ) -> ViewModelDelta;
 }
 
-pub(crate) trait ConnectionAccepter: Debug + Send {
+pub(crate) struct ViewModelDelta {}
+
+pub(crate) trait ConnectionAcceptor: Debug + Send {
     fn run(&mut self, sender: Sender<Connection>);
 }
 
@@ -85,19 +87,19 @@ mod tests {
     use super::*;
     use myelin_environment::object::*;
     use myelin_environment::object_builder::*;
+    use myelin_worldgen::WorldGenerator;
     use std::cell::RefCell;
     use std::error::Error;
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::thread::panicking;
-
-    const EXPECTED_DELTA: Duration = Duration::from_millis(1.0 / 60.0);
+    const EXPECTED_DELTA: Duration = Duration::from_millis((1.0f64 / 60.0f64).floor() as u64);
 
     #[test]
     fn assembles_stuff() {
         let controller = ControllerImpl::new(
-            Box::new(|| SimulationMock::new(Vec::new())),
-            Box::new(ConnectionAccepterMock::new()),
-            Box::new(ClientSpawnerMock::new()),
+            Box::new(|| Box::new(SimulationMock::new(Vec::new()))),
+            Box::new(ConnectionAccepterMock::default()),
+            Box::new(ClientSpawnerMock::default()),
             EXPECTED_DELTA,
         );
         controller.run();
@@ -155,7 +157,11 @@ mod tests {
         }
     }
     impl Presenter for PresenterMock {
-        fn present_objects(&self, objects: &[ObjectDescription]) -> Result<(), Box<dyn Error>> {
+        fn calculate_deltas(
+            &self,
+            last_objects: &SnapshotSlice,
+            current_objects: &SnapshotSlice,
+        ) -> Result<(), Box<dyn Error>> {
             *self.present_objects_was_called.borrow_mut() = true;
             self.expected_objects
                 .iter()
@@ -179,6 +185,7 @@ mod tests {
         generate_was_called: RefCell<bool>,
         objects_to_return: Vec<ObjectDescription>,
     }
+
     impl WorldGeneratorMock {
         fn new(
             simulation_factory: Box<dyn Fn(Vec<ObjectDescription>) -> Box<dyn Simulation>>,
@@ -191,6 +198,7 @@ mod tests {
             }
         }
     }
+
     impl WorldGenerator for WorldGeneratorMock {
         fn generate(&self) -> Box<dyn Simulation> {
             *self.generate_was_called.borrow_mut() = true;
@@ -210,11 +218,14 @@ mod tests {
         });
         let world_generator = WorldGeneratorMock::new(simulation_factory, expected_objects.clone());
         let presenter: PresenterMock = PresenterMock::new(expected_objects);
+        /*
         ControllerImpl::new(
             Box::new(presenter),
             &world_generator,
             Duration::from_secs(1),
         )
+        */
+        unimplemented!()
     }
 
     #[test]
@@ -248,15 +259,19 @@ mod tests {
         controller.step().unwrap();
     }
 
+    #[derive(Debug, Default)]
     struct ConnectionAccepterMock {
-        connection: Connection,
+        connection: Option<Connection>,
         run_was_called: AtomicBool,
     }
+
+    impl ConnectionAccepterMock {}
 
     impl ConnectionAccepter for ConnectionAccepterMock {
         fn run(&mut self, sender: Sender<Connection>) {}
     }
 
+    #[derive(Debug, Default)]
     struct ClientSpawnerMock {
         expected_connection: Option<Connection>,
         accept_new_connections_was_called: AtomicBool,
@@ -274,7 +289,8 @@ mod tests {
             receiver: Receiver<Connection>,
             current_snapshot_fn_factory: Box<CurrentSnapshotFnFactory>,
         ) {
-            accept_new_connections_was_called.store(true, Ordering::SeqCst);
+            self.accept_new_connections_was_called
+                .store(true, Ordering::SeqCst);
             if let Some(expected_connection) = self.expected_connection {
                 assert_eq!(
                     expected_connection,

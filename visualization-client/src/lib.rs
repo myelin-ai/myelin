@@ -12,3 +12,4 @@ pub mod bootstrapper;
 pub(crate) mod deserialize;
 pub mod input_handler;
 pub mod view;
+pub mod view_model;

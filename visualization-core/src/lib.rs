@@ -9,4 +9,4 @@
 #[macro_use]
 extern crate serde_derive;
 
-pub mod view_model;
+pub mod view_model_deltas;
