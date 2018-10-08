@@ -76,7 +76,7 @@ where
 
     info!("Server is listening on {}", addr);
 
-    const MAX_CONNECTIONS: usize = 256;
+    const MAX_CONNECTIONS: usize = 255;
     let thread_pool = ThreadPool::new(MAX_CONNECTIONS);
 
     run_simulation(tx);
