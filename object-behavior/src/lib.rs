@@ -13,5 +13,4 @@
 mod static_behavior;
 pub use self::static_behavior::Static;
 
-mod stochastic_spreading;
-pub use self::stochastic_spreading::StochasticSpreading;
+pub mod stochastic_spreading;
