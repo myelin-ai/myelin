@@ -119,6 +119,20 @@ mod tests {
         assert!(action.is_none());
     }
 
+    #[test]
+    fn spreads_when_chance_is_hit() {
+        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
+        let mut object =
+            StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
+        let own_description = object_description();
+        let action = object.step(&own_description, &[]);
+        match action {
+            Some(Action::Reproduce(_, _)) => {}
+            action => panic!("Expected Action::Reproduce, got {:#?}", action),
+        }
+    }
+
     fn object_description() -> ObjectDescription {
         ObjectBuilder::new()
             .shape(
