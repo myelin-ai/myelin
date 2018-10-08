@@ -17,4 +17,6 @@ impl InputHandler {
     pub(crate) fn new() -> Self {
         InputHandler
     }
+
+    pub fn on_message(&self, message: &[u8]) {}
 }
