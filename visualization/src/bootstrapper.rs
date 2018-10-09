@@ -12,7 +12,9 @@ use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceAp
 use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
 use myelin_environment::simulation_impl::world::NphysicsWorld;
 use myelin_environment::{simulation_impl::SimulationImpl, Simulation};
-use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
+use myelin_object_behavior::stochastic_spreading::{
+    AccumulativeDeterministicChanceChecker, StochasticSpreading,
+};
 use myelin_object_behavior::Static;
 use myelin_worldgen::generator::HardcodedGenerator;
 use std::panic::{set_hook, PanicInfo};
@@ -76,7 +78,7 @@ pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
                         .unwrap(),
                     position: Position::default(),
                 },
-                Box::new(RandomChanceCheckerImpl::new()),
+                Box::new(AccumulativeDeterministicChanceChecker::new()),
             )),
             _ => Box::new(Static::new()),
         }
