@@ -1,5 +1,4 @@
 use super::RandomChanceChecker;
-use rand::{thread_rng, Rng, ThreadRng};
 
 /// Random number generator implementation that uses the `rand` crate
 #[derive(Debug, Clone, Default)]
@@ -60,8 +59,9 @@ mod tests {
     fn hits_chance_with_enough_accumulation() {
         let mut random_chance_checker = AccumulativeDeterministicChanceChecker::new();
         let coin_flip_result = random_chance_checker.flip_coin_with_probability(0.75);
-        let coin_flip_result = random_chance_checker.flip_coin_with_probability(0.25);
+        assert!(!coin_flip_result);
 
+        let coin_flip_result = random_chance_checker.flip_coin_with_probability(0.25);
         assert!(coin_flip_result);
     }
 
