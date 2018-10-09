@@ -4,6 +4,8 @@ use std::fmt;
 
 mod random_chance_checker_impl;
 pub use self::random_chance_checker_impl::RandomChanceCheckerImpl;
+mod accumulative_deterministic;
+pub use self::accumulative_deterministic::AccumulativeDeterministicChanceChecker;
 
 /// Plant that spreads in stochastic intervals
 #[derive(Debug)]
