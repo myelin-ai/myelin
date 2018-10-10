@@ -10,6 +10,9 @@
     clippy::doc_markdown
 )]
 
+#[macro_use]
+extern crate serde_derive;
+
 pub mod object;
 pub mod object_builder;
 pub mod simulation_impl;

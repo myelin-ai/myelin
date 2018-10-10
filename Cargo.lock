@@ -496,6 +496,8 @@ dependencies = [
  "nalgebra 0.16.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "ncollide2d 0.17.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "nphysics2d 0.9.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.79 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_derive 1.0.79 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

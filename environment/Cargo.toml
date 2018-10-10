@@ -12,6 +12,8 @@ edition = "2018"
 [dependencies]
 nalgebra = "0.16"
 ncollide2d = "0.17"
+serde = "1.0"
+serde_derive = "1.0"
 
 [dependencies.nphysics2d]
 version = "0.9.1"
