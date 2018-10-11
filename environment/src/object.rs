@@ -47,7 +47,7 @@ pub struct Sensor {
     pub position: Position,
 }
 
-/// The dehaviourless description of an object that has
+/// The behaviourless description of an object that has
 /// been placed inside a [`Simulation`].
 ///
 /// [`Simulation`]: ../simulation/trait.Simulation.html

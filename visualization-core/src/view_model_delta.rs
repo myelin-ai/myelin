@@ -1,18 +1,22 @@
 use myelin_environment::object::*;
 
+/// This step's object deltas
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ViewModelDelta {
+    /// Deltas of the objects in the world
     objects: Vec<ObjectDescriptionDelta>,
+    /// Ids of objects that have been removed from the world
+    deleted_objects: Vec<Id>,
 }
 
-/// The dehaviourless description of an object that has
-/// been placed inside a [`Simulation`].
+/// The delta of a [`ObjectDescription`].
 ///
-/// [`Simulation`]: ../simulation/trait.Simulation.html
+/// [`ObjectDescription`]: ../../environment/object/struct.ObjectDescription.html
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ObjectDescriptionDelta {
-    // To do: Add some kind of ID
-    // To do: Support object deletion
+    /// Unique identifier
+    pub id: Id,
+
     /// The vertices defining the shape of the object
     /// in relation to its [`position`]
     ///
@@ -33,3 +37,8 @@ pub struct ObjectDescriptionDelta {
     /// The object's sensor
     pub sensor: Option<Option<Sensor>>,
 }
+
+/// Unique identifier of an [`ObjectDescriptionDelta`]
+///
+/// [`ObjectDescriptionDelta`]: ./struct.ObjectDescriptionDelta.html
+pub type Id = usize;
