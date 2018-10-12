@@ -1,25 +1,25 @@
-use myelin_visualization_core::view_model_delta::ViewModelDelta;
+use crate::view_model_delta::ViewModelDelta;
 use serde_json as json;
 use std::error::Error;
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
-pub(crate) trait ViewModelSerializer: Debug {
+pub trait ViewModelSerializer: Debug {
     fn serialize_view_model_delta(
         &self,
         view_model_delta: &ViewModelDelta,
     ) -> Result<Vec<u8>, Box<dyn Error>>;
 }
 
-pub(crate) trait ViewModelDeserializer: Debug {
+pub trait ViewModelDeserializer: Debug {
     fn deserialize_view_model(&self, buf: &[u8]) -> Result<ViewModelDelta, Box<dyn Error>>;
 }
 
 #[derive(Debug)]
-pub(crate) struct JsonSerializer(PhantomData<()>);
+pub struct JsonSerializer(PhantomData<()>);
 
 impl JsonSerializer {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         JsonSerializer(PhantomData)
     }
 }
@@ -38,9 +38,9 @@ impl ViewModelSerializer for JsonSerializer {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::view_model_delta::*;
     use myelin_environment::object::*;
     use myelin_environment::object_builder::PolygonBuilder;
-    use myelin_visualization_core::view_model_delta::*;
 
     #[test]
     fn serializes_full_delta() {
