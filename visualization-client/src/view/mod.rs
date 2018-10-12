@@ -1,7 +1,7 @@
 //! Internal module containing the DOM manipulation.
 pub mod constant;
 
-use myelin_visualization_core::view_model::{Kind, Object, ViewModel};
+use crate::view_model::*;
 use std::fmt::{self, Debug};
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement};

@@ -1,4 +1,4 @@
-use myelin_visualization_core::view_model::ViewModel;
+use crate::view_model::ViewModel;
 use std::error::Error;
 use std::fmt::Debug;
 

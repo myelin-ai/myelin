@@ -1,7 +1,7 @@
 use crate::connection::Connection;
 use crate::snapshot::{Snapshot, SnapshotSlice};
 use myelin_environment::Simulation;
-use std::error::Error;
+use myelin_visualization_core::view_model_delta::ViewModelDelta;
 use std::fmt::{self, Debug};
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, RwLock};
@@ -19,9 +19,7 @@ pub(crate) trait Presenter: Debug {
     ) -> ViewModelDelta;
 }
 
-pub(crate) struct ViewModelDelta {}
-
-pub(crate) trait ConnectionAcceptor: Debug + Send {
+pub(crate) trait ConnectionAccepter: Debug + Send {
     fn run(&mut self, sender: Sender<Connection>);
 }
 
@@ -143,17 +141,19 @@ mod tests {
         }
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Default)]
     struct PresenterMock {
-        expected_objects: Vec<ObjectDescription>,
-        present_objects_was_called: RefCell<bool>,
+        expect_calculate_deltas_and_return: Option<(SnapshotSlice, SnapshotSlice, ViewModelDelta)>,
+        calculate_deltas_was_called: RefCell<bool>,
     }
     impl PresenterMock {
-        fn new(expected_objects: Vec<ObjectDescription>) -> Self {
-            Self {
-                present_objects_was_called: RefCell::new(false),
-                expected_objects,
-            }
+        fn expect_calculate_deltas(
+            &mut self,
+            last_objects: SnapshotSlice,
+            current_objects: SnapshotSlice,
+            return_value: ViewModelDelta,
+        ) {
+            self.expect_calculate_deltas = Some(expected_objects);
         }
     }
     impl Presenter for PresenterMock {
@@ -161,22 +161,46 @@ mod tests {
             &self,
             last_objects: &SnapshotSlice,
             current_objects: &SnapshotSlice,
-        ) -> Result<(), Box<dyn Error>> {
-            *self.present_objects_was_called.borrow_mut() = true;
-            self.expected_objects
-                .iter()
-                .zip(objects)
-                .for_each(|(expected, actual)| {
-                    assert_eq!(expected, actual);
-                });
+        ) -> ViewModelDelta {
+            *self.calculate_deltas_was_called.borrow_mut() = true;
 
-            Ok(())
+            if let Some((expected_input, expected_output)) = self.expect_calculate_deltas {
+                if orientation != expected_input {
+                    panic!("to_nphysics_rotation() was called with an unexpected input value: {:?}")
+                }
+
+                expected_output
+            } else {
+                panic!("to_nphysics_rotation() was called unexpectedly")
+            }
         }
     }
 
     impl Drop for PresenterMock {
         fn drop(&mut self) {
             assert!(*self.present_objects_was_called.borrow());
+        }
+    }
+
+    struct NphysicsRotationTranslatorMock {
+        expect_to_nphysics_rotation_and_return: Option<(Radians, f64)>,
+        expect_to_radians_and_return: Option<(f64, Radians)>,
+
+        to_nphysics_rotation_was_called: RefCell<bool>,
+        to_radians_was_called: RefCell<bool>,
+    }
+
+    impl NphysicsRotationTranslatorMock {
+        fn expect_to_nphysics_rotation_and_return(
+            &mut self,
+            input_value: Radians,
+            return_value: f64,
+        ) {
+            self.expect_to_nphysics_rotation_and_return = Some((input_value, return_value))
+        }
+
+        fn expect_to_radians_and_return(&mut self, input_value: f64, return_value: Radians) {
+            self.expect_to_radians_and_return = Some((input_value, return_value))
         }
     }
 
@@ -218,14 +242,12 @@ mod tests {
         });
         let world_generator = WorldGeneratorMock::new(simulation_factory, expected_objects.clone());
         let presenter: PresenterMock = PresenterMock::new(expected_objects);
-        /*
+
         ControllerImpl::new(
             Box::new(presenter),
             &world_generator,
             Duration::from_secs(1),
         )
-        */
-        unimplemented!()
     }
 
     #[test]

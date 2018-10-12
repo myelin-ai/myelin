@@ -14,7 +14,6 @@ use std::error::Error;
 use std::fmt;
 use std::net::SocketAddr;
 use std::thread;
-use std::time::Duration;
 use threadpool::ThreadPool;
 use websocket::sync::Server;
 use websocket::OwnedMessage;
