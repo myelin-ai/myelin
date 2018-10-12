@@ -28,7 +28,10 @@ impl HardcodedGenerator {
     /// # Examples
     /// ```
     /// use myelin_environment::Simulation;
-    /// use myelin_environment::simulation_impl::{SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl};
+    /// use myelin_environment::simulation_impl::{
+    ///     SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl
+    /// };
+    /// use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
     /// use myelin_environment::object::{Kind, ObjectBehavior};
     /// use myelin_worldgen::WorldGenerator;
     /// use myelin_worldgen::generator::HardcodedGenerator;
@@ -36,7 +39,12 @@ impl HardcodedGenerator {
     ///
     /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
     ///     let rotation_translator = NphysicsRotationTranslatorImpl::default();
-    ///     let world = Box::new(NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator)));
+    ///     let force_applier = SingleTimeForceApplierImpl::default();
+    ///     let world = Box::new(NphysicsWorld::with_timestep(
+    ///         1.0,
+    ///         Box::new(rotation_translator),
+    ///         Box::new(force_applier),
+    ///     ));
     ///     Box::new(SimulationImpl::new(world))
     /// });
     ///
@@ -149,7 +157,7 @@ fn build_terrain(location: (u32, u32), width: i32, length: i32) -> ObjectDescrip
         .mobility(Mobility::Immovable)
         .kind(Kind::Terrain)
         .build()
-        .expect("Failed to build water")
+        .expect("Failed to build terrain")
 }
 
 fn build_plant(x: u32, y: u32) -> ObjectDescription {
@@ -177,7 +185,7 @@ fn build_plant(x: u32, y: u32) -> ObjectDescription {
             position: Position::default(),
         })
         .build()
-        .expect("Failed to build water")
+        .expect("Failed to build plant")
 }
 
 fn build_organism(x: u32, y: u32) -> ObjectDescription {
@@ -206,7 +214,7 @@ fn build_organism(x: u32, y: u32) -> ObjectDescription {
             position: Position::default(),
         })
         .build()
-        .expect("Failed to build water")
+        .expect("Failed to build organism")
 }
 
 impl WorldGenerator for HardcodedGenerator {
@@ -259,14 +267,14 @@ mod tests {
         }
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     struct ObjectBehaviorMock;
     impl ObjectBehavior for ObjectBehaviorMock {
         fn step(
             &mut self,
             _own_description: &ObjectDescription,
             _sensor_collisions: &[ObjectDescription],
-        ) -> Vec<Action> {
+        ) -> Option<Action> {
             panic!("step() was called unexpectedly")
         }
     }

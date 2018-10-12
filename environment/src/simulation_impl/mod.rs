@@ -30,10 +30,14 @@ impl SimulationImpl {
     /// Create a new SimulationImpl by injecting a [`World`]
     /// # Examples
     /// ```
-    /// use myelin_environment::simulation_impl::{SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl};
+    /// use myelin_environment::simulation_impl::{
+    ///     SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl
+    /// };
+    /// use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
     ///
     /// let rotation_translator = NphysicsRotationTranslatorImpl::default();
-    /// let world = Box::new(NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator)));
+    /// let force_applier = SingleTimeForceApplierImpl::default();
+    /// let world = Box::new(NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator), Box::new(force_applier)));
     /// let simulation = SimulationImpl::new(world);
     /// ```
     /// [`World`]: ./trait.World.html
@@ -93,6 +97,22 @@ impl SimulationImpl {
             None
         }
     }
+
+    fn handle_action(&mut self, body_handle: BodyHandle, action: Action) -> Option<()> {
+        match action {
+            Action::Reproduce(object_description, object_behavior) => {
+                self.add_object(object_description, object_behavior);
+            }
+            Action::ApplyForce(force) => {
+                self.world.apply_force(body_handle, force)?;
+            }
+            Action::Die => {
+                self.world.remove_body(body_handle)?;
+                self.non_physical_object_data.remove(&body_handle)?;
+            }
+        };
+        Some(())
+    }
 }
 
 fn sensor_without_handle(sensor: Option<(SensorHandle, Sensor)>) -> Option<Sensor> {
@@ -123,14 +143,22 @@ impl Simulation for SimulationImpl {
                 )
             })
             .collect();
+        let mut actions = Vec::new();
         for (object_handle, non_physical_object_data) in &mut self.non_physical_object_data {
             // This is safe because the keys of self.objects and
             // object_handle_to_objects_within_sensor are identical
             let own_description = &object_handle_to_own_description[object_handle];
             let objects_within_sensor = &object_handle_to_objects_within_sensor[object_handle];
-            non_physical_object_data
+            let action = non_physical_object_data
                 .behavior
                 .step(&own_description, &objects_within_sensor);
+            if let Some(action) = action {
+                actions.push((*object_handle, action));
+            }
+        }
+        for (body_handle, action) in actions {
+            self.handle_action(body_handle, action)
+                .expect("Body handle was not found within world");
         }
         self.world.step()
     }
@@ -192,9 +220,15 @@ pub trait World: fmt::Debug {
     /// [`body()`]: ./trait.World.html#tymethod.body
     fn add_body(&mut self, body: PhysicalBody) -> BodyHandle;
 
+    /// Removes a previously added [`PhysicalBody`] from the world.
+    /// If `body_handle` was valid, this will return the removed physical body.
+    ///
+    /// [`PhysicalBody`]: ./struct.PhysicalBody.html
+    fn remove_body(&mut self, body_handle: BodyHandle) -> Option<PhysicalBody>;
+
     /// Attaches a sensor to the body identified by `body_handle`.
     /// # Errors
-    /// Returns `None` if `body_handle` did not match any bodies
+    /// Returns `None` if `body_handle` did not match any bodies.
     fn attach_sensor(&mut self, body_handle: BodyHandle, sensor: Sensor) -> Option<SensorHandle>;
 
     /// Returns a [`PhysicalBody`] that has previously been
@@ -212,8 +246,14 @@ pub trait World: fmt::Debug {
     /// Retrieves the handles of all bodies that are within the range of
     /// a sensor, excluding the parent body it is attached to.
     /// # Errors
-    /// Returns `None` if `sensor_handle` did not match any sensors
+    /// Returns `None` if `sensor_handle` did not match any sensors.
     fn bodies_within_sensor(&self, sensor_handle: SensorHandle) -> Option<Vec<BodyHandle>>;
+
+    /// Register a force that will be applied to a body on the next
+    /// step.
+    /// # Errors
+    /// Returns `None` if `body_handle` did not match any sensors.
+    fn apply_force(&mut self, body_handle: BodyHandle, force: Force) -> Option<()>;
 
     /// Sets how much time in seconds is simulated for each step.
     /// # Examples
@@ -468,7 +508,7 @@ mod tests {
         object_behavior.expect_step_and_return(
             expected_object_description.clone(),
             Vec::new(),
-            Vec::new(),
+            None,
         );
 
         let mut simulation = SimulationImpl::new(Box::new(world));
@@ -522,7 +562,7 @@ mod tests {
         object_behavior.expect_step_and_return(
             expected_object_description.clone(),
             vec![expected_object_description.clone()],
-            Vec::new(),
+            None,
         );
         world.expect_body_and_return(returned_handle, Some(expected_physical_body));
 
@@ -569,6 +609,163 @@ mod tests {
 
         let object_description = &objects[0];
         assert_eq!(expected_object_description, *object_description);
+    }
+
+    // Something seems fishy with the following test
+    // It fails because the expected step from the child
+    // is not called.
+    // Removing the expected step from the child
+    // results in step being called unexpectedly.
+    // I suspect it's a problem resulting from our mock
+    // returning the same handle twice.
+    #[ignore]
+    #[test]
+    fn reproducing_spawns_object() {
+        let mut world = Box::new(WorldMock::new());
+        let expected_shape = shape();
+        let expected_position = position();
+        let expected_mobility = Mobility::Movable(Velocity::default());
+
+        let expected_physical_body = PhysicalBody {
+            shape: expected_shape.clone(),
+            position: expected_position.clone(),
+            mobility: expected_mobility.clone(),
+        };
+        let returned_handle = BodyHandle(1984);
+        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
+        world.expect_body_and_return(returned_handle, Some(expected_physical_body));
+        world.expect_step();
+
+        let mut simulation = SimulationImpl::new(world);
+
+        let mut object_behavior = ObjectBehaviorMock::new();
+
+        let expected_object_description = ObjectBuilder::new()
+            .location(expected_position.location.x, expected_position.location.y)
+            .rotation(expected_position.rotation)
+            .shape(expected_shape)
+            .kind(Kind::Organism)
+            .mobility(expected_mobility)
+            .build()
+            .unwrap();
+
+        let mut child_object_behavior = ObjectBehaviorMock::new();
+        child_object_behavior.expect_step_and_return(
+            expected_object_description.clone(),
+            Vec::new(),
+            None,
+        );
+
+        object_behavior.expect_step_and_return(
+            expected_object_description.clone(),
+            Vec::new(),
+            Some(Action::Reproduce(
+                expected_object_description.clone(),
+                Box::new(child_object_behavior),
+            )),
+        );
+
+        simulation.add_object(
+            expected_object_description.clone(),
+            Box::new(object_behavior),
+        );
+
+        simulation.step();
+        simulation.step();
+    }
+
+    #[test]
+    fn dying_removes_object() {
+        let mut world = Box::new(WorldMock::new());
+        let expected_shape = shape();
+        let expected_position = position();
+        let expected_mobility = Mobility::Movable(Velocity::default());
+
+        let expected_physical_body = PhysicalBody {
+            shape: expected_shape.clone(),
+            position: expected_position.clone(),
+            mobility: expected_mobility.clone(),
+        };
+        let returned_handle = BodyHandle(1984);
+        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
+        world.expect_body_and_return(returned_handle, Some(expected_physical_body.clone()));
+        world.expect_step();
+        world.expect_remove_body_and_return(returned_handle, Some(expected_physical_body));
+
+        let mut simulation = SimulationImpl::new(world);
+
+        let mut object_behavior = ObjectBehaviorMock::new();
+
+        let expected_object_description = ObjectBuilder::new()
+            .location(expected_position.location.x, expected_position.location.y)
+            .rotation(expected_position.rotation)
+            .shape(expected_shape)
+            .kind(Kind::Organism)
+            .mobility(expected_mobility)
+            .build()
+            .unwrap();
+
+        object_behavior.expect_step_and_return(
+            expected_object_description.clone(),
+            Vec::new(),
+            Some(Action::Die),
+        );
+
+        simulation.add_object(
+            expected_object_description.clone(),
+            Box::new(object_behavior),
+        );
+
+        simulation.step();
+    }
+
+    #[test]
+    fn force_application_is_propagated() {
+        let mut world = Box::new(WorldMock::new());
+        let expected_shape = shape();
+        let expected_position = position();
+        let expected_mobility = Mobility::Movable(Velocity::default());
+
+        let expected_physical_body = PhysicalBody {
+            shape: expected_shape.clone(),
+            position: expected_position.clone(),
+            mobility: expected_mobility.clone(),
+        };
+        let returned_handle = BodyHandle(1984);
+        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
+        world.expect_body_and_return(returned_handle, Some(expected_physical_body.clone()));
+        world.expect_step();
+        let expected_force = Force {
+            linear: LinearForce { x: 20, y: -5 },
+            torque: Torque(-8.0),
+        };
+        world.expect_apply_force_and_return(returned_handle, expected_force.clone(), Some(()));
+
+        let mut simulation = SimulationImpl::new(world);
+
+        let mut object_behavior = ObjectBehaviorMock::new();
+
+        let expected_object_description = ObjectBuilder::new()
+            .location(expected_position.location.x, expected_position.location.y)
+            .rotation(expected_position.rotation)
+            .shape(expected_shape)
+            .kind(Kind::Organism)
+            .mobility(expected_mobility)
+            .build()
+            .unwrap();
+
+        object_behavior.expect_step_and_return(
+            expected_object_description.clone(),
+            Vec::new(),
+            Some(Action::ApplyForce(expected_force)),
+        );
+
+        simulation.add_object(
+            expected_object_description.clone(),
+            Box::new(object_behavior),
+        );
+
+        simulation.step();
     }
 
     #[should_panic]
@@ -624,16 +821,20 @@ mod tests {
     struct WorldMock {
         expect_step: Option<()>,
         expect_add_body_and_return: Option<(PhysicalBody, BodyHandle)>,
+        expect_remove_body_and_return: Option<(BodyHandle, Option<PhysicalBody>)>,
         expect_body_and_return: Option<(BodyHandle, Option<PhysicalBody>)>,
         expect_attach_sensor_and_return: Option<(BodyHandle, Sensor, Option<SensorHandle>)>,
         expect_bodies_within_sensor_and_return: Option<(SensorHandle, Option<Vec<BodyHandle>>)>,
+        expect_apply_force_and_return: Option<(BodyHandle, Force, Option<()>)>,
         expect_set_simulated_timestep: Option<f64>,
 
         step_was_called: RefCell<bool>,
         add_body_was_called: RefCell<bool>,
+        remove_body_was_called: RefCell<bool>,
         attach_sensor_was_called: RefCell<bool>,
         body_was_called: RefCell<bool>,
         bodies_within_sensor_was_called: RefCell<bool>,
+        apply_force_was_called: RefCell<bool>,
         set_simulated_timestep_was_called: RefCell<bool>,
     }
     impl WorldMock {
@@ -651,6 +852,14 @@ mod tests {
             returned_value: BodyHandle,
         ) {
             self.expect_add_body_and_return = Some((body, returned_value));
+        }
+
+        pub(crate) fn expect_remove_body_and_return(
+            &mut self,
+            body_handle: BodyHandle,
+            returned_value: Option<PhysicalBody>,
+        ) {
+            self.expect_remove_body_and_return = Some((body_handle, returned_value));
         }
 
         pub(crate) fn expect_attach_sensor_and_return(
@@ -676,6 +885,15 @@ mod tests {
             returned_value: Option<Vec<BodyHandle>>,
         ) {
             self.expect_bodies_within_sensor_and_return = Some((sensor_handle, returned_value));
+        }
+
+        pub(crate) fn expect_apply_force_and_return(
+            &mut self,
+            body_handle: BodyHandle,
+            force: Force,
+            returned_value: Option<()>,
+        ) {
+            self.expect_apply_force_and_return = Some((body_handle, force, returned_value));
         }
 
         pub(crate) fn expect_set_simulated_timestep(&mut self, timestep: f64) {
@@ -722,10 +940,24 @@ mod tests {
                 )
             }
 
+            if self.expect_apply_force_and_return.is_some() {
+                assert!(
+                    *self.apply_force_was_called.borrow(),
+                    "apply_force() was not called, but was expected"
+                )
+            }
+
             if self.expect_set_simulated_timestep.is_some() {
                 assert!(
                     *self.set_simulated_timestep_was_called.borrow(),
                     "set_simulated_timestep() was not called, but was expected"
+                )
+            }
+
+            if self.expect_remove_body_and_return.is_some() {
+                assert!(
+                    *self.remove_body_was_called.borrow(),
+                    "remove_body() was not called, but was expected"
                 )
             }
         }
@@ -753,6 +985,25 @@ mod tests {
                 panic!("add_body() was called unexpectedly")
             }
         }
+
+        fn remove_body(&mut self, body_handle: BodyHandle) -> Option<PhysicalBody> {
+            *self.remove_body_was_called.borrow_mut() = true;
+            if let Some((ref expected_body_handle, ref return_value)) =
+                self.expect_remove_body_and_return
+            {
+                if body_handle == *expected_body_handle {
+                    return_value.clone()
+                } else {
+                    panic!(
+                        "remove_body() was called with {:?}, expected {:?}",
+                        body_handle, expected_body_handle
+                    )
+                }
+            } else {
+                panic!("remove_body() was called unexpectedly")
+            }
+        }
+
         fn attach_sensor(
             &mut self,
             body_handle: BodyHandle,
@@ -808,6 +1059,24 @@ mod tests {
             }
         }
 
+        fn apply_force(&mut self, body_handle: BodyHandle, force: Force) -> Option<()> {
+            *self.apply_force_was_called.borrow_mut() = true;
+            if let Some((ref expected_body_handle, ref expected_force, ref return_value)) =
+                self.expect_apply_force_and_return
+            {
+                if body_handle == *expected_body_handle && force == *expected_force {
+                    return_value.clone()
+                } else {
+                    panic!(
+                        "apply_force() was called with {:?} and {:?}, expected {:?} and {:?}",
+                        body_handle, force, expected_body_handle, expected_force
+                    )
+                }
+            } else {
+                panic!("set_simulated_timestep() was called unexpectedly")
+            }
+        }
+
         fn set_simulated_timestep(&mut self, timestep: f64) {
             *self.set_simulated_timestep_was_called.borrow_mut() = true;
             if let Some(expected_timestep) = self.expect_set_simulated_timestep {
@@ -823,9 +1092,9 @@ mod tests {
         }
     }
 
-    #[derive(Debug, Default)]
+    #[derive(Debug, Default, Clone)]
     struct ObjectBehaviorMock {
-        expect_step_and_return: Option<(ObjectDescription, Vec<ObjectDescription>, Vec<Action>)>,
+        expect_step_and_return: Option<(ObjectDescription, Vec<ObjectDescription>, Option<Action>)>,
 
         step_was_called: RefCell<bool>,
     }
@@ -839,7 +1108,7 @@ mod tests {
             &mut self,
             own_description: ObjectDescription,
             sensor_collisions: Vec<ObjectDescription>,
-            returned_value: Vec<Action>,
+            returned_value: Option<Action>,
         ) {
             self.expect_step_and_return =
                 Some((own_description, sensor_collisions, returned_value));
@@ -851,7 +1120,7 @@ mod tests {
             &mut self,
             own_description: &ObjectDescription,
             sensor_collisions: &[ObjectDescription],
-        ) -> Vec<Action> {
+        ) -> Option<Action> {
             *self.step_was_called.borrow_mut() = true;
             if let Some((
                 ref expected_own_description,
