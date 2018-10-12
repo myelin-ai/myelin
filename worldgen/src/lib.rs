@@ -3,7 +3,6 @@
 //!
 //! [`Worlds`]: ../myelin_environment/world/trait.World.html
 
-#![feature(tool_lints)]
 #![deny(
     rust_2018_idioms,
     missing_debug_implementations,
