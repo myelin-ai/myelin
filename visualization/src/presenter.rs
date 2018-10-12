@@ -130,7 +130,7 @@ mod tests {
             )
             .mobility(Mobility::Immovable)
             .location(30, 40)
-            .orientation(orientation)
+            .rotation(orientation)
             .kind(Kind::Plant)
             .build()
             .unwrap()

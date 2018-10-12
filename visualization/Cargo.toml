@@ -17,7 +17,7 @@ wasm-bindgen = "=0.2.23"
 js-sys = "=0.3.0"
 myelin-environment = { path = "../environment" }
 myelin-worldgen = { path = "../worldgen" }
-myelin-object = { path = "../object" }
+myelin-object-behavior = { path = "../object-behavior" }
 
 
 [dependencies.web-sys]
