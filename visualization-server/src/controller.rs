@@ -90,11 +90,11 @@ mod tests {
     use std::error::Error;
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::thread::panicking;
-    const EXPECTED_DELTA: Duration = Duration::from_millis((1.0f64 / 60.0f64).floor() as u64);
+    const EXPECTED_DELTA: Duration = Duration::from_millis((1.0f64 / 60.0f64) as u64);
 
     #[test]
     fn assembles_stuff() {
-        let controller = ControllerImpl::new(
+        let mut controller = ControllerImpl::new(
             Box::new(|| Box::new(SimulationMock::new(Vec::new()))),
             Box::new(ConnectionAccepterMock::default()),
             Box::new(ClientSpawnerMock::default()),
@@ -165,13 +165,16 @@ mod tests {
         ) -> ViewModelDelta {
             *self.calculate_deltas_was_called.borrow_mut() = true;
 
-            if let Some((expected_last_objects, expected_current_objects, return_value)) =
-                self.expect_calculate_deltas_and_return
+            if let Some((
+                ref expected_last_objects,
+                ref expected_current_objects,
+                ref return_value,
+            )) = self.expect_calculate_deltas_and_return
             {
-                if last_objects.to_vec() == expected_last_objects
-                    && current_objects.to_vec() == expected_current_objects
+                if last_objects.to_vec() == *expected_last_objects
+                    && current_objects.to_vec() == *expected_current_objects
                 {
-                    return_value
+                    return_value.clone()
                 } else {
                     panic!(
                         "calculate_deltas() was called with {:?} and {:?}, expected {:?} and {:?}",
@@ -292,15 +295,21 @@ mod tests {
         ) {
             self.accept_new_connections_was_called
                 .store(true, Ordering::SeqCst);
-            if let Some((expected_connection, expected_snapshot)) =
+            if let Some((ref expected_connection, ref expected_snapshot)) =
                 self.expect_accept_new_connections
             {
                 let connection = receiver.recv().expect("Sender disconnected");
                 assert_eq!(
-                    expected_connection, connection,
+                    *expected_connection, connection,
                     "accept_new_connections() received connection {:#?}, expected {:#?}",
                     connection, expected_connection
-                )
+                );
+                let snapshot = (current_snapshot_fn_factory)()();
+                assert_eq!(
+                    *expected_snapshot, snapshot,
+                    "accept_new_connections() received {:#?} from current_snapshot_fn_factory, expected {:#?}",
+                    snapshot, expected_snapshot
+                );
             } else {
                 match receiver.try_recv() {
                     Err(std::sync::mpsc::TryRecvError::Empty) => {}
