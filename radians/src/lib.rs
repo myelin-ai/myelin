@@ -8,7 +8,7 @@ pub struct Radians {
 
 impl Radians {
     pub fn new(value: f64) -> Option<Radians> {
-        if value >= 0.0 && value < 2.0 * PI {
+        if Self::is_in_range(value) {
             Some(Radians { value })
         } else {
             None
@@ -18,6 +18,10 @@ impl Radians {
     pub fn value(&self) -> f64 {
         self.value
     }
+
+    pub fn is_in_range(value: f64) -> bool {
+    value >= 0.0 && value < 2.0 * PI
+}
 }
 
 #[cfg(test)]

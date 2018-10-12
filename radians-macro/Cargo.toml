@@ -1,5 +1,5 @@
 [package]
-name = "radians"
+name = "radians-macro"
 version = "0.1.0"
 authors = [
     "Jan Nils Ferner <jan@myelin.ch>",
@@ -8,3 +8,12 @@ authors = [
     "Jeremy Stucki <jeremy@myelin.ch>",
 ]
 edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "0.15"
+proc-macro2 = "0.4"
+quote = "0.6"
+radians = { path = "../radians" }

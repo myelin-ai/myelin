@@ -343,6 +343,16 @@ name = "radians"
 version = "0.1.0"
 
 [[package]]
+name = "radians-macro"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2 0.4.19 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quote 0.6.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "radians 0.1.0",
+ "syn 0.15.6 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "rand"
 version = "0.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
