@@ -13,3 +13,9 @@ pub(crate) trait Socket: Debug + Send {
 pub(crate) trait SocketError: Debug + Error + Send {
     fn is_broken_pipe(&self) -> bool;
 }
+
+impl PartialEq for Connection {
+    fn eq(&self, other: &Self) -> bool {
+        unimplemented!()
+    }
+}
