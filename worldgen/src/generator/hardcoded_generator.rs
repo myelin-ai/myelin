@@ -4,6 +4,7 @@ use crate::WorldGenerator;
 use myelin_environment::object::*;
 use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
 use myelin_environment::Simulation;
+use radians::Radians;
 use std::f64::consts::FRAC_PI_2;
 use std::fmt;
 

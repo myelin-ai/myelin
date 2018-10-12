@@ -18,7 +18,7 @@ js-sys = "=0.3.0"
 myelin-environment = { path = "../environment" }
 myelin-worldgen = { path = "../worldgen" }
 myelin-object-behavior = { path = "../object-behavior" }
-
+radians = { path = "../radians" }
 
 [dependencies.web-sys]
 version = "0.3.0"

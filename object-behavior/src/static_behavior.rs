@@ -27,6 +27,7 @@ mod tests {
     use super::*;
     use myelin_environment::object::Kind;
     use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+    use radians::Radians;
     use std::f64::consts::FRAC_PI_2;
 
     #[test]

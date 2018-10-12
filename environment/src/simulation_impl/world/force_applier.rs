@@ -79,6 +79,7 @@ mod tests {
     use crate::object_builder::PolygonBuilder;
     use crate::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
     use crate::simulation_impl::world::{NphysicsWorld, PhysicalBody, World};
+    use radians::Radians;
 
     const DEFAULT_TIMESTEP: f64 = 1.0;
 

@@ -1,7 +1,7 @@
 [package]
-name = "myelin-object-behavior"
+name = "radians"
 version = "0.1.0"
-authors = [    
+authors = [
     "Jan Nils Ferner <jan@myelin.ch>",
     "Mathias Fischler <mathias@myelin.ch>",
     "Ruben Schmidmeister <ruben@myelin.ch>",
@@ -10,5 +10,3 @@ authors = [
 edition = "2018"
 
 [dependencies]
-myelin-environment = { path = "../environment" }
-radians = { path = "../radians" }

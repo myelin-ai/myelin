@@ -1,8 +1,9 @@
 //! Convenient builders for [`ObjectDescription`] and [`Polygon`]
 //! # Examples
 //! ```
-//! use myelin_environment::object::{Kind, Radians, Velocity, Mobility};
+//! use myelin_environment::object::{Kind, Velocity, Mobility};
 //! use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+//! use radians::Radians;
 //! use std::f64::consts::FRAC_PI_2;
 //!
 //! let object = ObjectBuilder::new()
@@ -26,6 +27,7 @@
 //! [`Polygon`]: ../object/struct.Polygon.html
 
 use crate::object::*;
+use radians::Radians;
 
 /// An error representing the values that have
 /// wrongly been ommited when building finished
@@ -148,7 +150,7 @@ impl ObjectBuilder {
     /// # Examples
     /// ```
     /// use myelin_environment::object_builder::ObjectBuilder;
-    /// use myelin_environment::object::Radians;
+    /// use radians::Radians;
     /// ObjectBuilder::new()
     ///     .rotation(Radians::new(4.5).unwrap());
     /// ```
@@ -164,8 +166,9 @@ impl ObjectBuilder {
     /// setting has been omitted
     /// # Examples
     /// ```
-    /// use myelin_environment::object::{Kind, Radians, Mobility, Velocity};
+    /// use myelin_environment::object::{Kind, Mobility, Velocity};
     /// use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+    /// use radians::Radians;
     /// use std::f64::consts::FRAC_PI_2;
     ///
     /// let object = ObjectBuilder::new()

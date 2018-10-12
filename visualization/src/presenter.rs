@@ -81,8 +81,9 @@ impl CanvasPresenter {
 mod tests {
     use super::*;
     use crate::view_model::{self, ViewModel};
-    use myelin_environment::object::{Kind, Mobility, ObjectDescription, Radians};
+    use myelin_environment::object::{Kind, Mobility, ObjectDescription};
     use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+    use radians::Radians;
     use std::cell::RefCell;
     use std::f64::consts::PI;
 
