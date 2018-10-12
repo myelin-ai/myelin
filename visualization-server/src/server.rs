@@ -38,7 +38,7 @@ fn run_simulation(tx: Sender<Vec<u8>>) {
     thread::spawn(move || {
         let transmitter = Box::new(ChannelTransmitter(tx));
         let serializer = Box::new(JsonSerializer::new());
-        let presenter = Box::new(DeltaPresenter::new(serializer, transmitter));
+        let presenter = Box::new(DeltaPresenter::new());
         let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
             let rotation_translator = NphysicsRotationTranslatorImpl::default();
             let world = Box::new(NphysicsWorld::with_timestep(
