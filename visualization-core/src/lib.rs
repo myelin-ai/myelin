@@ -9,4 +9,6 @@
 #[macro_use]
 extern crate serde_derive;
 
+pub mod serialization;
+pub mod transmission;
 pub mod view_model_delta;
