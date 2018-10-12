@@ -46,3 +46,104 @@ fn map_kind(kind: business_object::Kind) -> view_model::Kind {
         business_object::Kind::Terrain => view_model::Kind::Terrain,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn maps_to_empty_view_model() {
+        let objects = Vec::new();
+        let expected_view_model = ViewModel {
+            objects: Vec::new(),
+        };
+        let expected_data = vec![1, 2, 3];
+        let serializer_mock = SerializerMock::new(expected_view_model, expected_data.clone());
+        let transmitter_mock = TransmitterMock::new(expected_data);
+        let presenter = DeltaPresenter::new(Box::new(serializer_mock), Box::new(transmitter_mock));
+        //presenter.present_objects(&objects).unwrap();
+        unimplemented!()
+    }
+
+    #[test]
+    fn converts_to_global_object_with_no_orientation() {
+        let object_description = [object_description(Radians::default())];
+        let expected_view_model = ViewModel {
+            objects: vec![view_model::Object {
+                shape: view_model::Polygon {
+                    vertices: vec![
+                        view_model::Vertex { x: 20, y: 30 },
+                        view_model::Vertex { x: 40, y: 30 },
+                        view_model::Vertex { x: 40, y: 50 },
+                        view_model::Vertex { x: 20, y: 50 },
+                    ],
+                },
+                kind: view_model::Kind::Plant,
+            }],
+        };
+        let expected_data = vec![1, 2, 3];
+        let serializer_mock = SerializerMock::new(expected_view_model, expected_data.clone());
+        let transmitter_mock = TransmitterMock::new(expected_data);
+        let presenter = DeltaPresenter::new(Box::new(serializer_mock), Box::new(transmitter_mock));
+        //presenter.present_objects(&object_description).unwrap();
+        unimplemented!()
+    }
+
+    #[test]
+    fn converts_to_global_object_with_pi_orientation() {
+        let object_description = [object_description(Radians(PI))];
+        let expected_view_model = ViewModel {
+            objects: vec![view_model::Object {
+                shape: view_model::Polygon {
+                    vertices: vec![
+                        view_model::Vertex { x: 40, y: 50 },
+                        view_model::Vertex { x: 20, y: 50 },
+                        view_model::Vertex { x: 20, y: 30 },
+                        view_model::Vertex { x: 40, y: 30 },
+                    ],
+                },
+                kind: view_model::Kind::Plant,
+            }],
+        };
+        let expected_data = vec![1, 2, 3];
+        let serializer_mock = SerializerMock::new(expected_view_model, expected_data.clone());
+        let transmitter_mock = TransmitterMock::new(expected_data);
+        let presenter = DeltaPresenter::new(Box::new(serializer_mock), Box::new(transmitter_mock));
+        //presenter.present_objects(&object_description).unwrap();
+        unimplemented!()
+    }
+
+    #[test]
+    fn converts_to_global_object_with_arbitrary_orientation() {
+        let object_description = [object_description(Radians(3.0))];
+        let expected_view_model = ViewModel {
+            objects: vec![view_model::Object {
+                shape: view_model::Polygon {
+                    vertices: vec![
+                        view_model::Vertex {
+                            x: 40 + 1,
+                            y: 50 - 2,
+                        },
+                        view_model::Vertex {
+                            x: 20 + 2,
+                            y: 50 + 1,
+                        },
+                        view_model::Vertex {
+                            x: 20 - 1,
+                            y: 30 + 2,
+                        },
+                        view_model::Vertex {
+                            x: 40 - 2,
+                            y: 30 - 1,
+                        },
+                    ],
+                },
+                kind: view_model::Kind::Plant,
+            }],
+        };
+        let expected_data = vec![1, 2, 3];
+        let serializer_mock = SerializerMock::new(expected_view_model, expected_data.clone());
+        let transmitter_mock = TransmitterMock::new(expected_data);
+        let presenter = DeltaPresenter::new(Box::new(serializer_mock), Box::new(transmitter_mock));
+        //presenter.present_objects(&object_description).unwrap();
+        unimplemented!()
+    }
+}

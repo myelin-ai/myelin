@@ -38,23 +38,27 @@ impl ViewModelSerializer for JsonSerializer {
 #[cfg(test)]
 mod test {
     use super::*;
+    use myelin_environment::object::*;
     use myelin_visualization_core::view_model_delta::*;
 
     #[test]
-    fn serialize_works() {
+    fn serializes_full_delta() {
         let expected: Vec<u8> = r#"{"objects":[{"shape":{"vertices":[{"x":1,"y":1},{"x":2,"y":3},{"x":5,"y":6}]},"kind":"Organism"}]}"#.into();
 
         let view_model_delta = ViewModelDelta {
-            objects: vec![Object {
-                kind: Kind::Organism,
-                shape: Polygon {
+            objects: vec![ObjectDescriptionDelta {
+                id: 12,
+                kind: Some(Kind::Organism),
+                shape: Some(Polygon {
                     vertices: vec![
                         Vertex { x: 1, y: 1 },
                         Vertex { x: 2, y: 3 },
                         Vertex { x: 5, y: 6 },
                     ],
-                },
+                }),
+                mobility: Some(Mobility::Movable(Velocity { x: 2, y: 3 })),
             }],
+            deleted_objects: Vec::new(),
         };
 
         let serializer = JsonSerializer::new();
@@ -71,6 +75,7 @@ mod test {
 
         let view_model_delta = ViewModelDelta {
             objects: Vec::new(),
+            deleted_objects: Vec::new(),
         };
 
         let serializer = JsonSerializer::new();
