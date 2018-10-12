@@ -39,6 +39,7 @@ impl ViewModelSerializer for JsonSerializer {
 mod test {
     use super::*;
     use myelin_environment::object::*;
+    use myelin_environment::object_builder::PolygonBuilder;
     use myelin_visualization_core::view_model_delta::*;
 
     #[test]
@@ -49,14 +50,32 @@ mod test {
             objects: vec![ObjectDescriptionDelta {
                 id: 12,
                 kind: Some(Kind::Organism),
-                shape: Some(Polygon {
-                    vertices: vec![
-                        Vertex { x: 1, y: 1 },
-                        Vertex { x: 2, y: 3 },
-                        Vertex { x: 5, y: 6 },
-                    ],
-                }),
+                shape: Some(
+                    PolygonBuilder::new()
+                        .vertex(-5, -5)
+                        .vertex(1, 1)
+                        .vertex(2, 3)
+                        .vertex(5, 6)
+                        .build()
+                        .unwrap(),
+                ),
                 mobility: Some(Mobility::Movable(Velocity { x: 2, y: 3 })),
+                position: Some(Position {
+                    location: Location { x: 3, y: 4 },
+                    rotation: Radians(1.0),
+                }),
+                sensor: Some(Some(Sensor {
+                    shape: PolygonBuilder::new()
+                        .vertex(-10, -12)
+                        .vertex(10, 6)
+                        .vertex(16, 0)
+                        .build()
+                        .unwrap(),
+                    position: Position {
+                        location: Location { x: 2, y: 3 },
+                        rotation: Radians(-1.0),
+                    },
+                })),
             }],
             deleted_objects: Vec::new(),
         };
