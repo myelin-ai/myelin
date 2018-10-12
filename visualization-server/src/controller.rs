@@ -143,17 +143,18 @@ mod tests {
 
     #[derive(Debug, Default)]
     struct PresenterMock {
-        expect_calculate_deltas_and_return: Option<(SnapshotSlice, SnapshotSlice, ViewModelDelta)>,
+        expect_calculate_deltas_and_return: Option<(Snapshot, Snapshot, ViewModelDelta)>,
         calculate_deltas_was_called: RefCell<bool>,
     }
     impl PresenterMock {
         fn expect_calculate_deltas(
             &mut self,
-            last_objects: SnapshotSlice,
-            current_objects: SnapshotSlice,
+            last_objects: Snapshot,
+            current_objects: Snapshot,
             return_value: ViewModelDelta,
         ) {
-            self.expect_calculate_deltas = Some(expected_objects);
+            self.expect_calculate_deltas_and_return =
+                Some((last_objects, current_objects, return_value));
         }
     }
     impl Presenter for PresenterMock {
@@ -164,12 +165,22 @@ mod tests {
         ) -> ViewModelDelta {
             *self.calculate_deltas_was_called.borrow_mut() = true;
 
-            if let Some((expected_input, expected_output)) = self.expect_calculate_deltas {
-                if orientation != expected_input {
-                    panic!("to_nphysics_rotation() was called with an unexpected input value: {:?}")
+            if let Some((expected_last_objects, expected_current_objects, return_value)) =
+                self.expect_calculate_deltas_and_return
+            {
+                if last_objects.to_vec() == expected_last_objects
+                    && current_objects.to_vec() == expected_current_objects
+                {
+                    return_value
+                } else {
+                    panic!(
+                        "calculate_deltas() was called with {:?} and {:?}, expected {:?} and {:?}",
+                        last_objects,
+                        current_objects,
+                        expected_last_objects,
+                        expected_current_objects
+                    )
                 }
-
-                expected_output
             } else {
                 panic!("to_nphysics_rotation() was called unexpectedly")
             }
@@ -178,7 +189,15 @@ mod tests {
 
     impl Drop for PresenterMock {
         fn drop(&mut self) {
-            assert!(*self.present_objects_was_called.borrow());
+            if panicking() {
+                return;
+            }
+            if self.expect_calculate_deltas_and_return.is_some() {
+                assert!(
+                    *self.calculate_deltas_was_called.borrow(),
+                    "calculate_deltas() was not called, but expected"
+                )
+            }
         }
     }
 
@@ -237,11 +256,7 @@ mod tests {
     }
 
     fn mock_controller(expected_objects: Vec<ObjectDescription>) -> ControllerImpl {
-        let simulation_factory = Box::new(|objects_present| -> Box<dyn Simulation> {
-            Box::new(SimulationMock::new(objects_present))
-        });
-        let world_generator = WorldGeneratorMock::new(simulation_factory, expected_objects.clone());
-        let presenter: PresenterMock = PresenterMock::new(expected_objects);
+        let presenter = PresenterMock::default();
 
         ControllerImpl::new(
             Box::new(presenter),
