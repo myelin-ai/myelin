@@ -200,7 +200,7 @@ fn build_organism(x: u32, y: u32) -> ObjectDescription {
                 .expect("Generated an invalid vertex"),
         )
         .location(x, y)
-        .rotation(Radians(FRAC_PI_2))
+        .rotation(Radians::new(FRAC_PI_2).unwrap())
         .mobility(Mobility::Movable(Velocity::default()))
         .kind(Kind::Organism)
         .sensor(Sensor {

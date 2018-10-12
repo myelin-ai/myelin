@@ -1,7 +1,7 @@
 //! Implementation of the behaviours and interactions between
 //! objects that can be placed in a simulation
 
-#![feature(tool_lints, specialization)]
+#![feature(specialization)]
 #![deny(
     rust_2018_idioms,
     missing_debug_implementations,
