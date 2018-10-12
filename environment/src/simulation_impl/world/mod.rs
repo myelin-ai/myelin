@@ -18,7 +18,6 @@ use nphysics2d::object::{
 };
 use nphysics2d::volumetric::Volumetric;
 use nphysics2d::world::World as PhysicsWorld;
-use radians::Radians;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 

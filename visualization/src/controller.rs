@@ -38,7 +38,6 @@ mod tests {
     use super::*;
     use myelin_environment::object::*;
     use myelin_environment::object_builder::*;
-    use radians::Radians;
     use std::cell::RefCell;
 
     #[derive(Debug)]

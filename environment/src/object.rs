@@ -4,7 +4,7 @@
 //! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
 //! [`ObjectDescription`]: ./struct.ObjectDescription.html
 
-use radians::Radians;
+use std::f64::consts::PI;
 use std::fmt::Debug;
 
 /// Behaviour of an object that can never be moved
@@ -131,6 +131,26 @@ pub struct Position {
     pub rotation: Radians,
 }
 
+/// A radian confined to the range of [0.0; 2π)
+#[derive(Debug, PartialEq, Copy, Clone, Default)]
+pub struct Radians {
+    value: f64,
+}
+
+impl Radians {
+    pub fn new(value: f64) -> Option<Radians> {
+        if value >= 0.0 && value < 2.0 * PI {
+            Some(Radians { value })
+        } else {
+            None
+        }
+    }
+
+    pub fn value(&self) -> f64 {
+        self.value
+    }
+}
+
 /// An absolute location within the world, where
 /// [0; 0] is defined as the upper left corner of
 /// the [`Simulation`]
@@ -201,4 +221,42 @@ where
     default fn clone_box(&self) -> Box<dyn ObjectBehavior> {
         Box::new(self.clone())
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::f64::consts::PI;
+
+    #[test]
+    fn radians_new_with_negative_0_point_1_is_none() {
+        let radians = Radians::new(-0.1);
+        assert!(radians.is_none())
+    }
+
+    #[test]
+    fn radians_new_with_0_is_some() {
+        let radians = Radians::new(0.0);
+        assert!(radians.is_some())
+    }
+
+    #[test]
+    fn radians_new_with_1_point_9_pi_is_some() {
+        let radians = Radians::new(1.9 * PI);
+        assert!(radians.is_some())
+    }
+
+    #[test]
+    fn radians_new_with_2_pi_is_none() {
+        let radians = Radians::new(2.0 * PI);
+        assert!(radians.is_none())
+    }
+
+    #[test]
+    fn radians_value_returns_1_when_given_1() {
+        let value = 1.0;
+        let radians = Radians::new(value).unwrap();
+        assert_eq!(value, radians.value())
+    }
+
 }

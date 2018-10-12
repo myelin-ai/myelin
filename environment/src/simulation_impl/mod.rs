@@ -309,7 +309,6 @@ pub struct SensorHandle(pub usize);
 mod tests {
     use super::*;
     use crate::object_builder::{ObjectBuilder, PolygonBuilder};
-    use radians::Radians;
     use std::cell::RefCell;
     use std::thread::panicking;
 
