@@ -15,9 +15,7 @@ mod connection;
 mod constant;
 mod controller;
 mod presenter;
-mod serialize;
 mod server;
 mod snapshot;
-mod transmitter;
 
 pub use self::server::start_server;
