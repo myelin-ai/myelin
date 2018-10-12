@@ -45,16 +45,16 @@ fn to_global_rotated_vertex(
     vertex: &business_object::Vertex,
     object: &business_object::ObjectDescription,
 ) -> view_model::Vertex {
-    // algorithm source: https://stackoverflow.com/questions/786472/rotate-a-point-by-another-point-in-2d/786508#786508
+    // See https://en.wikipedia.org/wiki/Rotation_matrix
     let center_x = f64::from(object.position.location.x);
     let center_y = f64::from(object.position.location.y);
     let rotation = object.position.rotation.value();
     let global_x = center_x + f64::from(vertex.x);
     let global_y = center_y + f64::from(vertex.y);
     let rotated_global_x =
-        rotation.cos() * (global_x - center_x) - rotation.sin() * (global_y - center_y) + center_x;
+        rotation.cos() * (global_x - center_x) + rotation.sin() * (global_y - center_y) + center_x;
     let rotated_global_y =
-        rotation.sin() * (global_x - center_x) + rotation.cos() * (global_y - center_y) + center_y;
+        -rotation.sin() * (global_x - center_x) + rotation.cos() * (global_y - center_y) + center_y;
 
     view_model::Vertex {
         x: rotated_global_x.round() as u32,
@@ -197,20 +197,20 @@ mod tests {
                 shape: view_model::Polygon {
                     vertices: vec![
                         view_model::Vertex {
-                            x: 40 + 1,
-                            y: 50 - 2,
-                        },
-                        view_model::Vertex {
-                            x: 20 + 2,
+                            x: 40 - 2,
                             y: 50 + 1,
                         },
                         view_model::Vertex {
                             x: 20 - 1,
-                            y: 30 + 2,
+                            y: 50 - 2,
                         },
                         view_model::Vertex {
-                            x: 40 - 2,
+                            x: 20 + 2,
                             y: 30 - 1,
+                        },
+                        view_model::Vertex {
+                            x: 40 + 1,
+                            y: 30 + 2,
                         },
                     ],
                 },
