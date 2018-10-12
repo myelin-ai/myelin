@@ -30,7 +30,7 @@ pub(crate) trait Client: Debug + Send {
 }
 
 pub(crate) type SimulationFactory = dyn Fn() -> Box<dyn Simulation>;
-pub(crate) type CurrentSnapshotFnFactory = dyn Fn() -> CurrentSnapshotFn;
+pub(crate) type CurrentSnapshotFnFactory = dyn Fn() -> Box<CurrentSnapshotFn>;
 
 pub(crate) trait ClientSpawner {
     fn accept_new_connections(
@@ -282,7 +282,8 @@ mod tests {
             connection: Connection,
             current_snapshot_fn_factory: Box<CurrentSnapshotFnFactory>,
         ) {
-            let snapshot = (current_snapshot_fn_factory)()();
+            let current_snapshot_fn = current_snapshot_fn_factory();
+            let snapshot = current_snapshot_fn();
             self.expect_accept_new_connections = Some((connection, snapshot))
         }
     }
