@@ -138,7 +138,7 @@ mod tests {
         };
         let expected_body = PhysicalBody {
             position: Position {
-                rotation: Radians(0.6093),
+                rotation: Radians::new(0.6093).unwrap(),
                 ..body.position.clone()
             },
             ..body
@@ -155,7 +155,7 @@ mod tests {
         };
         let expected_body = PhysicalBody {
             position: Position {
-                rotation: Radians(5.0711853071795865),
+                rotation: Radians::new(5.0711853071795865).unwrap(),
                 ..body.position.clone()
             },
             ..body
@@ -231,7 +231,7 @@ mod tests {
         let expected_body = PhysicalBody {
             position: Position {
                 location: Location { x: 10, y: 15 },
-                rotation: Radians(0.009000000000000001),
+                rotation: Radians::new(0.009000000000000001).unwrap(),
             },
             mobility: Mobility::Movable(Velocity { x: 4, y: 9 }),
             ..body

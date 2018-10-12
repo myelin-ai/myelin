@@ -48,7 +48,7 @@ fn to_global_rotated_vertex(
     // See https://en.wikipedia.org/wiki/Rotation_matrix
     let center_x = f64::from(object.position.location.x);
     let center_y = f64::from(object.position.location.y);
-    let rotation = object.position.rotation.0;
+    let rotation = object.position.rotation.value();
     let global_x = center_x + f64::from(vertex.x);
     let global_y = center_y + f64::from(vertex.y);
     let rotated_global_x =
@@ -170,7 +170,7 @@ mod tests {
 
     #[test]
     fn converts_to_global_object_with_pi_orientation() {
-        let object_description = [object_description(Radians(PI))];
+        let object_description = [object_description(Radians::new(PI).unwrap())];
         let expected_view_model = ViewModel {
             objects: vec![view_model::Object {
                 shape: view_model::Polygon {
@@ -191,7 +191,7 @@ mod tests {
 
     #[test]
     fn converts_to_global_object_with_arbitrary_orientation() {
-        let object_description = [object_description(Radians(3.0))];
+        let object_description = [object_description(Radians::new(3.0).unwrap())];
         let expected_view_model = ViewModel {
             objects: vec![view_model::Object {
                 shape: view_model::Polygon {
