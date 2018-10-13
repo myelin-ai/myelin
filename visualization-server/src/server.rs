@@ -1,13 +1,13 @@
 use crate::constant::SIMULATED_TIMESTEP;
 use crate::controller::{Controller, ControllerImpl};
 use crate::presenter::DeltaPresenter;
-use crate::serialize::JsonSerializer;
-use crate::transmitter::ViewModelTransmitter;
 use myelin_environment::object::{Kind, ObjectBehavior};
 use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
 use myelin_environment::simulation_impl::world::NphysicsWorld;
 use myelin_environment::{simulation_impl::SimulationImpl, Simulation};
 use myelin_object_behavior::Static;
+use myelin_visualizaiton_core::serialize::JsonSerializer;
+use myelin_visualizaiton_core::transmitter::ViewModelTransmitter;
 use myelin_worldgen::generator::HardcodedGenerator;
 use spmc::{channel, Sender};
 use std::error::Error;
