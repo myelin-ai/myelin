@@ -6,8 +6,8 @@ use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRot
 use myelin_environment::simulation_impl::world::NphysicsWorld;
 use myelin_environment::{simulation_impl::SimulationImpl, Simulation};
 use myelin_object_behavior::Static;
-use myelin_visualizaiton_core::serialize::JsonSerializer;
-use myelin_visualizaiton_core::transmitter::ViewModelTransmitter;
+use myelin_visualization_core::serialization::JsonSerializer;
+use myelin_visualization_core::transmission::ViewModelTransmitter;
 use myelin_worldgen::generator::HardcodedGenerator;
 use spmc::{channel, Sender};
 use std::error::Error;
