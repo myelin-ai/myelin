@@ -118,6 +118,10 @@ mod tests {
 
     impl Drop for ViewMock {
         fn drop(&mut self) {
+            if std::thread::panicking() {
+                return;
+            }
+
             assert!(*self.flush_was_called.borrow());
         }
     }
