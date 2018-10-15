@@ -1,29 +1,10 @@
+use super::{Socket, SocketError};
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
 use std::io::ErrorKind as IoErrorKind;
 use websocket::client::sync::Client;
 use websocket::result::WebSocketError;
 use websocket::stream::sync::TcpStream;
-
-#[derive(Debug)]
-pub(crate) struct Connection {
-    pub(crate) id: usize,
-    pub(crate) socket: Box<dyn Socket>,
-}
-
-pub(crate) trait Socket: Debug + Send {
-    fn send_message(&mut self, payload: &[u8]) -> Result<(), Box<dyn SocketError>>;
-}
-
-pub(crate) trait SocketError: Debug + Error + Send {
-    fn is_broken_pipe(&self) -> bool;
-}
-
-impl PartialEq for Connection {
-    fn eq(&self, other: &Self) -> bool {
-        self.id == other.id
-    }
-}
 
 pub(crate) struct WebsocketClient(Client<TcpStream>);
 
@@ -34,7 +15,7 @@ impl Debug for WebsocketClient {
 }
 
 impl Socket for WebsocketClient {
-    fn send_message(&mut self, payload: &[u8]) -> Result<(), Box<dyn SocketError>> {
+    fn send_message(&mut self, _payload: &[u8]) -> Result<(), Box<dyn SocketError>> {
         unimplemented!();
     }
 }
@@ -56,7 +37,7 @@ impl Error for WebsocketClientError {
 
 impl SocketError for WebsocketClientError {
     fn is_broken_pipe(&self) -> bool {
-        if let WebSocketError::IoError(err) = self.0 {
+        if let WebSocketError::IoError(ref err) = &self.0 {
             if let IoErrorKind::BrokenPipe = err.kind() {
                 return true;
             }
