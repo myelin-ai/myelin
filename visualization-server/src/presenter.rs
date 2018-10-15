@@ -171,14 +171,16 @@ mod tests {
         assert!(delta.updated_objects.get(&42).is_some());
 
         let delta_object = delta.updated_objects.get(&42).unwrap();
+        let expected_delta_object = ObjectDescriptionDelta {
+            shape: None,
+            location: Some(object.position.location),
+            rotation: None,
+            mobility: None,
+            kind: None,
+            sensor: None,
+        };
 
-        assert_eq!(None, delta_object.shape);
-        assert_eq!(Some(object.position.location), delta_object.location);
-        assert_eq!(None, delta_object.location);
-        assert_eq!(None, delta_object.rotation);
-        assert_eq!(None, delta_object.mobility);
-        assert_eq!(None, delta_object.kind);
-        assert_eq!(None, delta_object.sensor);
+        assert_eq!(expected_delta_object, *delta_object);
     }
 
     #[test]
@@ -199,12 +201,15 @@ mod tests {
         assert!(delta.updated_objects.get(&42).is_some());
 
         let delta_object = delta.updated_objects.get(&42).unwrap();
+        let expected_delta_object = ObjectDescriptionDelta {
+            shape: Some(object.shape),
+            location: Some(object.position.location),
+            rotation: Some(object.position.rotation),
+            mobility: Some(object.mobility),
+            kind: Some(object.kind),
+            sensor: Some(object.sensor),
+        };
 
-        assert_eq!(Some(object.shape), delta_object.shape);
-        assert_eq!(Some(object.position.location), delta_object.location);
-        assert_eq!(Some(object.position.rotation), delta_object.rotation);
-        assert_eq!(Some(object.mobility), delta_object.mobility);
-        assert_eq!(Some(object.kind), delta_object.kind);
-        assert_eq!(Some(object.sensor), delta_object.sensor);
+        assert_eq!(expected_delta_object, *delta_object);
     }
 }

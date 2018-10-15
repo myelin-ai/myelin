@@ -62,10 +62,8 @@ mod test {
                         .unwrap(),
                 ),
                 mobility: Some(Mobility::Movable(Velocity { x: 2, y: 3 })),
-                position: Some(Position {
-                    location: Location { x: 3, y: 4 },
-                    rotation: Radians::new(1.0).unwrap(),
-                }),
+                location: Some(Location { x: 3, y: 4 }),
+                rotation: Some(Radians::new(1.0).unwrap()),
                 sensor: Some(Some(Sensor {
                     shape: PolygonBuilder::new()
                         .vertex(-10, -12)
