@@ -8,6 +8,12 @@ use websocket::stream::sync::TcpStream;
 
 pub(crate) struct WebsocketClient(Client<TcpStream>);
 
+impl WebsocketClient {
+    pub(crate) fn new(inner: Client<TcpStream>) -> Self {
+        WebsocketClient(inner)
+    }
+}
+
 impl Debug for WebsocketClient {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct(name_of_type!(WebsocketClient)).finish()
