@@ -136,10 +136,8 @@ mod tests {
                         .build()
                         .unwrap(),
                 ),
-                position: Some(Position {
-                    location: Location { x: 30, y: 40 },
-                    rotation,
-                }),
+                location: Some(Location { x: 30, y: 40 }),
+                rotation: Some(rotation),
                 mobility: Some(Mobility::Immovable),
                 kind: Some(Kind::Plant),
                 sensor: None,

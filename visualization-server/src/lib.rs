@@ -11,12 +11,14 @@
 #[macro_use]
 extern crate log;
 
+#[macro_use]
+extern crate nameof;
+
 mod client;
 mod connection;
 mod constant;
 mod controller;
 mod presenter;
 mod server;
-mod snapshot;
 
 pub use self::server::start_server;
