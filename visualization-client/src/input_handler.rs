@@ -18,5 +18,5 @@ impl InputHandler {
         InputHandler
     }
 
-    pub fn on_message(&self, message: &[u8]) {}
+    pub fn on_message(&self, _message: &[u8]) {}
 }

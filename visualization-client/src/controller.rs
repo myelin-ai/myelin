@@ -1,30 +1,36 @@
+use myelin_visualization_core::serialization::ViewModelDeserializer;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
-use std::error::Error;
 use std::fmt;
 
 pub(crate) trait Controller: fmt::Debug {
-    fn step(&mut self);
+    fn on_message(&mut self, message: &[u8]);
 }
+
 pub(crate) trait Presenter: fmt::Debug {
-    fn present_objects(&self, objects: &[ViewModelDelta]);
+    fn present_objects(&mut self, delta: ViewModelDelta);
 }
 
 #[derive(Debug)]
 pub(crate) struct ControllerImpl {
     presenter: Box<dyn Presenter>,
-    // To do:
-    // Use receiver and deserializer
+    view_model_deserializer: Box<dyn ViewModelDeserializer>,
 }
 
 impl Controller for ControllerImpl {
-    fn step(&mut self) {
+    fn on_message(&mut self, _message: &[u8]) {
         unimplemented!()
     }
 }
 
 impl ControllerImpl {
-    pub(crate) fn new(presenter: Box<dyn Presenter>) -> Self {
-        Self { presenter }
+    pub(crate) fn new(
+        presenter: Box<dyn Presenter>,
+        view_model_deserializer: Box<dyn ViewModelDeserializer>,
+    ) -> Self {
+        Self {
+            presenter,
+            view_model_deserializer,
+        }
     }
 }
 
@@ -51,7 +57,7 @@ mod tests {
     }
 
     impl Presenter for PresenterMock {
-        fn present_objects(&self, objects: &[ViewModelDelta]) {
+        fn present_objects(&mut self, objects: &[ViewModelDelta]) {
             *self.present_objects_was_called.borrow_mut() = true;
             self.expected_objects
                 .iter()

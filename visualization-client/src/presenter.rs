@@ -15,7 +15,7 @@ pub(crate) struct CanvasPresenter {
 }
 
 impl Presenter for CanvasPresenter {
-    fn present_objects(&self, objects: &[ViewModelDelta]) {
+    fn present_objects(&mut self, delta: ViewModelDelta) {
         let view_model = ViewModel {
             objects: objects
                 .iter()
