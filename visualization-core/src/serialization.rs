@@ -62,7 +62,7 @@ mod test {
                 mobility: Some(Mobility::Movable(Velocity { x: 2, y: 3 })),
                 position: Some(Position {
                     location: Location { x: 3, y: 4 },
-                    rotation: Radians(1.0),
+                    rotation: Radians::new(1.0).unwrap(),
                 }),
                 sensor: Some(Some(Sensor {
                     shape: PolygonBuilder::new()
@@ -73,7 +73,7 @@ mod test {
                         .unwrap(),
                     position: Position {
                         location: Location { x: 2, y: 3 },
-                        rotation: Radians(-1.0),
+                        rotation: Radians::new(-1.0).unwrap(),
                     },
                 })),
             }],
