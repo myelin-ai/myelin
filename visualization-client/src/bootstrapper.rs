@@ -1,6 +1,7 @@
 //! Entrypoint for the crate,
 //! used to setup the entire visualization
 
+use crate::controller::ControllerImpl;
 use crate::input_handler::InputHandler;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
@@ -26,5 +27,5 @@ use web_sys::HtmlCanvasElement;
 /// [`InputHandler`]: ../input_handler/struct.InputHandler.html
 #[wasm_bindgen]
 pub fn init(_canvas: &HtmlCanvasElement) -> InputHandler {
-    InputHandler::new()
+    unimplemented!();
 }

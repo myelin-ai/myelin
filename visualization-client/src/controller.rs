@@ -1,13 +1,10 @@
+use crate::input_handler::Controller;
 use myelin_visualization_core::serialization::ViewModelDeserializer;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
 use std::fmt;
 
-pub(crate) trait Controller: fmt::Debug {
-    fn on_message(&mut self, message: &[u8]);
-}
-
 pub(crate) trait Presenter: fmt::Debug {
-    fn present_objects(&mut self, delta: ViewModelDelta);
+    fn present_delta(&mut self, delta: ViewModelDelta);
 }
 
 #[derive(Debug)]
