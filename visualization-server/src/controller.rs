@@ -116,6 +116,7 @@ mod tests {
         returned_objects: Vec<ObjectDescription>,
         objects_was_called: RefCell<bool>,
     }
+
     impl SimulationMock {
         fn new(returned_objects: Vec<ObjectDescription>) -> Self {
             Self {
@@ -125,6 +126,7 @@ mod tests {
             }
         }
     }
+
     impl Simulation for SimulationMock {
         fn step(&mut self) {
             self.step_was_called = true;
