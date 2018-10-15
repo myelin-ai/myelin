@@ -148,14 +148,18 @@ mod tests {
 
     #[derive(Debug, Default)]
     struct PresenterMock {
-        expect_calculate_deltas_and_return: Option<(Snapshot, Snapshot, ViewModelDelta)>,
+        expect_calculate_deltas_and_return: Option<(
+            HashMap<Id, ObjectDescription>,
+            HashMap<Id, ObjectDescription>,
+            ViewModelDelta,
+        )>,
         calculate_deltas_was_called: RefCell<bool>,
     }
     impl PresenterMock {
         fn expect_calculate_deltas(
             &mut self,
-            last_objects: Snapshot,
-            current_objects: Snapshot,
+            last_objects: HashMap<Id, ObjectDescription>,
+            current_objects: HashMap<Id, ObjectDescription>,
             return_value: ViewModelDelta,
         ) {
             self.expect_calculate_deltas_and_return =
@@ -165,28 +169,28 @@ mod tests {
     impl Presenter for PresenterMock {
         fn calculate_deltas(
             &self,
-            last_objects: &SnapshotSlice,
-            current_objects: &SnapshotSlice,
+            visualized_objects: &HashMap<Id, ObjectDescription>,
+            simulated_objects: &HashMap<Id, ObjectDescription>,
         ) -> ViewModelDelta {
             *self.calculate_deltas_was_called.borrow_mut() = true;
 
             if let Some((
-                ref expected_last_objects,
-                ref expected_current_objects,
+                ref expected_visualized_objects,
+                ref expected_simulated_objects,
                 ref return_value,
             )) = self.expect_calculate_deltas_and_return
             {
-                if last_objects.to_vec() == *expected_last_objects
-                    && current_objects.to_vec() == *expected_current_objects
+                if *visualized_objects == *expected_visualized_objects
+                    && *simulated_objects == *expected_simulated_objects
                 {
                     return_value.clone()
                 } else {
                     panic!(
                         "calculate_deltas() was called with {:?} and {:?}, expected {:?} and {:?}",
-                        last_objects,
-                        current_objects,
-                        expected_last_objects,
-                        expected_current_objects
+                        visualized_objects,
+                        simulated_objects,
+                        expected_visualized_objects,
+                        expected_simulated_objects
                     )
                 }
             } else {
