@@ -73,6 +73,7 @@ impl NphysicsWorld {
         }
     }
 
+    #[must_use]
     fn get_body_from_handle(&self, collider_handle: ColliderHandle) -> Option<PhysicalBody> {
         let collider = self.physics_world.collider(collider_handle)?;
 
@@ -184,6 +185,7 @@ fn translate_shape(shape: &Polygon) -> ShapeHandle<PhysicsType> {
     ShapeHandle::new(ConvexPolygon::try_new(points).expect("Polygon was not convex"))
 }
 
+#[must_use]
 fn collision_with_sensor(
     sensor_handle: SensorHandle,
     first_handle: CollisionObjectHandle,
@@ -258,6 +260,7 @@ impl World for NphysicsWorld {
         to_body_handle(handle)
     }
 
+    #[must_use]
     fn remove_body(&mut self, body_handle: BodyHandle) -> Option<PhysicalBody> {
         let physical_body = self.body(body_handle)?;
         let collider_handle = to_collider_handle(body_handle);
@@ -269,6 +272,7 @@ impl World for NphysicsWorld {
         Some(physical_body)
     }
 
+    #[must_use]
     fn attach_sensor(&mut self, body_handle: BodyHandle, sensor: Sensor) -> Option<SensorHandle> {
         let collider_handle = to_collider_handle(body_handle);
         let parent_handle = self.physics_world.collider_body_handle(collider_handle)?;
@@ -285,11 +289,13 @@ impl World for NphysicsWorld {
         Some(sensor_handle)
     }
 
+    #[must_use]
     fn body(&self, handle: BodyHandle) -> Option<PhysicalBody> {
         let collider_handle = to_collider_handle(handle);
         self.get_body_from_handle(collider_handle)
     }
 
+    #[must_use]
     fn bodies_within_sensor(&self, sensor_handle: SensorHandle) -> Option<Vec<BodyHandle>> {
         let collisions = self.sensor_collisions.get(&sensor_handle)?;
         let bodies_within_sensor = collisions
@@ -300,6 +306,7 @@ impl World for NphysicsWorld {
         Some(bodies_within_sensor)
     }
 
+    #[must_use]
     fn apply_force(&mut self, body_handle: BodyHandle, force: Force) -> Option<()> {
         let collider_handle = to_collider_handle(body_handle);
         let nphysics_body_handle = self.physics_world.collider_body_handle(collider_handle)?;
@@ -1025,6 +1032,7 @@ mod tests {
             }
         }
 
+        #[must_use]
         fn to_radians(&self, nphysics_rotation: f64) -> Option<Radians> {
             *self.to_radians_was_called.borrow_mut() = true;
 
