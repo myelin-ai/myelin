@@ -33,7 +33,7 @@ pub(crate) trait Client: Debug + Send {
 }
 
 pub(crate) type SimulationFactory = dyn Fn() -> Box<dyn Simulation>;
-pub(crate) type CurrentSnapshotFnFactory = dyn Fn() -> CurrentSnapshotFn;
+pub(crate) type CurrentSnapshotFnFactory = dyn Fn() -> Box<CurrentSnapshotFn>;
 
 pub(crate) trait ClientSpawner {
     fn accept_new_connections(
@@ -88,16 +88,18 @@ mod tests {
     use super::*;
     use myelin_environment::object::*;
     use myelin_environment::object_builder::*;
+    use myelin_environment::Simulation;
     use myelin_worldgen::WorldGenerator;
     use std::cell::RefCell;
     use std::error::Error;
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::thread::panicking;
-    const EXPECTED_DELTA: Duration = Duration::from_millis((1.0f64 / 60.0f64).floor() as u64);
+
+    const EXPECTED_DELTA: Duration = Duration::from_millis((1.0f64 / 60.0f64) as u64);
 
     #[test]
     fn assembles_stuff() {
-        let controller = ControllerImpl::new(
+        let mut controller = ControllerImpl::new(
             Box::new(|| Box::new(SimulationMock::new(Vec::new()))),
             Box::new(ConnectionAccepterMock::default()),
             Box::new(ClientSpawnerMock::default()),
@@ -168,13 +170,16 @@ mod tests {
         ) -> ViewModelDelta {
             *self.calculate_deltas_was_called.borrow_mut() = true;
 
-            if let Some((expected_last_objects, expected_current_objects, return_value)) =
-                self.expect_calculate_deltas_and_return
+            if let Some((
+                ref expected_last_objects,
+                ref expected_current_objects,
+                ref return_value,
+            )) = self.expect_calculate_deltas_and_return
             {
-                if last_objects.to_vec() == expected_last_objects
-                    && current_objects.to_vec() == expected_current_objects
+                if last_objects.to_vec() == *expected_last_objects
+                    && current_objects.to_vec() == *expected_current_objects
                 {
-                    return_value
+                    return_value.clone()
                 } else {
                     panic!(
                         "calculate_deltas() was called with {:?} and {:?}, expected {:?} and {:?}",
@@ -258,47 +263,6 @@ mod tests {
         }
     }
 
-    fn mock_controller(expected_objects: Vec<ObjectDescription>) -> ControllerImpl {
-        let presenter = PresenterMock::default();
-
-        ControllerImpl::new(
-            Box::new(presenter),
-            &world_generator,
-            Duration::from_secs(1),
-        )
-    }
-
-    #[test]
-    fn propagates_empty_step() {
-        let expected_objects = vec![];
-        let mut controller = mock_controller(expected_objects);
-        controller.step().unwrap();
-    }
-
-    #[test]
-    fn propagates_step() {
-        let expected_objects = vec![
-            ObjectBuilder::new()
-                .shape(
-                    PolygonBuilder::new()
-                        .vertex(-5, -5)
-                        .vertex(5, -5)
-                        .vertex(5, 5)
-                        .vertex(-5, 5)
-                        .build()
-                        .expect("Created invalid vertex"),
-                )
-                .location(20, 40)
-                .rotation(Radians(6.0))
-                .mobility(Mobility::Movable(Velocity { x: 0, y: -1 }))
-                .kind(Kind::Organism)
-                .build()
-                .expect("Failed to create object"),
-        ];
-        let mut controller = mock_controller(expected_objects);
-        controller.step().unwrap();
-    }
-
     #[derive(Debug, Default)]
     struct ConnectionAccepterMock {
         connection: Option<Connection>,
@@ -313,13 +277,19 @@ mod tests {
 
     #[derive(Debug, Default)]
     struct ClientSpawnerMock {
-        expected_connection: Option<Connection>,
+        expect_accept_new_connections: Option<(Connection, Snapshot)>,
         accept_new_connections_was_called: AtomicBool,
     }
 
     impl ClientSpawnerMock {
-        fn expect_connection(&mut self, connection: Connection) {
-            *self.expected_connection = Some(connection)
+        fn expect_accept_new_connections(
+            &mut self,
+            connection: Connection,
+            current_snapshot_fn_factory: Box<CurrentSnapshotFnFactory>,
+        ) {
+            let current_snapshot_fn = current_snapshot_fn_factory();
+            let snapshot = current_snapshot_fn();
+            self.expect_accept_new_connections = Some((connection, snapshot))
         }
     }
 
@@ -331,11 +301,21 @@ mod tests {
         ) {
             self.accept_new_connections_was_called
                 .store(true, Ordering::SeqCst);
-            if let Some(expected_connection) = self.expected_connection {
+            if let Some((ref expected_connection, ref expected_snapshot)) =
+                self.expect_accept_new_connections
+            {
+                let connection = receiver.recv().expect("Sender disconnected");
                 assert_eq!(
-                    expected_connection,
-                    receiver.recv().expect("Sender disconnected")
-                )
+                    *expected_connection, connection,
+                    "accept_new_connections() received connection {:#?}, expected {:#?}",
+                    connection, expected_connection
+                );
+                let snapshot = (current_snapshot_fn_factory)()();
+                assert_eq!(
+                    *expected_snapshot, snapshot,
+                    "accept_new_connections() received {:#?} from current_snapshot_fn_factory, expected {:#?}",
+                    snapshot, expected_snapshot
+                );
             } else {
                 match receiver.try_recv() {
                     Err(std::sync::mpsc::TryRecvError::Empty) => {}
@@ -351,11 +331,11 @@ mod tests {
                 return;
             }
 
-            if self.expected_connection.is_some() {
+            if self.expect_accept_new_connections.is_some() {
                 assert!(
                     self.accept_new_connections_was_called
                         .load(Ordering::SeqCst),
-                    "accept_new_connections was not called but was expected"
+                    "accept_new_connections() was not called but was expected"
                 );
             }
         }

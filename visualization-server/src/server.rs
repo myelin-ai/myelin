@@ -1,13 +1,14 @@
 use crate::constant::SIMULATED_TIMESTEP;
 use crate::controller::{Controller, ControllerImpl};
 use crate::presenter::DeltaPresenter;
-use crate::serialize::JsonSerializer;
-use crate::transmitter::ViewModelTransmitter;
 use myelin_environment::object::{Kind, ObjectBehavior};
+use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
 use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
 use myelin_environment::simulation_impl::world::NphysicsWorld;
 use myelin_environment::{simulation_impl::SimulationImpl, Simulation};
 use myelin_object_behavior::Static;
+use myelin_visualization_core::serialization::JsonSerializer;
+use myelin_visualization_core::transmission::ViewModelTransmitter;
 use myelin_worldgen::generator::HardcodedGenerator;
 use spmc::{channel, Sender};
 use std::error::Error;
@@ -41,9 +42,11 @@ fn run_simulation(tx: Sender<Vec<u8>>) {
         let presenter = Box::new(DeltaPresenter::new());
         let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
             let rotation_translator = NphysicsRotationTranslatorImpl::default();
+            let force_applier = SingleTimeForceApplierImpl::default();
             let world = Box::new(NphysicsWorld::with_timestep(
                 SIMULATED_TIMESTEP,
                 Box::new(rotation_translator),
+                Box::new(force_applier),
             ));
             Box::new(SimulationImpl::new(world))
         });

@@ -1,4 +1,4 @@
-#![feature(tool_lints, duration_float)]
+#![feature(duration_float)]
 #![deny(
     rust_2018_idioms,
     missing_debug_implementations,
@@ -9,4 +9,6 @@
 #[macro_use]
 extern crate serde_derive;
 
+pub mod serialization;
+pub mod transmission;
 pub mod view_model_delta;
