@@ -16,6 +16,5 @@ mod constant;
 mod controller;
 mod presenter;
 mod server;
-mod snapshot;
 
 pub use self::server::start_server;

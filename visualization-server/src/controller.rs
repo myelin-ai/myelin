@@ -1,5 +1,4 @@
 use crate::connection::Connection;
-use crate::snapshot::Snapshot;
 use myelin_environment::object::ObjectDescription;
 use myelin_environment::Id;
 use myelin_environment::Simulation;
@@ -10,6 +9,8 @@ use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
+pub(crate) type Snapshot = HashMap<Id, ObjectDescription>;
+
 pub(crate) trait Controller: Debug {
     fn run(&mut self);
 }
@@ -17,8 +18,8 @@ pub(crate) trait Controller: Debug {
 pub(crate) trait Presenter: Debug {
     fn calculate_deltas(
         &self,
-        last_objects: &HashMap<Id, ObjectDescription>,
-        current_objects: &HashMap<Id, ObjectDescription>,
+        visualized_snapshot: &Snapshot,
+        simulation_snapshot: &Snapshot,
     ) -> ViewModelDelta;
 }
 
@@ -148,49 +149,45 @@ mod tests {
 
     #[derive(Debug, Default)]
     struct PresenterMock {
-        expect_calculate_deltas_and_return: Option<(
-            HashMap<Id, ObjectDescription>,
-            HashMap<Id, ObjectDescription>,
-            ViewModelDelta,
-        )>,
+        expect_calculate_deltas_and_return: Option<(Snapshot, Snapshot, ViewModelDelta)>,
         calculate_deltas_was_called: RefCell<bool>,
     }
     impl PresenterMock {
         fn expect_calculate_deltas(
             &mut self,
-            last_objects: HashMap<Id, ObjectDescription>,
-            current_objects: HashMap<Id, ObjectDescription>,
+            visualized_snapshot: Snapshot,
+            simulation_snapshot: Snapshot,
             return_value: ViewModelDelta,
         ) {
             self.expect_calculate_deltas_and_return =
-                Some((last_objects, current_objects, return_value));
+                Some((visualized_snapshot, simulation_snapshot, return_value));
         }
     }
     impl Presenter for PresenterMock {
         fn calculate_deltas(
             &self,
-            visualized_objects: &HashMap<Id, ObjectDescription>,
-            simulated_objects: &HashMap<Id, ObjectDescription>,
+            visualized_snapshot: &Snapshot,
+            simulation_snapshot: &Snapshot,
         ) -> ViewModelDelta {
             *self.calculate_deltas_was_called.borrow_mut() = true;
 
             if let Some((
-                ref expected_visualized_objects,
-                ref expected_simulated_objects,
+                ref expected_visualized_snapshot,
+                ref expected_simulation_snapshot,
                 ref return_value,
             )) = self.expect_calculate_deltas_and_return
             {
-                if *visualized_objects == *expected_visualized_objects
-                    && *simulated_objects == *expected_simulated_objects
+                if *visualized_snapshot == *expected_visualized_snapshot
+                    && *simulation_snapshot == *expected_simulation_snapshot
                 {
                     return_value.clone()
                 } else {
                     panic!(
                         "calculate_deltas() was called with {:?} and {:?}, expected {:?} and {:?}",
-                        visualized_objects,
-                        simulated_objects,
-                        expected_visualized_objects,
-                        expected_simulated_objects
+                        visualized_snapshot,
+                        simulation_snapshot,
+                        expected_visualized_snapshot,
+                        expected_simulation_snapshot,
                     )
                 }
             } else {

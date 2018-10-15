@@ -1,8 +1,6 @@
-use crate::controller::Presenter;
+use crate::controller::{Presenter, Snapshot};
 use myelin_environment::object::ObjectDescription;
-use myelin_environment::Id;
 use myelin_visualization_core::view_model_delta::{ObjectDescriptionDelta, ViewModelDelta};
-use std::collections::HashMap;
 
 #[derive(Debug, Default)]
 pub(crate) struct DeltaPresenter;
@@ -33,22 +31,22 @@ where
 impl Presenter for DeltaPresenter {
     fn calculate_deltas(
         &self,
-        visualized_objects: &HashMap<Id, ObjectDescription>,
-        simulated_objects: &HashMap<Id, ObjectDescription>,
+        visualized_snapshot: &Snapshot,
+        simulation_snapshot: &Snapshot,
     ) -> ViewModelDelta {
-        let deleted_objects = visualized_objects
+        let deleted_objects = visualized_snapshot
             .keys()
-            .filter(|id| !simulated_objects.contains_key(id))
+            .filter(|id| !simulation_snapshot.contains_key(id))
             .map(|&id| id)
             .collect();
 
-        let updated_objects = simulated_objects
+        let updated_objects = simulation_snapshot
             .iter()
             .map(|(&id, object_description)| {
                 (
                     id,
                     get_object_description_delta(
-                        visualized_objects.get(&id),
+                        visualized_snapshot.get(&id),
                         object_description.clone(),
                     ),
                 )
