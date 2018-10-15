@@ -9,8 +9,8 @@
 )]
 
 pub mod bootstrapper;
-pub mod controller;
+mod controller;
 pub mod input_handler;
-pub mod presenter;
-pub mod view;
-pub mod view_model;
+mod presenter;
+mod view;
+mod view_model;
