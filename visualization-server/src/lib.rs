@@ -17,6 +17,7 @@ extern crate nameof;
 mod connection;
 mod constant;
 mod controller;
+mod fixed_interval_sleeper;
 mod presenter;
 mod server;
 
