@@ -14,8 +14,8 @@ pub(crate) trait Controller: Debug {
 pub(crate) trait Presenter: Debug {
     fn calculate_deltas(
         &self,
-        last_objects: &SnapshotSlice,
-        current_objects: &SnapshotSlice,
+        last_objects: HashMap<Id, &ObjectDescription>,
+        current_objects: HashMap<Id, &ObjectDescription>,
     ) -> ViewModelDelta;
 }
 
