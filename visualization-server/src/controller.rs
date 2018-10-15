@@ -98,6 +98,7 @@ mod tests {
 
     const EXPECTED_DELTA: Duration = Duration::from_millis((1.0f64 / 60.0f64) as u64);
 
+    #[ignore]
     #[test]
     fn assembles_stuff() {
         let mut controller = ControllerImpl::new(
