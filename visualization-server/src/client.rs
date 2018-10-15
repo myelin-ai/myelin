@@ -74,6 +74,7 @@ mod tests {
     use crate::connection::{Socket, SocketError};
     use crate::presenter::PresenterMock;
     use myelin_visualization_core::view_model_delta::ViewModelDelta;
+    use std::cell::RefCell;
     use std::error::Error;
     use uuid::Uuid;
 
@@ -98,7 +99,23 @@ mod tests {
     }
 
     #[derive(Debug, Default)]
-    struct SerializerMock {}
+    struct SerializerMock {
+        expect_serialize_view_model_delta_and_return:
+            Option<(ViewModelDelta, Result<Vec<u8>, Box<dyn Error>>)>,
+
+        serialize_view_model_delta_was_called: RefCell<bool>,
+    }
+
+    impl SerializerMock {
+        fn expect_serialize_view_model_delta_and_return(
+            &mut self,
+            view_model_delta: ViewModelDelta,
+            return_value: Result<Vec<u8>, Box<dyn Error>>,
+        ) {
+            self.expect_serialize_view_model_delta_and_return =
+                Some((view_model_delta, return_value));
+        }
+    }
 
     impl ViewModelSerializer for SerializerMock {
         fn serialize_view_model_delta(
