@@ -73,7 +73,6 @@ impl NphysicsWorld {
         }
     }
 
-    #[must_use]
     fn get_body_from_handle(&self, collider_handle: ColliderHandle) -> Option<PhysicalBody> {
         let collider = self.physics_world.collider(collider_handle)?;
 
