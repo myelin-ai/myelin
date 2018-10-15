@@ -1,10 +1,12 @@
 use myelin_environment::object::*;
+use myelin_environment::Id;
+use std::collections::HashMap;
 
 /// This step's object deltas
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ViewModelDelta {
-    /// Deltas of the objects in the world
-    pub objects: Vec<ObjectDescriptionDelta>,
+    /// Deltas of the updated objects in the world
+    pub updated_objects: HashMap<Id, ObjectDescriptionDelta>,
     /// Ids of objects that have been removed from the world
     pub deleted_objects: Vec<Id>,
 }
@@ -14,9 +16,6 @@ pub struct ViewModelDelta {
 /// [`ObjectDescription`]: ../../environment/object/struct.ObjectDescription.html
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ObjectDescriptionDelta {
-    /// Unique identifier
-    pub id: Id,
-
     /// The vertices defining the shape of the object
     /// in relation to its [`position`]
     ///
@@ -37,8 +36,3 @@ pub struct ObjectDescriptionDelta {
     /// The object's sensor
     pub sensor: Option<Option<Sensor>>,
 }
-
-/// Unique identifier of an [`ObjectDescriptionDelta`]
-///
-/// [`ObjectDescriptionDelta`]: ./struct.ObjectDescriptionDelta.html
-pub type Id = usize;

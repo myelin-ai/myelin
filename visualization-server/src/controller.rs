@@ -1,7 +1,10 @@
 use crate::connection::Connection;
 use crate::snapshot::{Snapshot, SnapshotSlice};
+use myelin_environment::object::ObjectDescription;
+use myelin_environment::Id;
 use myelin_environment::Simulation;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
+use std::collections::HashMap;
 use std::fmt::{self, Debug};
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, RwLock};
@@ -14,8 +17,8 @@ pub(crate) trait Controller: Debug {
 pub(crate) trait Presenter: Debug {
     fn calculate_deltas(
         &self,
-        last_objects: &SnapshotSlice,
-        current_objects: &SnapshotSlice,
+        last_objects: &HashMap<Id, ObjectDescription>,
+        current_objects: &HashMap<Id, ObjectDescription>,
     ) -> ViewModelDelta;
 }
 
