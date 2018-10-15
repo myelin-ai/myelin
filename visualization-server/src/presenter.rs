@@ -170,8 +170,8 @@ mod tests {
 
         assert!(delta.updated_objects.get(&42).is_some());
 
-        let delta_object = delta.updated_objects.get(&42).unwrap();
-        let expected_delta_object = ObjectDescriptionDelta {
+        let object_delta = delta.updated_objects.get(&42).unwrap();
+        let expected_object_delta = ObjectDescriptionDelta {
             shape: None,
             location: Some(object.position.location),
             rotation: None,
@@ -180,7 +180,7 @@ mod tests {
             sensor: None,
         };
 
-        assert_eq!(expected_delta_object, *delta_object);
+        assert_eq!(expected_object_delta, *object_delta);
     }
 
     #[test]
@@ -200,8 +200,8 @@ mod tests {
 
         assert!(delta.updated_objects.get(&42).is_some());
 
-        let delta_object = delta.updated_objects.get(&42).unwrap();
-        let expected_delta_object = ObjectDescriptionDelta {
+        let object_delta = delta.updated_objects.get(&42).unwrap();
+        let expected_object_delta = ObjectDescriptionDelta {
             shape: Some(object.shape),
             location: Some(object.position.location),
             rotation: Some(object.position.rotation),
@@ -210,6 +210,6 @@ mod tests {
             sensor: Some(object.sensor),
         };
 
-        assert_eq!(expected_delta_object, *delta_object);
+        assert_eq!(expected_object_delta, *object_delta);
     }
 }
