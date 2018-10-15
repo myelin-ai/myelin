@@ -1,9 +1,11 @@
 use crate::connection::Connection;
-use crate::controller::{Client, CurrentSnapshotFn, Presenter};
+use crate::controller::{Client, CurrentSnapshotFn, Presenter, Snapshot};
 use myelin_visualization_core::serialization::ViewModelSerializer;
 use std::fmt::{self, Debug};
+use std::time::Duration;
 
 pub(crate) struct ClientImpl {
+    interval: Duration,
     presenter: Box<dyn Presenter>,
     serializer: Box<dyn ViewModelSerializer>,
     connection: Connection,
@@ -11,13 +13,15 @@ pub(crate) struct ClientImpl {
 }
 
 impl ClientImpl {
-    pub(crate) fn new(
+    pub(crate) fn with_interval(
+        interval: Duration,
         presenter: Box<dyn Presenter>,
         serializer: Box<dyn ViewModelSerializer>,
         connection: Connection,
         current_snapshot_fn: Box<CurrentSnapshotFn>,
     ) -> Self {
         Self {
+            interval,
             presenter,
             serializer,
             connection,
@@ -28,7 +32,29 @@ impl ClientImpl {
 
 impl Client for ClientImpl {
     fn run(&mut self) {
-        unimplemented!()
+        let mut last_snapshot = Snapshot::new();
+
+        loop {
+            let current_snapshot = (self.current_snapshot_fn)();
+
+            let deltas = self
+                .presenter
+                .calculate_deltas(&last_snapshot, &current_snapshot);
+
+            let serialized = self
+                .serializer
+                .serialize_view_model_delta(&deltas)
+                .expect("Failed to serialize delta");
+
+            self.connection
+                .socket
+                .send_message(&serialized)
+                .expect("Failed to send message to client");
+
+            std::thread::sleep(self.interval);
+
+            last_snapshot = current_snapshot;
+        }
     }
 }
 
@@ -41,3 +67,6 @@ impl Debug for ClientImpl {
             .finish()
     }
 }
+
+#[cfg(test)]
+mod tests {}
