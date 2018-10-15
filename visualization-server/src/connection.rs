@@ -1,5 +1,7 @@
 use std::error::Error;
-use std::fmt::Debug;
+use std::fmt::{self, Debug};
+use websocket::client::sync::Client;
+use websocket::stream::sync::TcpStream;
 
 #[derive(Debug)]
 pub(crate) struct Connection {
@@ -18,5 +20,19 @@ pub(crate) trait SocketError: Debug + Error + Send {
 impl PartialEq for Connection {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
+    }
+}
+
+struct WebsocketClient(Client<TcpStream>);
+
+impl Debug for WebsocketClient {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct(name_of_type!(WebsocketClient)).finish()
+    }
+}
+
+impl Socket for WebsocketClient {
+    fn send_message(&mut self, payload: &[u8]) -> Result<(), Box<dyn SocketError>> {
+        unimplemented!();
     }
 }

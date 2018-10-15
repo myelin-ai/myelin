@@ -11,6 +11,9 @@
 #[macro_use]
 extern crate log;
 
+#[macro_use]
+extern crate nameof;
+
 mod connection;
 mod constant;
 mod controller;
