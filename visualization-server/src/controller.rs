@@ -87,6 +87,7 @@ impl ControllerImpl {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::presenter::PresenterMock;
     use myelin_environment::object::*;
     use myelin_environment::object_builder::*;
     use myelin_environment::Simulation;
@@ -144,69 +145,6 @@ mod tests {
         fn drop(&mut self) {
             assert!(*self.objects_was_called.borrow());
             assert!(self.step_was_called);
-        }
-    }
-
-    #[derive(Debug, Default)]
-    struct PresenterMock {
-        expect_calculate_deltas_and_return: Option<(Snapshot, Snapshot, ViewModelDelta)>,
-        calculate_deltas_was_called: RefCell<bool>,
-    }
-    impl PresenterMock {
-        fn expect_calculate_deltas(
-            &mut self,
-            visualized_snapshot: Snapshot,
-            simulation_snapshot: Snapshot,
-            return_value: ViewModelDelta,
-        ) {
-            self.expect_calculate_deltas_and_return =
-                Some((visualized_snapshot, simulation_snapshot, return_value));
-        }
-    }
-    impl Presenter for PresenterMock {
-        fn calculate_deltas(
-            &self,
-            visualized_snapshot: &Snapshot,
-            simulation_snapshot: &Snapshot,
-        ) -> ViewModelDelta {
-            *self.calculate_deltas_was_called.borrow_mut() = true;
-
-            if let Some((
-                ref expected_visualized_snapshot,
-                ref expected_simulation_snapshot,
-                ref return_value,
-            )) = self.expect_calculate_deltas_and_return
-            {
-                if *visualized_snapshot == *expected_visualized_snapshot
-                    && *simulation_snapshot == *expected_simulation_snapshot
-                {
-                    return_value.clone()
-                } else {
-                    panic!(
-                        "calculate_deltas() was called with {:?} and {:?}, expected {:?} and {:?}",
-                        visualized_snapshot,
-                        simulation_snapshot,
-                        expected_visualized_snapshot,
-                        expected_simulation_snapshot,
-                    )
-                }
-            } else {
-                panic!("to_nphysics_rotation() was called unexpectedly")
-            }
-        }
-    }
-
-    impl Drop for PresenterMock {
-        fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            if self.expect_calculate_deltas_and_return.is_some() {
-                assert!(
-                    *self.calculate_deltas_was_called.borrow(),
-                    "calculate_deltas() was not called, but expected"
-                )
-            }
         }
     }
 
