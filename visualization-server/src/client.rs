@@ -69,4 +69,52 @@ impl Debug for ClientHandler {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use crate::connection::{Socket, SocketError};
+    use crate::presenter::PresenterMock;
+    use myelin_visualization_core::view_model_delta::ViewModelDelta;
+    use std::error::Error;
+    use uuid::Uuid;
+
+    #[test]
+    fn assembles_stuff() {
+        let interval = Duration::from_millis(1000 / 30);
+        let presenter = Box::new(PresenterMock::default());
+        let serializer = Box::new(SerializerMock::default());
+        let socket = Box::new(SocketMock::default());
+        let connection = Connection {
+            id: Uuid::new_v4(),
+            socket,
+        };
+        let current_snapshot_fn = Box::new(|| Snapshot::new());
+        let client = ClientHandler::with_interval(
+            interval,
+            presenter,
+            serializer,
+            connection,
+            current_snapshot_fn,
+        );
+    }
+
+    #[derive(Debug, Default)]
+    struct SerializerMock {}
+
+    impl ViewModelSerializer for SerializerMock {
+        fn serialize_view_model_delta(
+            &self,
+            view_model_delta: &ViewModelDelta,
+        ) -> Result<Vec<u8>, Box<dyn Error>> {
+            unimplemented!()
+        }
+    }
+
+    #[derive(Debug, Default)]
+    struct SocketMock {}
+
+    impl Socket for SocketMock {
+        fn send_message(&mut self, payload: &[u8]) -> Result<(), Box<dyn SocketError>> {
+            unimplemented!()
+        }
+    }
+}
