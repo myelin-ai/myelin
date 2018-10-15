@@ -41,14 +41,16 @@ mod test {
     use crate::view_model_delta::*;
     use myelin_environment::object::*;
     use myelin_environment::object_builder::PolygonBuilder;
+    use std::collections::HashMap;
 
     #[test]
     fn serializes_full_delta() {
         let expected: Vec<u8> = r#"{"objects":[{"shape":{"vertices":[{"x":1,"y":1},{"x":2,"y":3},{"x":5,"y":6}]},"kind":"Organism"}]}"#.into();
 
-        let view_model_delta = ViewModelDelta {
-            objects: vec![ObjectDescriptionDelta {
-                id: 12,
+        let mut updated_objects = HashMap::new();
+        updated_objects.insert(
+            12,
+            ObjectDescriptionDelta {
                 kind: Some(Kind::Organism),
                 shape: Some(
                     PolygonBuilder::new()
@@ -76,7 +78,11 @@ mod test {
                         rotation: Radians::new(-1.0).unwrap(),
                     },
                 })),
-            }],
+            },
+        );
+
+        let view_model_delta = ViewModelDelta {
+            updated_objects,
             deleted_objects: Vec::new(),
         };
 
@@ -93,7 +99,7 @@ mod test {
         let expected: Vec<u8> = r#"{"objects":[]}"#.into();
 
         let view_model_delta = ViewModelDelta {
-            objects: Vec::new(),
+            updated_objects: HashMap::new(),
             deleted_objects: Vec::new(),
         };
 

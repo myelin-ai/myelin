@@ -1,5 +1,4 @@
 use crate::controller::Presenter;
-use crate::snapshot::SnapshotSlice;
 use myelin_environment::object::ObjectDescription;
 use myelin_environment::Id;
 use myelin_visualization_core::view_model_delta::{ObjectDescriptionDelta, ViewModelDelta};
@@ -100,12 +99,12 @@ mod tests {
 
     #[test]
     fn get_delta_returns_none_if_equal() {
-        assert_eq!(None, get_delta(Some(1.0), 1.0))
+        assert_eq!(None, get_delta(Some(&1.0), 1.0))
     }
 
     #[test]
     fn get_delta_returns_second_if_not_equal() {
-        assert_eq!(Some(2.0), get_delta(Some(1.0), 2.0))
+        assert_eq!(Some(2.0), get_delta(Some(&1.0), 2.0))
     }
 
     #[test]

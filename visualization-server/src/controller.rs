@@ -1,5 +1,5 @@
 use crate::connection::Connection;
-use crate::snapshot::{Snapshot, SnapshotSlice};
+use crate::snapshot::Snapshot;
 use myelin_environment::object::ObjectDescription;
 use myelin_environment::Id;
 use myelin_environment::Simulation;
