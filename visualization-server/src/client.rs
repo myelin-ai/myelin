@@ -4,7 +4,7 @@ use myelin_visualization_core::serialization::ViewModelSerializer;
 use std::fmt::{self, Debug};
 use std::time::Duration;
 
-pub(crate) struct ClientImpl {
+pub(crate) struct ClientHandler {
     interval: Duration,
     presenter: Box<dyn Presenter>,
     serializer: Box<dyn ViewModelSerializer>,
@@ -12,7 +12,7 @@ pub(crate) struct ClientImpl {
     current_snapshot_fn: Box<CurrentSnapshotFn>,
 }
 
-impl ClientImpl {
+impl ClientHandler {
     pub(crate) fn with_interval(
         interval: Duration,
         presenter: Box<dyn Presenter>,
@@ -58,7 +58,7 @@ impl Client for ClientImpl {
     }
 }
 
-impl Debug for ClientImpl {
+impl Debug for ClientHandler {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("ClientImpl")
             .field("presenter", &self.presenter)
