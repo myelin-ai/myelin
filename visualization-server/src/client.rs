@@ -3,7 +3,7 @@ use crate::controller::{Client, CurrentSnapshotFn, Presenter};
 use myelin_visualization_core::serialization::ViewModelSerializer;
 use std::fmt::{self, Debug};
 
-struct ClientImpl {
+pub(crate) struct ClientImpl {
     presenter: Box<dyn Presenter>,
     serializer: Box<dyn ViewModelSerializer>,
     connection: Connection,
