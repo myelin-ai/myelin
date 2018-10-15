@@ -51,6 +51,13 @@ impl Presenter for DeltaPresenter {
                     ),
                 )
             })
+            .filter(|(_, object_description)| {
+                object_description.shape.is_some()
+                    || object_description.position.is_some()
+                    || object_description.mobility.is_some()
+                    || object_description.kind.is_some()
+                    || object_description.sensor.is_some()
+            })
             .collect();
 
         ViewModelDelta {
@@ -71,12 +78,8 @@ mod tests {
     use super::*;
     use myelin_environment::object::{Kind, Mobility, ObjectDescription, Radians};
     use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
-    use std::cell::RefCell;
-    use std::error::Error;
-    use std::f64::consts::PI;
-    use std::thread;
 
-    fn object_description(orientation: Radians) -> ObjectDescription {
+    fn object_description() -> ObjectDescription {
         ObjectBuilder::new()
             .shape(
                 PolygonBuilder::new()
@@ -89,7 +92,7 @@ mod tests {
             )
             .mobility(Mobility::Immovable)
             .location(30, 40)
-            .rotation(orientation)
+            .rotation(Radians::default())
             .kind(Kind::Plant)
             .build()
             .unwrap()
@@ -110,4 +113,87 @@ mod tests {
         assert_eq!(Some(1.0), get_delta(None, 1.0))
     }
 
+    #[test]
+    fn calculate_deltas_handles_deleted_object() {
+        let mut first_snapshot = Snapshot::new();
+        first_snapshot.insert(42, object_description());
+
+        let second_snapshot = Snapshot::new();
+
+        let delta_presenter = DeltaPresenter::default();
+        let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
+
+        assert_eq!(0, delta.updated_objects.len());
+        assert_eq!(1, delta.deleted_objects.len());
+        assert_eq!(42, delta.deleted_objects[0]);
+    }
+
+    #[test]
+    fn calculate_deltas_handles_unchanged_object() {
+        let mut first_snapshot = Snapshot::new();
+        first_snapshot.insert(42, object_description());
+
+        let second_snapshot = first_snapshot.clone();
+
+        let delta_presenter = DeltaPresenter::default();
+        let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
+
+        assert_eq!(0, delta.updated_objects.len());
+        assert_eq!(0, delta.deleted_objects.len());
+    }
+
+    #[test]
+    fn calculate_deltas_handles_updated_object() {
+        let mut object = object_description();
+
+        let mut first_snapshot = Snapshot::new();
+        first_snapshot.insert(42, object.clone());
+
+        object.position.location.x += 10;
+
+        let mut second_snapshot = Snapshot::new();
+        second_snapshot.insert(42, object.clone());
+
+        let delta_presenter = DeltaPresenter::default();
+        let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
+
+        assert_eq!(1, delta.updated_objects.len());
+        assert_eq!(0, delta.deleted_objects.len());
+
+        assert!(delta.updated_objects.get(&42).is_some());
+
+        let delta_object = delta.updated_objects.get(&42).unwrap();
+
+        assert_eq!(None, delta_object.shape);
+        assert_eq!(Some(object.position), delta_object.position);
+        assert_eq!(None, delta_object.mobility);
+        assert_eq!(None, delta_object.kind);
+        assert_eq!(None, delta_object.sensor);
+    }
+
+    #[test]
+    fn calculate_deltas_handles_added_object() {
+        let object = object_description();
+
+        let first_snapshot = Snapshot::new();
+
+        let mut second_snapshot = Snapshot::new();
+        second_snapshot.insert(42, object.clone());
+
+        let delta_presenter = DeltaPresenter::default();
+        let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
+
+        assert_eq!(1, delta.updated_objects.len());
+        assert_eq!(0, delta.deleted_objects.len());
+
+        assert!(delta.updated_objects.get(&42).is_some());
+
+        let delta_object = delta.updated_objects.get(&42).unwrap();
+
+        assert_eq!(Some(object.shape), delta_object.shape);
+        assert_eq!(Some(object.position), delta_object.position);
+        assert_eq!(Some(object.mobility), delta_object.mobility);
+        assert_eq!(Some(object.kind), delta_object.kind);
+        assert_eq!(Some(object.sensor), delta_object.sensor);
+    }
 }
