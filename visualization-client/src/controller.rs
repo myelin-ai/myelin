@@ -14,8 +14,13 @@ pub(crate) struct ControllerImpl {
 }
 
 impl Controller for ControllerImpl {
-    fn on_message(&mut self, _message: &[u8]) {
-        unimplemented!()
+    fn on_message(&mut self, message: &[u8]) {
+        let view_model_delta = self
+            .view_model_deserializer
+            .deserialize_view_model(message)
+            .expect("Serialized view model delta was not valid");
+
+        self.presenter.present_delta(view_model_delta);
     }
 }
 
