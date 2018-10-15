@@ -11,6 +11,7 @@
 #[macro_use]
 extern crate log;
 
+mod client;
 mod connection;
 mod constant;
 mod controller;
