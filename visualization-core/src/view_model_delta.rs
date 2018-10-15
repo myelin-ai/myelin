@@ -22,8 +22,11 @@ pub struct ObjectDescriptionDelta {
     /// [`position`]: ./struct.ObjectDescription.html#structfield.location
     pub shape: Option<Polygon>,
 
-    /// The current position of the object
-    pub position: Option<Position>,
+    /// The current location of the object
+    pub location: Option<Location>,
+
+    /// The current rotation of the object
+    pub rotation: Option<Radians>,
 
     /// The current velocity of the object, defined
     /// as a two dimensional vector relative to the

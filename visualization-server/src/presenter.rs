@@ -11,7 +11,14 @@ fn get_object_description_delta(
 ) -> ObjectDescriptionDelta {
     ObjectDescriptionDelta {
         shape: get_delta(first.map(|o| &o.shape), second.shape),
-        position: get_delta(first.map(|o| &o.position), second.position),
+        location: get_delta(
+            first.map(|o| &o.position.location),
+            second.position.location,
+        ),
+        rotation: get_delta(
+            first.map(|o| &o.position.rotation),
+            second.position.rotation,
+        ),
         mobility: get_delta(first.map(|o| &o.mobility), second.mobility),
         kind: get_delta(first.map(|o| &o.kind), second.kind),
         sensor: get_delta(first.map(|o| &o.sensor), second.sensor),
@@ -53,7 +60,8 @@ impl Presenter for DeltaPresenter {
             })
             .filter(|(_, object_description)| {
                 object_description.shape.is_some()
-                    || object_description.position.is_some()
+                    || object_description.location.is_some()
+                    || object_description.rotation.is_some()
                     || object_description.mobility.is_some()
                     || object_description.kind.is_some()
                     || object_description.sensor.is_some()
@@ -165,7 +173,9 @@ mod tests {
         let delta_object = delta.updated_objects.get(&42).unwrap();
 
         assert_eq!(None, delta_object.shape);
-        assert_eq!(Some(object.position), delta_object.position);
+        assert_eq!(Some(object.position.location), delta_object.location);
+        assert_eq!(None, delta_object.location);
+        assert_eq!(None, delta_object.rotation);
         assert_eq!(None, delta_object.mobility);
         assert_eq!(None, delta_object.kind);
         assert_eq!(None, delta_object.sensor);
@@ -191,7 +201,8 @@ mod tests {
         let delta_object = delta.updated_objects.get(&42).unwrap();
 
         assert_eq!(Some(object.shape), delta_object.shape);
-        assert_eq!(Some(object.position), delta_object.position);
+        assert_eq!(Some(object.position.location), delta_object.location);
+        assert_eq!(Some(object.position.rotation), delta_object.rotation);
         assert_eq!(Some(object.mobility), delta_object.mobility);
         assert_eq!(Some(object.kind), delta_object.kind);
         assert_eq!(Some(object.sensor), delta_object.sensor);
