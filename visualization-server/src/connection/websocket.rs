@@ -3,6 +3,7 @@ use std::error::Error;
 use std::fmt::{self, Debug, Display};
 use std::io::ErrorKind as IoErrorKind;
 use websocket::client::sync::Client;
+use websocket::message::Message;
 use websocket::result::WebSocketError;
 use websocket::stream::sync::TcpStream;
 
@@ -21,8 +22,13 @@ impl Debug for WebsocketClient {
 }
 
 impl Socket for WebsocketClient {
-    fn send_message(&mut self, _payload: &[u8]) -> Result<(), Box<dyn SocketError>> {
-        unimplemented!();
+    fn send_message(&mut self, payload: &[u8]) -> Result<(), Box<dyn SocketError>> {
+        let message = Message::binary(payload);
+
+        self.0
+            .send_message(&message)
+            .map_err(WebsocketClientError::from)
+            .map_err(|err| Box::new(err) as Box<dyn SocketError>)
     }
 }
 
@@ -30,8 +36,8 @@ impl Socket for WebsocketClient {
 struct WebsocketClientError(WebSocketError);
 
 impl From<WebSocketError> for WebsocketClientError {
-    fn from(error: WebSocketError) -> Self {
-        WebsocketClientError(error)
+    fn from(err: WebSocketError) -> Self {
+        WebsocketClientError(err)
     }
 }
 
