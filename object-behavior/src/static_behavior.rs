@@ -4,7 +4,7 @@ use myelin_environment::object::*;
 
 /// A purely static and non-interactive behavior.
 /// This type will never perform any actions.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Static;
 impl Static {
     pub fn new() -> Self {
@@ -17,8 +17,8 @@ impl ObjectBehavior for Static {
         &mut self,
         _own_description: &ObjectDescription,
         _sensor_collisions: &[ObjectDescription],
-    ) -> Vec<Action> {
-        Vec::new()
+    ) -> Option<Action> {
+        None
     }
 }
 
@@ -42,14 +42,14 @@ mod tests {
                     .unwrap(),
             )
             .location(300, 450)
-            .rotation(Radians(FRAC_PI_2))
+            .rotation(Radians::new(FRAC_PI_2).unwrap())
             .kind(Kind::Organism)
             .mobility(Mobility::Movable(Velocity { x: 3, y: 5 }))
             .build()
             .unwrap();
         let mut object = Static::new();
-        let actions = object.step(&own_description, &[]);
-        assert!(actions.is_empty());
+        let action = object.step(&own_description, &[]);
+        assert!(action.is_none());
     }
 
 }

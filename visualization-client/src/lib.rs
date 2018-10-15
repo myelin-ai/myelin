@@ -1,6 +1,6 @@
 //! In-browser visualization for myelin using a canvas with WASM
 
-#![feature(tool_lints, duration_float)]
+#![feature(duration_float)]
 #![deny(
     rust_2018_idioms,
     missing_debug_implementations,
