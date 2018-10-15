@@ -30,7 +30,7 @@ impl ClientHandler {
     }
 }
 
-impl Client for ClientImpl {
+impl Client for ClientHandler {
     fn run(&mut self) {
         let mut last_snapshot = Snapshot::new();
 
