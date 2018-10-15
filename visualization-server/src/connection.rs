@@ -3,6 +3,7 @@ use std::fmt::Debug;
 
 #[derive(Debug)]
 pub(crate) struct Connection {
+    pub(crate) id: usize,
     pub(crate) socket: Box<dyn Socket>,
 }
 
@@ -16,6 +17,6 @@ pub(crate) trait SocketError: Debug + Error + Send {
 
 impl PartialEq for Connection {
     fn eq(&self, other: &Self) -> bool {
-        unimplemented!()
+        self.id == other.id
     }
 }
