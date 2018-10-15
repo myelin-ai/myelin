@@ -27,7 +27,7 @@ pipeline {
         }
         stage('wasm') {
           steps {
-            sh 'bash visualization/scripts/build.sh'
+            sh 'bash visualization-client/scripts/build.sh'
           }
         }
       }
