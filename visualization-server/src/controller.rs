@@ -85,11 +85,13 @@ mod tests {
     use super::*;
     use myelin_environment::object::*;
     use myelin_environment::object_builder::*;
+    use myelin_environment::Simulation;
     use myelin_worldgen::WorldGenerator;
     use std::cell::RefCell;
     use std::error::Error;
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::thread::panicking;
+
     const EXPECTED_DELTA: Duration = Duration::from_millis((1.0f64 / 60.0f64) as u64);
 
     #[test]

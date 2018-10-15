@@ -28,7 +28,7 @@ impl Presenter for CanvasPresenter {
     }
 }
 
-fn to_global_object(object: &ViewModelDelta) -> view_model::Object {
+fn to_global_object(_object: &ViewModelDelta) -> view_model::Object {
     /*
     view_model::Object {
         shape: view_model::Polygon {
@@ -84,8 +84,9 @@ impl CanvasPresenter {
 mod tests {
     use super::*;
     use crate::view_model::{self, ViewModel};
-    use myelin_environment::object::{Kind, Mobility, ObjectDescription, Radians};
-    use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+    use myelin_environment::object::{Kind, Location, Mobility, Position, Radians};
+    use myelin_environment::object_builder::PolygonBuilder;
+    use myelin_visualization_core::view_model_delta::ObjectDescriptionDelta;
     use std::cell::RefCell;
     use std::f64::consts::PI;
 
@@ -120,23 +121,29 @@ mod tests {
         }
     }
 
-    fn object_description(orientation: Radians) -> ObjectDescription {
-        ObjectBuilder::new()
-            .shape(
-                PolygonBuilder::new()
-                    .vertex(-10, -10)
-                    .vertex(10, -10)
-                    .vertex(10, 10)
-                    .vertex(-10, 10)
-                    .build()
-                    .unwrap(),
-            )
-            .mobility(Mobility::Immovable)
-            .location(30, 40)
-            .rotation(orientation)
-            .kind(Kind::Plant)
-            .build()
-            .unwrap()
+    fn view_model_delta(rotation: Radians) -> ViewModelDelta {
+        ViewModelDelta {
+            objects: vec![ObjectDescriptionDelta {
+                id: 42,
+                shape: Some(
+                    PolygonBuilder::new()
+                        .vertex(-10, -10)
+                        .vertex(10, -10)
+                        .vertex(10, 10)
+                        .vertex(-10, 10)
+                        .build()
+                        .unwrap(),
+                ),
+                position: Some(Position {
+                    location: Location { x: 30, y: 40 },
+                    rotation,
+                }),
+                mobility: Some(Mobility::Immovable),
+                kind: Some(Kind::Plant),
+                sensor: None,
+            }],
+            deleted_objects: Vec::new(),
+        }
     }
 
     #[test]
@@ -152,7 +159,7 @@ mod tests {
 
     #[test]
     fn converts_to_global_object_with_no_orientation() {
-        let object_description = [object_description(Radians::default())];
+        let object_description = [view_model_delta(Radians::default())];
         let expected_view_model = ViewModel {
             objects: vec![view_model::Object {
                 shape: view_model::Polygon {
@@ -173,7 +180,7 @@ mod tests {
 
     #[test]
     fn converts_to_global_object_with_pi_orientation() {
-        let object_description = [object_description(Radians::new(PI).unwrap())];
+        let object_description = [view_model_delta(Radians(PI))];
         let expected_view_model = ViewModel {
             objects: vec![view_model::Object {
                 shape: view_model::Polygon {
@@ -194,7 +201,7 @@ mod tests {
 
     #[test]
     fn converts_to_global_object_with_arbitrary_orientation() {
-        let object_description = [object_description(Radians::new(3.0).unwrap())];
+        let object_description = [view_model_delta(Radians(3.0))];
         let expected_view_model = ViewModel {
             objects: vec![view_model::Object {
                 shape: view_model::Polygon {
