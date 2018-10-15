@@ -1,8 +1,10 @@
+pub use self::json::*;
 use crate::view_model_delta::ViewModelDelta;
-use serde_json as json;
 use std::error::Error;
 use std::fmt::Debug;
 use std::marker::PhantomData;
+
+mod json;
 
 pub trait ViewModelSerializer: Debug {
     fn serialize_view_model_delta(
@@ -17,23 +19,6 @@ pub trait ViewModelDeserializer: Debug {
 
 #[derive(Debug)]
 pub struct JsonSerializer(PhantomData<()>);
-
-impl JsonSerializer {
-    pub fn new() -> Self {
-        JsonSerializer(PhantomData)
-    }
-}
-
-impl ViewModelSerializer for JsonSerializer {
-    fn serialize_view_model_delta(
-        &self,
-        view_model_delta: &ViewModelDelta,
-    ) -> Result<Vec<u8>, Box<dyn Error>> {
-        let serialized = json::to_string(view_model_delta)?;
-
-        Ok(serialized.into())
-    }
-}
 
 #[cfg(test)]
 mod test {
