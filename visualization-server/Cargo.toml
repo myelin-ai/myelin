@@ -1,5 +1,5 @@
 [package]
-name = "myelin-visualization"
+name = "myelin-visualization-server"
 version = "0.1.0"
 authors = [
     "Jan Nils Ferner <jan@myelin.ch>",
@@ -9,28 +9,16 @@ authors = [
 ]
 edition = "2018"
 
-[lib]
-crate-type = ["cdylib"]
-
 [dependencies]
-wasm-bindgen = "=0.2.23"
-js-sys = "=0.3.0"
 myelin-environment = { path = "../environment" }
 myelin-worldgen = { path = "../worldgen" }
 myelin-object-behavior = { path = "../object-behavior" }
-
-
-[dependencies.web-sys]
-version = "0.3.0"
-features = [
-    "Element",
-    "EventTarget",
-    "HtmlElement",
-    "Node",
-    "CanvasRenderingContext2d",
-    "HtmlCanvasElement",
-    "EventTarget",
-    "Window",
-    "CssStyleDeclaration",
-]
-
+myelin-visualization-core = { path = "../visualization-core" }
+serde = "1.0"
+serde_json = "1.0"
+log = "0.4"
+simple_logger = "1.0"
+clap = "2.32"
+websocket = "0.20.3"
+threadpool = "1.0"
+spmc = "0.2"
