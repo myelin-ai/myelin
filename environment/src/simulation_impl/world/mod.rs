@@ -185,7 +185,6 @@ fn translate_shape(shape: &Polygon) -> ShapeHandle<PhysicsType> {
     ShapeHandle::new(ConvexPolygon::try_new(points).expect("Polygon was not convex"))
 }
 
-#[must_use]
 fn collision_with_sensor(
     sensor_handle: SensorHandle,
     first_handle: CollisionObjectHandle,
@@ -1032,7 +1031,6 @@ mod tests {
             }
         }
 
-        #[must_use]
         fn to_radians(&self, nphysics_rotation: f64) -> Option<Radians> {
             *self.to_radians_was_called.borrow_mut() = true;
 
