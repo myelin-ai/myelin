@@ -2,12 +2,13 @@ pub(crate) use self::websocket::*;
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
 use std::io::ErrorKind as IoErrorKind;
+use uuid::Uuid;
 
 mod websocket;
 
 #[derive(Debug)]
 pub(crate) struct Connection {
-    pub(crate) id: usize,
+    pub(crate) id: Uuid,
     pub(crate) socket: Box<dyn Socket>,
 }
 
