@@ -34,6 +34,9 @@ impl ControllerImpl {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use myelin_environment::object::*;
+    use myelin_environment::object_builder::PolygonBuilder;
+    use myelin_visualization_core::view_model_delta::ObjectDescriptionDelta;
     use std::cell::RefCell;
     use std::collections::HashMap;
     use std::error::Error;
@@ -108,11 +111,34 @@ mod tests {
         }
     }
 
+    fn object_description_delta() -> ObjectDescriptionDelta {
+        ObjectDescriptionDelta {
+            shape: Some(
+                PolygonBuilder::new()
+                    .vertex(-5, -5)
+                    .vertex(5, -5)
+                    .vertex(5, 5)
+                    .vertex(-5, 5)
+                    .build()
+                    .expect("Created invalid vertex"),
+            ),
+            location: Some(Location { x: 20, y: 40 }),
+            rotation: Some(Radians::new(6.0).unwrap()),
+            mobility: None,
+            kind: None,
+            sensor: None,
+        }
+    }
+
     #[test]
     fn deserializes_and_calls_presenter() {
         let data = vec![100, 124, 135, 253, 234, 122];
         let view_model_delta = ViewModelDelta {
-            updated_objects: HashMap::new(),
+            updated_objects: {
+                let mut object_deltas = HashMap::new();
+                object_deltas.insert(123, object_description_delta());
+                object_deltas
+            },
             deleted_objects: Vec::new(),
         };
 
