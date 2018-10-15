@@ -15,16 +15,8 @@ pub(crate) struct CanvasPresenter {
 }
 
 impl Presenter for CanvasPresenter {
-    fn present_objects(&mut self, delta: ViewModelDelta) {
-        let view_model = ViewModel {
-            objects: objects
-                .iter()
-                .map(|object| to_global_object(object))
-                .collect(),
-        };
-
-        self.view.flush();
-        self.view.draw_objects(&view_model);
+    fn present_delta(&mut self, delta: ViewModelDelta) {
+        unimplemented!();
     }
 }
 
@@ -152,13 +144,14 @@ mod tests {
 
     #[test]
     fn maps_to_empty_view_model() {
-        let objects = Vec::new();
+        // let objects = Vec::new();
         let expected_view_model = ViewModel {
             objects: Vec::new(),
         };
         let view_mock = ViewMock::new(expected_view_model);
         let presenter = CanvasPresenter::new(Box::new(view_mock));
-        presenter.present_objects(&objects);
+        // presenter.present_delta(&objects);
+        unimplemented!();
     }
 
     #[test]
@@ -179,7 +172,8 @@ mod tests {
         };
         let view_mock = ViewMock::new(expected_view_model);
         let presenter = CanvasPresenter::new(Box::new(view_mock));
-        presenter.present_objects(&object_description);
+        // presenter.present_objects(&object_description);
+        unimplemented!();
     }
 
     #[test]
@@ -200,7 +194,8 @@ mod tests {
         };
         let view_mock = ViewMock::new(expected_view_model);
         let presenter = CanvasPresenter::new(Box::new(view_mock));
-        presenter.present_objects(&object_description);
+        // presenter.present_objects(&object_description);
+        unimplemented!();
     }
 
     #[test]
@@ -233,6 +228,7 @@ mod tests {
         };
         let view_mock = ViewMock::new(expected_view_model);
         let presenter = CanvasPresenter::new(Box::new(view_mock));
-        presenter.present_objects(&object_description);
+        // presenter.present_objects(&object_description);
+        unimplemented!();
     }
 }

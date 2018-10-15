@@ -54,14 +54,15 @@ mod tests {
     }
 
     impl Presenter for PresenterMock {
-        fn present_objects(&mut self, objects: &[ViewModelDelta]) {
-            *self.present_objects_was_called.borrow_mut() = true;
+        fn present_delta(&mut self, objects: ViewModelDelta) {
+            unimplemented!();
+            /*self.present_objects_was_called.borrow_mut() = true;
             self.expected_objects
                 .iter()
                 .zip(objects)
                 .for_each(|(expected, actual)| {
                     assert_eq!(expected, actual);
-                });
+                });*/
         }
     }
 
@@ -73,13 +74,6 @@ mod tests {
 
     fn mock_controller(expected_objects: Vec<ObjectDescription>) -> ControllerImpl {
         unimplemented!();
-    }
-
-    #[test]
-    fn propagates_empty_step() {
-        let expected_objects = vec![];
-        let mut controller = mock_controller(expected_objects);
-        controller.step();
     }
 
     #[test]
@@ -103,6 +97,7 @@ mod tests {
                 .expect("Failed to create object"),
         ];
         let mut controller = mock_controller(expected_objects);
-        controller.step();
+
+        unimplemented!();
     }
 }
