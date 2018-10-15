@@ -2,7 +2,6 @@ pub use self::json::*;
 use crate::view_model_delta::ViewModelDelta;
 use std::error::Error;
 use std::fmt::Debug;
-use std::marker::PhantomData;
 
 mod json;
 
