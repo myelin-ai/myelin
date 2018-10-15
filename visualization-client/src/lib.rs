@@ -10,7 +10,6 @@
 
 pub mod bootstrapper;
 pub mod controller;
-pub(crate) mod deserialize;
 pub mod input_handler;
 pub mod presenter;
 pub mod view;
