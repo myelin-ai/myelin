@@ -67,11 +67,12 @@ pipeline {
     }
   }
   post {
-    when {
-      branch 'master'
-    }
     failure {
-      step([$class: 'TelegramBotPublisher', message: 'Branch ${BUILD_TAG} failed. ${RUN_DISPLAY_URL}', whenFailed: true])
+      script {
+        if (env.BRANCH_NAME == 'master') {
+          step([$class: 'TelegramBotPublisher', message: 'Branch ${BUILD_TAG} failed. ${RUN_DISPLAY_URL}', whenFailed: true])
+        }
+      }
     }
   }
 }
