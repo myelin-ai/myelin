@@ -6,9 +6,9 @@ use std::collections::HashMap;
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ViewModelDelta {
     /// Deltas of the updated objects in the world
-    updated_objects: HashMap<Id, ObjectDescriptionDelta>,
+    pub updated_objects: HashMap<Id, ObjectDescriptionDelta>,
     /// Ids of objects that have been removed from the world
-    deleted_objects: Vec<Id>,
+    pub deleted_objects: Vec<Id>,
 }
 
 /// The delta of a [`ObjectDescription`].

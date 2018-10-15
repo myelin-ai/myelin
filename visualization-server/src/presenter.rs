@@ -10,23 +10,23 @@ pub(crate) struct DeltaPresenter;
 
 fn get_object_description_delta(
     first: Option<&ObjectDescription>,
-    second: &ObjectDescription,
+    second: ObjectDescription,
 ) -> ObjectDescriptionDelta {
     ObjectDescriptionDelta {
-        shape: get_delta(first.map(|o| o.shape), second.shape),
-        position: get_delta(first.map(|o| o.position), second.position),
-        mobility: get_delta(first.map(|o| o.mobility), second.mobility),
-        kind: get_delta(first.map(|o| o.kind), second.kind),
-        sensor: get_delta(first.map(|o| o.sensor), second.sensor),
+        shape: get_delta(first.map(|o| &o.shape), second.shape),
+        position: get_delta(first.map(|o| &o.position), second.position),
+        mobility: get_delta(first.map(|o| &o.mobility), second.mobility),
+        kind: get_delta(first.map(|o| &o.kind), second.kind),
+        sensor: get_delta(first.map(|o| &o.sensor), second.sensor),
     }
 }
 
-fn get_delta<T>(first_option: Option<T>, second: T) -> Option<T>
+fn get_delta<T>(first_option: Option<&T>, second: T) -> Option<T>
 where
     T: PartialEq,
 {
     match first_option {
-        Some(first) if first == second => None,
+        Some(first) if *first == second => None,
         _ => Some(second),
     }
 }
@@ -48,7 +48,10 @@ impl Presenter for DeltaPresenter {
             .map(|(&id, object_description)| {
                 (
                     id,
-                    get_object_description_delta(visualized_objects.get(&id), object_description),
+                    get_object_description_delta(
+                        visualized_objects.get(&id),
+                        object_description.clone(),
+                    ),
                 )
             })
             .collect();
