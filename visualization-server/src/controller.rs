@@ -18,8 +18,8 @@ pub(crate) trait Controller: Debug {
 pub(crate) trait Presenter: Debug {
     fn calculate_deltas(
         &self,
-        last_snapshot: &Snapshot,
-        current_snapshot: &Snapshot,
+        visualized_snapshot: &Snapshot,
+        simulation_snapshot: &Snapshot,
     ) -> ViewModelDelta;
 }
 
@@ -155,12 +155,12 @@ mod tests {
     impl PresenterMock {
         fn expect_calculate_deltas(
             &mut self,
-            last_snapshot: Snapshot,
-            current_snapshot: Snapshot,
+            visualized_snapshot: Snapshot,
+            simulation_snapshot: Snapshot,
             return_value: ViewModelDelta,
         ) {
             self.expect_calculate_deltas_and_return =
-                Some((last_snapshot, current_snapshot, return_value));
+                Some((visualized_snapshot, simulation_snapshot, return_value));
         }
     }
     impl Presenter for PresenterMock {
