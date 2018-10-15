@@ -64,3 +64,47 @@ impl Display for WebsocketClientError {
         write!(f, "{}", self.0)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use std::net::{Ipv4Addr, SocketAddrV4};
+    use std::thread;
+    use websocket::client::ClientBuilder;
+    use websocket::message::OwnedMessage;
+    use websocket::sync::Server;
+
+    #[test]
+    fn send_message_works() {
+        const RANDOM_PORT: u16 = 0;
+        const PAYLOAD: [u8; 6] = [1, 2, 3, 4, 5, 6];
+
+        let server = Server::bind(SocketAddrV4::new(Ipv4Addr::LOCALHOST, RANDOM_PORT)).unwrap();
+        let addr = server.local_addr().unwrap();
+
+        let server_thread = thread::spawn(move || {
+            let request = server.map(Result::ok).next().unwrap().unwrap();
+            let client = request.accept().unwrap();
+            let mut socket = WebsocketClient(client);
+
+            socket.send_message(&PAYLOAD).unwrap();
+        });
+
+        let client_thread = thread::spawn(move || {
+            let mut client = ClientBuilder::new(&format!("ws://{}", addr))
+                .unwrap()
+                .connect_insecure()
+                .unwrap();
+
+            let message = client.incoming_messages().next().unwrap().unwrap();
+
+            assert_eq!(
+                OwnedMessage::Binary(PAYLOAD.iter().map(|b| *b).collect()),
+                message
+            );
+        });
+
+        server_thread.join().unwrap();
+        client_thread.join().unwrap();
+    }
+}
