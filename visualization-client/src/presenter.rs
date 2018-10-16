@@ -149,6 +149,7 @@ mod tests {
         );
 
         ViewModelDelta {
+            created_objects: HashMap::new(),
             updated_objects,
             deleted_objects: Vec::new(),
         }

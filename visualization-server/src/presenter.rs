@@ -70,6 +70,7 @@ impl Presenter for DeltaPresenter {
 
         ViewModelDelta {
             updated_objects,
+            created_objects: Default::default(),
             deleted_objects,
         }
     }
@@ -206,6 +207,7 @@ mod tests {
         let delta_presenter = DeltaPresenter::default();
         let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
 
+        assert_eq!(0, delta.created_objects.len());
         assert_eq!(0, delta.updated_objects.len());
         assert_eq!(1, delta.deleted_objects.len());
         assert_eq!(42, delta.deleted_objects[0]);
@@ -221,6 +223,7 @@ mod tests {
         let delta_presenter = DeltaPresenter::default();
         let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
 
+        assert_eq!(0, delta.created_objects.len());
         assert_eq!(0, delta.updated_objects.len());
         assert_eq!(0, delta.deleted_objects.len());
     }
@@ -240,6 +243,7 @@ mod tests {
         let delta_presenter = DeltaPresenter::default();
         let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
 
+        assert_eq!(0, delta.created_objects.len());
         assert_eq!(1, delta.updated_objects.len());
         assert_eq!(0, delta.deleted_objects.len());
 
@@ -270,21 +274,23 @@ mod tests {
         let delta_presenter = DeltaPresenter::default();
         let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
 
-        assert_eq!(1, delta.updated_objects.len());
+        assert_eq!(1, delta.created_objects.len());
+        assert_eq!(0, delta.updated_objects.len());
         assert_eq!(0, delta.deleted_objects.len());
 
-        assert!(delta.updated_objects.get(&42).is_some());
+        assert!(delta.created_objects.get(&42).is_some());
 
-        let object_delta = delta.updated_objects.get(&42).unwrap();
-        let expected_object_delta = ObjectDescriptionDelta {
-            shape: Some(object.shape),
-            location: Some(object.position.location),
-            rotation: Some(object.position.rotation),
-            mobility: Some(object.mobility),
-            kind: Some(object.kind),
-            sensor: Some(object.sensor),
-        };
+        let object_delta = delta.created_objects.get(&42).unwrap();
 
-        assert_eq!(expected_object_delta, *object_delta);
+        let expected_object_description = ObjectBuilder::new()
+            .shape(object.shape)
+            .location(object.position.location.x, object.position.location.y)
+            .rotation(object.position.rotation)
+            .mobility(object.mobility)
+            .kind(object.kind)
+            .build()
+            .unwrap();
+
+        assert_eq!(expected_object_description, *object_delta);
     }
 }

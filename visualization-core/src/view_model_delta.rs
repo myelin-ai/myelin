@@ -5,6 +5,8 @@ use std::collections::HashMap;
 /// This step's object deltas
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ViewModelDelta {
+    /// Objects that have been added to the world
+    pub created_objects: HashMap<Id, ObjectDescription>,
     /// Deltas of the updated objects in the world
     pub updated_objects: HashMap<Id, ObjectDescriptionDelta>,
     /// Ids of objects that have been removed from the world
