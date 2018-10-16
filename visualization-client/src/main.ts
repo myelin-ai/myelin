@@ -13,6 +13,9 @@ Promise.all([
             .then((arrayBuffer) => {
                 inputHandler.on_message(new Uint8Array(arrayBuffer))
             })
+            .catch((error) => {
+                console.error('Failed to read websocket message blob', error)
+            })
     })
 }).catch((reason) => {
     console.error(reason)
