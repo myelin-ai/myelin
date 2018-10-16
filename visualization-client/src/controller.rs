@@ -72,6 +72,7 @@ mod tests {
         unimplemented!();
     }
 
+    #[ignore]
     #[test]
     fn propagates_empty_step() {
         let expected_objects = vec![];
@@ -79,6 +80,7 @@ mod tests {
         controller.step();
     }
 
+    #[ignore]
     #[test]
     fn propagates_step() {
         let expected_objects = vec![
