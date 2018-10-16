@@ -98,7 +98,7 @@ mod mock {
         calculate_deltas_was_called: RefCell<bool>,
     }
     impl PresenterMock {
-        fn expect_calculate_deltas(
+        pub(crate) fn expect_calculate_deltas(
             &mut self,
             visualized_snapshot: Snapshot,
             simulation_snapshot: Snapshot,

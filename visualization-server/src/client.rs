@@ -78,8 +78,9 @@ mod tests {
     use crate::presenter::PresenterMock;
     use myelin_environment::object::*;
     use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
-    use myelin_visualization_core::view_model_delta::ViewModelDelta;
+    use myelin_visualization_core::view_model_delta::{ObjectDescriptionDelta, ViewModelDelta};
     use std::cell::RefCell;
+    use std::collections::HashMap;
     use std::error::Error;
     use std::fmt::Display;
     use std::thread::panicking;
@@ -108,7 +109,8 @@ mod tests {
     #[test]
     fn pipeline_is_run() {
         let interval = Duration::from_millis(1000 / 30);
-        let presenter = Box::new(PresenterMock::default());
+        let mut presenter = Box::new(PresenterMock::default());
+        presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), delta());
         let serializer = Box::new(SerializerMock::default());
         let socket = Box::new(SocketMock::default());
         let connection = Connection {
@@ -161,6 +163,25 @@ mod tests {
                 .unwrap(),
         );
         expected_current_snapshot
+    }
+
+    fn delta() -> ViewModelDelta {
+        let mut updated_objects = HashMap::new();
+        updated_objects.insert(
+            12,
+            ObjectDescriptionDelta {
+                shape: None,
+                location: Some(Location { x: 12, y: 32 }),
+                rotation: None,
+                mobility: None,
+                kind: None,
+                sensor: None,
+            },
+        );
+        ViewModelDelta {
+            updated_objects,
+            deleted_objects: Vec::new(),
+        }
     }
 
     #[derive(Debug, Default)]
