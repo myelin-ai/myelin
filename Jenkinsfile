@@ -21,6 +21,12 @@ pipeline {
           }
         }
         stage('cargo doc') {
+          when {
+            anyOf {
+              branch 'master'
+              changeRequest()
+            }
+          }
           steps {
             sh 'cargo doc --no-deps'
           }
@@ -38,13 +44,14 @@ pipeline {
       }
     }
     stage('Style checks') {
+      when {
+        anyOf {
+          branch 'master'
+          changeRequest()
+        }
+      }
       parallel {
         stage('clippy') {
-          // To do: Don't merge this into master
-          // Remove it as soon as we get clippy running again
-          when {
-            branch 'master'
-          }
           steps {
             sh 'cargo clippy -- -Dwarnings'
           }
