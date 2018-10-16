@@ -24,3 +24,6 @@ threadpool = "1.0"
 spmc = "0.2"
 nameof = "0.1"
 uuid = "0.7"
+
+[dev-dependencies]
+maplit = "1.0"

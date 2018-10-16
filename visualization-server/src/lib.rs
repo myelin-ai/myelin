@@ -14,6 +14,10 @@ extern crate log;
 #[macro_use]
 extern crate nameof;
 
+#[cfg_attr(test, macro_use)]
+#[cfg(test)]
+extern crate maplit;
+
 mod connection;
 mod constant;
 mod controller;
