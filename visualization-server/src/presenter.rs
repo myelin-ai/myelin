@@ -272,10 +272,8 @@ mod tests {
         assert_eq!(
             ViewModelDelta {
                 created_objects: HashMap::new(),
-                updated_objects: {
-                    let mut objects = HashMap::new();
-                    objects.insert(42, expected_delta);
-                    objects
+                updated_objects: hashmap! {
+                    42 => expected_delta,
                 },
                 deleted_objects: Vec::new(),
             },
@@ -306,10 +304,8 @@ mod tests {
 
         assert_eq!(
             ViewModelDelta {
-                created_objects: {
-                    let mut objects = HashMap::new();
-                    objects.insert(42, expected_object_description);
-                    objects
+                created_objects: hashmap! {
+                    42 => expected_object_description,
                 },
                 updated_objects: HashMap::new(),
                 deleted_objects: Vec::new(),
