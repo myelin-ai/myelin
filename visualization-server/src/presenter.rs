@@ -169,6 +169,7 @@ mod tests {
     use super::*;
     use myelin_environment::object::{Kind, Mobility, ObjectDescription, Radians};
     use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+    use std::collections::HashMap;
 
     fn object_description() -> ObjectDescription {
         ObjectBuilder::new()
@@ -214,10 +215,14 @@ mod tests {
         let delta_presenter = DeltaPresenter::default();
         let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
 
-        assert_eq!(0, delta.created_objects.len());
-        assert_eq!(0, delta.updated_objects.len());
-        assert_eq!(1, delta.deleted_objects.len());
-        assert_eq!(42, delta.deleted_objects[0]);
+        assert_eq!(
+            ViewModelDelta {
+                created_objects: HashMap::new(),
+                updated_objects: HashMap::new(),
+                deleted_objects: vec![42],
+            },
+            delta
+        );
     }
 
     #[test]
@@ -230,9 +235,14 @@ mod tests {
         let delta_presenter = DeltaPresenter::default();
         let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
 
-        assert_eq!(0, delta.created_objects.len());
-        assert_eq!(0, delta.updated_objects.len());
-        assert_eq!(0, delta.deleted_objects.len());
+        assert_eq!(
+            ViewModelDelta {
+                created_objects: HashMap::new(),
+                updated_objects: HashMap::new(),
+                deleted_objects: Vec::new(),
+            },
+            delta
+        );
     }
 
     #[test]
@@ -250,14 +260,7 @@ mod tests {
         let delta_presenter = DeltaPresenter::default();
         let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
 
-        assert_eq!(0, delta.created_objects.len());
-        assert_eq!(1, delta.updated_objects.len());
-        assert_eq!(0, delta.deleted_objects.len());
-
-        assert!(delta.updated_objects.get(&42).is_some());
-
-        let object_delta = delta.updated_objects.get(&42).unwrap();
-        let expected_object_delta = ObjectDescriptionDelta {
+        let expected_delta = ObjectDescriptionDelta {
             shape: None,
             location: Some(object.position.location),
             rotation: None,
@@ -266,7 +269,18 @@ mod tests {
             sensor: None,
         };
 
-        assert_eq!(expected_object_delta, *object_delta);
+        assert_eq!(
+            ViewModelDelta {
+                created_objects: HashMap::new(),
+                updated_objects: {
+                    let mut objects = HashMap::new();
+                    objects.insert(42, expected_delta);
+                    objects
+                },
+                deleted_objects: Vec::new(),
+            },
+            delta
+        );
     }
 
     #[test]
@@ -281,14 +295,6 @@ mod tests {
         let delta_presenter = DeltaPresenter::default();
         let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
 
-        assert_eq!(1, delta.created_objects.len());
-        assert_eq!(0, delta.updated_objects.len());
-        assert_eq!(0, delta.deleted_objects.len());
-
-        assert!(delta.created_objects.get(&42).is_some());
-
-        let object_delta = delta.created_objects.get(&42).unwrap();
-
         let expected_object_description = ObjectBuilder::new()
             .shape(object.shape)
             .location(object.position.location.x, object.position.location.y)
@@ -298,6 +304,17 @@ mod tests {
             .build()
             .unwrap();
 
-        assert_eq!(expected_object_description, *object_delta);
+        assert_eq!(
+            ViewModelDelta {
+                created_objects: {
+                    let mut objects = HashMap::new();
+                    objects.insert(42, expected_object_description);
+                    objects
+                },
+                updated_objects: HashMap::new(),
+                deleted_objects: Vec::new(),
+            },
+            delta
+        );
     }
 }
