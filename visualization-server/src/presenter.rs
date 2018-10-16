@@ -136,7 +136,7 @@ mod mock {
                     )
                 }
             } else {
-                panic!("to_nphysics_rotation() was called unexpectedly")
+                panic!("calculate_deltas() was called unexpectedly")
             }
         }
     }
