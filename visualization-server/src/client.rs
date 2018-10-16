@@ -111,8 +111,12 @@ mod tests {
         let interval = Duration::from_millis(1000 / 30);
         let mut presenter = Box::new(PresenterMock::default());
         presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), delta());
-        let serializer = Box::new(SerializerMock::default());
-        let socket = Box::new(SocketMock::default());
+        let mut serializer = Box::new(SerializerMock::default());
+        let expected_payload = vec![0xFF, 0x01, 0x32];
+        serializer
+            .expect_serialize_view_model_delta_and_return(delta(), Ok(expected_payload.clone()));
+        let mut socket = Box::new(SocketMock::default());
+        socket.expect_send_message_and_return(expected_payload, Ok(()));
         let connection = Connection {
             id: Uuid::new_v4(),
             socket,
@@ -260,7 +264,7 @@ mod tests {
     }
 
     impl SocketMock {
-        fn expect_send_message(
+        fn expect_send_message_and_return(
             &mut self,
             payload: Vec<u8>,
             return_value: Result<(), SocketErrorMock>,
