@@ -21,6 +21,12 @@ pipeline {
           }
         }
         stage('cargo doc') {
+          when {
+            anyOf {
+              branch 'master'
+              changeRequest()
+            }
+          }
           steps {
             sh 'cargo doc --no-deps'
           }
@@ -38,6 +44,12 @@ pipeline {
       }
     }
     stage('Style checks') {
+      when {
+        anyOf {
+          branch 'master'
+          changeRequest()
+        }
+      }
       parallel {
         stage('clippy') {
           steps {
