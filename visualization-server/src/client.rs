@@ -28,32 +28,35 @@ impl ClientHandler {
             current_snapshot_fn,
         }
     }
+
+    fn step_and_return_current_snapshot(&mut self, last_snapshot: &Snapshot) -> Snapshot {
+        let current_snapshot = (self.current_snapshot_fn)();
+
+        let deltas = self
+            .presenter
+            .calculate_deltas(last_snapshot, &current_snapshot);
+
+        let serialized = self
+            .serializer
+            .serialize_view_model_delta(&deltas)
+            .expect("Failed to serialize delta");
+
+        self.connection
+            .socket
+            .send_message(&serialized)
+            .expect("Failed to send message to client");
+
+        std::thread::sleep(self.interval);
+
+        current_snapshot
+    }
 }
 
 impl Client for ClientHandler {
     fn run(&mut self) {
         let mut last_snapshot = Snapshot::new();
-
         loop {
-            let current_snapshot = (self.current_snapshot_fn)();
-
-            let deltas = self
-                .presenter
-                .calculate_deltas(&last_snapshot, &current_snapshot);
-
-            let serialized = self
-                .serializer
-                .serialize_view_model_delta(&deltas)
-                .expect("Failed to serialize delta");
-
-            self.connection
-                .socket
-                .send_message(&serialized)
-                .expect("Failed to send message to client");
-
-            std::thread::sleep(self.interval);
-
-            last_snapshot = current_snapshot;
+            last_snapshot = self.step_and_return_current_snapshot(&last_snapshot);
         }
     }
 }
@@ -118,7 +121,8 @@ mod tests {
             connection,
             current_snapshot_fn,
         );
-        client.run();
+        let last_snapshot = Snapshot::new();
+        let current_snapshot = client.step_and_return_current_snapshot(&last_snapshot);
     }
 
     #[derive(Debug, Default)]
