@@ -76,6 +76,7 @@ mod tests {
     use myelin_visualization_core::view_model_delta::ViewModelDelta;
     use std::cell::RefCell;
     use std::error::Error;
+    use std::thread::panicking;
     use uuid::Uuid;
 
     #[test]
@@ -122,7 +123,34 @@ mod tests {
             &self,
             view_model_delta: &ViewModelDelta,
         ) -> Result<Vec<u8>, Box<dyn Error>> {
-            unimplemented!()
+            *self.serialize_view_model_delta_was_called.borrow_mut() = true;
+
+            if let Some((ref expected_view_model_delta, ref return_value)) =
+                self.expect_serialize_view_model_delta_and_return
+            {
+                assert_eq!(
+                    *expected_view_model_delta, *view_model_delta,
+                    "serialize_view_model_delta() was called with {:?}, expected {:?}",
+                    view_model_delta, expected_view_model_delta,
+                );
+                return_value.clone()
+            } else {
+                panic!("serialize_view_model_delta() was called unexpectedly")
+            }
+        }
+    }
+
+    impl Drop for SerializerMock {
+        fn drop(&mut self) {
+            if panicking() {
+                return;
+            }
+            if self.expect_serialize_view_model_delta_and_return.is_some() {
+                assert!(
+                    *self.serialize_view_model_delta_was_called.borrow(),
+                    "serialize_view_model_delta() was not called, but expected"
+                )
+            }
         }
     }
 
