@@ -136,6 +136,64 @@ mod tests {
         assert_eq!(snapshot(), current_snapshot);
     }
 
+    #[should_panic]
+    #[test]
+    fn panics_on_serialization_error() {
+        let interval = Duration::from_millis(INTERVAL);
+        let mut presenter = Box::new(PresenterMock::default());
+        presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), delta());
+        let mut serializer = Box::new(SerializerMock::default());
+        let err = ErrorMock;
+        serializer.expect_serialize_view_model_delta_and_return(delta(), Err(err));
+        let socket = Box::new(SocketMock::default());
+        let connection = Connection {
+            id: Uuid::new_v4(),
+            socket,
+        };
+
+        let current_snapshot_fn = Box::new(|| snapshot());
+        let mut client = ClientHandler::with_interval(
+            interval,
+            presenter,
+            serializer,
+            connection,
+            current_snapshot_fn,
+        );
+        let last_snapshot = Snapshot::new();
+        let _current_snapshot = client.step_and_return_current_snapshot(&last_snapshot);
+    }
+
+    #[should_panic]
+    #[test]
+    fn panics_on_transmission_error() {
+        let interval = Duration::from_millis(INTERVAL);
+        let mut presenter = Box::new(PresenterMock::default());
+        presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), delta());
+        let mut serializer = Box::new(SerializerMock::default());
+        let expected_payload = vec![0xFF, 0x01, 0x32];
+        serializer
+            .expect_serialize_view_model_delta_and_return(delta(), Ok(expected_payload.clone()));
+        let mut socket = Box::new(SocketMock::default());
+        let err = SocketErrorMock;
+        socket.expect_send_message_and_return(expected_payload, Err(err));
+        let connection = Connection {
+            id: Uuid::new_v4(),
+            socket,
+        };
+
+        let current_snapshot_fn = Box::new(|| snapshot());
+        let mut client = ClientHandler::with_interval(
+            interval,
+            presenter,
+            serializer,
+            connection,
+            current_snapshot_fn,
+        );
+        let last_snapshot = Snapshot::new();
+        let current_snapshot = client.step_and_return_current_snapshot(&last_snapshot);
+        assert_eq!(snapshot(), current_snapshot);
+    }
+
     fn snapshot() -> Snapshot {
         let mut expected_current_snapshot = Snapshot::new();
         expected_current_snapshot.insert(
@@ -322,7 +380,7 @@ mod tests {
 
     impl SocketError for SocketErrorMock {
         fn is_broken_pipe(&self) -> bool {
-            false
+            true
         }
     }
 
