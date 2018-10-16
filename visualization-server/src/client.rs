@@ -76,6 +76,8 @@ mod tests {
     use super::*;
     use crate::connection::{Socket, SocketError};
     use crate::presenter::PresenterMock;
+    use myelin_environment::object::*;
+    use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
     use myelin_visualization_core::view_model_delta::ViewModelDelta;
     use std::cell::RefCell;
     use std::error::Error;
@@ -113,7 +115,8 @@ mod tests {
             id: Uuid::new_v4(),
             socket,
         };
-        let current_snapshot_fn = Box::new(|| Snapshot::new());
+
+        let current_snapshot_fn = Box::new(|| snapshot());
         let mut client = ClientHandler::with_interval(
             interval,
             presenter,
@@ -123,6 +126,41 @@ mod tests {
         );
         let last_snapshot = Snapshot::new();
         let current_snapshot = client.step_and_return_current_snapshot(&last_snapshot);
+        assert_eq!(snapshot(), current_snapshot);
+    }
+
+    fn snapshot() -> Snapshot {
+        let mut expected_current_snapshot = Snapshot::new();
+        expected_current_snapshot.insert(
+            12,
+            ObjectBuilder::new()
+                .shape(
+                    PolygonBuilder::new()
+                        .vertex(-5, -5)
+                        .vertex(5, -5)
+                        .vertex(5, 5)
+                        .vertex(-5, 5)
+                        .build()
+                        .unwrap(),
+                )
+                .location(50, 50)
+                .rotation(Radians::new(1.0).unwrap())
+                .sensor(Sensor {
+                    shape: PolygonBuilder::new()
+                        .vertex(-2, -2)
+                        .vertex(2, -2)
+                        .vertex(2, 2)
+                        .vertex(-2, 2)
+                        .build()
+                        .unwrap(),
+                    position: Position::default(),
+                })
+                .mobility(Mobility::Movable(Velocity { x: 3, y: -4 }))
+                .kind(Kind::Plant)
+                .build()
+                .unwrap(),
+        );
+        expected_current_snapshot
     }
 
     #[derive(Debug, Default)]
