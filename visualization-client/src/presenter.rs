@@ -165,6 +165,7 @@ mod tests {
         presenter.present_objects(&objects);
     }
 
+    #[ignore]
     #[test]
     fn converts_to_global_object_with_no_orientation() {
         let object_description = [view_model_delta(Radians::default())];
@@ -186,6 +187,7 @@ mod tests {
         presenter.present_objects(&object_description);
     }
 
+    #[ignore]
     #[test]
     fn converts_to_global_object_with_pi_orientation() {
         let object_description = [view_model_delta(Radians::new(PI).unwrap())];
@@ -207,6 +209,7 @@ mod tests {
         presenter.present_objects(&object_description);
     }
 
+    #[ignore]
     #[test]
     fn converts_to_global_object_with_arbitrary_orientation() {
         let object_description = [view_model_delta(Radians::new(3.0).unwrap())];
