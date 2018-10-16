@@ -81,7 +81,7 @@ mod tests {
     use uuid::Uuid;
 
     #[test]
-    fn assembles_stuff() {
+    fn can_be_constructed() {
         let interval = Duration::from_millis(1000 / 30);
         let presenter = Box::new(PresenterMock::default());
         let serializer = Box::new(SerializerMock::default());
@@ -91,13 +91,34 @@ mod tests {
             socket,
         };
         let current_snapshot_fn = Box::new(|| Snapshot::new());
-        let client = ClientHandler::with_interval(
+        let _client = ClientHandler::with_interval(
             interval,
             presenter,
             serializer,
             connection,
             current_snapshot_fn,
         );
+    }
+
+    #[test]
+    fn pipeline_is_run() {
+        let interval = Duration::from_millis(1000 / 30);
+        let presenter = Box::new(PresenterMock::default());
+        let serializer = Box::new(SerializerMock::default());
+        let socket = Box::new(SocketMock::default());
+        let connection = Connection {
+            id: Uuid::new_v4(),
+            socket,
+        };
+        let current_snapshot_fn = Box::new(|| Snapshot::new());
+        let mut client = ClientHandler::with_interval(
+            interval,
+            presenter,
+            serializer,
+            connection,
+            current_snapshot_fn,
+        );
+        client.run();
     }
 
     #[derive(Debug, Default)]
