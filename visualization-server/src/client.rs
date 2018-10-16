@@ -159,6 +159,7 @@ mod tests {
 
     #[derive(Debug, Clone)]
     struct ErrorMock;
+
     impl Display for ErrorMock {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             write!(f, "")
@@ -169,7 +170,7 @@ mod tests {
 
     #[derive(Debug, Default)]
     struct SocketMock {
-        expect_send_message_and_return: Option<(Vec<u8>, Result<(), Box<dyn SocketError>>)>,
+        expect_send_message_and_return: Option<(Vec<u8>, Result<(), SocketErrorMock>)>,
 
         send_message_was_called: RefCell<bool>,
     }
@@ -178,14 +179,63 @@ mod tests {
         fn expect_send_message(
             &mut self,
             payload: Vec<u8>,
-            return_value: Result<(), Box<dyn SocketError>>,
+            return_value: Result<(), SocketErrorMock>,
         ) {
+            self.expect_send_message_and_return = Some((payload, return_value));
         }
     }
 
     impl Socket for SocketMock {
         fn send_message(&mut self, payload: &[u8]) -> Result<(), Box<dyn SocketError>> {
-            unimplemented!()
+            *self.send_message_was_called.borrow_mut() = true;
+
+            if let Some((ref expected_payload, ref return_value)) =
+                self.expect_send_message_and_return
+            {
+                assert_eq!(
+                    *expected_payload,
+                    payload.to_vec(),
+                    "send_message() was called with {:?}, expected {:?}",
+                    payload,
+                    expected_payload,
+                );
+                return_value
+                    .clone()
+                    .map_err(|mock| Box::new(mock) as Box<dyn SocketError>)
+            } else {
+                panic!("send_message() was called unexpectedly")
+            }
         }
     }
+
+    impl Drop for SocketMock {
+        fn drop(&mut self) {
+            if panicking() {
+                return;
+            }
+            if self.expect_send_message_and_return.is_some() {
+                assert!(
+                    *self.send_message_was_called.borrow(),
+                    "send_message() was not called, but expected"
+                )
+            }
+        }
+    }
+
+    #[derive(Debug, Clone)]
+    struct SocketErrorMock;
+
+    impl Display for SocketErrorMock {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "")
+        }
+    }
+
+    impl SocketError for SocketErrorMock {
+        fn is_broken_pipe(&self) -> bool {
+            false
+        }
+    }
+
+    impl Error for SocketErrorMock {}
 }
