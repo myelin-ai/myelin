@@ -85,10 +85,11 @@ mod tests {
     use std::fmt::Display;
     use std::thread::panicking;
     use uuid::Uuid;
+    const INTERVAL: u64 = 1000 / 30;
 
     #[test]
     fn can_be_constructed() {
-        let interval = Duration::from_millis(1000 / 30);
+        let interval = Duration::from_millis(INTERVAL);
         let presenter = Box::new(PresenterMock::default());
         let serializer = Box::new(SerializerMock::default());
         let socket = Box::new(SocketMock::default());
@@ -108,7 +109,7 @@ mod tests {
 
     #[test]
     fn pipeline_is_run() {
-        let interval = Duration::from_millis(1000 / 30);
+        let interval = Duration::from_millis(INTERVAL);
         let mut presenter = Box::new(PresenterMock::default());
         presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), delta());
         let mut serializer = Box::new(SerializerMock::default());
