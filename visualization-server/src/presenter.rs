@@ -47,8 +47,15 @@ impl Presenter for DeltaPresenter {
             .map(|&id| id)
             .collect();
 
+        let created_objects = simulation_snapshot
+            .iter()
+            .filter(|(id, _)| !visualized_snapshot.contains_key(id))
+            .map(|(&id, objects)| (id, objects.clone()))
+            .collect();
+
         let updated_objects = simulation_snapshot
             .iter()
+            .filter(|(id, _)| visualized_snapshot.contains_key(id))
             .map(|(&id, object_description)| {
                 (
                     id,
@@ -70,7 +77,7 @@ impl Presenter for DeltaPresenter {
 
         ViewModelDelta {
             updated_objects,
-            created_objects: Default::default(),
+            created_objects,
             deleted_objects,
         }
     }
