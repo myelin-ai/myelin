@@ -63,7 +63,7 @@ impl Client for ClientHandler {
 
 impl Debug for ClientHandler {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("ClientImpl")
+        f.debug_struct(name_of_type!(ClientHandler))
             .field("presenter", &self.presenter)
             .field("serializer", &self.serializer)
             .field("connection", &self.connection)
