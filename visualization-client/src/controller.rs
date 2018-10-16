@@ -135,15 +135,6 @@ mod tests {
         }
     }
 
-    #[ignore]
-    #[test]
-    fn propagates_empty_step() {
-        let expected_objects = vec![];
-        let mut controller = mock_controller(expected_objects);
-        controller.step();
-    }
-
-    #[ignore]
     #[test]
     fn deserializes_and_calls_presenter() {
         let data = vec![100, 124, 135, 253, 234, 122];
