@@ -1,4 +1,4 @@
-#![feature(duration_float)]
+#![feature(duration_float, specialization)]
 #![deny(
     rust_2018_idioms,
     missing_debug_implementations,

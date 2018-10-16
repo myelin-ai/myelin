@@ -76,6 +76,7 @@ mod tests {
     use myelin_visualization_core::view_model_delta::ViewModelDelta;
     use std::cell::RefCell;
     use std::error::Error;
+    use std::fmt::Display;
     use std::thread::panicking;
     use uuid::Uuid;
 
@@ -102,7 +103,7 @@ mod tests {
     #[derive(Debug, Default)]
     struct SerializerMock {
         expect_serialize_view_model_delta_and_return:
-            Option<(ViewModelDelta, Result<Vec<u8>, Box<dyn Error>>)>,
+            Option<(ViewModelDelta, Result<Vec<u8>, ErrorMock>)>,
 
         serialize_view_model_delta_was_called: RefCell<bool>,
     }
@@ -111,7 +112,7 @@ mod tests {
         fn expect_serialize_view_model_delta_and_return(
             &mut self,
             view_model_delta: ViewModelDelta,
-            return_value: Result<Vec<u8>, Box<dyn Error>>,
+            return_value: Result<Vec<u8>, ErrorMock>,
         ) {
             self.expect_serialize_view_model_delta_and_return =
                 Some((view_model_delta, return_value));
@@ -133,7 +134,9 @@ mod tests {
                     "serialize_view_model_delta() was called with {:?}, expected {:?}",
                     view_model_delta, expected_view_model_delta,
                 );
-                return_value.clone()
+                return_value
+                    .clone()
+                    .map_err(|mock| Box::new(mock) as Box<dyn Error>)
             } else {
                 panic!("serialize_view_model_delta() was called unexpectedly")
             }
@@ -154,8 +157,31 @@ mod tests {
         }
     }
 
+    #[derive(Debug, Clone)]
+    struct ErrorMock;
+    impl Display for ErrorMock {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "")
+        }
+    }
+
+    impl Error for ErrorMock {}
+
     #[derive(Debug, Default)]
-    struct SocketMock {}
+    struct SocketMock {
+        expect_send_message_and_return: Option<(Vec<u8>, Result<(), Box<dyn SocketError>>)>,
+
+        send_message_was_called: RefCell<bool>,
+    }
+
+    impl SocketMock {
+        fn expect_send_message(
+            &mut self,
+            payload: Vec<u8>,
+            return_value: Result<(), Box<dyn SocketError>>,
+        ) {
+        }
+    }
 
     impl Socket for SocketMock {
         fn send_message(&mut self, payload: &[u8]) -> Result<(), Box<dyn SocketError>> {
