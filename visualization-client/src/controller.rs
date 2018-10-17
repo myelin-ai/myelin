@@ -139,12 +139,10 @@ mod tests {
     fn deserializes_and_calls_presenter() {
         let data = vec![100, 124, 135, 253, 234, 122];
         let view_model_delta = ViewModelDelta {
-            updated_objects: {
-                let mut object_deltas = HashMap::new();
-                object_deltas.insert(123, object_description_delta());
-                object_deltas
+            updated_objects: hashmap! {
+                123 => object_description_delta(),
             },
-            deleted_objects: Vec::new(),
+            ..Default::default()
         };
 
         let view_model_deserializer =
