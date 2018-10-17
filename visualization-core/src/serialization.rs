@@ -81,6 +81,7 @@ mod test {
         );
 
         let view_model_delta = ViewModelDelta {
+            created_objects: HashMap::new(),
             updated_objects,
             deleted_objects: Vec::new(),
         };
@@ -99,6 +100,7 @@ mod test {
         let expected: Vec<u8> = r#"{"objects":[]}"#.into();
 
         let view_model_delta = ViewModelDelta {
+            created_objects: HashMap::new(),
             updated_objects: HashMap::new(),
             deleted_objects: Vec::new(),
         };
