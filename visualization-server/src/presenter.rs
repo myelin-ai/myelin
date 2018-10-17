@@ -1,5 +1,6 @@
 use crate::controller::{Presenter, Snapshot};
 use myelin_environment::object::ObjectDescription;
+use myelin_environment::Id;
 use myelin_visualization_core::view_model_delta::{
     ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
 };
@@ -23,15 +24,7 @@ impl Presenter for DeltaPresenter {
         let mut deltas: HashMap<_, _> = simulation_snapshot
             .iter()
             .map(|(&id, object)| {
-                let delta = if visualized_snapshot.contains_key(&id) {
-                    ObjectDelta::Updated(get_object_description_delta(
-                        visualized_snapshot.get(&id),
-                        object.clone(),
-                    ))
-                } else {
-                    ObjectDelta::Created(object.clone())
-                };
-
+                let delta = map_to_updated_or_created(visualized_snapshot, id, object);
                 (id, delta)
             })
             .filter(|(_, delta)| match delta {
@@ -40,15 +33,35 @@ impl Presenter for DeltaPresenter {
             })
             .collect();
 
-        deltas.extend(
-            visualized_snapshot
-                .keys()
-                .filter(|id| !simulation_snapshot.contains_key(id))
-                .map(|&id| (id, ObjectDelta::Deleted)),
-        );
+        deltas.extend(deleted_objects(visualized_snapshot, simulation_snapshot));
 
         deltas
     }
+}
+
+fn map_to_updated_or_created(
+    visualized_snapshot: &Snapshot,
+    id: Id,
+    object: &ObjectDescription,
+) -> ObjectDelta {
+    if visualized_snapshot.contains_key(&id) {
+        ObjectDelta::Updated(get_object_description_delta(
+            visualized_snapshot.get(&id),
+            object.clone(),
+        ))
+    } else {
+        ObjectDelta::Created(object.clone())
+    }
+}
+
+fn deleted_objects<'a>(
+    visualized_snapshot: &'a Snapshot,
+    simulation_snapshot: &'a Snapshot,
+) -> impl Iterator<Item = (Id, ObjectDelta)> + 'a {
+    visualized_snapshot
+        .keys()
+        .filter(move |id| !simulation_snapshot.contains_key(id))
+        .map(|&id| (id, ObjectDelta::Deleted))
 }
 
 fn get_object_description_delta(
