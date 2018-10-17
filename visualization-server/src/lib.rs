@@ -18,6 +18,7 @@ extern crate nameof;
 #[cfg(test)]
 extern crate maplit;
 
+mod client;
 mod connection;
 mod constant;
 mod controller;

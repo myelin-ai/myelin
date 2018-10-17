@@ -29,8 +29,8 @@ pub(crate) trait ConnectionAccepter: Debug + Send {
 
 pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send;
 
-pub(crate) trait Client: Debug + Send {
-    fn run(&mut self, current_snapshot_fn: Box<CurrentSnapshotFn>);
+pub(crate) trait Client: Debug {
+    fn run(&mut self);
 }
 
 pub(crate) type SimulationFactory = dyn Fn() -> Box<dyn Simulation>;
