@@ -3,6 +3,7 @@ use myelin_environment::object::ObjectDescription;
 use myelin_visualization_core::view_model_delta::{
     ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
 };
+use std::collections::HashMap;
 
 #[derive(Debug, Default)]
 pub(crate) struct DeltaPresenter;
@@ -43,45 +44,41 @@ impl Presenter for DeltaPresenter {
         visualized_snapshot: &Snapshot,
         simulation_snapshot: &Snapshot,
     ) -> ViewModelDelta {
-        let deleted_objects = visualized_snapshot
-            .keys()
-            .filter(|id| !simulation_snapshot.contains_key(id))
-            .map(|&id| id)
-            .collect();
-
-        let created_objects = simulation_snapshot
+        let mut deltas: HashMap<_, _> = simulation_snapshot
             .iter()
-            .filter(|(id, _)| !visualized_snapshot.contains_key(id))
-            .map(|(&id, objects)| (id, objects.clone()))
-            .collect();
-
-        let updated_objects = simulation_snapshot
-            .iter()
-            .filter(|(id, _)| visualized_snapshot.contains_key(id))
-            .map(|(&id, object_description)| {
-                (
-                    id,
-                    get_object_description_delta(
+            .map(|(&id, object)| {
+                let delta = if visualized_snapshot.contains_key(&id) {
+                    ObjectDelta::Updated(get_object_description_delta(
                         visualized_snapshot.get(&id),
-                        object_description.clone(),
-                    ),
-                )
+                        object.clone(),
+                    ))
+                } else {
+                    ObjectDelta::Created(object.clone())
+                };
+
+                (id, delta)
             })
-            .filter(|(_, object_description)| {
-                object_description.shape.is_some()
-                    || object_description.location.is_some()
-                    || object_description.rotation.is_some()
-                    || object_description.mobility.is_some()
-                    || object_description.kind.is_some()
-                    || object_description.sensor.is_some()
+            .filter(|(_, delta)| match delta {
+                ObjectDelta::Created(_) | ObjectDelta::Deleted => true,
+                ObjectDelta::Updated(object_description) => {
+                    object_description.shape.is_some()
+                        || object_description.location.is_some()
+                        || object_description.rotation.is_some()
+                        || object_description.mobility.is_some()
+                        || object_description.kind.is_some()
+                        || object_description.sensor.is_some()
+                }
             })
             .collect();
 
-        ViewModelDelta {
-            updated_objects,
-            created_objects,
-            deleted_objects,
-        }
+        deltas.extend(
+            visualized_snapshot
+                .keys()
+                .filter(|id| !simulation_snapshot.contains_key(id))
+                .map(|&id| (id, ObjectDelta::Deleted)),
+        );
+
+        deltas
     }
 }
 
