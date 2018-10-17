@@ -3,7 +3,7 @@ use myelin_environment::Id;
 use std::collections::HashMap;
 
 /// This step's object deltas
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ViewModelDelta {
     /// Objects that have been added to the world
     pub created_objects: HashMap<Id, ObjectDescription>,
