@@ -75,7 +75,7 @@ impl Presenter for DeltaPresenter {
     }
 }
 
-fn delta_contains_changes(delta: ObjectDescriptionDelta) -> bool {
+fn delta_contains_changes(delta: &ObjectDescriptionDelta) -> bool {
     delta.shape.is_some()
         || delta.location.is_some()
         || delta.rotation.is_some()
