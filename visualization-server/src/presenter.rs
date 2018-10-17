@@ -8,33 +8,9 @@ use std::collections::HashMap;
 #[derive(Debug, Default)]
 pub(crate) struct DeltaPresenter;
 
-fn get_object_description_delta(
-    first: Option<&ObjectDescription>,
-    second: ObjectDescription,
-) -> ObjectDescriptionDelta {
-    ObjectDescriptionDelta {
-        shape: get_delta(first.map(|o| &o.shape), second.shape),
-        location: get_delta(
-            first.map(|o| &o.position.location),
-            second.position.location,
-        ),
-        rotation: get_delta(
-            first.map(|o| &o.position.rotation),
-            second.position.rotation,
-        ),
-        mobility: get_delta(first.map(|o| &o.mobility), second.mobility),
-        kind: get_delta(first.map(|o| &o.kind), second.kind),
-        sensor: get_delta(first.map(|o| &o.sensor), second.sensor),
-    }
-}
-
-fn get_delta<T>(first_option: Option<&T>, second: T) -> Option<T>
-where
-    T: PartialEq,
-{
-    match first_option {
-        Some(first) if *first == second => None,
-        _ => Some(second),
+impl DeltaPresenter {
+    pub(crate) fn new() -> Self {
+        Self::default()
     }
 }
 
@@ -75,6 +51,36 @@ impl Presenter for DeltaPresenter {
     }
 }
 
+fn get_object_description_delta(
+    first: Option<&ObjectDescription>,
+    second: ObjectDescription,
+) -> ObjectDescriptionDelta {
+    ObjectDescriptionDelta {
+        shape: get_delta(first.map(|o| &o.shape), second.shape),
+        location: get_delta(
+            first.map(|o| &o.position.location),
+            second.position.location,
+        ),
+        rotation: get_delta(
+            first.map(|o| &o.position.rotation),
+            second.position.rotation,
+        ),
+        mobility: get_delta(first.map(|o| &o.mobility), second.mobility),
+        kind: get_delta(first.map(|o| &o.kind), second.kind),
+        sensor: get_delta(first.map(|o| &o.sensor), second.sensor),
+    }
+}
+
+fn get_delta<T>(first_option: Option<&T>, second: T) -> Option<T>
+where
+    T: PartialEq,
+{
+    match first_option {
+        Some(first) if *first == second => None,
+        _ => Some(second),
+    }
+}
+
 fn delta_contains_changes(delta: &ObjectDescriptionDelta) -> bool {
     delta.shape.is_some()
         || delta.location.is_some()
@@ -82,12 +88,6 @@ fn delta_contains_changes(delta: &ObjectDescriptionDelta) -> bool {
         || delta.mobility.is_some()
         || delta.kind.is_some()
         || delta.sensor.is_some()
-}
-
-impl DeltaPresenter {
-    pub(crate) fn new() -> Self {
-        Self::default()
-    }
 }
 
 #[cfg(test)]
