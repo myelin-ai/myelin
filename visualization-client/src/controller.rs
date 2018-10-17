@@ -1,5 +1,4 @@
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
-use std::error::Error;
 use std::fmt;
 
 pub(crate) trait Controller: fmt::Debug {
