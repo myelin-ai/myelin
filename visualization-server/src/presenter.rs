@@ -170,7 +170,6 @@ mod tests {
     use super::*;
     use myelin_environment::object::{Kind, Mobility, ObjectDescription, Radians};
     use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
-    use std::collections::HashMap;
 
     fn object_description() -> ObjectDescription {
         ObjectBuilder::new()
