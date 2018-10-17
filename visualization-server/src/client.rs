@@ -229,20 +229,20 @@ mod tests {
     }
 
     fn delta() -> ViewModelDelta {
-        let mut updated_objects = HashMap::new();
-        updated_objects.insert(
-            12,
-            ObjectDescriptionDelta {
-                shape: None,
-                location: Some(Location { x: 12, y: 32 }),
-                rotation: None,
-                mobility: None,
-                kind: None,
-                sensor: None,
-            },
-        );
+        let updated_object = ObjectDescriptionDelta {
+            shape: None,
+            location: Some(Location { x: 12, y: 32 }),
+            rotation: None,
+            mobility: None,
+            kind: None,
+            sensor: None,
+        };
+
         ViewModelDelta {
-            updated_objects,
+            created_objects: HashMap::new(),
+            updated_objects: hashmap! {
+                12 => updated_object,
+            },
             deleted_objects: Vec::new(),
         }
     }
