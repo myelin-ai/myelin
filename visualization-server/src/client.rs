@@ -78,7 +78,9 @@ mod tests {
     use crate::presenter::PresenterMock;
     use myelin_environment::object::*;
     use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
-    use myelin_visualization_core::view_model_delta::{ObjectDescriptionDelta, ViewModelDelta};
+    use myelin_visualization_core::view_model_delta::{
+        ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
+    };
     use std::cell::RefCell;
     use std::collections::HashMap;
     use std::error::Error;
@@ -238,12 +240,8 @@ mod tests {
             sensor: None,
         };
 
-        ViewModelDelta {
-            created_objects: HashMap::new(),
-            updated_objects: hashmap! {
-                12 => updated_object,
-            },
-            deleted_objects: Vec::new(),
+        hashmap! {
+            12 => ObjectDelta::Updated(updated_object)
         }
     }
 

@@ -1,6 +1,8 @@
 use crate::controller::{Presenter, Snapshot};
 use myelin_environment::object::ObjectDescription;
-use myelin_visualization_core::view_model_delta::{ObjectDescriptionDelta, ViewModelDelta};
+use myelin_visualization_core::view_model_delta::{
+    ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
+};
 
 #[derive(Debug, Default)]
 pub(crate) struct DeltaPresenter;
@@ -216,10 +218,8 @@ mod tests {
         let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
 
         assert_eq!(
-            ViewModelDelta {
-                created_objects: HashMap::new(),
-                updated_objects: HashMap::new(),
-                deleted_objects: vec![42],
+            hashmap! {
+                42 => ObjectDelta::Deleted,
             },
             delta
         );
@@ -235,14 +235,7 @@ mod tests {
         let delta_presenter = DeltaPresenter::default();
         let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
 
-        assert_eq!(
-            ViewModelDelta {
-                created_objects: HashMap::new(),
-                updated_objects: HashMap::new(),
-                deleted_objects: Vec::new(),
-            },
-            delta
-        );
+        assert_eq!(ViewModelDelta::new(), delta);
     }
 
     #[test]
@@ -270,12 +263,8 @@ mod tests {
         };
 
         assert_eq!(
-            ViewModelDelta {
-                created_objects: HashMap::new(),
-                updated_objects: hashmap! {
-                    42 => expected_delta,
-                },
-                deleted_objects: Vec::new(),
+            hashmap! {
+                42 => ObjectDelta::Updated(expected_delta),
             },
             delta
         );
@@ -303,12 +292,8 @@ mod tests {
             .unwrap();
 
         assert_eq!(
-            ViewModelDelta {
-                created_objects: hashmap! {
-                    42 => expected_object_description,
-                },
-                updated_objects: HashMap::new(),
-                deleted_objects: Vec::new(),
+            hashmap! {
+                42 => ObjectDelta::Created(expected_object_description)
             },
             delta
         );
