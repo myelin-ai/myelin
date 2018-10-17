@@ -60,14 +60,7 @@ impl Presenter for DeltaPresenter {
             })
             .filter(|(_, delta)| match delta {
                 ObjectDelta::Created(_) | ObjectDelta::Deleted => true,
-                ObjectDelta::Updated(object_description) => {
-                    object_description.shape.is_some()
-                        || object_description.location.is_some()
-                        || object_description.rotation.is_some()
-                        || object_description.mobility.is_some()
-                        || object_description.kind.is_some()
-                        || object_description.sensor.is_some()
-                }
+                ObjectDelta::Updated(delta) => delta_contains_changes(delta),
             })
             .collect();
 
@@ -80,6 +73,15 @@ impl Presenter for DeltaPresenter {
 
         deltas
     }
+}
+
+fn delta_contains_changes(delta: ObjectDescriptionDelta) -> bool {
+    delta.shape.is_some()
+        || delta.location.is_some()
+        || delta.rotation.is_some()
+        || delta.mobility.is_some()
+        || delta.kind.is_some()
+        || delta.sensor.is_some()
 }
 
 impl DeltaPresenter {
