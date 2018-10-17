@@ -8,6 +8,10 @@
     clippy::doc_markdown
 )]
 
+#[cfg_attr(test, macro_use)]
+#[cfg(test)]
+extern crate maplit;
+
 pub mod bootstrapper;
 mod controller;
 pub mod input_handler;

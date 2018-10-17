@@ -34,3 +34,5 @@ features = [
     "CssStyleDeclaration",
 ]
 
+[dev-dependencies]
+maplit = "1.0"
