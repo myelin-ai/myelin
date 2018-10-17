@@ -1,8 +1,14 @@
 use crate::controller::Presenter;
 use crate::view_model::{self, ViewModel};
 use myelin_environment::object as business_object;
+use myelin_environment::Id;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
+use std::collections::HashMap;
 use std::fmt;
+
+mod delta_applier;
+
+pub(crate) type Snapshot = HashMap<Id, business_object::ObjectDescription>;
 
 pub(crate) trait View: fmt::Debug {
     fn draw_objects(&self, view_model: &ViewModel);
