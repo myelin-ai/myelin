@@ -98,7 +98,7 @@ mod mock {
         calculate_deltas_was_called: RefCell<bool>,
     }
     impl PresenterMock {
-        fn expect_calculate_deltas(
+        pub(crate) fn expect_calculate_deltas(
             &mut self,
             visualized_snapshot: Snapshot,
             simulation_snapshot: Snapshot,
@@ -136,7 +136,7 @@ mod mock {
                     )
                 }
             } else {
-                panic!("to_nphysics_rotation() was called unexpectedly")
+                panic!("calculate_deltas() was called unexpectedly")
             }
         }
     }
