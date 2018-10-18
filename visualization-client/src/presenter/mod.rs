@@ -84,7 +84,7 @@ mod tests {
     use crate::view_model::{self, ViewModel};
     use myelin_environment::object::{Kind, Location, Mobility, Position, Radians};
     use myelin_environment::object_builder::PolygonBuilder;
-    use myelin_visualization_core::view_model_delta::ObjectDescriptionDelta;
+    use myelin_visualization_core::view_model_delta::{ObjectDelta, ObjectDescriptionDelta};
     use std::cell::RefCell;
     use std::collections::HashMap;
     use std::f64::consts::PI;
@@ -125,10 +125,8 @@ mod tests {
     }
 
     fn view_model_delta(rotation: Radians) -> ViewModelDelta {
-        let mut updated_objects = HashMap::new();
-        updated_objects.insert(
-            42,
-            ObjectDescriptionDelta {
+        hashmap! {
+            42 => ObjectDelta::Updated(ObjectDescriptionDelta {
                 shape: Some(
                     PolygonBuilder::new()
                         .vertex(-10, -10)
@@ -143,13 +141,7 @@ mod tests {
                 mobility: Some(Mobility::Immovable),
                 kind: Some(Kind::Plant),
                 sensor: None,
-            },
-        );
-
-        ViewModelDelta {
-            created_objects: HashMap::new(),
-            updated_objects,
-            deleted_objects: Vec::new(),
+            }),
         }
     }
 
