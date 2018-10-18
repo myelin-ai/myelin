@@ -223,12 +223,12 @@ mod test {
     fn apply_delta_handles_rotation_update() {
         test_apply_delta_handles_update(
             ObjectDescriptionDelta {
-                rotation: Some(Radians::new(-PI).unwrap()),
+                rotation: Some(Radians::new(PI).unwrap()),
                 ..Default::default()
             },
             {
                 let mut object_description = object_description();
-                object_description.position.rotation = Radians::new(-PI).unwrap();
+                object_description.position.rotation = Radians::new(PI).unwrap();
                 object_description
             },
         );
