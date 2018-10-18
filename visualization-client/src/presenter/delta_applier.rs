@@ -1,6 +1,6 @@
 use super::Snapshot;
 use myelin_environment::Id;
-use myelin_visualization_core::view_model_delta::ViewModelDelta;
+use myelin_visualization_core::view_model_delta::{ObjectDelta, ViewModelDelta};
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
 use std::marker::PhantomData;
@@ -95,11 +95,8 @@ mod test {
         delta_applier
             .apply_delta(
                 &mut snapshot,
-                ViewModelDelta {
-                    created_objects: hashmap! {
-                        12 => object_description(),
-                    },
-                    ..Default::default()
+                hashmap! {
+                    12 => ObjectDelta::Created(object_description())
                 },
             )
             .unwrap();
@@ -119,9 +116,8 @@ mod test {
         delta_applier
             .apply_delta(
                 &mut snapshot,
-                ViewModelDelta {
-                    deleted_objects: vec![25],
-                    ..Default::default()
+                hashmap! {
+                    25 => ObjectDelta::Deleted,
                 },
             )
             .unwrap();

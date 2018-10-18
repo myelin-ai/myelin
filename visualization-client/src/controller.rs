@@ -41,7 +41,7 @@ mod tests {
     use super::*;
     use myelin_environment::object::*;
     use myelin_environment::object_builder::PolygonBuilder;
-    use myelin_visualization_core::view_model_delta::ObjectDescriptionDelta;
+    use myelin_visualization_core::view_model_delta::{ObjectDelta, ObjectDescriptionDelta};
     use std::cell::RefCell;
     use std::collections::HashMap;
     use std::error::Error;
@@ -138,11 +138,8 @@ mod tests {
     #[test]
     fn deserializes_and_calls_presenter() {
         let data = vec![100, 124, 135, 253, 234, 122];
-        let view_model_delta = ViewModelDelta {
-            updated_objects: hashmap! {
-                123 => object_description_delta(),
-            },
-            ..Default::default()
+        let view_model_delta = hashmap! {
+            123 => ObjectDelta::Updated(object_description_delta())
         };
 
         let view_model_deserializer =
