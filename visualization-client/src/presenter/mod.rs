@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use std::fmt;
 
 mod delta_applier;
+mod global_polygon_translator;
 
 pub(crate) type Snapshot = HashMap<Id, business_object::ObjectDescription>;
 
@@ -23,43 +24,6 @@ pub(crate) struct CanvasPresenter {
 impl Presenter for CanvasPresenter {
     fn present_delta(&mut self, delta: ViewModelDelta) {
         unimplemented!();
-    }
-}
-
-fn to_global_object(_object: &ViewModelDelta) -> view_model::Object {
-    /*
-    view_model::Object {
-        shape: view_model::Polygon {
-            vertices: object
-                .shape
-                .vertices
-                .iter()
-                .map(|vertex| to_global_rotated_vertex(vertex, object))
-                .collect(),
-        },
-        kind: map_kind(object.kind),
-    }*/
-    unimplemented!()
-}
-
-fn to_global_rotated_vertex(
-    vertex: &business_object::Vertex,
-    object: &business_object::ObjectDescription,
-) -> view_model::Vertex {
-    // See https://en.wikipedia.org/wiki/Rotation_matrix
-    let center_x = f64::from(object.position.location.x);
-    let center_y = f64::from(object.position.location.y);
-    let rotation = object.position.rotation.value();
-    let global_x = center_x + f64::from(vertex.x);
-    let global_y = center_y + f64::from(vertex.y);
-    let rotated_global_x =
-        rotation.cos() * (global_x - center_x) + rotation.sin() * (global_y - center_y) + center_x;
-    let rotated_global_y =
-        -rotation.sin() * (global_x - center_x) + rotation.cos() * (global_y - center_y) + center_y;
-
-    view_model::Vertex {
-        x: rotated_global_x.round() as u32,
-        y: rotated_global_y.round() as u32,
     }
 }
 
