@@ -1,4 +1,5 @@
 use super::Snapshot;
+use myelin_environment::object::ObjectDescription;
 use myelin_environment::Id;
 use myelin_visualization_core::view_model_delta::{
     ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
@@ -57,12 +58,51 @@ impl DeltaApplier for DeltaApplierImpl {
                 ObjectDelta::Deleted => {
                     snapshot.remove(&id);
                 }
-                ObjectDelta::Updated(_) => unimplemented!(),
+                ObjectDelta::Updated(object_description_delta) => {
+                    let object_description = snapshot
+                        .get_mut(&id)
+                        .ok_or(DeltaApplierError::NonExistingObjectUpdated(id))?;
+
+                    apply_object_description_delta(object_description, object_description_delta);
+                }
             }
         }
 
         Ok(())
     }
+}
+
+fn apply_object_description_delta(
+    object_description: &mut ObjectDescription,
+    object_description_delta: ObjectDescriptionDelta,
+) {
+    let ObjectDescriptionDelta {
+        shape,
+        location,
+        rotation,
+        mobility,
+        kind,
+        sensor,
+    } = object_description_delta;
+
+    macro_rules! apply_delta {
+        ($($($target:ident).+ => $source:ident),+) => {
+            $(
+                if let Some(value) = $source {
+                    object_description.$($target).+ = value;
+                }
+            )+
+        };
+    }
+
+    apply_delta!(
+        shape => shape,
+        position.location => location,
+        position.rotation => rotation,
+        mobility => mobility,
+        kind => kind,
+        sensor => sensor
+    );
 }
 
 #[cfg(test)]
