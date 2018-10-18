@@ -28,7 +28,7 @@ pub(crate) trait DeltaApplier: Debug {
     fn apply_delta(
         &self,
         snapshot: &mut Snapshot,
-        delta: ViewModelDelta,
+        view_model_delta: ViewModelDelta,
     ) -> Result<(), DeltaApplierError>;
 }
 
@@ -45,19 +45,19 @@ impl DeltaApplier for DeltaApplierImpl {
     fn apply_delta(
         &self,
         snapshot: &mut Snapshot,
-        delta: ViewModelDelta,
+        view_model_delta: ViewModelDelta,
     ) -> Result<(), DeltaApplierError> {
-        let ViewModelDelta {
-            created_objects,
-            deleted_objects,
-            ..
-        } = delta;
-
-        snapshot.extend(created_objects.into_iter());
-
-        deleted_objects.iter().for_each(|id| {
-            snapshot.remove(id);
-        });
+        for (id, object_delta) in view_model_delta {
+            match object_delta {
+                ObjectDelta::Created(object_description) => {
+                    snapshot.insert(id, object_description);
+                }
+                ObjectDelta::Deleted => {
+                    snapshot.remove(&id);
+                }
+                ObjectDelta::Updated(_) => unimplemented!(),
+            }
+        }
 
         Ok(())
     }
