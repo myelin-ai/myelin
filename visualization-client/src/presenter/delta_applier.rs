@@ -1,6 +1,8 @@
 use super::Snapshot;
 use myelin_environment::Id;
-use myelin_visualization_core::view_model_delta::{ObjectDelta, ViewModelDelta};
+use myelin_visualization_core::view_model_delta::{
+    ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
+};
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
 use std::marker::PhantomData;
@@ -68,6 +70,7 @@ mod test {
     use super::*;
     use myelin_environment::object::*;
     use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+    use std::f64::consts::PI;
 
     fn object_description() -> ObjectDescription {
         ObjectBuilder::new()
@@ -83,6 +86,16 @@ mod test {
                     .build()
                     .unwrap(),
             )
+            .build()
+            .unwrap()
+    }
+
+    fn polygon() -> Polygon {
+        PolygonBuilder::new()
+            .vertex(-20, -20)
+            .vertex(20, -20)
+            .vertex(20, 20)
+            .vertex(-20, 20)
             .build()
             .unwrap()
     }
@@ -127,6 +140,150 @@ mod test {
                 17 => object_description(),
             },
             snapshot
+        );
+    }
+
+    #[test]
+    fn apply_delta_errors_if_updated_object_does_not_exist() {
+        let delta_applier = DeltaApplierImpl::new();
+        let mut snapshot = Snapshot::new();
+
+        assert_eq!(
+            Err(DeltaApplierError::NonExistingObjectUpdated(200)),
+            delta_applier.apply_delta(
+                &mut snapshot,
+                hashmap! {
+                    200 => ObjectDelta::Updated(ObjectDescriptionDelta {
+                        location: Some(Location { x: 5, y: 5 }),
+                        ..Default::default()
+                    }),
+                },
+            )
+        );
+    }
+
+    fn test_apply_delta_handles_update(
+        object_description_delta: ObjectDescriptionDelta,
+        expected_object_description: ObjectDescription,
+    ) {
+        let delta_applier = DeltaApplierImpl::new();
+
+        let mut snapshot = hashmap! {
+            102 => object_description(),
+        };
+
+        delta_applier
+            .apply_delta(
+                &mut snapshot,
+                hashmap! {
+                    102 => ObjectDelta::Updated(object_description_delta),
+                },
+            )
+            .unwrap();
+
+        assert_eq!(
+            hashmap! {
+                102 => expected_object_description,
+            },
+            snapshot
+        );
+    }
+
+    #[test]
+    fn apply_delta_handles_shape_update() {
+        test_apply_delta_handles_update(
+            ObjectDescriptionDelta {
+                shape: Some(polygon()),
+                ..Default::default()
+            },
+            {
+                let mut object_description = object_description();
+                object_description.shape = polygon();
+                object_description
+            },
+        );
+    }
+
+    #[test]
+    fn apply_delta_handles_location_update() {
+        test_apply_delta_handles_update(
+            ObjectDescriptionDelta {
+                location: Some(Location { x: 100, y: 100 }),
+                ..Default::default()
+            },
+            {
+                let mut object_description = object_description();
+                object_description.position.location = Location { x: 100, y: 100 };
+                object_description
+            },
+        );
+    }
+
+    #[test]
+    fn apply_delta_handles_rotation_update() {
+        test_apply_delta_handles_update(
+            ObjectDescriptionDelta {
+                rotation: Some(Radians::new(-PI).unwrap()),
+                ..Default::default()
+            },
+            {
+                let mut object_description = object_description();
+                object_description.position.rotation = Radians::new(-PI).unwrap();
+                object_description
+            },
+        );
+    }
+
+    #[test]
+    fn apply_delta_handles_mobility_update() {
+        test_apply_delta_handles_update(
+            ObjectDescriptionDelta {
+                mobility: Some(Mobility::Movable(Velocity { x: 10, y: 20 })),
+                ..Default::default()
+            },
+            {
+                let mut object_description = object_description();
+                object_description.mobility = Mobility::Movable(Velocity { x: 10, y: 20 });
+                object_description
+            },
+        );
+    }
+
+    #[test]
+    fn apply_delta_handles_kind_update() {
+        test_apply_delta_handles_update(
+            ObjectDescriptionDelta {
+                kind: Some(Kind::Water),
+                ..Default::default()
+            },
+            {
+                let mut object_description = object_description();
+                object_description.kind = Kind::Water;
+                object_description
+            },
+        );
+    }
+
+    #[test]
+    fn apply_delta_handles_sensor_update() {
+        let sensor = Sensor {
+            shape: polygon(),
+            position: Position {
+                location: Location { x: 4, y: 2 },
+                rotation: Radians::default(),
+            },
+        };
+
+        test_apply_delta_handles_update(
+            ObjectDescriptionDelta {
+                sensor: Some(Some(sensor.clone())),
+                ..Default::default()
+            },
+            {
+                let mut object_description = object_description();
+                object_description.sensor = Some(sensor);
+                object_description
+            },
         );
     }
 }
