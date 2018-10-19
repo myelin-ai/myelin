@@ -21,9 +21,11 @@ impl Error for FixedIntervalSleeperError {}
 impl Display for FixedIntervalSleeperError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            FixedIntervalSleeperError::ElapsedTimeIsGreaterThanInterval(duration) => {
-                write!(f, "Elapsed time greater than interval by {:?}", duration)
-            }
+            FixedIntervalSleeperError::ElapsedTimeIsGreaterThanInterval(elapsed_time) => write!(
+                f,
+                "Elapsed time is greater than interval. Elapsed time: {:?}",
+                elapsed_time
+            ),
         }
     }
 }
@@ -67,7 +69,7 @@ mod tests {
     #[should_panic]
     #[test]
     fn panics_when_start_was_not_called() {
-        let mut sleeper = FixedIntervalSleeperImpl::default();
+        let sleeper = FixedIntervalSleeperImpl::default();
         let _ = sleeper.sleep_until_interval_passed(Duration::from_millis(50));
     }
 

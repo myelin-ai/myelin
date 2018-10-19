@@ -1,6 +1,6 @@
 use crate::connection::Connection;
 use crate::controller::{Client, CurrentSnapshotFn, Presenter, Snapshot};
-use crate::fixed_interval_sleeper::FixedIntervalSleeper;
+use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperError};
 use myelin_visualization_core::serialization::ViewModelSerializer;
 use std::fmt::{self, Debug};
 use std::time::Duration;
@@ -34,6 +34,8 @@ impl ClientHandler {
     }
 
     fn step_and_return_current_snapshot(&mut self, last_snapshot: &Snapshot) -> Snapshot {
+        self.sleeper.register_work_started();
+
         let current_snapshot = (self.current_snapshot_fn)();
 
         let deltas = self
@@ -50,6 +52,14 @@ impl ClientHandler {
             .send_message(&serialized)
             .expect("Failed to send message to client");
 
+        if let Err(error) = self.sleeper.sleep_until_interval_passed(self.interval) {
+            match error {
+                FixedIntervalSleeperError::ElapsedTimeIsGreaterThanInterval(_) => {
+                    warn!("{}", error)
+                }
+            }
+        }
+
         current_snapshot
     }
 }
@@ -58,9 +68,7 @@ impl Client for ClientHandler {
     fn run(&mut self) {
         let mut last_snapshot = Snapshot::new();
         loop {
-            self.sleeper.register_work_started();
             last_snapshot = self.step_and_return_current_snapshot(&last_snapshot);
-            let _ = self.sleeper.sleep_until_interval_passed(self.interval);
         }
     }
 }
