@@ -92,10 +92,9 @@ mod tests {
     use crate::view_model::{self, ViewModel};
     use myelin_environment::object::*;
     use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
-    use myelin_visualization_core::view_model_delta::{ObjectDelta, ObjectDescriptionDelta};
+    use myelin_visualization_core::view_model_delta::ObjectDelta;
     use std::cell::RefCell;
     use std::collections::VecDeque;
-    use std::f64::consts::PI;
     use std::fmt::{self, Debug};
 
     #[derive(Debug)]
