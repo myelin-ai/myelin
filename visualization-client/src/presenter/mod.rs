@@ -266,22 +266,34 @@ mod tests {
     #[test]
     fn respects_previous_deltas() {
         let object_description_1 = object_description();
-        let expected_view_model_1 = ViewModel {
-            objects: Vec::new(),
-        };
         let view_model_polygon_1 = view_model::Polygon {
             vertices: vec![view_model::Vertex { x: 1, y: 1 }],
+        };
+        let expected_view_model_1 = ViewModel {
+            objects: vec![view_model::Object {
+                shape: view_model_polygon_1.clone(),
+                kind: view_model::Kind::Plant,
+            }],
         };
         let view_model_delta_1 = hashmap! {
             12 => ObjectDelta::Created(object_description_1.clone())
         };
 
         let object_description_2 = object_description();
-        let expected_view_model_2 = ViewModel {
-            objects: Vec::new(),
-        };
         let view_model_polygon_2 = view_model::Polygon {
-            vertices: vec![view_model::Vertex { x: 2, y: 2 }],
+            vertices: vec![view_model::Vertex { x: 5, y: 5 }],
+        };
+        let expected_view_model_2 = ViewModel {
+            objects: vec![
+                view_model::Object {
+                    shape: view_model_polygon_1.clone(),
+                    kind: view_model::Kind::Plant,
+                },
+                view_model::Object {
+                    shape: view_model_polygon_2.clone(),
+                    kind: view_model::Kind::Plant,
+                },
+            ],
         };
         let view_model_delta_2 = hashmap! {
             45 => ObjectDelta::Created(object_description_2.clone())
