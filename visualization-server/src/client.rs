@@ -34,7 +34,7 @@ impl ClientHandler {
     }
 
     fn step_and_return_current_snapshot(&mut self, last_snapshot: &Snapshot) -> Snapshot {
-        let (sleeper_result, snapshot) = sleep_for_fixed_interval!(self.interval, {
+        let (sleeper_result, snapshot) = sleep_for_fixed_interval!(self.interval, self.sleeper, {
             let current_snapshot = (self.current_snapshot_fn)();
 
             let deltas = self

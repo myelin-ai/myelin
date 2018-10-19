@@ -4,13 +4,12 @@ use std::thread::sleep;
 use std::time::{Duration, Instant};
 
 macro_rules! sleep_for_fixed_interval {
-    ($interval:expr, $code:expr) => {{
-        let mut sleeper = crate::fixed_interval_sleeper::FixedIntervalSleeperImpl::default();
-        sleeper.register_work_started();
+    ($interval:expr, $sleeper:expr, $code:expr) => {{
+        $sleeper.register_work_started();
 
         let return_value = $code;
 
-        let result = sleeper.sleep_until_interval_passed($interval);
+        let result = $sleeper.sleep_until_interval_passed($interval);
 
         (result, return_value)
     }};
