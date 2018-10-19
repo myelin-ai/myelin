@@ -42,10 +42,10 @@ impl FixedIntervalSleeper for FixedIntervalSleeperImpl {
         &self,
         interval: Duration,
     ) -> Result<(), FixedIntervalSleeperError> {
-        let mut instant_that_the_work_was_started = self
+        let elapsed = self
             .instant_that_the_work_was_started
-            .expect("work_started method was not called");
-        let elapsed = instant_that_the_work_was_started.elapsed();
+            .expect("work_started method was not called")
+            .elapsed();
 
         if elapsed > interval {
             return Err(FixedIntervalSleeperError::ElapsedTimeIsGreaterThanInterval(
