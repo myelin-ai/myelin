@@ -156,8 +156,8 @@ mod tests {
     }
 
     impl<'mock> Debug for DeltaApplierMock<'mock> {
-        fn fmt(&self, _: &mut fmt::Formatter<'_>) -> fmt::Result {
-            unimplemented!();
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            f.debug_struct(name_of_type!(DeltaApplierMock<'_>)).finish()
         }
     }
 
