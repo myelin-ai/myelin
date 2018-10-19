@@ -1,4 +1,4 @@
-pub(crate) use self::delta_applier::{DeltaApplier, DeltaApplierError, DeltaApplierImpl};
+pub(crate) use self::delta_applier::{DeltaApplier, DeltaApplierImpl};
 pub(crate) use self::global_polygon_translator::{
     GlobalPolygonTranslator, GlobalPolygonTranslatorImpl,
 };
@@ -88,6 +88,7 @@ impl CanvasPresenter {
 
 #[cfg(test)]
 mod tests {
+    use super::delta_applier::DeltaApplierError;
     use super::*;
     use crate::view_model::{self, ViewModel};
     use myelin_environment::object::*;

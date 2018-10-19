@@ -61,7 +61,7 @@ impl DeltaApplier for DeltaApplierImpl {
                 ObjectDelta::Updated(object_description_delta) => {
                     let object_description = snapshot
                         .get_mut(&id)
-                        .ok_or(DeltaApplierError::NonExistingObjectUpdated(id))?;
+                        .ok_or_else(|| DeltaApplierError::NonExistingObjectUpdated(id))?;
 
                     apply_object_description_delta(object_description, object_description_delta);
                 }

@@ -43,7 +43,6 @@ mod tests {
     use myelin_environment::object_builder::PolygonBuilder;
     use myelin_visualization_core::view_model_delta::{ObjectDelta, ObjectDescriptionDelta};
     use std::cell::RefCell;
-    use std::collections::HashMap;
     use std::error::Error;
     use std::thread::panicking;
 
