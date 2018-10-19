@@ -144,8 +144,7 @@ mod tests {
         let view_model_deserializer =
             ViewModelDeserializerMock::new(data.clone(), view_model_delta.clone());
         let presenter = PresenterMock::new(view_model_delta.clone());
-        let mut controller =
-            ControllerImpl::new(Box::new(presenter), Box::new(view_model_deserializer));
+        let mut controller = ControllerImpl::new(box presenter, box view_model_deserializer);
 
         controller.on_message(&data);
     }

@@ -287,7 +287,7 @@ mod tests {
         let delta_applier_mock = DeltaApplierMock::new(
             vec![(
                 {
-                    Box::new(|snapshot: &mut Snapshot| {
+                    (box |snapshot: &mut Snapshot| {
                         assert_eq!(Snapshot::new(), *snapshot);
                     }) as Box<dyn for<'a> Fn(&'a mut Snapshot)>
                 },
@@ -296,9 +296,9 @@ mod tests {
             .into(),
         );
         let mut presenter = CanvasPresenter::new(
-            Box::new(view_mock),
-            Box::new(delta_applier_mock),
-            Box::new(global_polygon_translator),
+            box view_mock,
+            box delta_applier_mock,
+            box global_polygon_translator,
         );
         presenter.present_delta(ViewModelDelta::new());
     }
@@ -366,7 +366,7 @@ mod tests {
                 (
                     {
                         let object_description_1 = object_description_1.clone();
-                        Box::new(move |snapshot: &mut Snapshot| {
+                        (box move |snapshot: &mut Snapshot| {
                             assert_eq!(Snapshot::new(), *snapshot);
 
                             snapshot.insert(12, object_description_1.clone());
@@ -379,7 +379,7 @@ mod tests {
                         let object_description_1 = object_description_1.clone();
                         let object_description_2 = object_description_2.clone();
 
-                        Box::new(move |snapshot: &mut Snapshot| {
+                        (box move |snapshot: &mut Snapshot| {
                             assert_eq!(hashmap! { 12 => object_description_1.clone() }, *snapshot);
 
                             snapshot.insert(45, object_description_2.clone());
@@ -391,9 +391,9 @@ mod tests {
             .into(),
         );
         let mut presenter = CanvasPresenter::new(
-            Box::new(view_mock),
-            Box::new(delta_applier_mock),
-            Box::new(global_polygon_translator),
+            box view_mock,
+            box delta_applier_mock,
+            box global_polygon_translator,
         );
 
         presenter.present_delta(view_model_delta_1);

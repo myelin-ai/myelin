@@ -73,7 +73,7 @@ mod test {
     fn on_message_is_propagated() {
         let message = vec![10, 20, 30];
         let controller = ControllerMock::new(message.clone());
-        let mut input_handler = InputHandler::new(Box::new(controller));
+        let mut input_handler = InputHandler::new(box controller);
 
         input_handler.on_message(&message);
     }
