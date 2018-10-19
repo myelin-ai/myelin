@@ -228,27 +228,6 @@ mod tests {
         }
     }
 
-    fn view_model_delta(rotation: Radians) -> ViewModelDelta {
-        hashmap! {
-            42 => ObjectDelta::Updated(ObjectDescriptionDelta {
-                shape: Some(
-                    PolygonBuilder::new()
-                        .vertex(-10, -10)
-                        .vertex(10, -10)
-                        .vertex(10, 10)
-                        .vertex(-10, 10)
-                        .build()
-                        .unwrap(),
-                ),
-                location: Some(Location { x: 30, y: 40 }),
-                rotation: Some(rotation),
-                mobility: Some(Mobility::Immovable),
-                kind: Some(Kind::Plant),
-                sensor: None,
-            }),
-        }
-    }
-
     fn object_description() -> ObjectDescription {
         ObjectBuilder::new()
             .shape(
