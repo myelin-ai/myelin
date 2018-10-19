@@ -1,11 +1,12 @@
 use crate::connection::Connection;
 use crate::controller::{Client, CurrentSnapshotFn, Presenter, Snapshot};
+use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperImpl};
 use myelin_visualization_core::serialization::ViewModelSerializer;
 use std::fmt::{self, Debug};
 use std::time::Duration;
 
 pub(crate) struct ClientHandler {
-    interval: Duration,
+    sleeper: Box<dyn FixedIntervalSleeper>,
     presenter: Box<dyn Presenter>,
     serializer: Box<dyn ViewModelSerializer>,
     connection: Connection,
@@ -20,8 +21,10 @@ impl ClientHandler {
         connection: Connection,
         current_snapshot_fn: Box<CurrentSnapshotFn>,
     ) -> Self {
+        let sleeper = FixedIntervalSleeperImpl::new(interval);
+
         Self {
-            interval,
+            sleeper: Box::new(sleeper),
             presenter,
             serializer,
             connection,
@@ -46,7 +49,7 @@ impl ClientHandler {
             .send_message(&serialized)
             .expect("Failed to send message to client");
 
-        std::thread::sleep(self.interval);
+        let _ = self.sleeper.sleep_until_interval_passed();
 
         current_snapshot
     }
