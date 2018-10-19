@@ -50,7 +50,7 @@ mod test {
 
     #[test]
     fn serializes_full_delta() {
-        let expected: Vec<u8> = r#"{"objects":[{"shape":{"vertices":[{"x":1,"y":1},{"x":2,"y":3},{"x":5,"y":6}]},"kind":"Organism"}]}"#.into();
+        let expected: Vec<u8> = r#"{"12":{"Updated":{"shape":{"vertices":[{"x":-5,"y":-5},{"x":1,"y":1},{"x":2,"y":3},{"x":5,"y":6}]},"location":{"x":3,"y":4},"rotation":{"value":1.0},"mobility":{"Movable":{"x":2,"y":3}},"kind":"Organism","sensor":{"shape":{"vertices":[{"x":-10,"y":-12},{"x":10,"y":6},{"x":16,"y":0}]},"position":{"location":{"x":2,"y":3},"rotation":{"value":1.0}}}}}}"#.into();
 
         let object_description_delta = ObjectDescriptionDelta {
             kind: Some(Kind::Organism),
@@ -75,7 +75,7 @@ mod test {
                     .unwrap(),
                 position: Position {
                     location: Location { x: 2, y: 3 },
-                    rotation: Radians::new(-1.0).unwrap(),
+                    rotation: Radians::new(1.0).unwrap(),
                 },
             })),
         };
@@ -92,7 +92,7 @@ mod test {
 
     #[test]
     fn serialize_works_with_empty_view_model() {
-        let expected: Vec<u8> = r#"{"objects":[]}"#.into();
+        let expected: Vec<u8> = r#"{}"#.into();
 
         let view_model_delta = ViewModelDelta::default();
 
@@ -129,14 +129,16 @@ mod test {
                     .unwrap(),
                 position: Position {
                     location: Location { x: 2, y: 3 },
-                    rotation: Radians::new(-1.0).unwrap(),
+                    rotation: Radians::new(1.0).unwrap(),
                 },
             })),
         };
 
         let expected = hashmap! { 12 => ObjectDelta::Updated(object_description_delta) };
 
-        let source: Vec<u8> = r#"{"objects":[{"shape":{"vertices":[{"x":1,"y":1},{"x":2,"y":3},{"x":5,"y":6}]},"kind":"Organism"}]}"#.into();
+        let source: Vec<u8> = r#"{"12":{"Updated":{"shape":{"vertices":[{"x":-5,"y":-5},{"x":1,"y":1},{"x":2,"y":3},{"x":5,"y":6}]},"location":{"x":3,"y":4},"rotation":{"value":1.0},"mobility":{"Movable":{"x":2,"y":3}},"kind":"Organism","sensor":{"shape":{"vertices":[{"x":-10,"y":-12},{"x":10,"y":6},{"x":16,"y":0}]},"position":{"location":{"x":2,"y":3},"rotation":{"value":1.0}}}}}}"#.into();
+
+        print!("{}", String::from_utf8(JsonSerializer::new().serialize_view_model_delta(&expected).unwrap()).unwrap());
 
         let deserializer = JsonDeserializer::new();
         let deserialized = deserializer.deserialize_view_model(&source).unwrap();
@@ -148,7 +150,7 @@ mod test {
     fn deserialize_works_with_empty_view_model() {
         let expected = ViewModelDelta::default();
 
-        let source: Vec<u8> = r#"{"objects":[]}"#.into();
+        let source: Vec<u8> = r#"{}"#.into();
 
         let deserializer = JsonDeserializer::new();
         let deserialized = deserializer.deserialize_view_model(&source).unwrap();
