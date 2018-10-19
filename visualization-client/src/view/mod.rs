@@ -1,15 +1,11 @@
 //! Internal module containing the DOM manipulation.
 pub mod constant;
 
+use crate::presenter::View;
 use crate::view_model::*;
-use std::fmt::{self, Debug};
+use std::fmt;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement};
-
-pub(crate) trait View: Debug {
-    fn draw_objects(&self, view_model: &ViewModel);
-    fn flush(&self);
-}
 
 /// The view object component that manipulates the DOM.
 #[derive(Debug)]
