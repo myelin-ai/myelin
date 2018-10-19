@@ -34,25 +34,27 @@ impl ClientHandler {
     }
 
     fn step_and_return_current_snapshot(&mut self, last_snapshot: &Snapshot) -> Snapshot {
-        self.sleeper.register_work_started();
+        let (sleeper_result, snapshot) = sleep_for_fixed_interval!(self.interval, {
+            let current_snapshot = (self.current_snapshot_fn)();
 
-        let current_snapshot = (self.current_snapshot_fn)();
+            let deltas = self
+                .presenter
+                .calculate_deltas(last_snapshot, &current_snapshot);
 
-        let deltas = self
-            .presenter
-            .calculate_deltas(last_snapshot, &current_snapshot);
+            let serialized = self
+                .serializer
+                .serialize_view_model_delta(&deltas)
+                .expect("Failed to serialize delta");
 
-        let serialized = self
-            .serializer
-            .serialize_view_model_delta(&deltas)
-            .expect("Failed to serialize delta");
+            self.connection
+                .socket
+                .send_message(&serialized)
+                .expect("Failed to send message to client");
 
-        self.connection
-            .socket
-            .send_message(&serialized)
-            .expect("Failed to send message to client");
+            current_snapshot
+        });
 
-        if let Err(error) = self.sleeper.sleep_until_interval_passed(self.interval) {
+        if let Err(error) = sleeper_result {
             match error {
                 FixedIntervalSleeperError::ElapsedTimeIsGreaterThanInterval(_) => {
                     warn!("{}", error)
@@ -60,7 +62,7 @@ impl ClientHandler {
             }
         }
 
-        current_snapshot
+        snapshot
     }
 }
 

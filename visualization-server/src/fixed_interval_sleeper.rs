@@ -3,6 +3,19 @@ use std::fmt::{self, Display};
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
+macro_rules! sleep_for_fixed_interval {
+    ($interval:expr, $code:expr) => {{
+        let mut sleeper = crate::fixed_interval_sleeper::FixedIntervalSleeperImpl::default();
+        sleeper.register_work_started();
+
+        let return_value = $code;
+
+        let result = sleeper.sleep_until_interval_passed($interval);
+
+        (result, return_value)
+    }};
+}
+
 pub(crate) trait FixedIntervalSleeper {
     fn register_work_started(&mut self);
     fn sleep_until_interval_passed(
