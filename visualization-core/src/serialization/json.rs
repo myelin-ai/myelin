@@ -163,7 +163,15 @@ mod test {
 
         let source: Vec<u8> = r#"{"12":{"type":"updated","shape":{"vertices":[{"x":-5,"y":-5},{"x":1,"y":1},{"x":2,"y":3},{"x":5,"y":6}]},"location":{"x":3,"y":4},"rotation":{"value":1.0},"mobility":{"Movable":{"x":2,"y":3}},"kind":"Organism","sensor":{"shape":{"vertices":[{"x":-10,"y":-12},{"x":10,"y":6},{"x":16,"y":0}]},"position":{"location":{"x":2,"y":3},"rotation":{"value":1.0}}}}}"#.into();
 
-        print!("{}", String::from_utf8(JsonSerializer::new().serialize_view_model_delta(&expected).unwrap()).unwrap());
+        print!(
+            "{}",
+            String::from_utf8(
+                JsonSerializer::new()
+                    .serialize_view_model_delta(&expected)
+                    .unwrap()
+            )
+            .unwrap()
+        );
 
         let deserializer = JsonDeserializer::new();
         let deserialized = deserializer.deserialize_view_model_delta(&source).unwrap();
