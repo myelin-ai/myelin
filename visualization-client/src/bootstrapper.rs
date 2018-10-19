@@ -15,7 +15,7 @@ use web_sys::HtmlCanvasElement;
 struct DummyViewModelDeserializer {}
 
 impl ViewModelDeserializer for DummyViewModelDeserializer {
-    fn deserialize_view_model(&self, _buf: &[u8]) -> Result<ViewModelDelta, Box<dyn Error>> {
+    fn deserialize_view_model_delta(&self, _buf: &[u8]) -> Result<ViewModelDelta, Box<dyn Error>> {
         unimplemented!();
     }
 }
