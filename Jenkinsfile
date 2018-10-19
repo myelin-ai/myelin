@@ -21,6 +21,12 @@ pipeline {
           }
         }
         stage('cargo doc') {
+          when {
+            anyOf {
+              branch 'master'
+              changeRequest()
+            }
+          }
           steps {
             sh 'cargo doc --no-deps'
           }
@@ -38,6 +44,12 @@ pipeline {
       }
     }
     stage('Style checks') {
+      when {
+        anyOf {
+          branch 'master'
+          changeRequest()
+        }
+      }
       parallel {
         stage('clippy') {
           steps {
@@ -51,7 +63,7 @@ pipeline {
         }
         stage('tslint') {
           steps {
-            sh '(cd visualization && tslint --project tsconfig.json \'src/**/*.ts\')'
+            sh '(cd visualization-client && tslint --project tsconfig.json \'src/**/*.ts\')'
           }
         }
       }
@@ -68,7 +80,11 @@ pipeline {
   }
   post {
     failure {
-      step([$class: 'TelegramBotPublisher', message: 'Branch ${BUILD_TAG} failed. ${RUN_DISPLAY_URL}', whenFailed: true])
+      script {
+        if (env.BRANCH_NAME == 'master') {
+          step([$class: 'TelegramBotPublisher', message: 'Branch ${BUILD_TAG} failed. ${RUN_DISPLAY_URL}', whenFailed: true])
+        }
+      }
     }
   }
 }

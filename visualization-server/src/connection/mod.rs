@@ -1,8 +1,14 @@
+pub(crate) use self::websocket::*;
 use std::error::Error;
-use std::fmt::Debug;
+use std::fmt::{self, Debug, Display};
+use std::io::ErrorKind as IoErrorKind;
+use uuid::Uuid;
+
+mod websocket;
 
 #[derive(Debug)]
 pub(crate) struct Connection {
+    pub(crate) id: Uuid,
     pub(crate) socket: Box<dyn Socket>,
 }
 
@@ -16,6 +22,6 @@ pub(crate) trait SocketError: Debug + Error + Send {
 
 impl PartialEq for Connection {
     fn eq(&self, other: &Self) -> bool {
-        unimplemented!()
+        self.id == other.id
     }
 }

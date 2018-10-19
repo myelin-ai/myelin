@@ -52,45 +52,35 @@ mod test {
     fn serializes_full_delta() {
         let expected: Vec<u8> = r#"{"objects":[{"shape":{"vertices":[{"x":1,"y":1},{"x":2,"y":3},{"x":5,"y":6}]},"kind":"Organism"}]}"#.into();
 
-        let mut map = HashMap::new();
-
-        map.insert(
-            12,
-            ObjectDescriptionDelta {
-                kind: Some(Kind::Organism),
-                shape: Some(
-                    PolygonBuilder::new()
-                        .vertex(-5, -5)
-                        .vertex(1, 1)
-                        .vertex(2, 3)
-                        .vertex(5, 6)
-                        .build()
-                        .unwrap(),
-                ),
-                mobility: Some(Mobility::Movable(Velocity { x: 2, y: 3 })),
-                position: Some(Position {
-                    location: Location { x: 3, y: 4 },
-                    rotation: Radians::new(1.0).unwrap(),
-                }),
-                sensor: Some(Some(Sensor {
-                    shape: PolygonBuilder::new()
-                        .vertex(-10, -12)
-                        .vertex(10, 6)
-                        .vertex(16, 0)
-                        .build()
-                        .unwrap(),
-                    position: Position {
-                        location: Location { x: 2, y: 3 },
-                        rotation: Radians::new(-1.0).unwrap(),
-                    },
-                })),
-            },
-        );
-
-        let view_model_delta = ViewModelDelta {
-            updated_objects: map,
-            deleted_objects: Vec::new(),
+        let object_description_delta = ObjectDescriptionDelta {
+            kind: Some(Kind::Organism),
+            shape: Some(
+                PolygonBuilder::new()
+                    .vertex(-5, -5)
+                    .vertex(1, 1)
+                    .vertex(2, 3)
+                    .vertex(5, 6)
+                    .build()
+                    .unwrap(),
+            ),
+            mobility: Some(Mobility::Movable(Velocity { x: 2, y: 3 })),
+            location: Some(Location { x: 3, y: 4 }),
+            rotation: Some(Radians::new(1.0).unwrap()),
+            sensor: Some(Some(Sensor {
+                shape: PolygonBuilder::new()
+                    .vertex(-10, -12)
+                    .vertex(10, 6)
+                    .vertex(16, 0)
+                    .build()
+                    .unwrap(),
+                position: Position {
+                    location: Location { x: 2, y: 3 },
+                    rotation: Radians::new(-1.0).unwrap(),
+                },
+            })),
         };
+
+        let view_model_delta = hashmap! { 12 => ObjectDelta::Updated(object_description_delta) };
 
         let serializer = JsonSerializer::new();
         let serialized = serializer
@@ -104,10 +94,7 @@ mod test {
     fn serialize_works_with_empty_view_model() {
         let expected: Vec<u8> = r#"{"objects":[]}"#.into();
 
-        let view_model_delta = ViewModelDelta {
-            objects: Vec::new(),
-            deleted_objects: Vec::new(),
-        };
+        let view_model_delta = ViewModelDelta::default();
 
         let serializer = JsonSerializer::new();
         let serialized = serializer
@@ -119,9 +106,7 @@ mod test {
 
     #[test]
     fn deserializes_full_viewmodel() {
-        let map = HashMap::new();
-        map.add(ObjectDescriptionDelta {
-            id: 12,
+        let object_description_delta = ObjectDescriptionDelta {
             kind: Some(Kind::Organism),
             shape: Some(
                 PolygonBuilder::new()
@@ -133,10 +118,8 @@ mod test {
                     .unwrap(),
             ),
             mobility: Some(Mobility::Movable(Velocity { x: 2, y: 3 })),
-            position: Some(Position {
-                location: Location { x: 3, y: 4 },
-                rotation: Radians::new(1.0).unwrap(),
-            }),
+            location: Some(Location { x: 3, y: 4 }),
+            rotation: Some(Radians::new(1.0).unwrap()),
             sensor: Some(Some(Sensor {
                 shape: PolygonBuilder::new()
                     .vertex(-10, -12)
@@ -149,12 +132,9 @@ mod test {
                     rotation: Radians::new(-1.0).unwrap(),
                 },
             })),
-        });
-
-        let expected = ViewModelDelta {
-            updated_objects: map,
-            deleted_objects: Vec::new(),
         };
+
+        let expected = hashmap! { 12 => ObjectDelta::Updated(object_description_delta) };
 
         let source: Vec<u8> = r#"{"objects":[{"shape":{"vertices":[{"x":1,"y":1},{"x":2,"y":3},{"x":5,"y":6}]},"kind":"Organism"}]}"#.into();
 
@@ -166,15 +146,12 @@ mod test {
 
     #[test]
     fn deserialize_works_with_empty_view_model() {
-        let expected = ViewModelDelta {
-            objects: Vec::new(),
-            deleted_objects: Vec::new(),
-        };
+        let expected = ViewModelDelta::default();
 
         let source: Vec<u8> = r#"{"objects":[]}"#.into();
 
         let deserializer = JsonDeserializer::new();
-        let deserialized = deserializer.deserialize_view_model(source).unwrap();
+        let deserialized = deserializer.deserialize_view_model(&source).unwrap();
 
         assert_eq!(expected, deserialized);
     }

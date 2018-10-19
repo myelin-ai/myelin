@@ -1,5 +1,4 @@
 use crate::connection::Connection;
-use crate::snapshot::{Snapshot, SnapshotSlice};
 use myelin_environment::object::ObjectDescription;
 use myelin_environment::Id;
 use myelin_environment::Simulation;
@@ -10,6 +9,8 @@ use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
+pub(crate) type Snapshot = HashMap<Id, ObjectDescription>;
+
 pub(crate) trait Controller: Debug {
     fn run(&mut self);
 }
@@ -17,8 +18,8 @@ pub(crate) trait Controller: Debug {
 pub(crate) trait Presenter: Debug {
     fn calculate_deltas(
         &self,
-        last_objects: &HashMap<Id, ObjectDescription>,
-        current_objects: &HashMap<Id, ObjectDescription>,
+        visualized_snapshot: &Snapshot,
+        simulation_snapshot: &Snapshot,
     ) -> ViewModelDelta;
 }
 
@@ -28,8 +29,8 @@ pub(crate) trait ConnectionAccepter: Debug + Send {
 
 pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send;
 
-pub(crate) trait Client: Debug + Send {
-    fn run(&mut self, current_snapshot_fn: Box<CurrentSnapshotFn>);
+pub(crate) trait Client: Debug {
+    fn run(&mut self);
 }
 
 pub(crate) type SimulationFactory = dyn Fn() -> Box<dyn Simulation>;
@@ -86,6 +87,7 @@ impl ControllerImpl {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::presenter::PresenterMock;
     use myelin_environment::object::*;
     use myelin_environment::object_builder::*;
     use myelin_environment::Simulation;
@@ -97,6 +99,7 @@ mod tests {
 
     const EXPECTED_DELTA: Duration = Duration::from_millis((1.0f64 / 60.0f64) as u64);
 
+    #[ignore]
     #[test]
     fn assembles_stuff() {
         let mut controller = ControllerImpl::new(
@@ -114,6 +117,7 @@ mod tests {
         returned_objects: Vec<ObjectDescription>,
         objects_was_called: RefCell<bool>,
     }
+
     impl SimulationMock {
         fn new(returned_objects: Vec<ObjectDescription>) -> Self {
             Self {
@@ -123,6 +127,7 @@ mod tests {
             }
         }
     }
+
     impl Simulation for SimulationMock {
         fn step(&mut self) {
             self.step_was_called = true;
@@ -143,69 +148,6 @@ mod tests {
         fn drop(&mut self) {
             assert!(*self.objects_was_called.borrow());
             assert!(self.step_was_called);
-        }
-    }
-
-    #[derive(Debug, Default)]
-    struct PresenterMock {
-        expect_calculate_deltas_and_return: Option<(Snapshot, Snapshot, ViewModelDelta)>,
-        calculate_deltas_was_called: RefCell<bool>,
-    }
-    impl PresenterMock {
-        fn expect_calculate_deltas(
-            &mut self,
-            last_objects: Snapshot,
-            current_objects: Snapshot,
-            return_value: ViewModelDelta,
-        ) {
-            self.expect_calculate_deltas_and_return =
-                Some((last_objects, current_objects, return_value));
-        }
-    }
-    impl Presenter for PresenterMock {
-        fn calculate_deltas(
-            &self,
-            last_objects: &SnapshotSlice,
-            current_objects: &SnapshotSlice,
-        ) -> ViewModelDelta {
-            *self.calculate_deltas_was_called.borrow_mut() = true;
-
-            if let Some((
-                ref expected_last_objects,
-                ref expected_current_objects,
-                ref return_value,
-            )) = self.expect_calculate_deltas_and_return
-            {
-                if last_objects.to_vec() == *expected_last_objects
-                    && current_objects.to_vec() == *expected_current_objects
-                {
-                    return_value.clone()
-                } else {
-                    panic!(
-                        "calculate_deltas() was called with {:?} and {:?}, expected {:?} and {:?}",
-                        last_objects,
-                        current_objects,
-                        expected_last_objects,
-                        expected_current_objects
-                    )
-                }
-            } else {
-                panic!("to_nphysics_rotation() was called unexpectedly")
-            }
-        }
-    }
-
-    impl Drop for PresenterMock {
-        fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            if self.expect_calculate_deltas_and_return.is_some() {
-                assert!(
-                    *self.calculate_deltas_was_called.borrow(),
-                    "calculate_deltas() was not called, but expected"
-                )
-            }
         }
     }
 

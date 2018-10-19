@@ -3,12 +3,17 @@ use myelin_environment::Id;
 use std::collections::HashMap;
 
 /// This step's object deltas
+pub type ViewModelDelta = HashMap<Id, ObjectDelta>;
+
+/// Describes what happened to an individual object in this
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-pub struct ViewModelDelta {
-    /// Deltas of the updated objects in the world
-    pub updated_objects: HashMap<Id, ObjectDescriptionDelta>,
-    /// Ids of objects that have been removed from the world
-    pub deleted_objects: Vec<Id>,
+pub enum ObjectDelta {
+    /// The object has been added to the world
+    Created(ObjectDescription),
+    /// At least one property of the object has changed
+    Updated(ObjectDescriptionDelta),
+    /// The object has been removed from the world
+    Deleted,
 }
 
 /// The delta of a [`ObjectDescription`].
@@ -22,8 +27,11 @@ pub struct ObjectDescriptionDelta {
     /// [`position`]: ./struct.ObjectDescription.html#structfield.location
     pub shape: Option<Polygon>,
 
-    /// The current position of the object
-    pub position: Option<Position>,
+    /// The current location of the object
+    pub location: Option<Location>,
+
+    /// The current rotation of the object
+    pub rotation: Option<Radians>,
 
     /// The current velocity of the object, defined
     /// as a two dimensional vector relative to the
