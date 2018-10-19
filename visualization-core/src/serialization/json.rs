@@ -46,7 +46,6 @@ impl JsonDeserializer {
 }
 
 impl ViewModelSerializer for JsonSerializer {
-    /// Serializes a `ViewModelDelta` to it's JSON string representation
     fn serialize_view_model_delta(
         &self,
         view_model_delta: &ViewModelDelta,
@@ -58,7 +57,6 @@ impl ViewModelSerializer for JsonSerializer {
 }
 
 impl ViewModelDeserializer for JsonDeserializer {
-    /// Deserializes a previously serialized `ViewModelDelta` from it's JSON string representation
     fn deserialize_view_model_delta(&self, buf: &[u8]) -> Result<ViewModelDelta, Box<dyn Error>> {
         let json_string = String::from_utf8(buf.to_vec())?;
         let deserialized: ViewModelDelta = serde_json::from_str(&json_string)?;
