@@ -5,7 +5,10 @@ use std::time::{Duration, Instant};
 
 pub(crate) trait FixedIntervalSleeper {
     fn start(&mut self);
-    fn sleep_until_interval_passed(&mut self) -> Result<(), FixedIntervalSleeperError>;
+    fn sleep_until_interval_passed(
+        &mut self,
+        interval: Duration,
+    ) -> Result<(), FixedIntervalSleeperError>;
 }
 
 #[derive(Debug)]
@@ -25,18 +28,9 @@ impl Display for FixedIntervalSleeperError {
     }
 }
 
+#[derive(Default)]
 pub(crate) struct FixedIntervalSleeperImpl {
-    interval: Duration,
     last_execution: Option<Instant>,
-}
-
-impl FixedIntervalSleeperImpl {
-    pub(crate) fn new(interval: Duration) -> Self {
-        Self {
-            interval,
-            last_execution: None,
-        }
-    }
 }
 
 impl FixedIntervalSleeper for FixedIntervalSleeperImpl {
@@ -44,18 +38,21 @@ impl FixedIntervalSleeper for FixedIntervalSleeperImpl {
         self.last_execution = Some(Instant::now());
     }
 
-    fn sleep_until_interval_passed(&mut self) -> Result<(), FixedIntervalSleeperError> {
+    fn sleep_until_interval_passed(
+        &mut self,
+        interval: Duration,
+    ) -> Result<(), FixedIntervalSleeperError> {
         let mut last_execution = self.last_execution.expect("start method was not called");
         let elapsed = last_execution.elapsed();
-        last_execution += self.interval;
+        last_execution += interval;
 
-        if elapsed > self.interval {
+        if elapsed > interval {
             return Err(FixedIntervalSleeperError::ElapsedTimeIsGreaterThanInterval(
                 elapsed,
             ));
         }
 
-        let delta = self.interval - elapsed;
+        let delta = interval - elapsed;
         sleep(delta);
 
         Ok(())
@@ -69,53 +66,53 @@ mod tests {
     #[should_panic]
     #[test]
     fn panics_when_start_was_not_called() {
-        let mut sleeper = FixedIntervalSleeperImpl::new(Duration::from_millis(50));
-        let _ = sleeper.sleep_until_interval_passed();
+        let mut sleeper = FixedIntervalSleeperImpl::default();
+        let _ = sleeper.sleep_until_interval_passed(Duration::from_millis(50));
     }
 
     #[test]
     fn sleeps_enough() {
-        let duration = Duration::from_millis(50);
-        let mut sleeper = FixedIntervalSleeperImpl::new(duration);
+        let interval = Duration::from_millis(50);
+        let mut sleeper = FixedIntervalSleeperImpl::default();
         sleeper.start();
 
         let instant = Instant::now();
 
-        let result = sleeper.sleep_until_interval_passed();
+        let result = sleeper.sleep_until_interval_passed(interval);
 
         assert!(result.is_ok());
-        assert!(instant.elapsed() >= duration);
+        assert!(instant.elapsed() >= interval);
     }
 
     #[test]
     fn does_not_oversleep() {
-        let duration = Duration::from_millis(50);
-        let mut sleeper = FixedIntervalSleeperImpl::new(duration);
+        let interval = Duration::from_millis(50);
+        let mut sleeper = FixedIntervalSleeperImpl::default();
         sleeper.start();
 
         let instant = Instant::now();
 
-        let result = sleeper.sleep_until_interval_passed();
+        let result = sleeper.sleep_until_interval_passed(interval);
 
         assert!(result.is_ok());
-        assert!(instant.elapsed() <= duration + Duration::from_millis(10));
+        assert!(instant.elapsed() <= interval + Duration::from_millis(10));
     }
 
     #[test]
     fn is_err_when_too_much_time_has_passed() {
-        let duration = Duration::from_millis(50);
-        let mut sleeper = FixedIntervalSleeperImpl::new(duration);
+        let interval = Duration::from_millis(50);
+        let mut sleeper = FixedIntervalSleeperImpl::default();
         sleeper.start();
 
-        sleep(duration * 2);
+        sleep(interval * 2);
 
-        let result = sleeper.sleep_until_interval_passed();
+        let result = sleeper.sleep_until_interval_passed(interval);
 
         assert!(result.is_err());
 
         match result.err().unwrap() {
             FixedIntervalSleeperError::ElapsedTimeIsGreaterThanInterval(elapsed_time) => {
-                assert!(elapsed_time >= duration * 2);
+                assert!(elapsed_time >= interval * 2);
             }
         }
     }

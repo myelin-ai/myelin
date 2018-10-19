@@ -6,6 +6,7 @@ use std::fmt::{self, Debug};
 use std::time::Duration;
 
 pub(crate) struct ClientHandler {
+    interval: Duration,
     sleeper: Box<dyn FixedIntervalSleeper>,
     presenter: Box<dyn Presenter>,
     serializer: Box<dyn ViewModelSerializer>,
@@ -15,6 +16,7 @@ pub(crate) struct ClientHandler {
 
 impl ClientHandler {
     pub(crate) fn new(
+        interval: Duration,
         sleeper: Box<dyn FixedIntervalSleeper>,
         presenter: Box<dyn Presenter>,
         serializer: Box<dyn ViewModelSerializer>,
@@ -22,6 +24,7 @@ impl ClientHandler {
         current_snapshot_fn: Box<CurrentSnapshotFn>,
     ) -> Self {
         Self {
+            interval,
             sleeper,
             presenter,
             serializer,
@@ -47,8 +50,6 @@ impl ClientHandler {
             .send_message(&serialized)
             .expect("Failed to send message to client");
 
-        let _ = self.sleeper.sleep_until_interval_passed();
-
         current_snapshot
     }
 }
@@ -59,7 +60,7 @@ impl Client for ClientHandler {
         self.sleeper.start();
         loop {
             last_snapshot = self.step_and_return_current_snapshot(&last_snapshot);
-            let _ = self.sleeper.sleep_until_interval_passed();
+            let _ = self.sleeper.sleep_until_interval_passed(self.interval);
         }
     }
 }
@@ -94,7 +95,7 @@ mod tests {
     #[test]
     fn can_be_constructed() {
         let interval = Duration::from_millis(INTERVAL);
-        let sleeper = Box::new(FixedIntervalSleeperImpl::new(interval));
+        let sleeper = Box::new(FixedIntervalSleeperImpl::default());
         let presenter = Box::new(PresenterMock::default());
         let serializer = Box::new(SerializerMock::default());
         let socket = Box::new(SocketMock::default());
@@ -104,6 +105,7 @@ mod tests {
         };
         let current_snapshot_fn = Box::new(|| Snapshot::new());
         let _client = ClientHandler::new(
+            interval,
             sleeper,
             presenter,
             serializer,
@@ -115,7 +117,7 @@ mod tests {
     #[test]
     fn pipeline_is_run() {
         let interval = Duration::from_millis(INTERVAL);
-        let sleeper = Box::new(FixedIntervalSleeperImpl::new(interval));
+        let sleeper = Box::new(FixedIntervalSleeperImpl::default());
         let mut presenter = Box::new(PresenterMock::default());
         presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), delta());
         let mut serializer = Box::new(SerializerMock::default());
@@ -131,6 +133,7 @@ mod tests {
 
         let current_snapshot_fn = Box::new(|| snapshot());
         let mut client = ClientHandler::new(
+            interval,
             sleeper,
             presenter,
             serializer,
@@ -146,7 +149,7 @@ mod tests {
     #[test]
     fn panics_on_serialization_error() {
         let interval = Duration::from_millis(INTERVAL);
-        let sleeper = Box::new(FixedIntervalSleeperImpl::new(interval));
+        let sleeper = Box::new(FixedIntervalSleeperImpl::default());
         let mut presenter = Box::new(PresenterMock::default());
         presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), delta());
         let mut serializer = Box::new(SerializerMock::default());
@@ -160,6 +163,7 @@ mod tests {
 
         let current_snapshot_fn = Box::new(|| snapshot());
         let mut client = ClientHandler::new(
+            interval,
             sleeper,
             presenter,
             serializer,
@@ -174,7 +178,7 @@ mod tests {
     #[test]
     fn panics_on_transmission_error() {
         let interval = Duration::from_millis(INTERVAL);
-        let sleeper = Box::new(FixedIntervalSleeperImpl::new(interval));
+        let sleeper = Box::new(FixedIntervalSleeperImpl::default());
         let mut presenter = Box::new(PresenterMock::default());
         presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), delta());
         let mut serializer = Box::new(SerializerMock::default());
@@ -191,6 +195,7 @@ mod tests {
 
         let current_snapshot_fn = Box::new(|| snapshot());
         let mut client = ClientHandler::new(
+            interval,
             sleeper,
             presenter,
             serializer,
