@@ -103,23 +103,59 @@ mod tests {
     const INTERVAL: u64 = 1000 / 30;
 
     #[derive(Default)]
-    struct FixedIntervalSleeperMock {}
+    struct FixedIntervalSleeperMock {
+        expect_register_work_started_called: Option<((), ())>,
+        expect_sleep_until_interval_passed_and_return:
+            Option<(Duration, Result<(), FixedIntervalSleeperError>)>,
+
+        register_work_started_was_called: RefCell<bool>,
+        sleep_until_interval_passed_was_called: RefCell<bool>,
+    }
+
+    impl FixedIntervalSleeperMock {
+        fn expect_register_work_started_called(&mut self) {
+            self.expect_register_work_started_called = Some(((), ()));
+        }
+
+        fn expect_sleep_until_interval_passed_and_return(
+            &mut self,
+            interval: Duration,
+            result: Result<(), FixedIntervalSleeperError>,
+        ) {
+            self.expect_sleep_until_interval_passed_and_return = Some((interval, result))
+        }
+    }
 
     impl FixedIntervalSleeper for FixedIntervalSleeperMock {
-        fn register_work_started(&mut self) {}
+        fn register_work_started(&mut self) {
+            *self.register_work_started_was_called.borrow_mut() = true;
+
+            if self.expect_register_work_started_called.is_none() {
+                panic!("register_work_started() was called unexpectedly")
+            }
+        }
 
         fn sleep_until_interval_passed(
             &self,
             _interval: Duration,
         ) -> Result<(), FixedIntervalSleeperError> {
-            Ok(())
+            *self.sleep_until_interval_passed_was_called.borrow_mut() = true;
+
+            if let Some((_, ref return_value)) = self.expect_sleep_until_interval_passed_and_return
+            {
+                return_value.clone()
+            } else {
+                panic!("sleep_until_interval_passed() was called unexpectedly")
+            }
         }
     }
 
     #[test]
     fn can_be_constructed() {
         let interval = Duration::from_millis(INTERVAL);
-        let sleeper = Box::new(FixedIntervalSleeperMock::default());
+        let mut sleeper = FixedIntervalSleeperMock::default();
+        sleeper.expect_register_work_started_called();
+        sleeper.expect_sleep_until_interval_passed_and_return(interval, Ok(()));
         let presenter = Box::new(PresenterMock::default());
         let serializer = Box::new(SerializerMock::default());
         let socket = Box::new(SocketMock::default());
@@ -130,7 +166,7 @@ mod tests {
         let current_snapshot_fn = Box::new(|| Snapshot::new());
         let _client = ClientHandler::new(
             interval,
-            sleeper,
+            Box::new(sleeper),
             presenter,
             serializer,
             connection,
@@ -141,7 +177,9 @@ mod tests {
     #[test]
     fn pipeline_is_run() {
         let interval = Duration::from_millis(INTERVAL);
-        let sleeper = Box::new(FixedIntervalSleeperMock::default());
+        let mut sleeper = FixedIntervalSleeperMock::default();
+        sleeper.expect_register_work_started_called();
+        sleeper.expect_sleep_until_interval_passed_and_return(interval, Ok(()));
         let mut presenter = Box::new(PresenterMock::default());
         presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), delta());
         let mut serializer = Box::new(SerializerMock::default());
@@ -158,7 +196,7 @@ mod tests {
         let current_snapshot_fn = Box::new(|| snapshot());
         let mut client = ClientHandler::new(
             interval,
-            sleeper,
+            Box::new(sleeper),
             presenter,
             serializer,
             connection,
@@ -173,7 +211,9 @@ mod tests {
     #[test]
     fn panics_on_serialization_error() {
         let interval = Duration::from_millis(INTERVAL);
-        let sleeper = Box::new(FixedIntervalSleeperMock::default());
+        let mut sleeper = FixedIntervalSleeperMock::default();
+        sleeper.expect_register_work_started_called();
+        sleeper.expect_sleep_until_interval_passed_and_return(interval, Ok(()));
         let mut presenter = Box::new(PresenterMock::default());
         presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), delta());
         let mut serializer = Box::new(SerializerMock::default());
@@ -188,7 +228,7 @@ mod tests {
         let current_snapshot_fn = Box::new(|| snapshot());
         let mut client = ClientHandler::new(
             interval,
-            sleeper,
+            Box::new(sleeper),
             presenter,
             serializer,
             connection,
@@ -202,7 +242,9 @@ mod tests {
     #[test]
     fn panics_on_transmission_error() {
         let interval = Duration::from_millis(INTERVAL);
-        let sleeper = Box::new(FixedIntervalSleeperMock::default());
+        let mut sleeper = FixedIntervalSleeperMock::default();
+        sleeper.expect_register_work_started_called();
+        sleeper.expect_sleep_until_interval_passed_and_return(interval, Ok(()));
         let mut presenter = Box::new(PresenterMock::default());
         presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), delta());
         let mut serializer = Box::new(SerializerMock::default());
@@ -220,7 +262,7 @@ mod tests {
         let current_snapshot_fn = Box::new(|| snapshot());
         let mut client = ClientHandler::new(
             interval,
-            sleeper,
+            Box::new(sleeper),
             presenter,
             serializer,
             connection,
