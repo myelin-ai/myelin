@@ -1,6 +1,7 @@
 use crate::serialization::{ViewModelDeserializer, ViewModelSerializer};
 use crate::view_model_delta::ViewModelDelta;
 use std::error::Error;
+use std::marker::PhantomData;
 
 /// Provides methods for JSON serialization.
 /// # Examples
@@ -12,8 +13,8 @@ use std::error::Error;
 /// let serializer = JsonSerializer::new();
 /// let serialized = serializer.serialize_view_model_delta(&view_model_delta);
 /// ```
-#[derive(Debug)]
-pub struct JsonSerializer;
+#[derive(Debug, Default)]
+pub struct JsonSerializer(PhantomData<()>);
 
 /// Provides methods for JSON deserialization
 /// # Examples
@@ -27,20 +28,20 @@ pub struct JsonSerializer;
 /// let deserializer = JsonDeserializer::new();
 /// let deserialized = deserializer.deserialize_view_model_delta(&source);
 /// ```
-#[derive(Debug)]
-pub struct JsonDeserializer;
+#[derive(Debug, Default)]
+pub struct JsonDeserializer(PhantomData<()>);
 
 impl JsonSerializer {
     /// Creates a new [`JsonSerializer`].
     pub fn new() -> Self {
-        JsonSerializer
+        JsonSerializer(PhantomData)
     }
 }
 
 impl JsonDeserializer {
     /// Creates a new [`JsonDeserializer`].
     pub fn new() -> Self {
-        JsonDeserializer
+        JsonDeserializer(PhantomData)
     }
 }
 
