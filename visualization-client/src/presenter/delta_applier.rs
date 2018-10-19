@@ -86,7 +86,7 @@ fn apply_object_description_delta(
     } = object_description_delta;
 
     macro_rules! apply_delta {
-        ($($($target:ident).+ => $source:ident),+,) => {
+        ($($source:ident => $($target:ident).+),+,) => {
             $(
                 if let Some(value) = $source {
                     object_description.$($target).+ = value;
@@ -97,8 +97,8 @@ fn apply_object_description_delta(
 
     apply_delta!(
         shape => shape,
-        position.location => location,
-        position.rotation => rotation,
+        location => position.location,
+        rotation => position.rotation,
         mobility => mobility,
         kind => kind,
         sensor => sensor,
