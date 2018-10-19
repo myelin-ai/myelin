@@ -60,8 +60,8 @@ impl CanvasPresenter {
 mod tests {
     use super::*;
     use crate::view_model::{self, ViewModel};
-    use myelin_environment::object::{Kind, Location, Mobility, Radians};
-    use myelin_environment::object_builder::PolygonBuilder;
+    use myelin_environment::object::*;
+    use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
     use myelin_visualization_core::view_model_delta::{ObjectDelta, ObjectDescriptionDelta};
     use std::cell::RefCell;
     use std::collections::VecDeque;
@@ -116,19 +116,27 @@ mod tests {
         }
     }
 
-    struct DeltaApplierMock {
-        expected_calls: RefCell<VecDeque<(Box<dyn for<'a> Fn(&'a mut Snapshot)>, ViewModelDelta)>>,
+    struct DeltaApplierMock<'mock> {
+        expected_calls: RefCell<
+            VecDeque<(
+                Box<dyn for<'a> Fn(&'a mut Snapshot) + 'mock>,
+                ViewModelDelta,
+            )>,
+        >,
     }
 
-    impl Debug for DeltaApplierMock {
+    impl<'mock> Debug for DeltaApplierMock<'mock> {
         fn fmt(&self, _: &mut fmt::Formatter<'_>) -> fmt::Result {
             unimplemented!();
         }
     }
 
-    impl DeltaApplierMock {
+    impl<'mock> DeltaApplierMock<'mock> {
         fn new(
-            expected_calls: VecDeque<(Box<dyn for<'a> Fn(&'a mut Snapshot)>, ViewModelDelta)>,
+            expected_calls: VecDeque<(
+                Box<dyn for<'a> Fn(&'a mut Snapshot) + 'mock>,
+                ViewModelDelta,
+            )>,
         ) -> Self {
             Self {
                 expected_calls: RefCell::new(expected_calls),
@@ -136,7 +144,7 @@ mod tests {
         }
     }
 
-    impl DeltaApplier for DeltaApplierMock {
+    impl<'mock> DeltaApplier for DeltaApplierMock<'mock> {
         fn apply_delta(
             &self,
             snapshot: &mut Snapshot,
@@ -156,7 +164,7 @@ mod tests {
         }
     }
 
-    impl Drop for DeltaApplierMock {
+    impl<'mock> Drop for DeltaApplierMock<'mock> {
         fn drop(&mut self) {
             if std::thread::panicking() {
                 return;
@@ -241,6 +249,25 @@ mod tests {
         }
     }
 
+    fn object_description() -> ObjectDescription {
+        ObjectBuilder::new()
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(-10, -10)
+                    .vertex(10, -10)
+                    .vertex(10, 10)
+                    .vertex(-10, 10)
+                    .build()
+                    .unwrap(),
+            )
+            .mobility(Mobility::Immovable)
+            .location(30, 40)
+            .rotation(Radians::default())
+            .kind(Kind::Plant)
+            .build()
+            .unwrap()
+    }
+
     #[test]
     fn maps_to_empty_view_model() {
         let expected_view_model = ViewModel {
@@ -258,104 +285,82 @@ mod tests {
     }
 
     #[test]
-    fn respects_previous_deltas() {}
-
-    #[ignore]
-    #[test]
-    fn converts_to_global_object_with_no_orientation() {
-        let object_description = [view_model_delta(Radians::default())];
-        let expected_view_model = ViewModel {
-            objects: vec![view_model::Object {
-                shape: view_model::Polygon {
-                    vertices: vec![
-                        view_model::Vertex { x: 20, y: 30 },
-                        view_model::Vertex { x: 40, y: 30 },
-                        view_model::Vertex { x: 40, y: 50 },
-                        view_model::Vertex { x: 20, y: 50 },
-                    ],
-                },
-                kind: view_model::Kind::Plant,
-            }],
+    fn respects_previous_deltas() {
+        let object_description_1 = object_description();
+        let expected_view_model_1 = ViewModel {
+            objects: Vec::new(),
         };
-        let view_mock = ViewMock::new(vec![expected_view_model].into(), 1);
-        let global_polygon_translator = GlobalPolygonTranslatorMock::new(Default::default());
-        let delta_applier_mock = DeltaApplierMock::new(Default::default());
+        let view_model_polygon_1 = view_model::Polygon {
+            vertices: vec![view_model::Vertex { x: 1, y: 1 }],
+        };
+        let view_model_delta_1 = hashmap! {
+            12 => ObjectDelta::Created(object_description_1.clone())
+        };
+
+        let object_description_2 = object_description();
+        let expected_view_model_2 = ViewModel {
+            objects: Vec::new(),
+        };
+        let view_model_polygon_2 = view_model::Polygon {
+            vertices: vec![view_model::Vertex { x: 2, y: 2 }],
+        };
+        let view_model_delta_2 = hashmap! {
+            45 => ObjectDelta::Created(object_description_2.clone())
+        };
+
+        let view_mock = ViewMock::new(vec![expected_view_model_1, expected_view_model_2].into(), 2);
+        let global_polygon_translator = GlobalPolygonTranslatorMock::new(
+            vec![
+                (
+                    object_description_1.shape.clone(),
+                    object_description_1.position.clone(),
+                    view_model_polygon_1.clone(),
+                ),
+                (
+                    object_description_2.shape.clone(),
+                    object_description_2.position.clone(),
+                    view_model_polygon_2.clone(),
+                ),
+            ]
+            .into(),
+        );
+
+        let delta_applier_mock = DeltaApplierMock::new(
+            vec![
+                (
+                    {
+                        let object_description_1 = object_description_1.clone();
+                        Box::new(move |snapshot: &mut Snapshot| {
+                            assert_eq!(Snapshot::new(), *snapshot);
+
+                            snapshot.insert(12, object_description_1.clone());
+                        }) as Box<dyn for<'a> Fn(&'a mut Snapshot)>
+                    },
+                    view_model_delta_1.clone(),
+                ),
+                (
+                    {
+                        let object_description_1 = object_description_1.clone();
+                        let object_description_2 = object_description_2.clone();
+
+                        Box::new(move |snapshot: &mut Snapshot| {
+                            assert_eq!(hashmap! { 12 => object_description_1.clone() }, *snapshot);
+
+                            snapshot.insert(45, object_description_2.clone());
+                        }) as Box<dyn for<'a> Fn(&'a mut Snapshot)>
+                    },
+                    view_model_delta_2.clone(),
+                ),
+            ]
+            .into(),
+        );
         let mut presenter = CanvasPresenter::new(
             Box::new(view_mock),
             Box::new(delta_applier_mock),
             Box::new(global_polygon_translator),
         );
-        // presenter.present_objects(&object_description);
-        unimplemented!();
-    }
 
-    #[ignore]
-    #[test]
-    fn converts_to_global_object_with_pi_orientation() {
-        let object_description = [view_model_delta(Radians::new(PI).unwrap())];
-        let expected_view_model = ViewModel {
-            objects: vec![view_model::Object {
-                shape: view_model::Polygon {
-                    vertices: vec![
-                        view_model::Vertex { x: 40, y: 50 },
-                        view_model::Vertex { x: 20, y: 50 },
-                        view_model::Vertex { x: 20, y: 30 },
-                        view_model::Vertex { x: 40, y: 30 },
-                    ],
-                },
-                kind: view_model::Kind::Plant,
-            }],
-        };
-        let view_mock = ViewMock::new(vec![expected_view_model].into(), 1);
-        let global_polygon_translator = GlobalPolygonTranslatorMock::new(Default::default());
-        let delta_applier_mock = DeltaApplierMock::new(Default::default());
-        let mut presenter = CanvasPresenter::new(
-            Box::new(view_mock),
-            Box::new(delta_applier_mock),
-            Box::new(global_polygon_translator),
-        );
-        // presenter.present_objects(&object_description);
-        unimplemented!();
-    }
-
-    #[ignore]
-    #[test]
-    fn converts_to_global_object_with_arbitrary_orientation() {
-        let object_description = [view_model_delta(Radians::new(3.0).unwrap())];
-        let expected_view_model = ViewModel {
-            objects: vec![view_model::Object {
-                shape: view_model::Polygon {
-                    vertices: vec![
-                        view_model::Vertex {
-                            x: 40 - 2,
-                            y: 50 + 1,
-                        },
-                        view_model::Vertex {
-                            x: 20 - 1,
-                            y: 50 - 2,
-                        },
-                        view_model::Vertex {
-                            x: 20 + 2,
-                            y: 30 - 1,
-                        },
-                        view_model::Vertex {
-                            x: 40 + 1,
-                            y: 30 + 2,
-                        },
-                    ],
-                },
-                kind: view_model::Kind::Plant,
-            }],
-        };
-        let view_mock = ViewMock::new(vec![expected_view_model].into(), 1);
-        let global_polygon_translator = GlobalPolygonTranslatorMock::new(Default::default());
-        let delta_applier_mock = DeltaApplierMock::new(Default::default());
-        let mut presenter = CanvasPresenter::new(
-            Box::new(view_mock),
-            Box::new(delta_applier_mock),
-            Box::new(global_polygon_translator),
-        );
-        // presenter.present_objects(&object_description);
-        unimplemented!();
+        presenter.present_delta(view_model_delta_1);
+        presenter.present_delta(view_model_delta_2);
     }
 }
