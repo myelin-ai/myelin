@@ -1,6 +1,6 @@
 use crate::connection::Connection;
 use crate::controller::{Client, CurrentSnapshotFn, Presenter, Snapshot};
-use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperImpl};
+use crate::fixed_interval_sleeper::FixedIntervalSleeper;
 use myelin_visualization_core::serialization::ViewModelSerializer;
 use std::fmt::{self, Debug};
 use std::time::Duration;
@@ -57,8 +57,8 @@ impl ClientHandler {
 impl Client for ClientHandler {
     fn run(&mut self) {
         let mut last_snapshot = Snapshot::new();
-        self.sleeper.start();
         loop {
+            self.sleeper.register_work_started();
             last_snapshot = self.step_and_return_current_snapshot(&last_snapshot);
             let _ = self.sleeper.sleep_until_interval_passed(self.interval);
         }
@@ -79,6 +79,7 @@ impl Debug for ClientHandler {
 mod tests {
     use super::*;
     use crate::connection::{Socket, SocketError};
+    use crate::fixed_interval_sleeper::FixedIntervalSleeperError;
     use crate::presenter::PresenterMock;
     use myelin_environment::object::*;
     use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
@@ -90,12 +91,27 @@ mod tests {
     use std::fmt::Display;
     use std::thread::panicking;
     use uuid::Uuid;
+
     const INTERVAL: u64 = 1000 / 30;
+
+    #[derive(Default)]
+    struct FixedIntervalSleeperMock {}
+
+    impl FixedIntervalSleeper for FixedIntervalSleeperMock {
+        fn register_work_started(&mut self) {}
+
+        fn sleep_until_interval_passed(
+            &self,
+            _interval: Duration,
+        ) -> Result<(), FixedIntervalSleeperError> {
+            Ok(())
+        }
+    }
 
     #[test]
     fn can_be_constructed() {
         let interval = Duration::from_millis(INTERVAL);
-        let sleeper = Box::new(FixedIntervalSleeperImpl::default());
+        let sleeper = Box::new(FixedIntervalSleeperMock::default());
         let presenter = Box::new(PresenterMock::default());
         let serializer = Box::new(SerializerMock::default());
         let socket = Box::new(SocketMock::default());
@@ -117,7 +133,7 @@ mod tests {
     #[test]
     fn pipeline_is_run() {
         let interval = Duration::from_millis(INTERVAL);
-        let sleeper = Box::new(FixedIntervalSleeperImpl::default());
+        let sleeper = Box::new(FixedIntervalSleeperMock::default());
         let mut presenter = Box::new(PresenterMock::default());
         presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), delta());
         let mut serializer = Box::new(SerializerMock::default());
@@ -149,7 +165,7 @@ mod tests {
     #[test]
     fn panics_on_serialization_error() {
         let interval = Duration::from_millis(INTERVAL);
-        let sleeper = Box::new(FixedIntervalSleeperImpl::default());
+        let sleeper = Box::new(FixedIntervalSleeperMock::default());
         let mut presenter = Box::new(PresenterMock::default());
         presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), delta());
         let mut serializer = Box::new(SerializerMock::default());
@@ -178,7 +194,7 @@ mod tests {
     #[test]
     fn panics_on_transmission_error() {
         let interval = Duration::from_millis(INTERVAL);
-        let sleeper = Box::new(FixedIntervalSleeperImpl::default());
+        let sleeper = Box::new(FixedIntervalSleeperMock::default());
         let mut presenter = Box::new(PresenterMock::default());
         presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), delta());
         let mut serializer = Box::new(SerializerMock::default());
