@@ -4,6 +4,7 @@ use std::thread::sleep;
 use std::time::{Duration, Instant};
 
 pub(crate) trait FixedIntervalSleeper {
+    fn start(&mut self);
     fn sleep_until_interval_passed(&mut self) -> Result<(), FixedIntervalSleeperError>;
 }
 
@@ -26,26 +27,31 @@ impl Display for FixedIntervalSleeperError {
 
 pub(crate) struct FixedIntervalSleeperImpl {
     interval: Duration,
-    last_execution: Instant,
+    last_execution: Option<Instant>,
 }
 
 impl FixedIntervalSleeperImpl {
     pub(crate) fn new(interval: Duration) -> Self {
         Self {
             interval,
-            last_execution: Instant::now(),
+            last_execution: None,
         }
     }
 }
 
 impl FixedIntervalSleeper for FixedIntervalSleeperImpl {
+    fn start(&mut self) {
+        self.last_execution = Some(Instant::now());
+    }
+
     fn sleep_until_interval_passed(&mut self) -> Result<(), FixedIntervalSleeperError> {
-        let elapsed = self.last_execution.elapsed();
-        self.last_execution += self.interval;
+        let mut last_execution = self.last_execution.expect("start method was not called");
+        let elapsed = last_execution.elapsed();
+        last_execution += self.interval;
 
         if elapsed > self.interval {
             return Err(FixedIntervalSleeperError::ElapsedTimeIsGreaterThanInterval(
-                elapsed - self.interval,
+                elapsed,
             ));
         }
 
@@ -60,10 +66,18 @@ impl FixedIntervalSleeper for FixedIntervalSleeperImpl {
 mod tests {
     use super::*;
 
+    #[should_panic]
+    #[test]
+    fn panics_when_start_was_not_called() {
+        let mut sleeper = FixedIntervalSleeperImpl::new(Duration::from_millis(50));
+        let _ = sleeper.sleep_until_interval_passed();
+    }
+
     #[test]
     fn sleeps_enough() {
         let duration = Duration::from_millis(50);
         let mut sleeper = FixedIntervalSleeperImpl::new(duration);
+        sleeper.start();
 
         let instant = Instant::now();
 
@@ -77,6 +91,7 @@ mod tests {
     fn does_not_oversleep() {
         let duration = Duration::from_millis(50);
         let mut sleeper = FixedIntervalSleeperImpl::new(duration);
+        sleeper.start();
 
         let instant = Instant::now();
 
@@ -90,12 +105,19 @@ mod tests {
     fn is_err_when_too_much_time_has_passed() {
         let duration = Duration::from_millis(50);
         let mut sleeper = FixedIntervalSleeperImpl::new(duration);
+        sleeper.start();
 
         sleep(duration * 2);
 
         let result = sleeper.sleep_until_interval_passed();
 
         assert!(result.is_err());
+
+        match result.err().unwrap() {
+            FixedIntervalSleeperError::ElapsedTimeIsGreaterThanInterval(elapsed_time) => {
+                assert!(elapsed_time >= duration * 2);
+            }
+        }
     }
 
 }
