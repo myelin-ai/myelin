@@ -17,7 +17,7 @@ impl Controller for ControllerImpl {
     fn on_message(&mut self, message: &[u8]) {
         let view_model_delta = self
             .view_model_deserializer
-            .deserialize_view_model(message)
+            .deserialize_view_model_delta(message)
             .expect("Serialized view model delta was not valid");
 
         self.presenter.present_delta(view_model_delta);
@@ -97,7 +97,10 @@ mod tests {
     }
 
     impl ViewModelDeserializer for ViewModelDeserializerMock {
-        fn deserialize_view_model(&self, buf: &[u8]) -> Result<ViewModelDelta, Box<dyn Error>> {
+        fn deserialize_view_model_delta(
+            &self,
+            buf: &[u8],
+        ) -> Result<ViewModelDelta, Box<dyn Error>> {
             *self.deserialize_view_model_was_called.borrow_mut() = true;
             assert_eq!(self.expected_data, buf);
             Ok(self.view_model_delta.clone())
