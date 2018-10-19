@@ -41,8 +41,7 @@ impl FixedIntervalSleeperImpl {
 impl FixedIntervalSleeper for FixedIntervalSleeperImpl {
     fn sleep_until_interval_passed(&mut self) -> Result<(), FixedIntervalSleeperError> {
         let elapsed = self.last_execution.elapsed();
-
-        self.last_execution = Instant::now();
+        self.last_execution += self.interval;
 
         if elapsed > self.interval {
             return Err(FixedIntervalSleeperError::ElapsedTimeIsGreaterThanInterval(
@@ -55,4 +54,35 @@ impl FixedIntervalSleeper for FixedIntervalSleeperImpl {
 
         Ok(())
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sleeps_at_least_500_milliseconds() {
+        let duration = Duration::from_millis(500);
+        let mut sleeper = FixedIntervalSleeperImpl::new(duration);
+
+        let instant = Instant::now();
+
+        let result = sleeper.sleep_until_interval_passed();
+
+        assert!(result.is_ok());
+        assert!(instant.elapsed() >= duration);
+    }
+
+    #[test]
+    fn is_err_when_too_much_time_has_passed() {
+        let duration = Duration::from_millis(200);
+        let mut sleeper = FixedIntervalSleeperImpl::new(duration);
+
+        sleep(duration * 2);
+
+        let result = sleeper.sleep_until_interval_passed();
+
+        assert!(result.is_err());
+    }
+
 }
