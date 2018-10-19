@@ -41,12 +41,12 @@ impl ViewModelDeserializer for DummyViewModelDeserializer {
 /// [`InputHandler`]: ../input_handler/struct.InputHandler.html
 #[wasm_bindgen]
 pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
-    InputHandler::new(Box::new(ControllerImpl::new(
-        Box::new(CanvasPresenter::new(
-            Box::new(CanvasView::new(canvas)),
-            Box::new(DeltaApplierImpl::new()),
-            Box::new(GlobalPolygonTranslatorImpl::new()),
-        )),
-        Box::new(DummyViewModelDeserializer {}),
-    )))
+    InputHandler::new(box ControllerImpl::new(
+        box CanvasPresenter::new(
+            box CanvasView::new(canvas),
+            box DeltaApplierImpl::new(),
+            box GlobalPolygonTranslatorImpl::new(),
+        ),
+        box DummyViewModelDeserializer {},
+    ))
 }
