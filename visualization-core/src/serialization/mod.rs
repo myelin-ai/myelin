@@ -13,5 +13,5 @@ pub trait ViewModelSerializer: Debug {
 }
 
 pub trait ViewModelDeserializer: Debug {
-    fn deserialize_view_model(&self, buf: &[u8]) -> Result<ViewModelDelta, Box<dyn Error>>;
+    fn deserialize_view_model_delta(&self, buf: &[u8]) -> Result<ViewModelDelta, Box<dyn Error>>;
 }

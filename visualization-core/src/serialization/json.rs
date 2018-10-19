@@ -1,6 +1,5 @@
 use crate::serialization::{ViewModelDeserializer, ViewModelSerializer};
 use crate::view_model_delta::ViewModelDelta;
-use std::collections::HashMap;
 use std::error::Error;
 
 #[derive(Debug)]
@@ -10,18 +9,30 @@ pub struct JsonSerializer;
 pub struct JsonDeserializer;
 
 impl JsonSerializer {
+    /// Creates a new [`JsonSerializer`].
     pub fn new() -> Self {
         JsonSerializer
     }
 }
 
 impl JsonDeserializer {
+    /// Creates a new [`JsonDeserializer`].
     pub fn new() -> Self {
         JsonDeserializer
     }
 }
 
 impl ViewModelSerializer for JsonSerializer {
+    /// Serializes a `ViewModelDelta` to it's json string representation
+    /// # Examples
+    /// ```
+    /// use myelin_visualization_core::view_model_delta::ViewModelDelta;
+    /// use myelin_visualization_core::serialization::{ViewModelSerializer, JsonSerializer};
+    ///
+    /// let view_model_delta = ViewModelDelta::default();
+    /// let serializer = JsonSerializer::new();
+    /// let serialized = serializer.serialize_view_model_delta(&view_model_delta);
+    /// ```
     fn serialize_view_model_delta(
         &self,
         view_model_delta: &ViewModelDelta,
@@ -33,7 +44,19 @@ impl ViewModelSerializer for JsonSerializer {
 }
 
 impl ViewModelDeserializer for JsonDeserializer {
-    fn deserialize_view_model(&self, buf: &[u8]) -> Result<ViewModelDelta, Box<dyn Error>> {
+    /// Deserializes a previously serialized `ViewModelDelta` from it's json string representation
+    /// # Examples
+    /// ```
+    /// use myelin_visualization_core::view_model_delta::ViewModelDelta;
+    /// use myelin_visualization_core::serialization::{ViewModelDeserializer, JsonDeserializer};
+    ///
+    /// // Replace with a string that represents a ViewModelDelta
+    /// let source: Vec<u8> = r#"{}"#.into();
+    ///
+    /// let deserializer = JsonDeserializer::new();
+    /// let deserialized = deserializer.deserialize_view_model_delta(&source);
+    /// ```
+    fn deserialize_view_model_delta(&self, buf: &[u8]) -> Result<ViewModelDelta, Box<dyn Error>> {
         let json_string = String::from_utf8(buf.to_vec())?;
         let deserialized: ViewModelDelta = serde_json::from_str(&json_string)?;
 
@@ -141,7 +164,7 @@ mod test {
         print!("{}", String::from_utf8(JsonSerializer::new().serialize_view_model_delta(&expected).unwrap()).unwrap());
 
         let deserializer = JsonDeserializer::new();
-        let deserialized = deserializer.deserialize_view_model(&source).unwrap();
+        let deserialized = deserializer.deserialize_view_model_delta(&source).unwrap();
 
         assert_eq!(expected, deserialized);
     }
@@ -153,7 +176,7 @@ mod test {
         let source: Vec<u8> = r#"{}"#.into();
 
         let deserializer = JsonDeserializer::new();
-        let deserialized = deserializer.deserialize_view_model(&source).unwrap();
+        let deserialized = deserializer.deserialize_view_model_delta(&source).unwrap();
 
         assert_eq!(expected, deserialized);
     }
