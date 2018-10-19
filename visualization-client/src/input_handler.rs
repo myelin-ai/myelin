@@ -63,7 +63,7 @@ mod test {
             if !panicking() {
                 assert!(
                     *self.on_message_was_called.borrow(),
-                    "on_message() was never called"
+                    "on_message() was never called, but was expected"
                 );
             }
         }

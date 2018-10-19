@@ -73,7 +73,7 @@ mod tests {
             if !panicking() {
                 assert!(
                     *self.present_delta_was_called.borrow(),
-                    "present_delta() was never called"
+                    "present_delta() was never called, but was expected"
                 );
             }
         }
@@ -109,7 +109,7 @@ mod tests {
             if !panicking() {
                 assert!(
                     *self.deserialize_view_model_was_called.borrow(),
-                    "deserialize_view_model() was never called"
+                    "deserialize_view_model() was never called, but was expected"
                 );
             }
         }
