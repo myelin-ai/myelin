@@ -189,7 +189,7 @@ impl Simulation for SimulationImpl {
     fn objects(&self) -> Vec<ObjectDescription> {
         self.non_physical_object_data
             .keys()
-            .map(|(&handle)| {
+            .map(|&handle| {
                 self.convert_to_object_description(handle)
                     .expect("Handle stored in simulation was not found in world")
             })
