@@ -1,9 +1,68 @@
 use crate::controller::{Presenter, Snapshot};
 use myelin_environment::object::ObjectDescription;
-use myelin_visualization_core::view_model_delta::{ObjectDescriptionDelta, ViewModelDelta};
+use myelin_environment::Id;
+use myelin_visualization_core::view_model_delta::{
+    ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
+};
+use std::collections::HashMap;
 
 #[derive(Debug, Default)]
 pub(crate) struct DeltaPresenter;
+
+impl DeltaPresenter {
+    pub(crate) fn new() -> Self {
+        Self::default()
+    }
+}
+
+impl Presenter for DeltaPresenter {
+    fn calculate_deltas(
+        &self,
+        visualized_snapshot: &Snapshot,
+        simulation_snapshot: &Snapshot,
+    ) -> ViewModelDelta {
+        let mut deltas: HashMap<_, _> = simulation_snapshot
+            .iter()
+            .map(|(&id, object)| {
+                let delta = map_to_updated_or_created(visualized_snapshot, id, object);
+                (id, delta)
+            })
+            .filter(|(_, delta)| match delta {
+                ObjectDelta::Created(_) | ObjectDelta::Deleted => true,
+                ObjectDelta::Updated(delta) => delta_contains_changes(delta),
+            })
+            .collect();
+
+        deltas.extend(deleted_objects(visualized_snapshot, simulation_snapshot));
+
+        deltas
+    }
+}
+
+fn map_to_updated_or_created(
+    visualized_snapshot: &Snapshot,
+    id: Id,
+    object: &ObjectDescription,
+) -> ObjectDelta {
+    if visualized_snapshot.contains_key(&id) {
+        ObjectDelta::Updated(get_object_description_delta(
+            visualized_snapshot.get(&id),
+            object.clone(),
+        ))
+    } else {
+        ObjectDelta::Created(object.clone())
+    }
+}
+
+fn deleted_objects<'a>(
+    visualized_snapshot: &'a Snapshot,
+    simulation_snapshot: &'a Snapshot,
+) -> impl Iterator<Item = (Id, ObjectDelta)> + 'a {
+    visualized_snapshot
+        .keys()
+        .filter(move |id| !simulation_snapshot.contains_key(id))
+        .map(|&id| (id, ObjectDelta::Deleted))
+}
 
 fn get_object_description_delta(
     first: Option<&ObjectDescription>,
@@ -35,50 +94,13 @@ where
     }
 }
 
-impl Presenter for DeltaPresenter {
-    fn calculate_deltas(
-        &self,
-        visualized_snapshot: &Snapshot,
-        simulation_snapshot: &Snapshot,
-    ) -> ViewModelDelta {
-        let deleted_objects = visualized_snapshot
-            .keys()
-            .filter(|id| !simulation_snapshot.contains_key(id))
-            .map(|&id| id)
-            .collect();
-
-        let updated_objects = simulation_snapshot
-            .iter()
-            .map(|(&id, object_description)| {
-                (
-                    id,
-                    get_object_description_delta(
-                        visualized_snapshot.get(&id),
-                        object_description.clone(),
-                    ),
-                )
-            })
-            .filter(|(_, object_description)| {
-                object_description.shape.is_some()
-                    || object_description.location.is_some()
-                    || object_description.rotation.is_some()
-                    || object_description.mobility.is_some()
-                    || object_description.kind.is_some()
-                    || object_description.sensor.is_some()
-            })
-            .collect();
-
-        ViewModelDelta {
-            updated_objects,
-            deleted_objects,
-        }
-    }
-}
-
-impl DeltaPresenter {
-    pub(crate) fn new() -> Self {
-        Self::default()
-    }
+fn delta_contains_changes(delta: &ObjectDescriptionDelta) -> bool {
+    delta.shape.is_some()
+        || delta.location.is_some()
+        || delta.rotation.is_some()
+        || delta.mobility.is_some()
+        || delta.kind.is_some()
+        || delta.sensor.is_some()
 }
 
 #[cfg(test)]
@@ -206,9 +228,12 @@ mod tests {
         let delta_presenter = DeltaPresenter::default();
         let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
 
-        assert_eq!(0, delta.updated_objects.len());
-        assert_eq!(1, delta.deleted_objects.len());
-        assert_eq!(42, delta.deleted_objects[0]);
+        assert_eq!(
+            hashmap! {
+                42 => ObjectDelta::Deleted,
+            },
+            delta
+        );
     }
 
     #[test]
@@ -221,8 +246,7 @@ mod tests {
         let delta_presenter = DeltaPresenter::default();
         let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
 
-        assert_eq!(0, delta.updated_objects.len());
-        assert_eq!(0, delta.deleted_objects.len());
+        assert_eq!(ViewModelDelta::new(), delta);
     }
 
     #[test]
@@ -240,13 +264,7 @@ mod tests {
         let delta_presenter = DeltaPresenter::default();
         let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
 
-        assert_eq!(1, delta.updated_objects.len());
-        assert_eq!(0, delta.deleted_objects.len());
-
-        assert!(delta.updated_objects.get(&42).is_some());
-
-        let object_delta = delta.updated_objects.get(&42).unwrap();
-        let expected_object_delta = ObjectDescriptionDelta {
+        let expected_delta = ObjectDescriptionDelta {
             shape: None,
             location: Some(object.position.location),
             rotation: None,
@@ -255,7 +273,12 @@ mod tests {
             sensor: None,
         };
 
-        assert_eq!(expected_object_delta, *object_delta);
+        assert_eq!(
+            hashmap! {
+                42 => ObjectDelta::Updated(expected_delta),
+            },
+            delta
+        );
     }
 
     #[test]
@@ -270,21 +293,20 @@ mod tests {
         let delta_presenter = DeltaPresenter::default();
         let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
 
-        assert_eq!(1, delta.updated_objects.len());
-        assert_eq!(0, delta.deleted_objects.len());
+        let expected_object_description = ObjectBuilder::new()
+            .shape(object.shape)
+            .location(object.position.location.x, object.position.location.y)
+            .rotation(object.position.rotation)
+            .mobility(object.mobility)
+            .kind(object.kind)
+            .build()
+            .unwrap();
 
-        assert!(delta.updated_objects.get(&42).is_some());
-
-        let object_delta = delta.updated_objects.get(&42).unwrap();
-        let expected_object_delta = ObjectDescriptionDelta {
-            shape: Some(object.shape),
-            location: Some(object.position.location),
-            rotation: Some(object.position.rotation),
-            mobility: Some(object.mobility),
-            kind: Some(object.kind),
-            sensor: Some(object.sensor),
-        };
-
-        assert_eq!(expected_object_delta, *object_delta);
+        assert_eq!(
+            hashmap! {
+                42 => ObjectDelta::Created(expected_object_description)
+            },
+            delta
+        );
     }
 }

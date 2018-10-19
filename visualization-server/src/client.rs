@@ -78,7 +78,9 @@ mod tests {
     use crate::presenter::PresenterMock;
     use myelin_environment::object::*;
     use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
-    use myelin_visualization_core::view_model_delta::{ObjectDescriptionDelta, ViewModelDelta};
+    use myelin_visualization_core::view_model_delta::{
+        ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
+    };
     use std::cell::RefCell;
     use std::collections::HashMap;
     use std::error::Error;
@@ -229,21 +231,17 @@ mod tests {
     }
 
     fn delta() -> ViewModelDelta {
-        let mut updated_objects = HashMap::new();
-        updated_objects.insert(
-            12,
-            ObjectDescriptionDelta {
-                shape: None,
-                location: Some(Location { x: 12, y: 32 }),
-                rotation: None,
-                mobility: None,
-                kind: None,
-                sensor: None,
-            },
-        );
-        ViewModelDelta {
-            updated_objects,
-            deleted_objects: Vec::new(),
+        let updated_object = ObjectDescriptionDelta {
+            shape: None,
+            location: Some(Location { x: 12, y: 32 }),
+            rotation: None,
+            mobility: None,
+            kind: None,
+            sensor: None,
+        };
+
+        hashmap! {
+            12 => ObjectDelta::Updated(updated_object)
         }
     }
 
