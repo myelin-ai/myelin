@@ -25,11 +25,28 @@ pub(crate) struct CanvasPresenter {
     view: Box<dyn View>,
     delta_applier: Box<dyn DeltaApplier>,
     global_polygon_translator: Box<dyn GlobalPolygonTranslator>,
+    current_snapshot: Snapshot,
 }
 
 impl Presenter for CanvasPresenter {
-    fn present_delta(&mut self, _delta: ViewModelDelta) {
-        unimplemented!();
+    fn present_delta(&mut self, delta: ViewModelDelta) {
+        self.delta_applier
+            .apply_delta(&mut self.current_snapshot, delta)
+            .expect("Received delta was not valid");
+
+        let objects = self
+            .current_snapshot
+            .iter()
+            .map(|(_, business_object)| view_model::Object {
+                shape: self
+                    .global_polygon_translator
+                    .to_global_polygon(&business_object.shape, &business_object.position),
+                kind: map_kind(business_object.kind),
+            })
+            .collect();
+
+        self.view.flush();
+        self.view.draw_objects(&ViewModel { objects });
     }
 }
 
@@ -52,6 +69,7 @@ impl CanvasPresenter {
             view,
             global_polygon_translator,
             delta_applier,
+            current_snapshot: Snapshot::new(),
         }
     }
 }
@@ -209,7 +227,7 @@ mod tests {
                 .expected_calls
                 .borrow_mut()
                 .pop_front()
-                .expect("Unexpected call to .to_global_polygon()");
+                .expect("Unexpected call to to_global_polygon()");
 
             assert_eq!(expected_polygon, *polygon);
             assert_eq!(expected_position, *position);
@@ -254,7 +272,17 @@ mod tests {
         };
         let view_mock = ViewMock::new(vec![expected_view_model].into(), 1);
         let global_polygon_translator = GlobalPolygonTranslatorMock::new(Default::default());
-        let delta_applier_mock = DeltaApplierMock::new(Default::default());
+        let delta_applier_mock = DeltaApplierMock::new(
+            vec![(
+                {
+                    Box::new(|snapshot: &mut Snapshot| {
+                        assert_eq!(Snapshot::new(), *snapshot);
+                    }) as Box<dyn for<'a> Fn(&'a mut Snapshot)>
+                },
+                ViewModelDelta::new(),
+            )]
+            .into(),
+        );
         let mut presenter = CanvasPresenter::new(
             Box::new(view_mock),
             Box::new(delta_applier_mock),
@@ -302,6 +330,11 @@ mod tests {
         let view_mock = ViewMock::new(vec![expected_view_model_1, expected_view_model_2].into(), 2);
         let global_polygon_translator = GlobalPolygonTranslatorMock::new(
             vec![
+                (
+                    object_description_1.shape.clone(),
+                    object_description_1.position.clone(),
+                    view_model_polygon_1.clone(),
+                ),
                 (
                     object_description_1.shape.clone(),
                     object_description_1.position.clone(),
