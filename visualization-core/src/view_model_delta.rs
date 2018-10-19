@@ -19,7 +19,7 @@ pub enum ObjectDelta {
 /// The delta of a [`ObjectDescription`].
 ///
 /// [`ObjectDescription`]: ../../environment/object/struct.ObjectDescription.html
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ObjectDescriptionDelta {
     /// The vertices defining the shape of the object
     /// in relation to its [`position`]
