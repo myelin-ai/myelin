@@ -12,6 +12,10 @@
 #[cfg(test)]
 extern crate maplit;
 
+#[cfg_attr(test, macro_use)]
+#[cfg(test)]
+extern crate nameof;
+
 pub mod bootstrapper;
 mod controller;
 pub mod input_handler;
