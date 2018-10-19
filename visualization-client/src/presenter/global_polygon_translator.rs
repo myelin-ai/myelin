@@ -1,8 +1,9 @@
 use crate::view_model;
 use myelin_environment::object as business_object;
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
-pub(crate) trait GlobalPolygonTranslator {
+pub(crate) trait GlobalPolygonTranslator: Debug {
     fn to_global_polygon(
         &self,
         polygon: &business_object::Polygon,
@@ -10,6 +11,7 @@ pub(crate) trait GlobalPolygonTranslator {
     ) -> view_model::Polygon;
 }
 
+#[derive(Debug)]
 pub(crate) struct GlobalPolygonTranslatorImpl(PhantomData<()>);
 
 impl GlobalPolygonTranslatorImpl {
