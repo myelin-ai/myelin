@@ -2,9 +2,31 @@ use crate::serialization::{ViewModelDeserializer, ViewModelSerializer};
 use crate::view_model_delta::ViewModelDelta;
 use std::error::Error;
 
+/// Provides methods for JSON serialization.
+/// # Examples
+/// ```
+/// use myelin_visualization_core::view_model_delta::ViewModelDelta;
+/// use myelin_visualization_core::serialization::{ViewModelSerializer, JsonSerializer};
+///
+/// let view_model_delta = ViewModelDelta::default();
+/// let serializer = JsonSerializer::new();
+/// let serialized = serializer.serialize_view_model_delta(&view_model_delta);
+/// ```
 #[derive(Debug)]
 pub struct JsonSerializer;
 
+/// Provides methods for JSON deserialization
+/// # Examples
+/// ```
+/// use myelin_visualization_core::view_model_delta::ViewModelDelta;
+/// use myelin_visualization_core::serialization::{ViewModelDeserializer, JsonDeserializer};
+///
+/// // Replace with a string that represents a ViewModelDelta
+/// let source: Vec<u8> = r#"{}"#.into();
+///
+/// let deserializer = JsonDeserializer::new();
+/// let deserialized = deserializer.deserialize_view_model_delta(&source);
+/// ```
 #[derive(Debug)]
 pub struct JsonDeserializer;
 
@@ -23,16 +45,7 @@ impl JsonDeserializer {
 }
 
 impl ViewModelSerializer for JsonSerializer {
-    /// Serializes a `ViewModelDelta` to it's json string representation
-    /// # Examples
-    /// ```
-    /// use myelin_visualization_core::view_model_delta::ViewModelDelta;
-    /// use myelin_visualization_core::serialization::{ViewModelSerializer, JsonSerializer};
-    ///
-    /// let view_model_delta = ViewModelDelta::default();
-    /// let serializer = JsonSerializer::new();
-    /// let serialized = serializer.serialize_view_model_delta(&view_model_delta);
-    /// ```
+    /// Serializes a `ViewModelDelta` to it's JSON string representation
     fn serialize_view_model_delta(
         &self,
         view_model_delta: &ViewModelDelta,
@@ -44,18 +57,7 @@ impl ViewModelSerializer for JsonSerializer {
 }
 
 impl ViewModelDeserializer for JsonDeserializer {
-    /// Deserializes a previously serialized `ViewModelDelta` from it's json string representation
-    /// # Examples
-    /// ```
-    /// use myelin_visualization_core::view_model_delta::ViewModelDelta;
-    /// use myelin_visualization_core::serialization::{ViewModelDeserializer, JsonDeserializer};
-    ///
-    /// // Replace with a string that represents a ViewModelDelta
-    /// let source: Vec<u8> = r#"{}"#.into();
-    ///
-    /// let deserializer = JsonDeserializer::new();
-    /// let deserialized = deserializer.deserialize_view_model_delta(&source);
-    /// ```
+    /// Deserializes a previously serialized `ViewModelDelta` from it's JSON string representation
     fn deserialize_view_model_delta(&self, buf: &[u8]) -> Result<ViewModelDelta, Box<dyn Error>> {
         let json_string = String::from_utf8(buf.to_vec())?;
         let deserialized: ViewModelDelta = serde_json::from_str(&json_string)?;
