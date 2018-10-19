@@ -7,6 +7,7 @@ use crate::view_model::{self, ViewModel};
 use myelin_environment::object as business_object;
 use myelin_environment::Id;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
+use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::fmt;
 
@@ -34,20 +35,31 @@ impl Presenter for CanvasPresenter {
             .apply_delta(&mut self.current_snapshot, delta)
             .expect("Received delta was not valid");
 
-        let objects = self
-            .current_snapshot
-            .iter()
-            .map(|(_, business_object)| view_model::Object {
-                shape: self
-                    .global_polygon_translator
-                    .to_global_polygon(&business_object.shape, &business_object.position),
-                kind: map_kind(business_object.kind),
-            })
-            .collect();
+        let objects = map_objects(
+            &self.current_snapshot,
+            self.global_polygon_translator.borrow(),
+        );
 
         self.view.flush();
         self.view.draw_objects(&ViewModel { objects });
     }
+}
+
+fn map_objects(
+    snapshot: &Snapshot,
+    global_polygon_translator: &dyn GlobalPolygonTranslator,
+) -> Vec<view_model::Object> {
+    snapshot
+        .values()
+        .map(|business_object| {
+            let shape = global_polygon_translator
+                .to_global_polygon(&business_object.shape, &business_object.position);
+
+            let kind = map_kind(business_object.kind);
+
+            view_model::Object { shape, kind }
+        })
+        .collect()
 }
 
 fn map_kind(kind: business_object::Kind) -> view_model::Kind {
