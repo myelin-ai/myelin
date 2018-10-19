@@ -61,7 +61,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sleeps_at_least_50_milliseconds() {
+    fn sleeps_enough() {
         let duration = Duration::from_millis(50);
         let mut sleeper = FixedIntervalSleeperImpl::new(duration);
 
@@ -74,7 +74,7 @@ mod tests {
     }
 
     #[test]
-    fn sleeps_at_most_60_milliseconds_with_interval_of_50_milliseconds() {
+    fn does_not_oversleep() {
         let duration = Duration::from_millis(50);
         let mut sleeper = FixedIntervalSleeperImpl::new(duration);
 
