@@ -61,8 +61,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sleeps_at_least_500_milliseconds() {
-        let duration = Duration::from_millis(500);
+    fn sleeps_at_least_50_milliseconds() {
+        let duration = Duration::from_millis(50);
         let mut sleeper = FixedIntervalSleeperImpl::new(duration);
 
         let instant = Instant::now();
@@ -74,8 +74,21 @@ mod tests {
     }
 
     #[test]
+    fn sleeps_at_most_60_milliseconds_with_interval_of_50_milliseconds() {
+        let duration = Duration::from_millis(50);
+        let mut sleeper = FixedIntervalSleeperImpl::new(duration);
+
+        let instant = Instant::now();
+
+        let result = sleeper.sleep_until_interval_passed();
+
+        assert!(result.is_ok());
+        assert!(instant.elapsed() <= duration + Duration::from_millis(10));
+    }
+
+    #[test]
     fn is_err_when_too_much_time_has_passed() {
-        let duration = Duration::from_millis(200);
+        let duration = Duration::from_millis(50);
         let mut sleeper = FixedIntervalSleeperImpl::new(duration);
 
         sleep(duration * 2);
