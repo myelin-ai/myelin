@@ -18,9 +18,9 @@ use wasm_bindgen::prelude::*;
 use web_sys::{console, HtmlCanvasElement};
 
 fn panic_hook(info: &PanicInfo<'_>) {
-    // The space fixes an issue with Safari's Inspector:
-    // - https://bugs.webkit.org/show_bug.cgi?id=189750
-    // - https://github.com/rustwasm/console_error_panic_hook/issues/7
+    // The space works around an issue in Safari's Inspector:
+    // (The issue is already resolved in Safari Technology Preview)
+    // Bug Report: https://bugs.webkit.org/show_bug.cgi?id=189750
     console::error_1(&JsValue::from_str(&format!("{} ", info)));
 }
 
