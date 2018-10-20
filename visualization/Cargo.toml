@@ -23,6 +23,7 @@ myelin-object-behavior = { path = "../object-behavior" }
 [dependencies.web-sys]
 version = "0.3.0"
 features = [
+    "console",
     "Element",
     "EventTarget",
     "HtmlElement",
