@@ -5,6 +5,8 @@ use std::time::{Duration, Instant};
 
 macro_rules! sleep_for_fixed_interval {
     ($interval:expr, $sleeper:expr, $code:expr) => {{
+        let _assert_sleeper: &dyn FixedIntervalSleeper = std::borrow::Borrow::borrow(&$sleeper);
+
         $sleeper.register_work_started();
 
         let return_value = $code;
