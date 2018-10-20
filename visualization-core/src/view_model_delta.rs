@@ -7,6 +7,7 @@ pub type ViewModelDelta = HashMap<Id, ObjectDelta>;
 
 /// Describes what happened to an individual object in this
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
 pub enum ObjectDelta {
     /// The object has been added to the world
     Created(ObjectDescription),
@@ -19,7 +20,7 @@ pub enum ObjectDelta {
 /// The delta of a [`ObjectDescription`].
 ///
 /// [`ObjectDescription`]: ../../environment/object/struct.ObjectDescription.html
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ObjectDescriptionDelta {
     /// The vertices defining the shape of the object
     /// in relation to its [`position`]

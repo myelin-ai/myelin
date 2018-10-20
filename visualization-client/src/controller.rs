@@ -1,29 +1,38 @@
+use crate::input_handler::Controller;
+use myelin_visualization_core::serialization::ViewModelDeserializer;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
 use std::fmt;
 
-pub(crate) trait Controller: fmt::Debug {
-    fn step(&mut self);
-}
 pub(crate) trait Presenter: fmt::Debug {
-    fn present_objects(&self, objects: &[ViewModelDelta]);
+    fn present_delta(&mut self, delta: ViewModelDelta);
 }
 
 #[derive(Debug)]
 pub(crate) struct ControllerImpl {
     presenter: Box<dyn Presenter>,
-    // To do:
-    // Use receiver and deserializer
+    view_model_deserializer: Box<dyn ViewModelDeserializer>,
 }
 
 impl Controller for ControllerImpl {
-    fn step(&mut self) {
-        unimplemented!()
+    fn on_message(&mut self, message: &[u8]) {
+        let view_model_delta = self
+            .view_model_deserializer
+            .deserialize_view_model_delta(message)
+            .expect("Serialized view model delta was not valid");
+
+        self.presenter.present_delta(view_model_delta);
     }
 }
 
 impl ControllerImpl {
-    pub(crate) fn new(presenter: Box<dyn Presenter>) -> Self {
-        Self { presenter }
+    pub(crate) fn new(
+        presenter: Box<dyn Presenter>,
+        view_model_deserializer: Box<dyn ViewModelDeserializer>,
+    ) -> Self {
+        Self {
+            presenter,
+            view_model_deserializer,
+        }
     }
 }
 
@@ -31,76 +40,115 @@ impl ControllerImpl {
 mod tests {
     use super::*;
     use myelin_environment::object::*;
-    use myelin_environment::object_builder::*;
+    use myelin_environment::object_builder::PolygonBuilder;
+    use myelin_visualization_core::view_model_delta::{ObjectDelta, ObjectDescriptionDelta};
     use std::cell::RefCell;
+    use std::error::Error;
+    use std::thread::panicking;
 
     #[derive(Debug)]
     struct PresenterMock {
-        expected_objects: Vec<ViewModelDelta>,
-        present_objects_was_called: RefCell<bool>,
+        expected_view_model_delta: ViewModelDelta,
+        present_delta_was_called: RefCell<bool>,
     }
 
     impl PresenterMock {
-        fn new(expected_objects: Vec<ViewModelDelta>) -> Self {
+        fn new(expected_view_model_delta: ViewModelDelta) -> Self {
             Self {
-                present_objects_was_called: RefCell::new(false),
-                expected_objects,
+                present_delta_was_called: RefCell::new(false),
+                expected_view_model_delta,
             }
         }
     }
 
     impl Presenter for PresenterMock {
-        fn present_objects(&self, objects: &[ViewModelDelta]) {
-            *self.present_objects_was_called.borrow_mut() = true;
-            self.expected_objects
-                .iter()
-                .zip(objects)
-                .for_each(|(expected, actual)| {
-                    assert_eq!(expected, actual);
-                });
+        fn present_delta(&mut self, delta: ViewModelDelta) {
+            *self.present_delta_was_called.borrow_mut() = true;
+            assert_eq!(self.expected_view_model_delta, delta);
         }
     }
 
     impl Drop for PresenterMock {
         fn drop(&mut self) {
-            assert!(*self.present_objects_was_called.borrow());
+            if !panicking() {
+                assert!(
+                    *self.present_delta_was_called.borrow(),
+                    "present_delta() was never called, but was expected"
+                );
+            }
         }
     }
 
-    fn mock_controller(expected_objects: Vec<ObjectDescription>) -> ControllerImpl {
-        unimplemented!();
+    #[derive(Debug)]
+    struct ViewModelDeserializerMock {
+        expected_data: Vec<u8>,
+        view_model_delta: ViewModelDelta,
+        deserialize_view_model_was_called: RefCell<bool>,
     }
 
-    #[ignore]
-    #[test]
-    fn propagates_empty_step() {
-        let expected_objects = vec![];
-        let mut controller = mock_controller(expected_objects);
-        controller.step();
+    impl ViewModelDeserializerMock {
+        fn new(expected_data: Vec<u8>, view_model_delta: ViewModelDelta) -> Self {
+            Self {
+                expected_data,
+                view_model_delta,
+                deserialize_view_model_was_called: RefCell::new(false),
+            }
+        }
     }
 
-    #[ignore]
+    impl ViewModelDeserializer for ViewModelDeserializerMock {
+        fn deserialize_view_model_delta(
+            &self,
+            buf: &[u8],
+        ) -> Result<ViewModelDelta, Box<dyn Error>> {
+            *self.deserialize_view_model_was_called.borrow_mut() = true;
+            assert_eq!(self.expected_data, buf);
+            Ok(self.view_model_delta.clone())
+        }
+    }
+
+    impl Drop for ViewModelDeserializerMock {
+        fn drop(&mut self) {
+            if !panicking() {
+                assert!(
+                    *self.deserialize_view_model_was_called.borrow(),
+                    "deserialize_view_model() was never called, but was expected"
+                );
+            }
+        }
+    }
+
+    fn object_description_delta() -> ObjectDescriptionDelta {
+        ObjectDescriptionDelta {
+            shape: Some(
+                PolygonBuilder::new()
+                    .vertex(-5, -5)
+                    .vertex(5, -5)
+                    .vertex(5, 5)
+                    .vertex(-5, 5)
+                    .build()
+                    .expect("Created invalid vertex"),
+            ),
+            location: Some(Location { x: 20, y: 40 }),
+            rotation: Some(Radians::new(6.0).unwrap()),
+            mobility: None,
+            kind: None,
+            sensor: None,
+        }
+    }
+
     #[test]
-    fn propagates_step() {
-        let expected_objects = vec![
-            ObjectBuilder::new()
-                .shape(
-                    PolygonBuilder::new()
-                        .vertex(-5, -5)
-                        .vertex(5, -5)
-                        .vertex(5, 5)
-                        .vertex(-5, 5)
-                        .build()
-                        .expect("Created invalid vertex"),
-                )
-                .location(20, 40)
-                .rotation(Radians::new(6.0).unwrap())
-                .mobility(Mobility::Movable(Velocity { x: 0, y: -1 }))
-                .kind(Kind::Organism)
-                .build()
-                .expect("Failed to create object"),
-        ];
-        let mut controller = mock_controller(expected_objects);
-        controller.step();
+    fn deserializes_and_calls_presenter() {
+        let data = vec![100, 124, 135, 253, 234, 122];
+        let view_model_delta = hashmap! {
+            123 => ObjectDelta::Updated(object_description_delta())
+        };
+
+        let view_model_deserializer =
+            ViewModelDeserializerMock::new(data.clone(), view_model_delta.clone());
+        let presenter = PresenterMock::new(view_model_delta.clone());
+        let mut controller = ControllerImpl::new(box presenter, box view_model_deserializer);
+
+        controller.on_message(&data);
     }
 }
