@@ -20,6 +20,7 @@ extern crate maplit;
 
 mod client;
 mod connection;
+mod connection_acceptor;
 mod constant;
 mod controller;
 mod presenter;
