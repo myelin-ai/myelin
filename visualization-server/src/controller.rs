@@ -23,7 +23,7 @@ pub(crate) trait Presenter: Debug {
     ) -> ViewModelDelta;
 }
 
-pub(crate) trait ConnectionAcceptor: Debug + Send {
+pub(crate) trait ConnectionAcceptor: Debug {
     fn run(&mut self, sender: Sender<Connection>);
 }
 
