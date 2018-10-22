@@ -25,9 +25,9 @@ impl WebsocketConnectionAcceptor {
         max_connections: usize,
         address: SocketAddr,
         client_factory_fn: Arc<ClientFactoryFn>,
-    ) -> Result<Self, ConnectionAcceptorError> {
+    ) -> Result<Self, WebsocketConnectionAcceptorError> {
         if max_connections == 0 {
-            Err(ConnectionAcceptorError::NoAllowedConnectionsError)
+            Err(WebsocketConnectionAcceptorError::NoAllowedConnectionsError)
         } else {
             Ok(Self {
                 thread_pool: ThreadPool::new(max_connections),
@@ -62,14 +62,15 @@ fn to_connection(request: Request<TcpStream, Option<Buffer>>) -> Connection {
     unimplemented!()
 }
 
-pub(crate) enum ConnectionAcceptorError {
+#[derive(Debug)]
+pub(crate) enum WebsocketConnectionAcceptorError {
     NoAllowedConnectionsError,
     WebsocketServerError(io::Error),
 }
 
-impl From<io::Error> for ConnectionAcceptorError {
+impl From<io::Error> for WebsocketConnectionAcceptorError {
     fn from(error: io::Error) -> Self {
-        ConnectionAcceptorError::WebsocketServerError(error)
+        WebsocketConnectionAcceptorError::WebsocketServerError(error)
     }
 }
 
@@ -77,7 +78,6 @@ impl From<io::Error> for ConnectionAcceptorError {
 mod mock {
     use super::*;
     use std::sync::atomic::{AtomicBool, Ordering};
-    use std::sync::mpsc::Receiver;
     use std::thread::panicking;
 
     #[derive(Debug, Default)]
@@ -115,4 +115,36 @@ mod mock {
             }
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::net::{Ipv6Addr, SocketAddrV6};
+
+    #[test]
+    fn returns_err_on_no_allowed_connections() {
+        let max_connections = 0;
+        let address = localhost();
+        let client_factory_fn = Arc::new(mock_client_factory_fn);
+
+        let connection_acceptor_result =
+            WebsocketConnectionAcceptor::new(max_connections, address, client_factory_fn);
+
+        match connection_acceptor_result {
+            Err(WebsocketConnectionAcceptorError::NoAllowedConnectionsError) => {}
+            _ => panic!("Test didn't return expected error"),
+        };
+    }
+
+    fn localhost() -> SocketAddr {
+        const RANDOM_PORT: u16 = 0;
+        let address = SocketAddrV6::new(Ipv6Addr::LOCALHOST, RANDOM_PORT, 0, 0);
+        SocketAddr::V6(address)
+    }
+
+    fn mock_client_factory_fn(connection: Connection) -> Box<dyn Client> {
+        unimplemented!()
+    }
+
 }
