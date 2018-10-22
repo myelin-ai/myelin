@@ -13,6 +13,11 @@ pipeline {
         sh 'git clean -xfd'
       }
     }
+    stage('Dependencies') {
+      stage('yarn') {
+        sh 'yarn'
+      }
+    }
     stage('Build') {
       parallel {
         stage('cargo build') {
