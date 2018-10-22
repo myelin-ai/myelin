@@ -4,6 +4,7 @@ pub use self::mock::*;
 use crate::connection::Connection;
 use crate::controller::{Client, ConnectionAcceptor};
 use std::fmt::{self, Debug};
+use std::io;
 use std::net::{SocketAddr, TcpStream};
 use std::sync::mpsc::Sender;
 use std::sync::Arc;
@@ -27,12 +28,15 @@ impl WebsocketConnectionAcceptor {
         max_connections: usize,
         address: SocketAddr,
         client_factory_fn: Arc<ClientFactoryFn>,
-        // To do: Return Result
-    ) -> Self {
-        Self {
-            thread_pool: ThreadPool::new(max_connections),
-            websocket_server: Server::bind(address).expect("unable to create server"),
-            client_factory_fn,
+    ) -> Result<Self, ConnectionAcceptorError> {
+        if max_connections == 0 {
+            Err(ConnectionAcceptorError::NoAllowedConnectionsError)
+        } else {
+            Ok(Self {
+                thread_pool: ThreadPool::new(max_connections),
+                websocket_server: Server::bind(address)?,
+                client_factory_fn,
+            })
         }
     }
 }
@@ -59,6 +63,17 @@ impl Debug for WebsocketConnectionAcceptor {
 
 fn to_connection(request: Request<TcpStream, Option<Buffer>>) -> Connection {
     unimplemented!()
+}
+
+pub(crate) enum ConnectionAcceptorError {
+    NoAllowedConnectionsError,
+    WebsocketServerError(io::Error),
+}
+
+impl From<io::Error> for ConnectionAcceptorError {
+    fn from(error: io::Error) -> Self {
+        ConnectionAcceptorError::WebsocketServerError(error)
+    }
 }
 
 #[cfg(test)]
