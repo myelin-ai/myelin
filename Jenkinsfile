@@ -13,6 +13,15 @@ pipeline {
         sh 'git clean -xfd'
       }
     }
+    stage('Dependencies') {
+      parallel {
+        stage('yarn') {
+          steps {
+            sh 'yarn'
+          }
+        }
+      }
+    }
     stage('Build') {
       parallel {
         stage('cargo build') {
@@ -63,7 +72,7 @@ pipeline {
         }
         stage('tslint') {
           steps {
-            sh '(cd visualization && tslint --project tsconfig.json \'src/**/*.ts\')'
+            sh '(cd visualization && yarn lint)'
           }
         }
       }
