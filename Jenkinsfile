@@ -68,8 +68,7 @@ pipeline {
       }
       steps {
         sh "tar -cvf docs.tar.gz target/doc/*"
-        sh "scp docs.tar.gz ${env.DOCS_SCP_UPLOAD_TARGET}"
-        sh "curl -X POST ${env.TOBY_URL} -H 'Authorization: Token ${env.TOBY_AUTHORIZATION}'"
+        sh "./.jenkins/deploy-docs.sh"
       }
     }
   }
