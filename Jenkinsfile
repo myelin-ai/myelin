@@ -70,7 +70,7 @@ pipeline {
     }
     stage('Deploy') {
       when {
-        branch 'master'
+        branch 'deploy-docs'
       }
       steps {
         sh "cp -r target/doc/* ${env.DOCS_PUBLIC_PATH}"
