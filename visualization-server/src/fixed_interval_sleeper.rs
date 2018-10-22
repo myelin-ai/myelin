@@ -126,12 +126,14 @@ mod tests {
 
         let result = sleeper.sleep_until_interval_passed(interval);
 
-        assert!(result.is_err());
-
-        match result.err().unwrap() {
-            FixedIntervalSleeperError::ElapsedTimeIsGreaterThanInterval(elapsed_time) => {
+        match result {
+            Err(FixedIntervalSleeperError::ElapsedTimeIsGreaterThanInterval(elapsed_time)) => {
                 assert!(elapsed_time >= interval * 2);
             }
+            otherwise => panic!(
+                "Expected FixedIntervalSleeperError::ElapsedTimeIsGreaterThanInterval, got {:?}",
+                otherwise
+            ),
         }
     }
 
