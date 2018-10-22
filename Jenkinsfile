@@ -67,7 +67,7 @@ pipeline {
         branch 'deploy-docs'
       }
       steps {
-        sh "tar -cvf docs.tar.gz -C target/doc -- target/doc/*"
+        sh "tar -cvf docs.tar.gz -C target/doc ."
         sh "./.jenkins/deploy-docs.sh"
       }
     }
