@@ -73,8 +73,9 @@ pipeline {
         branch 'deploy-docs'
       }
       steps {
-        sh "cp -r target/doc/* ${env.DOCS_PUBLIC_PATH}"
-        sh "cp docs/* ${env.DOCS_PUBLIC_PATH}"
+        sh "tar -cvf docs.tar.gz target/doc/*"
+        sh "scp docs.tar.gz ${env.DOCS_SCP_UPLOAD_TARGET}"
+        sh "curl -X POST ${env.TOBY_URL} -H 'Authorization: Token ${env.TOBY_AUTHORIZATION}'"
       }
     }
   }
