@@ -1,7 +1,8 @@
 {
     "license": "AGPL-3.0",
     "scripts": {
-        "serve": "webpack-dev-server"
+        "serve": "webpack-dev-server",
+        "lint": "tslint --project tsconfig.json 'src/**/*.ts'"
     },
     "devDependencies": {
         "ts-loader": "^5.2.1",

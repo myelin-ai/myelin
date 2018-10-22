@@ -157,24 +157,22 @@ mod tests {
 
     #[test]
     fn propagates_step() {
-        let expected_objects = vec![
-            ObjectBuilder::new()
-                .shape(
-                    PolygonBuilder::new()
-                        .vertex(-5, -5)
-                        .vertex(5, -5)
-                        .vertex(5, 5)
-                        .vertex(-5, 5)
-                        .build()
-                        .expect("Created invalid vertex"),
-                )
-                .location(20, 40)
-                .rotation(Radians::new(6.0).unwrap())
-                .mobility(Mobility::Movable(Velocity { x: 0, y: -1 }))
-                .kind(Kind::Organism)
-                .build()
-                .expect("Failed to create object"),
-        ];
+        let expected_objects = vec![ObjectBuilder::new()
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(-5, -5)
+                    .vertex(5, -5)
+                    .vertex(5, 5)
+                    .vertex(-5, 5)
+                    .build()
+                    .expect("Created invalid vertex"),
+            )
+            .location(20, 40)
+            .rotation(Radians::new(6.0).unwrap())
+            .mobility(Mobility::Movable(Velocity { x: 0, y: -1 }))
+            .kind(Kind::Organism)
+            .build()
+            .expect("Failed to create object")];
         let mut controller = mock_controller(expected_objects);
         controller.step();
     }
