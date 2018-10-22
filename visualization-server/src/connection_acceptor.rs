@@ -4,31 +4,49 @@ pub use self::mock::*;
 use crate::connection::Connection;
 use crate::controller::{Client, ConnectionAcceptor};
 use std::fmt::{self, Debug};
+use std::net::SocketAddr;
 use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use std::thread;
+use threadpool::ThreadPool;
+use websocket::server::upgrade::WsUpgrade as Request;
+use websocket::server::NoTlsAcceptor;
+use websocket::sync::Server;
+use websocket::OwnedMessage;
 
 pub(crate) type ClientFactoryFn = dyn Fn(Connection) -> Box<dyn Client> + Send + Sync;
 
 pub(crate) struct WebsocketConnectionAcceptor {
+    thread_pool: ThreadPool,
+    websocket_server: Server<NoTlsAcceptor>,
     client_factory_fn: Arc<ClientFactoryFn>,
 }
 
 impl WebsocketConnectionAcceptor {
-    fn new(client_factory_fn: Arc<ClientFactoryFn>) -> Self {
-        Self { client_factory_fn }
+    fn new(
+        max_connections: usize,
+        address: SocketAddr,
+        client_factory_fn: Arc<ClientFactoryFn>,
+        // To do: Return Result
+    ) -> Self {
+        Self {
+            thread_pool: ThreadPool::new(max_connections),
+            websocket_server: Server::bind(address).expect("unable to create server"),
+            client_factory_fn,
+        }
     }
 }
 
 impl ConnectionAcceptor for WebsocketConnectionAcceptor {
-    fn run(&mut self, sender: Sender<Connection>) {
-        let connection: Connection = unimplemented!();
-        let client_factory_fn = self.client_factory_fn.clone();
-        thread::spawn(move || {
-            let mut client = (client_factory_fn)(connection);
-            client.run();
-        });
-        unimplemented!()
+    fn run(self, sender: Sender<Connection>) {
+        for request in self.websocket_server.filter_map(Result::ok) {
+            let connection = to_connection(request);
+            let client_factory_fn = self.client_factory_fn.clone();
+            thread::spawn(move || {
+                let mut client = (client_factory_fn)(connection);
+                client.run();
+            });
+        }
     }
 }
 
@@ -37,6 +55,15 @@ impl Debug for WebsocketConnectionAcceptor {
         f.debug_struct(name_of_type!(WebsocketConnectionAcceptor))
             .finish()
     }
+}
+
+fn to_connection(
+    request: Request<
+        std::net::TcpStream,
+        std::option::Option<websocket::server::upgrade::sync::Buffer>,
+    >,
+) -> Connection {
+    unimplemented!()
 }
 
 #[cfg(test)]

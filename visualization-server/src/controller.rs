@@ -24,7 +24,7 @@ pub(crate) trait Presenter: Debug {
 }
 
 pub(crate) trait ConnectionAcceptor: Debug {
-    fn run(&mut self, sender: Sender<Connection>);
+    fn run(self, sender: Sender<Connection>);
 }
 
 pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send;
