@@ -6,14 +6,11 @@ use crate::controller::{Client, ConnectionAcceptor};
 use std::fmt::{self, Debug};
 use std::io;
 use std::net::{SocketAddr, TcpStream};
-use std::sync::mpsc::Sender;
 use std::sync::Arc;
-use std::thread;
 use threadpool::ThreadPool;
 use websocket::server::upgrade::{sync::Buffer, WsUpgrade as Request};
 use websocket::server::NoTlsAcceptor;
 use websocket::sync::Server;
-use websocket::OwnedMessage;
 
 pub(crate) type ClientFactoryFn = dyn Fn(Connection) -> Box<dyn Client> + Send + Sync;
 
@@ -24,7 +21,7 @@ pub(crate) struct WebsocketConnectionAcceptor {
 }
 
 impl WebsocketConnectionAcceptor {
-    fn new(
+    pub(crate) fn new(
         max_connections: usize,
         address: SocketAddr,
         client_factory_fn: Arc<ClientFactoryFn>,
