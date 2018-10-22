@@ -5,7 +5,6 @@ use myelin_environment::Simulation;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
 use std::collections::HashMap;
 use std::fmt::{self, Debug};
-use std::sync::mpsc::Sender;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
@@ -24,7 +23,7 @@ pub(crate) trait Presenter: Debug {
 }
 
 pub(crate) trait ConnectionAcceptor: Debug {
-    fn run(self, sender: Sender<Connection>);
+    fn run(self);
 }
 
 pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send;

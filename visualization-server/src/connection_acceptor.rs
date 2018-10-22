@@ -38,11 +38,11 @@ impl WebsocketConnectionAcceptor {
 }
 
 impl ConnectionAcceptor for WebsocketConnectionAcceptor {
-    fn run(self, sender: Sender<Connection>) {
+    fn run(self) {
         for request in self.websocket_server.filter_map(Result::ok) {
             let connection = to_connection(request);
             let client_factory_fn = self.client_factory_fn.clone();
-            thread::spawn(move || {
+            self.thread_pool.execute(move || {
                 let mut client = (client_factory_fn)(connection);
                 client.run();
             });
