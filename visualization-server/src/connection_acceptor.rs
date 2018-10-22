@@ -1,5 +1,5 @@
 #[cfg(test)]
-pub use self::mock::*;
+pub(crate) use self::mock::*;
 
 use crate::connection::Connection;
 use crate::controller::{Client, ConnectionAcceptor};
@@ -76,14 +76,12 @@ impl From<io::Error> for ConnectionAcceptorError {
 #[cfg(test)]
 mod mock {
     use super::*;
-    use crate::connection::Connection;
-    use crate::controller::{CurrentSnapshotFnFactory, Snapshot};
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::sync::mpsc::Receiver;
     use std::thread::panicking;
 
     #[derive(Debug, Default)]
-    struct ConnectionAcceptorMock {
+    pub(crate) struct ConnectionAcceptorMock {
         expect_run: AtomicBool,
         run_was_called: AtomicBool,
     }
