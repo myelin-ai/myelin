@@ -4,12 +4,12 @@ pub use self::mock::*;
 use crate::connection::Connection;
 use crate::controller::{Client, ConnectionAcceptor};
 use std::fmt::{self, Debug};
-use std::net::SocketAddr;
+use std::net::{SocketAddr, TcpStream};
 use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use std::thread;
 use threadpool::ThreadPool;
-use websocket::server::upgrade::WsUpgrade as Request;
+use websocket::server::upgrade::{sync::Buffer, WsUpgrade as Request};
 use websocket::server::NoTlsAcceptor;
 use websocket::sync::Server;
 use websocket::OwnedMessage;
@@ -57,12 +57,7 @@ impl Debug for WebsocketConnectionAcceptor {
     }
 }
 
-fn to_connection(
-    request: Request<
-        std::net::TcpStream,
-        std::option::Option<websocket::server::upgrade::sync::Buffer>,
-    >,
-) -> Connection {
+fn to_connection(request: Request<TcpStream, Option<Buffer>>) -> Connection {
     unimplemented!()
 }
 
