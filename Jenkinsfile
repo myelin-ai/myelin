@@ -21,6 +21,12 @@ pipeline {
           }
         }
         stage('cargo doc') {
+          when {
+            anyOf {
+              branch 'master'
+              changeRequest()
+            }
+          }
           steps {
             sh 'cargo doc --no-deps'
           }
