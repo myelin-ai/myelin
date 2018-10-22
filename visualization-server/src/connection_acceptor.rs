@@ -84,77 +84,35 @@ mod mock {
 
     #[derive(Debug, Default)]
     struct ConnectionAcceptorMock {
-        connection: Option<Connection>,
+        expect_run: AtomicBool,
         run_was_called: AtomicBool,
     }
 
-    impl ConnectionAcceptorMock {}
+    impl ConnectionAcceptorMock {
+        pub(crate) fn expect_run(&mut self) {
+            self.expect_run.store(true, Ordering::SeqCst);
+        }
+    }
 
     impl ConnectionAcceptor for ConnectionAcceptorMock {
-        fn run(&mut self, sender: Sender<Connection>) {}
-    }
-
-    #[derive(Debug, Default)]
-    struct ClientSpawnerMock {
-        expect_accept_new_connections: Option<(Connection, Snapshot)>,
-        accept_new_connections_was_called: AtomicBool,
-    }
-
-    impl ClientSpawnerMock {
-        fn expect_accept_new_connections(
-            &mut self,
-            connection: Connection,
-            current_snapshot_fn_factory: Box<CurrentSnapshotFnFactory>,
-        ) {
-            let current_snapshot_fn = current_snapshot_fn_factory();
-            let snapshot = current_snapshot_fn();
-            self.expect_accept_new_connections = Some((connection, snapshot))
+        fn run(self) {
+            assert!(
+                self.expect_run.load(Ordering::SeqCst),
+                "run() was called unexpectedly"
+            );
+            self.run_was_called.store(true, Ordering::SeqCst);
         }
     }
 
-    impl ClientSpawner for ClientSpawnerMock {
-        fn accept_new_connections(
-            &self,
-            receiver: Receiver<Connection>,
-            current_snapshot_fn_factory: Box<CurrentSnapshotFnFactory>,
-        ) {
-            self.accept_new_connections_was_called
-                .store(true, Ordering::SeqCst);
-            if let Some((ref expected_connection, ref expected_snapshot)) =
-                self.expect_accept_new_connections
-            {
-                let connection = receiver.recv().expect("Sender disconnected");
-                assert_eq!(
-                    *expected_connection, connection,
-                    "accept_new_connections() received connection {:#?}, expected {:#?}",
-                    connection, expected_connection
-                );
-                let snapshot = (current_snapshot_fn_factory)()();
-                assert_eq!(
-                    *expected_snapshot, snapshot,
-                    "accept_new_connections() received {:#?} from current_snapshot_fn_factory, expected {:#?}",
-                    snapshot, expected_snapshot
-                );
-            } else {
-                match receiver.try_recv() {
-                    Err(std::sync::mpsc::TryRecvError::Empty) => {}
-                    otherwise => panic!("No connection expected, but got {:#?}", otherwise),
-                }
-            }
-        }
-    }
-
-    impl Drop for ClientSpawnerMock {
+    impl Drop for ConnectionAcceptorMock {
         fn drop(&mut self) {
             if panicking() {
                 return;
             }
-
-            if self.expect_accept_new_connections.is_some() {
+            if self.expect_run.load(Ordering::SeqCst) {
                 assert!(
-                    self.accept_new_connections_was_called
-                        .load(Ordering::SeqCst),
-                    "accept_new_connections() was not called but was expected"
+                    self.run_was_called.load(Ordering::SeqCst),
+                    "run() was not called, but was expected"
                 );
             }
         }
