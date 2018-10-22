@@ -68,6 +68,7 @@ pipeline {
       }
       steps {
         sh "tar -cvf docs.tar.gz -C target/doc ."
+        sh "tar -rvf docs.tar.gz -C docs ."
         sh "./.jenkins/deploy-docs.sh"
       }
     }
