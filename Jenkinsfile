@@ -14,8 +14,10 @@ pipeline {
       }
     }
     stage('Dependencies') {
-      stage('yarn') {
-        sh 'yarn'
+      parallel {
+        stage('yarn') {
+          sh 'yarn'
+        }
       }
     }
     stage('Build') {
