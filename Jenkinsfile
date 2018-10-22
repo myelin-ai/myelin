@@ -70,7 +70,7 @@ pipeline {
     }
     stage('Deploy') {
       when {
-        branch 'deploy-docs'
+        branch 'master'
       }
       steps {
         sh "tar -cvf docs.tar.gz -C target/doc ."
