@@ -120,13 +120,16 @@ mod mock {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::cell::RefCell;
     use std::net::{Ipv6Addr, SocketAddrV6};
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::thread::panicking;
 
     #[test]
     fn returns_err_on_no_allowed_connections() {
         let max_connections = 0;
         let address = localhost();
-        let client_factory_fn = Arc::new(mock_client_factory_fn);
+        let client_factory_fn = mock_client_factory_fn(None);
 
         let connection_acceptor_result =
             WebsocketConnectionAcceptor::new(max_connections, address, client_factory_fn);
@@ -143,8 +146,47 @@ mod tests {
         SocketAddr::V6(address)
     }
 
-    fn mock_client_factory_fn(connection: Connection) -> Box<dyn Client> {
-        unimplemented!()
+    fn mock_client_factory_fn(
+        expected_call: Option<(Connection, ClientMock)>,
+    ) -> Arc<ClientFactoryFn> {
+        Arc::new(move |connection| {
+            let (expected_connection, return_value) =
+                expected_call.expect("No call to client_factory_fn was expected");
+
+            assert_eq!(
+                expected_connection, connection,
+                "Expected {:?}, got {:?}",
+                expected_connection, connection
+            );
+
+            Box::new(return_value.clone())
+        })
     }
 
+    #[derive(Debug, Default, Clone)]
+    struct ClientMock {
+        expect_run: RefCell<bool>,
+        run_was_called: RefCell<bool>,
+    }
+
+    impl Client for ClientMock {
+        fn run(&mut self) {
+            assert!(*self.expect_run.borrow(), "run() was called unexpectedly");
+            *self.run_was_called.borrow_mut() = true;
+        }
+    }
+
+    impl Drop for ClientMock {
+        fn drop(&mut self) {
+            if panicking() {
+                return;
+            }
+            if *self.expect_run.borrow() {
+                assert!(
+                    *self.run_was_called.borrow(),
+                    "run() was not called, but was expected"
+                );
+            }
+        }
+    }
 }
