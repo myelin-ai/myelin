@@ -150,16 +150,17 @@ mod tests {
         expected_call: Option<(Connection, ClientMock)>,
     ) -> Arc<ClientFactoryFn> {
         Arc::new(move |connection| {
-            let (expected_connection, return_value) =
-                expected_call.expect("No call to client_factory_fn was expected");
+            if let Some((ref expected_connection, ref return_value)) = expected_call {
+                assert_eq!(
+                    *expected_connection, connection,
+                    "Expected {:?}, got {:?}",
+                    expected_connection, connection
+                );
 
-            assert_eq!(
-                expected_connection, connection,
-                "Expected {:?}, got {:?}",
-                expected_connection, connection
-            );
-
-            Box::new(return_value.clone())
+                Box::new(return_value.clone())
+            } else {
+                panic!("No call to client_factory_fn was expected")
+            }
         })
     }
 

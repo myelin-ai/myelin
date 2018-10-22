@@ -85,6 +85,8 @@ mod tests {
     use std::collections::HashMap;
     use std::error::Error;
     use std::fmt::Display;
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Mutex;
     use std::thread::panicking;
     use uuid::Uuid;
     const INTERVAL: u64 = 1000 / 30;
@@ -315,9 +317,9 @@ mod tests {
 
     #[derive(Debug, Default)]
     struct SocketMock {
-        expect_send_message_and_return: Option<(Vec<u8>, Result<(), SocketErrorMock>)>,
+        expect_send_message_and_return: Mutex<Option<(Vec<u8>, Result<(), SocketErrorMock>)>>,
 
-        send_message_was_called: RefCell<bool>,
+        send_message_was_called: AtomicBool,
     }
 
     impl SocketMock {
@@ -326,16 +328,16 @@ mod tests {
             payload: Vec<u8>,
             return_value: Result<(), SocketErrorMock>,
         ) {
-            self.expect_send_message_and_return = Some((payload, return_value));
+            self.expect_send_message_and_return = Mutex::new(Some((payload, return_value)));
         }
     }
 
     impl Socket for SocketMock {
         fn send_message(&mut self, payload: &[u8]) -> Result<(), Box<dyn SocketError>> {
-            *self.send_message_was_called.borrow_mut() = true;
+            self.send_message_was_called.store(true, Ordering::SeqCst);
 
             if let Some((ref expected_payload, ref return_value)) =
-                self.expect_send_message_and_return
+                *self.expect_send_message_and_return.lock().unwrap()
             {
                 assert_eq!(
                     *expected_payload,
@@ -358,9 +360,14 @@ mod tests {
             if panicking() {
                 return;
             }
-            if self.expect_send_message_and_return.is_some() {
+            if self
+                .expect_send_message_and_return
+                .lock()
+                .unwrap()
+                .is_some()
+            {
                 assert!(
-                    *self.send_message_was_called.borrow(),
+                    self.send_message_was_called.load(Ordering::SeqCst),
                     "send_message() was not called, but expected"
                 )
             }
