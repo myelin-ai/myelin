@@ -163,16 +163,28 @@ mod tests {
         })
     }
 
-    #[derive(Debug, Default, Clone)]
+    #[derive(Debug, Default)]
     struct ClientMock {
-        expect_run: RefCell<bool>,
-        run_was_called: RefCell<bool>,
+        expect_run: AtomicBool,
+        run_was_called: AtomicBool,
+    }
+
+    impl Clone for ClientMock {
+        fn clone(&self) -> Self {
+            Self {
+                expect_run: AtomicBool::new(self.expect_run.load(Ordering::SeqCst)),
+                run_was_called: AtomicBool::new(self.run_was_called.load(Ordering::SeqCst)),
+            }
+        }
     }
 
     impl Client for ClientMock {
         fn run(&mut self) {
-            assert!(*self.expect_run.borrow(), "run() was called unexpectedly");
-            *self.run_was_called.borrow_mut() = true;
+            assert!(
+                self.expect_run.load(Ordering::SeqCst),
+                "run() was called unexpectedly"
+            );
+            self.run_was_called.store(true, Ordering::SeqCst);
         }
     }
 
@@ -181,9 +193,9 @@ mod tests {
             if panicking() {
                 return;
             }
-            if *self.expect_run.borrow() {
+            if self.expect_run.load(Ordering::SeqCst) {
                 assert!(
-                    *self.run_was_called.borrow(),
+                    self.run_was_called.load(Ordering::SeqCst),
                     "run() was not called, but was expected"
                 );
             }

@@ -2,16 +2,17 @@ use super::{Socket, SocketError};
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
 use std::io::ErrorKind as IoErrorKind;
+use std::sync::Mutex;
 use websocket::client::sync::Client;
 use websocket::message::Message;
 use websocket::result::WebSocketError;
 use websocket::stream::sync::TcpStream;
 
-pub(crate) struct WebsocketClient(Client<TcpStream>);
+pub(crate) struct WebsocketClient(Mutex<Client<TcpStream>>);
 
 impl WebsocketClient {
     pub(crate) fn new(inner: Client<TcpStream>) -> Self {
-        WebsocketClient(inner)
+        WebsocketClient(Mutex::new(inner))
     }
 }
 
@@ -26,6 +27,8 @@ impl Socket for WebsocketClient {
         let message = Message::binary(payload);
 
         self.0
+            .lock()
+            .unwrap()
             .send_message(&message)
             .map_err(WebsocketClientError::from)
             .map_err(|err| Box::new(err) as Box<dyn SocketError>)
@@ -85,7 +88,7 @@ mod test {
         let server_thread = thread::spawn(move || {
             let request = server.map(Result::ok).next().unwrap().unwrap();
             let client = request.accept().unwrap();
-            let mut socket = WebsocketClient(client);
+            let mut socket = WebsocketClient(Mutex::new(client));
 
             socket.send_message(&PAYLOAD).unwrap();
         });

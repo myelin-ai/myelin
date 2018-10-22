@@ -12,7 +12,7 @@ pub(crate) struct Connection {
     pub(crate) socket: Box<dyn Socket>,
 }
 
-pub(crate) trait Socket: Debug + Send {
+pub(crate) trait Socket: Debug + Send + Sync {
     fn send_message(&mut self, payload: &[u8]) -> Result<(), Box<dyn SocketError>>;
 }
 
