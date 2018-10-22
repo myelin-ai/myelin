@@ -5,21 +5,29 @@ use crate::connection::Connection;
 use crate::controller::{Client, ConnectionAcceptor};
 use std::fmt::{self, Debug};
 use std::sync::mpsc::Sender;
+use std::sync::Arc;
+use std::thread;
 
-pub(crate) type ClientFactoryFn = dyn Fn() -> Box<dyn Client>;
+pub(crate) type ClientFactoryFn = dyn Fn(Connection) -> Box<dyn Client> + Send + Sync;
 
 pub(crate) struct WebsocketConnectionAcceptor {
-    client_factory_fn: Box<ClientFactoryFn>,
+    client_factory_fn: Arc<ClientFactoryFn>,
 }
 
 impl WebsocketConnectionAcceptor {
-    fn new(client_factory_fn: Box<ClientFactoryFn>) -> Self {
+    fn new(client_factory_fn: Arc<ClientFactoryFn>) -> Self {
         Self { client_factory_fn }
     }
 }
 
 impl ConnectionAcceptor for WebsocketConnectionAcceptor {
     fn run(&mut self, sender: Sender<Connection>) {
+        let connection: Connection = unimplemented!();
+        let client_factory_fn = self.client_factory_fn.clone();
+        thread::spawn(move || {
+            let mut client = (client_factory_fn)(connection);
+            client.run();
+        });
         unimplemented!()
     }
 }
@@ -34,6 +42,7 @@ impl Debug for WebsocketConnectionAcceptor {
 #[cfg(test)]
 mod mock {
     use super::*;
+    use crate::connection::Connection;
     use crate::controller::{CurrentSnapshotFnFactory, Snapshot};
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::sync::mpsc::Receiver;
