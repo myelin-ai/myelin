@@ -13,6 +13,15 @@ pipeline {
         sh 'git clean -xfd'
       }
     }
+    stage('Dependencies') {
+      parallel {
+        stage('yarn') {
+          steps {
+            sh 'yarn'
+          }
+        }
+      }
+    }
     stage('Build') {
       parallel {
         stage('cargo build') {
@@ -63,7 +72,7 @@ pipeline {
         }
         stage('tslint') {
           steps {
-            sh '(cd visualization && tslint --project tsconfig.json \'src/**/*.ts\')'
+            sh '(cd visualization && yarn lint)'
           }
         }
       }
@@ -73,8 +82,9 @@ pipeline {
         branch 'master'
       }
       steps {
-        sh "cp -r target/doc/* ${env.DOCS_PUBLIC_PATH}"
-        sh "cp docs/* ${env.DOCS_PUBLIC_PATH}"
+        sh "tar -cvf docs.tar.gz -C target/doc ."
+        sh "tar -rvf docs.tar.gz -C docs ."
+        sh "./.jenkins/deploy-docs.sh"
       }
     }
   }
