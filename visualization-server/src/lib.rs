@@ -18,6 +18,9 @@ extern crate nameof;
 #[cfg(test)]
 extern crate maplit;
 
+#[macro_use]
+mod fixed_interval_sleeper;
+
 mod client;
 mod connection;
 mod constant;
