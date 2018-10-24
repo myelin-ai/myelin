@@ -120,10 +120,10 @@ mod mock {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::cell::RefCell;
     use std::net::{Ipv6Addr, SocketAddrV6};
     use std::sync::atomic::{AtomicBool, Ordering};
-    use std::thread::panicking;
+    use std::thread::{self, panicking};
+    use websocket::{ClientBuilder, Message};
 
     #[test]
     fn returns_err_on_no_allowed_connections() {
@@ -138,6 +138,27 @@ mod tests {
             Err(WebsocketConnectionAcceptorError::NoAllowedConnectionsError) => {}
             _ => panic!("Test didn't return expected error"),
         };
+    }
+
+    #[test]
+    fn panics_on_invalid_message() {
+        let max_connections = 1;
+        let address = localhost();
+        let client_factory_fn = mock_client_factory_fn(None);
+
+        let connection_acceptor =
+            WebsocketConnectionAcceptor::new(max_connections, address, client_factory_fn).unwrap();
+
+        let acceptor_thread = thread::spawn(move || {
+            connection_acceptor.run();
+        });
+        let mut client = ClientBuilder::new(&address.to_string())
+            .unwrap()
+            .connect_insecure()
+            .unwrap();
+        let message = Message::text("Hello, World!");
+        client.send_message(&message).unwrap();
+        // To do: How do we check if acceptor_thread panicked?
     }
 
     fn localhost() -> SocketAddr {
