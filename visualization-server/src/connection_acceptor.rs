@@ -158,7 +158,10 @@ mod tests {
             .unwrap();
         let message = Message::text("Hello, World!");
         client.send_message(&message).unwrap();
-        // To do: How do we check if acceptor_thread panicked?
+
+        // If the test fails, this will timeout in 60 seconds
+        let result = acceptor_thread.join();
+        assert!(result.is_err());
     }
 
     fn localhost() -> SocketAddr {
