@@ -10,7 +10,7 @@ use std::sync::Arc;
 use threadpool::ThreadPool;
 use websocket::server::upgrade::{sync::Buffer, WsUpgrade as Request};
 use websocket::server::NoTlsAcceptor;
-use websocket::sync::Server;
+use websocket::sync::{Client as WsClient, Server};
 
 pub(crate) type ClientFactoryFn = dyn Fn(Connection) -> Box<dyn Client> + Send + Sync;
 
@@ -41,12 +41,16 @@ impl WebsocketConnectionAcceptor {
 impl ConnectionAcceptor for WebsocketConnectionAcceptor {
     fn run(self) {
         for request in self.websocket_server.filter_map(Result::ok) {
-            let connection = to_connection(request);
             let client_factory_fn = self.client_factory_fn.clone();
             self.thread_pool.execute(move || {
-                let mut client = (client_factory_fn)(connection);
-                client.run();
-            });
+                if should_accept(&request) {
+                    if let Ok(client) = request.accept() {
+                        let connection = to_connection(client);
+                        let mut client = (client_factory_fn)(connection);
+                        client.run();
+                    }
+                }
+            })
         }
     }
 }
@@ -58,7 +62,11 @@ impl Debug for WebsocketConnectionAcceptor {
     }
 }
 
-fn to_connection(request: Request<TcpStream, Option<Buffer>>) -> Connection {
+fn should_accept(_request: &Request<TcpStream, Option<Buffer>>) -> bool {
+    true
+}
+
+fn to_connection(client: WsClient<TcpStream>) -> Connection {
     unimplemented!()
 }
 
