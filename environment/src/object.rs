@@ -138,6 +138,7 @@ pub struct Radians {
 }
 
 impl Radians {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(value: f64) -> Option<Radians> {
         if value >= 0.0 && value < 2.0 * PI {
             Some(Radians { value })
@@ -146,7 +147,7 @@ impl Radians {
         }
     }
 
-    pub fn value(&self) -> f64 {
+    pub fn value(self) -> f64 {
         self.value
     }
 }
