@@ -2,7 +2,7 @@ use crate::constant::SIMULATED_TIMESTEP;
 use crate::controller::{Controller, ControllerImpl};
 use crate::presenter::DeltaPresenter;
 use myelin_environment::object::{Kind, ObjectBehavior};
-use myelin_environment::simulation_impl::world::collision_filter::CollisionFilterImpl;
+use myelin_environment::simulation_impl::world::collision_filter::IgnoringCollisionFilter;
 use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
 use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
 use myelin_environment::simulation_impl::world::NphysicsWorld;
@@ -45,7 +45,7 @@ fn run_simulation(tx: Sender<Vec<u8>>) {
             let rotation_translator = NphysicsRotationTranslatorImpl::default();
             let force_applier = SingleTimeForceApplierImpl::default();
             // TODO
-            let collision_filter = CollisionFilterImpl {};
+            let collision_filter = IgnoringCollisionFilter::new(Kind::Plant);
             let world = Box::new(NphysicsWorld::with_timestep(
                 SIMULATED_TIMESTEP,
                 Box::new(rotation_translator),
