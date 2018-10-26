@@ -215,6 +215,7 @@ dependencies = [
 name = "myelin-environment"
 version = "0.1.0"
 dependencies = [
+ "alga 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "nalgebra 0.16.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "ncollide2d 0.17.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "nphysics2d 0.9.2 (registry+https://github.com/rust-lang/crates.io-index)",
