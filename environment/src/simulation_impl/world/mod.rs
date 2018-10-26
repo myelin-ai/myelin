@@ -6,6 +6,7 @@
 //! [`Objects`]: ../object/struct.Body.html
 use super::{BodyHandle, PhysicalBody, SensorHandle, World};
 use crate::object::*;
+use crate::simulation_impl::world::collision_filter::{CollisionFilter, CollisionFilterWrapper};
 use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::query::Proximity;
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
@@ -23,6 +24,7 @@ use std::fmt;
 
 type PhysicsType = f64;
 
+pub mod collision_filter;
 pub mod force_applier;
 pub mod rotation_translator;
 use self::force_applier::GenericSingleTimeForceApplierWrapper;
@@ -64,6 +66,13 @@ impl NphysicsWorld {
         physics_world.set_timestep(timestep);
         let generic_wrapper = GenericSingleTimeForceApplierWrapper::new(force_applier);
         let force_generator_handle = physics_world.add_force_generator(generic_wrapper);
+
+        let pair_filter = physics_world
+            .collision_world_mut()
+            .register_broad_phase_pair_filter(
+                "Collision Filter",
+                CollisionFilterWrapper { collision_filter },
+            );
 
         Self {
             physics_world,
