@@ -57,6 +57,7 @@ impl NphysicsWorld {
         timestep: f64,
         rotation_translator: Box<dyn NphysicsRotationTranslator>,
         force_applier: Box<dyn SingleTimeForceApplier>,
+        collision_filter: Box<dyn CollisionFilter<PhysicsType>>,
     ) -> Self {
         let mut physics_world = PhysicsWorld::new();
 
