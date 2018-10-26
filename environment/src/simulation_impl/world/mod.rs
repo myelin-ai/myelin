@@ -781,7 +781,7 @@ mod tests {
             Box::new(rotation_translator),
             Box::new(force_applier),
         );
-        let invalid_handle = BodyHandle(132144);
+        let invalid_handle = BodyHandle(132_144);
         let sensor_handle = world.attach_sensor(invalid_handle, sensor());
         assert!(sensor_handle.is_none())
     }
@@ -795,7 +795,7 @@ mod tests {
             Box::new(rotation_translator),
             Box::new(force_applier),
         );
-        let invalid_handle = SensorHandle(112358);
+        let invalid_handle = SensorHandle(112_358);
         let body_handles = world.bodies_within_sensor(invalid_handle);
 
         assert!(body_handles.is_none())
