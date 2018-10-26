@@ -7,7 +7,8 @@
     rust_2018_idioms,
     missing_debug_implementations,
     clippy::missing_doc,
-    clippy::doc_markdown
+    clippy::doc_markdown,
+    clippy::unimplemented
 )]
 
 pub mod object;
