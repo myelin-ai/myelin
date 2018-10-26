@@ -263,7 +263,7 @@ mod tests {
     }
     impl Drop for SimulationMock {
         fn drop(&mut self) {
-            assert!(self.objects.len() > 0);
+            assert!(!self.objects.is_empty());
         }
     }
 

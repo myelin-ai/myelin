@@ -1021,7 +1021,10 @@ mod tests {
                 self.expect_to_nphysics_rotation_and_return
             {
                 if orientation != expected_input {
-                    panic!("to_nphysics_rotation() was called with an unexpected input value: {:?}")
+                    panic!(
+                        "to_nphysics_rotation() was called with an unexpected input value: {:?}",
+                        orientation
+                    )
                 }
 
                 expected_output
@@ -1035,7 +1038,10 @@ mod tests {
 
             if let Some((expected_input, expected_output)) = self.expect_to_radians_and_return {
                 if nphysics_rotation != expected_input {
-                    panic!("to_radians() was called with an unexpected input value: {:?}")
+                    panic!(
+                        "to_radians() was called with an unexpected input value: {:?}",
+                        nphysics_rotation
+                    )
                 }
 
                 expected_output
