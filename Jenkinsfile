@@ -37,7 +37,7 @@ pipeline {
             }
           }
           steps {
-            sh 'cargo doc --no-deps'
+            sh 'cargo doc'
           }
         }
         stage('wasm') {
