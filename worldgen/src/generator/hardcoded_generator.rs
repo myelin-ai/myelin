@@ -200,7 +200,7 @@ fn build_organism(x: u32, y: u32) -> ObjectDescription {
                 .expect("Generated an invalid vertex"),
         )
         .location(x, y)
-        .rotation(Radians::new(FRAC_PI_2).unwrap())
+        .rotation(Radians::try_new(FRAC_PI_2).unwrap())
         .mobility(Mobility::Movable(Velocity::default()))
         .kind(Kind::Organism)
         .sensor(Sensor {
@@ -263,7 +263,7 @@ mod tests {
     }
     impl Drop for SimulationMock {
         fn drop(&mut self) {
-            assert!(self.objects.len() > 0);
+            assert!(!self.objects.is_empty());
         }
     }
 
