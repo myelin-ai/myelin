@@ -42,7 +42,7 @@ mod tests {
                     .unwrap(),
             )
             .location(300, 450)
-            .rotation(Radians::new(FRAC_PI_2).unwrap())
+            .rotation(Radians::try_new(FRAC_PI_2).unwrap())
             .kind(Kind::Organism)
             .mobility(Mobility::Movable(Velocity { x: 3, y: 5 }))
             .build()
