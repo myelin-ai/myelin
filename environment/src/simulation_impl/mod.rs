@@ -813,7 +813,7 @@ mod tests {
     fn position() -> Position {
         Position {
             location: Location { x: 30, y: 40 },
-            rotation: Radians::new(3.4).unwrap(),
+            rotation: Radians::try_new(3.4).unwrap(),
         }
     }
 
