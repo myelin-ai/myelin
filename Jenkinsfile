@@ -31,10 +31,15 @@ pipeline {
         }
         stage('cargo doc') {
           when {
-            anyOf {
-              branch 'master'
-              changeRequest()
-            }
+            branch 'master'
+          }
+          steps {
+            sh 'cargo doc'
+          }
+        }
+        stage('cargo doc --no-deps') {
+          when {
+            changeRequest()
           }
           steps {
             sh 'cargo doc --no-deps'
