@@ -17,7 +17,7 @@ pipeline {
       parallel {
         stage('yarn') {
           steps {
-            sh '(cd visualization && yarn)'
+            sh '(cd visualization-client && yarn)'
           }
         }
       }
