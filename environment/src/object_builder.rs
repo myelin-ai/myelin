@@ -15,7 +15,7 @@
 //!             .build()
 //!             .unwrap(),
 //!     ).location(300, 450)
-//!     .rotation(Radians::new(FRAC_PI_2).unwrap())
+//!     .rotation(Radians::try_new(FRAC_PI_2).unwrap())
 //!     .kind(Kind::Organism)
 //!     .mobility(Mobility::Movable(Velocity{x: 3, y: 5}))
 //!     .build()
@@ -150,7 +150,7 @@ impl ObjectBuilder {
     /// use myelin_environment::object_builder::ObjectBuilder;
     /// use myelin_environment::object::Radians;
     /// ObjectBuilder::new()
-    ///     .rotation(Radians::new(4.5).unwrap());
+    ///     .rotation(Radians::try_new(4.5).unwrap());
     /// ```
     pub fn rotation(&mut self, rotation: Radians) -> &mut Self {
         self.rotation = Some(rotation);
@@ -178,7 +178,7 @@ impl ObjectBuilder {
     ///             .build()
     ///             .unwrap(),
     ///     ).location(300, 450)
-    ///     .rotation(Radians::new(FRAC_PI_2).unwrap())
+    ///     .rotation(Radians::try_new(FRAC_PI_2).unwrap())
     ///     .kind(Kind::Organism)
     ///     .mobility(Mobility::Movable(Velocity{x: 3, y: 5}))
     ///     .build()
@@ -329,7 +329,7 @@ mod test {
     fn test_object_builder_should_error_for_missing_shape() {
         let result = ObjectBuilder::new()
             .location(10, 10)
-            .rotation(Radians::new(0.0).unwrap())
+            .rotation(Radians::try_new(0.0).unwrap())
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
             .build();
@@ -356,7 +356,7 @@ mod test {
                     .unwrap(),
             )
             .location(10, 10)
-            .rotation(Radians::new(0.0).unwrap())
+            .rotation(Radians::try_new(0.0).unwrap())
             .mobility(Mobility::Immovable)
             .build();
         assert_eq!(
@@ -380,7 +380,7 @@ mod test {
                     .build()
                     .unwrap(),
             )
-            .rotation(Radians::new(0.0).unwrap())
+            .rotation(Radians::try_new(0.0).unwrap())
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
             .build();
@@ -406,7 +406,7 @@ mod test {
                     .build()
                     .unwrap(),
             )
-            .rotation(Radians::new(0.0).unwrap())
+            .rotation(Radians::try_new(0.0).unwrap())
             .location(30, 40)
             .kind(Kind::Plant)
             .build();
@@ -447,7 +447,7 @@ mod test {
                 ],
             },
             position: Position {
-                rotation: Radians::new(0.0).unwrap(),
+                rotation: Radians::try_new(0.0).unwrap(),
                 location: Location { x: 30, y: 40 },
             },
             kind: Kind::Terrain,
@@ -488,7 +488,7 @@ mod test {
             .mobility(Mobility::Movable(Velocity { x: -12, y: 5 }))
             .kind(Kind::Organism)
             .location(30, 40)
-            .rotation(Radians::new(1.1).unwrap())
+            .rotation(Radians::try_new(1.1).unwrap())
             .sensor(Sensor {
                 shape: PolygonBuilder::new()
                     .vertex(2, 0)
@@ -498,7 +498,7 @@ mod test {
                     .unwrap(),
                 position: Position {
                     location: Location { x: 12, y: 42 },
-                    rotation: Radians::new(1.2).unwrap(),
+                    rotation: Radians::try_new(1.2).unwrap(),
                 },
             })
             .build();
@@ -506,7 +506,7 @@ mod test {
         let expected = ObjectDescription {
             position: Position {
                 location: Location { x: 30, y: 40 },
-                rotation: Radians::new(1.1).unwrap(),
+                rotation: Radians::try_new(1.1).unwrap(),
             },
             mobility: Mobility::Movable(Velocity { x: -12, y: 5 }),
             kind: Kind::Organism,
@@ -528,7 +528,7 @@ mod test {
                 },
                 position: Position {
                     location: Location { x: 12, y: 42 },
-                    rotation: Radians::new(1.2).unwrap(),
+                    rotation: Radians::try_new(1.2).unwrap(),
                 },
             }),
         };

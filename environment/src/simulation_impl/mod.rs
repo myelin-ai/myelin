@@ -813,7 +813,7 @@ mod tests {
     fn position() -> Position {
         Position {
             location: Location { x: 30, y: 40 },
-            rotation: Radians::new(3.4).unwrap(),
+            rotation: Radians::try_new(3.4).unwrap(),
         }
     }
 
@@ -974,7 +974,7 @@ mod tests {
             *self.add_body_was_called.borrow_mut() = true;
             if let Some((ref expected_body, ref return_value)) = self.expect_add_body_and_return {
                 if body == *expected_body {
-                    return_value.clone()
+                    *return_value
                 } else {
                     panic!(
                         "add_body() was called with {:?}, expected {:?}",
@@ -1014,7 +1014,7 @@ mod tests {
                 self.expect_attach_sensor_and_return
             {
                 if body_handle == *expected_handle && sensor == *expected_sensor {
-                    return_value.clone()
+                    *return_value
                 } else {
                     panic!(
                         "attach_sensor() was called with {:?} and {:?}, expected {:?} and {:?}",
@@ -1065,7 +1065,7 @@ mod tests {
                 self.expect_apply_force_and_return
             {
                 if body_handle == *expected_body_handle && force == *expected_force {
-                    return_value.clone()
+                    *return_value
                 } else {
                     panic!(
                         "apply_force() was called with {:?} and {:?}, expected {:?} and {:?}",
