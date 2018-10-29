@@ -107,11 +107,16 @@ mod tests {
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
-            collision_filter,
+            collision_filter.clone(),
         );
 
         let expected_object = physical_body();
         let handle = world.add_body(expected_object.clone());
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_body_ignored_and_return(VecDeque::from(vec![(handle, false)]));
 
         let force = Force {
             linear: LinearForce { x: 1000, y: 2000 },

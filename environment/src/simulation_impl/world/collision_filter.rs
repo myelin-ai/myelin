@@ -8,13 +8,11 @@ use std::collections::HashSet;
 use std::fmt::Debug;
 use std::sync::{Arc, RwLock};
 
-pub trait IgnoringCollisionFilter<N>: BroadPhasePairFilter<N, ColliderData<N>> + Debug
-where
-    N: Real,
-{
+pub trait IgnoringCollisionFilter: Send + Sync + Debug {
     fn add_ignored_body_handle(&mut self, body_handle: BodyHandle);
     fn is_body_ignored(&self, body_handle: BodyHandle) -> bool;
     fn remove_ignored_body_handle(&mut self, body_handle: BodyHandle);
+    fn is_pair_valid(&self, b1: BodyHandle, b2: BodyHandle) -> bool;
 }
 
 #[derive(Debug, Default)]
@@ -24,10 +22,7 @@ pub struct IgnoringCollisionFilterImpl {
 
 impl IgnoringCollisionFilterImpl {}
 
-impl<N> IgnoringCollisionFilter<N> for IgnoringCollisionFilterImpl
-where
-    N: Real,
-{
+impl IgnoringCollisionFilter for IgnoringCollisionFilterImpl {
     fn add_ignored_body_handle(&mut self, body_handle: BodyHandle) {
         self.ignored_body_handles.insert(body_handle);
     }
@@ -39,31 +34,18 @@ where
     fn remove_ignored_body_handle(&mut self, body_handle: BodyHandle) {
         self.ignored_body_handles.remove(&body_handle);
     }
-}
 
-impl<N> BroadPhasePairFilter<N, ColliderData<N>> for IgnoringCollisionFilterImpl
-where
-    N: Real,
-{
-    fn is_pair_valid(
-        &self,
-        b1: &CollisionObject<N, ColliderData<N>>,
-        b2: &CollisionObject<N, ColliderData<N>>,
-    ) -> bool {
-        let body_handle1 = to_body_handle(b1.handle());
-        let body_handle2 = to_body_handle(b2.handle());
-
-        !(self.ignored_body_handles.contains(&body_handle1)
-            || self.ignored_body_handles.contains(&body_handle2))
+    fn is_pair_valid(&self, b1: BodyHandle, b2: BodyHandle) -> bool {
+        !(self.ignored_body_handles.contains(&b1) || self.ignored_body_handles.contains(&b2))
     }
 }
 
 #[derive(Debug)]
-pub struct IgnoringCollisionFilterWrapper<N> {
-    pub(crate) collision_filter: Arc<RwLock<dyn IgnoringCollisionFilter<N>>>,
+pub struct IgnoringCollisionFilterWrapper {
+    pub(crate) collision_filter: Arc<RwLock<dyn IgnoringCollisionFilter>>,
 }
 
-impl<N> BroadPhasePairFilter<N, ColliderData<N>> for IgnoringCollisionFilterWrapper<N>
+impl<N> BroadPhasePairFilter<N, ColliderData<N>> for IgnoringCollisionFilterWrapper
 where
     N: Real,
 {
@@ -75,7 +57,7 @@ where
         self.collision_filter
             .read()
             .expect("Lock was poisoned")
-            .is_pair_valid(b1, b2)
+            .is_pair_valid(to_body_handle(b1.handle()), to_body_handle(b2.handle()))
     }
 }
 
@@ -91,20 +73,11 @@ mod mock {
     use std::thread::panicking;
 
     #[derive(Default)]
-    pub(crate) struct IgnoringCollisionFilterMock<N>
-    where
-        N: Real,
-    {
+    pub(crate) struct IgnoringCollisionFilterMock {
         expect_add_ignored_body_handle: Option<BodyHandle>,
         expect_is_body_ignored_and_return: RwLock<VecDeque<(BodyHandle, bool)>>,
         expect_remove_ignored_body_handle: Option<BodyHandle>,
-        expect_is_pair_valid_and_return: Option<(
-            (
-                CollisionObject<N, ColliderData<N>>,
-                CollisionObject<N, ColliderData<N>>,
-            ),
-            bool,
-        )>,
+        expect_is_pair_valid_and_return: Option<((BodyHandle, BodyHandle), bool)>,
 
         add_ignored_body_handle_was_called: AtomicBool,
         is_body_ignored_was_called: AtomicU32,
@@ -112,10 +85,7 @@ mod mock {
         is_pair_valid_was_called: AtomicBool,
     }
 
-    impl<N> IgnoringCollisionFilterMock<N>
-    where
-        N: Real,
-    {
+    impl IgnoringCollisionFilterMock {
         pub fn expect_add_ignored_body_handle(&mut self, body_handle: BodyHandle) -> &mut Self {
             self.expect_add_ignored_body_handle = Some(body_handle);
             self
@@ -136,19 +106,16 @@ mod mock {
 
         pub fn expect_is_pair_valid_and_return(
             &mut self,
-            o1: CollisionObject<N, ColliderData<N>>,
-            o2: CollisionObject<N, ColliderData<N>>,
+            b1: BodyHandle,
+            b2: BodyHandle,
             is_valid: bool,
         ) -> &mut Self {
-            self.expect_is_pair_valid_and_return = Some(((o1, o2), is_valid));
+            self.expect_is_pair_valid_and_return = Some(((b1, b2), is_valid));
             self
         }
     }
 
-    impl<N> Drop for IgnoringCollisionFilterMock<N>
-    where
-        N: Real,
-    {
+    impl Drop for IgnoringCollisionFilterMock {
         fn drop(&mut self) {
             if panicking() {
                 return;
@@ -156,20 +123,14 @@ mod mock {
         }
     }
 
-    impl<N> Debug for IgnoringCollisionFilterMock<N>
-    where
-        N: Real,
-    {
+    impl Debug for IgnoringCollisionFilterMock {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            f.debug_struct(name_of_type!(IgnoringCollisionFilterMock<N>))
+            f.debug_struct(name_of_type!(IgnoringCollisionFilterMock))
                 .finish()
         }
     }
 
-    impl<N> IgnoringCollisionFilter<N> for IgnoringCollisionFilterMock<N>
-    where
-        N: Real,
-    {
+    impl IgnoringCollisionFilter for IgnoringCollisionFilterMock {
         fn add_ignored_body_handle(&mut self, body_handle: BodyHandle) {
             self.add_ignored_body_handle_was_called
                 .store(true, Ordering::SeqCst);
@@ -226,27 +187,18 @@ mod mock {
                 panic!("remove_ignored_body_handle() was called unexpectedly")
             }
         }
-    }
 
-    impl<N> BroadPhasePairFilter<N, ColliderData<N>> for IgnoringCollisionFilterMock<N>
-    where
-        N: Real,
-    {
-        fn is_pair_valid(
-            &self,
-            b1: &CollisionObject<N, ColliderData<N>>,
-            b2: &CollisionObject<N, ColliderData<N>>,
-        ) -> bool {
+        fn is_pair_valid(&self, b1: BodyHandle, b2: BodyHandle) -> bool {
             self.is_pair_valid_was_called.store(true, Ordering::SeqCst);
 
             if let Some(((ref expected_b1, ref expected_b2), expected_output)) =
                 self.expect_is_pair_valid_and_return
             {
-                if b1.handle() != expected_b1.handle() || b2.handle() != expected_b2.handle() {
+                if b1 != *expected_b1 || b2 != *expected_b2 {
                     panic!(
                         "is_pair_valid() was called with an unexpected input values: handle1: {:?} and handle2: {:?}",
-                        b1.handle(),
-                        b2.handle()
+                        b1,
+                        b2
                     )
                 }
 

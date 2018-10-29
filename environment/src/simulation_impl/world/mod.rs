@@ -44,7 +44,7 @@ pub struct NphysicsWorld {
     body_sensors: HashMap<BodyHandle, SensorHandle>,
     rotation_translator: Box<dyn NphysicsRotationTranslator>,
     force_generator_handle: ForceGeneratorHandle,
-    collision_filter: Arc<RwLock<dyn IgnoringCollisionFilter<PhysicsType>>>,
+    collision_filter: Arc<RwLock<dyn IgnoringCollisionFilter>>,
 }
 
 impl NphysicsWorld {
@@ -63,7 +63,7 @@ impl NphysicsWorld {
         timestep: f64,
         rotation_translator: Box<dyn NphysicsRotationTranslator>,
         force_applier: Box<dyn SingleTimeForceApplier>,
-        collision_filter: Arc<RwLock<dyn IgnoringCollisionFilter<PhysicsType>>>,
+        collision_filter: Arc<RwLock<dyn IgnoringCollisionFilter>>,
     ) -> Self {
         let mut physics_world = PhysicsWorld::new();
 
@@ -852,14 +852,14 @@ mod tests {
         };
         let handle_two = world.add_body(close_body);
 
-        // collision_filter
-        //     .write()
-        //     .expect("RwLock was poisoned")
-        //     .expect_is_body_ignored_and_return(VecDeque::from(vec![
-        //         (handle_one, false),
-        //         (handle_two, false),
-        //     ]))
-        //     .expect_is_pair_valid_and_return(handle_one, handle_two, true);
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_body_ignored_and_return(VecDeque::from(vec![
+                (handle_one, false),
+                (handle_two, false),
+            ]))
+            .expect_is_pair_valid_and_return(handle_one, handle_two, true);
 
         world.step();
 
