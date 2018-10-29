@@ -13,14 +13,12 @@ use websocket::server::upgrade::{sync::Buffer, WsUpgrade as Request};
 use websocket::server::NoTlsAcceptor;
 use websocket::sync::{Client as WsClient, Server};
 
-pub(crate) type ClientFactoryFn = dyn Fn(Connection) -> Box<dyn Client> + Send + Sync;
-pub(crate) type SocketFactoryFn = dyn Fn(WsClient<TcpStream>) -> Box<dyn Socket> + Send + Sync;
+pub(crate) type ClientFactoryFn = dyn Fn(WsClient<TcpStream>) -> Box<dyn Client> + Send + Sync;
 pub(crate) type ThreadSpawnFn = dyn Fn(Box<dyn FnBox() + Send>) + Send + Sync;
 
 pub(crate) struct WebsocketConnectionAcceptor {
     websocket_server: Server<NoTlsAcceptor>,
     client_factory_fn: Arc<ClientFactoryFn>,
-    socket_factory_fn: Arc<SocketFactoryFn>,
     thread_spawn_fn: Box<ThreadSpawnFn>,
 }
 
@@ -28,13 +26,11 @@ impl WebsocketConnectionAcceptor {
     pub(crate) fn try_new(
         address: SocketAddr,
         client_factory_fn: Arc<ClientFactoryFn>,
-        socket_factory_fn: Arc<SocketFactoryFn>,
         thread_spawn_fn: Box<ThreadSpawnFn>,
     ) -> Result<Self, io::Error> {
         Ok(Self {
             websocket_server: Server::bind(address)?,
             client_factory_fn,
-            socket_factory_fn,
             thread_spawn_fn,
         })
     }
@@ -44,12 +40,10 @@ impl ConnectionAcceptor for WebsocketConnectionAcceptor {
     fn run(self) {
         for request in self.websocket_server.filter_map(Result::ok) {
             let client_factory_fn = self.client_factory_fn.clone();
-            let socket_factory_fn = self.socket_factory_fn.clone();
             (self.thread_spawn_fn)(Box::new(move || {
                 if should_accept(&request) {
-                    if let Ok(client) = request.accept() {
-                        let connection = to_connection(client, socket_factory_fn);
-                        let mut client = (client_factory_fn)(connection);
+                    if let Ok(client_stream) = request.accept() {
+                        let mut client = (client_factory_fn)(client_stream);
                         client.run();
                     }
                 }
@@ -62,15 +56,6 @@ impl ConnectionAcceptor for WebsocketConnectionAcceptor {
             .local_addr()
             .expect("Unable to get local_addr() from socket")
     }
-}
-
-fn to_connection(
-    client: WsClient<TcpStream>,
-    socket_factory_fn: Arc<SocketFactoryFn>,
-) -> Connection {
-    let id = Uuid::new_v4();
-    let socket = (socket_factory_fn)(client);
-    Connection { id, socket }
 }
 
 impl Debug for WebsocketConnectionAcceptor {
@@ -144,16 +129,11 @@ mod tests {
     fn accepts_connections() {
         let address = localhost();
         let client_factory_fn = mock_client_factory_fn(None);
-        let socket_factory_fn = mock_socket_factory_fn(Some(SocketMock::default()));
         let main_thread_spawn_fn = main_thread_spawn_fn();
 
-        let connection_acceptor = WebsocketConnectionAcceptor::try_new(
-            address,
-            client_factory_fn,
-            socket_factory_fn,
-            main_thread_spawn_fn,
-        )
-        .unwrap();
+        let connection_acceptor =
+            WebsocketConnectionAcceptor::try_new(address, client_factory_fn, main_thread_spawn_fn)
+                .unwrap();
 
         let address = connection_acceptor.address();
         let acceptor_thread = thread::spawn(move || {
@@ -173,16 +153,11 @@ mod tests {
     fn respects_max_connections() {
         let address = localhost();
         let client_factory_fn = mock_client_factory_fn(None);
-        let socket_factory_fn = mock_socket_factory_fn(Some(SocketMock::default()));
         let main_thread_spawn_fn = main_thread_spawn_fn();
 
-        let connection_acceptor = WebsocketConnectionAcceptor::try_new(
-            address,
-            client_factory_fn,
-            socket_factory_fn,
-            main_thread_spawn_fn,
-        )
-        .unwrap();
+        let connection_acceptor =
+            WebsocketConnectionAcceptor::try_new(address, client_factory_fn, main_thread_spawn_fn)
+                .unwrap();
 
         let address = connection_acceptor.address();
         let acceptor_thread = thread::spawn(move || {
@@ -209,30 +184,12 @@ mod tests {
         SocketAddr::V4(address)
     }
 
-    fn mock_client_factory_fn(
-        expected_call: Option<(Connection, ClientMock)>,
-    ) -> Arc<ClientFactoryFn> {
-        Arc::new(move |connection| {
-            if let Some((ref expected_connection, ref return_value)) = expected_call {
-                assert_eq!(
-                    *expected_connection, connection,
-                    "Expected {:?}, got {:?}",
-                    expected_connection, connection
-                );
-
+    fn mock_client_factory_fn(expected_call: Option<ClientMock>) -> Arc<ClientFactoryFn> {
+        Arc::new(move |_client_stream| {
+            if let Some(ref return_value) = expected_call {
                 Box::new(return_value.clone())
             } else {
                 panic!("No call to client_factory_fn was expected")
-            }
-        })
-    }
-
-    fn mock_socket_factory_fn(return_value: Option<SocketMock>) -> Arc<SocketFactoryFn> {
-        Arc::new(move |_| {
-            if let Some(ref return_value) = return_value {
-                Box::new(return_value.clone())
-            } else {
-                panic!("No call to socket_factory_fn was expected")
             }
         })
     }
