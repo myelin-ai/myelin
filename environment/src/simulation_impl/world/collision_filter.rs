@@ -85,8 +85,9 @@ pub(crate) use self::mock::IgnoringCollisionFilterMock;
 #[cfg(test)]
 mod mock {
     use super::*;
+    use std::collections::VecDeque;
     use std::fmt::{self, Debug};
-    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
     use std::thread::panicking;
 
     #[derive(Default)]
@@ -95,7 +96,7 @@ mod mock {
         N: Real,
     {
         expect_add_ignored_body_handle: Option<BodyHandle>,
-        expect_is_body_ignored_and_return: Option<(BodyHandle, bool)>,
+        expect_is_body_ignored_and_return: RwLock<VecDeque<(BodyHandle, bool)>>,
         expect_remove_ignored_body_handle: Option<BodyHandle>,
         expect_is_pair_valid_and_return: Option<(
             (
@@ -106,7 +107,7 @@ mod mock {
         )>,
 
         add_ignored_body_handle_was_called: AtomicBool,
-        is_body_ignored_was_called: AtomicBool,
+        is_body_ignored_was_called: AtomicU32,
         remove_ignored_body_handle_was_called: AtomicBool,
         is_pair_valid_was_called: AtomicBool,
     }
@@ -115,25 +116,32 @@ mod mock {
     where
         N: Real,
     {
-        fn expect_add_ignored_body_handle(&mut self, body_handle: BodyHandle) {
+        pub fn expect_add_ignored_body_handle(&mut self, body_handle: BodyHandle) -> &mut Self {
             self.expect_add_ignored_body_handle = Some(body_handle);
+            self
         }
 
-        fn expect_is_body_ignored_and_return(&mut self, body_handle: BodyHandle, is_ignored: bool) {
-            self.expect_is_body_ignored_and_return = Some((body_handle, is_ignored));
+        pub fn expect_is_body_ignored_and_return(
+            &mut self,
+            expected_calls: VecDeque<(BodyHandle, bool)>,
+        ) -> &mut Self {
+            self.expect_is_body_ignored_and_return = RwLock::new(expected_calls);
+            self
         }
 
-        fn expect_remove_ignored_body_handle(&mut self, body_handle: BodyHandle) {
+        pub fn expect_remove_ignored_body_handle(&mut self, body_handle: BodyHandle) -> &mut Self {
             self.expect_remove_ignored_body_handle = Some(body_handle);
+            self
         }
 
-        fn expect_is_pair_valid_and_return(
+        pub fn expect_is_pair_valid_and_return(
             &mut self,
             o1: CollisionObject<N, ColliderData<N>>,
             o2: CollisionObject<N, ColliderData<N>>,
             is_valid: bool,
-        ) {
-            self.expect_is_pair_valid_and_return = Some(((o1, o2), is_valid))
+        ) -> &mut Self {
+            self.expect_is_pair_valid_and_return = Some(((o1, o2), is_valid));
+            self
         }
     }
 
@@ -179,10 +187,16 @@ mod mock {
         }
 
         fn is_body_ignored(&self, body_handle: BodyHandle) -> bool {
-            self.is_body_ignored_was_called
-                .store(true, Ordering::SeqCst);
+            self.is_body_ignored_was_called.store(
+                self.is_body_ignored_was_called.load(Ordering::SeqCst) + 1,
+                Ordering::SeqCst,
+            );
 
-            if let Some((expected_input, expected_output)) = self.expect_is_body_ignored_and_return
+            if let Some((expected_input, expected_output)) = self
+                .expect_is_body_ignored_and_return
+                .write()
+                .expect("RwLock was poisoned")
+                .pop_front()
             {
                 if body_handle != expected_input {
                     panic!(

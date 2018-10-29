@@ -436,6 +436,7 @@ mod tests {
     use nphysics2d::object::BodySet;
     use nphysics2d::solver::IntegrationParameters;
     use std::cell::RefCell;
+    use std::collections::VecDeque;
     use std::f64::consts::FRAC_PI_2;
     use std::sync::RwLock;
     use std::thread::panicking;
@@ -835,7 +836,7 @@ mod tests {
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
-            collision_filter,
+            collision_filter.clone(),
         );
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
@@ -852,6 +853,11 @@ mod tests {
             ..movable_body(Radians::default())
         };
         let close_body_handle = world.add_body(close_body);
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_body_ignored_and_return(VecDeque::from(vec![(handle_one, false)]));
 
         world
             .attach_sensor(close_body_handle, sensor())
@@ -912,11 +918,16 @@ mod tests {
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
-            collision_filter,
+            collision_filter.clone(),
         );
 
         let local_object = movable_body(Radians::default());
         let handle = world.add_body(local_object.clone());
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_body_ignored_and_return(VecDeque::from(vec![(handle, false)]));
 
         world.step();
         world.step();
@@ -946,12 +957,17 @@ mod tests {
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
-            collision_filter,
+            collision_filter.clone(),
         );
         world.set_simulated_timestep(2.0);
 
         let local_object = movable_body(Radians::default());
         let handle = world.add_body(local_object.clone());
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_body_ignored_and_return(VecDeque::from(vec![(handle, false)]));
 
         world.step();
         world.step();
@@ -983,10 +999,15 @@ mod tests {
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
-            collision_filter,
+            collision_filter.clone(),
         );
         let expected_body = immovable_body(Radians::try_new(FRAC_PI_2).unwrap());
         let handle = world.add_body(expected_body.clone());
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_body_ignored_and_return(VecDeque::from(vec![(handle, false)]));
 
         world.step();
         world.step();
@@ -1010,7 +1031,7 @@ mod tests {
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
-            collision_filter,
+            collision_filter.clone(),
         );
         let body = immovable_body(Radians::try_new(FRAC_PI_2).unwrap());
         let still_body = PhysicalBody {
@@ -1018,6 +1039,11 @@ mod tests {
             ..body
         };
         let handle = world.add_body(still_body.clone());
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_body_ignored_and_return(VecDeque::from(vec![(handle, false)]));
 
         world.step();
         world.step();
