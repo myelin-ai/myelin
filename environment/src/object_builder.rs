@@ -342,6 +342,7 @@ mod test {
             .rotation(Radians::try_new(0.0).unwrap())
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
+            .is_passable(false)
             .build();
 
         assert_eq!(
@@ -368,7 +369,9 @@ mod test {
             .location(10, 10)
             .rotation(Radians::try_new(0.0).unwrap())
             .mobility(Mobility::Immovable)
+            .is_passable(false)
             .build();
+
         assert_eq!(
             Err(ObjectBuilderError {
                 missing_kind: true,
@@ -393,6 +396,7 @@ mod test {
             .rotation(Radians::try_new(0.0).unwrap())
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
+            .is_passable(false)
             .build();
 
         assert_eq!(
@@ -419,11 +423,39 @@ mod test {
             .rotation(Radians::try_new(0.0).unwrap())
             .location(30, 40)
             .kind(Kind::Plant)
+            .is_passable(false)
             .build();
 
         assert_eq!(
             Err(ObjectBuilderError {
                 missing_mobility: true,
+                ..Default::default()
+            }),
+            result
+        );
+    }
+
+    #[test]
+    fn test_object_builder_should_error_for_missing_is_passable() {
+        let result = ObjectBuilder::new()
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(0, 0)
+                    .vertex(0, 1)
+                    .vertex(1, 0)
+                    .vertex(1, 1)
+                    .build()
+                    .unwrap(),
+            )
+            .rotation(Radians::try_new(0.0).unwrap())
+            .location(30, 40)
+            .kind(Kind::Plant)
+            .mobility(Mobility::Immovable)
+            .build();
+
+        assert_eq!(
+            Err(ObjectBuilderError {
+                is_passable: true,
                 ..Default::default()
             }),
             result
@@ -445,6 +477,7 @@ mod test {
             .location(30, 40)
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
+            .is_passable(false)
             .build();
 
         let expected = ObjectDescription {
@@ -513,6 +546,7 @@ mod test {
                     rotation: Radians::try_new(1.2).unwrap(),
                 },
             })
+            .is_passable(false)
             .build();
 
         let expected = ObjectDescription {
