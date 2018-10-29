@@ -128,7 +128,9 @@ mod tests {
     #[test]
     fn accepts_connections() {
         let address = localhost();
-        let client_factory_fn = mock_client_factory_fn(None);
+        let mut expected_client = ClientMock::default();
+        expected_client.expect_run();
+        let client_factory_fn = mock_client_factory_fn(Some(expected_client));
         let main_thread_spawn_fn = main_thread_spawn_fn();
 
         let connection_acceptor =
@@ -136,7 +138,7 @@ mod tests {
                 .unwrap();
 
         let address = connection_acceptor.address();
-        let acceptor_thread = thread::spawn(move || {
+        let _acceptor_thread = thread::spawn(move || {
             connection_acceptor.run();
         });
 
@@ -144,38 +146,6 @@ mod tests {
             .unwrap()
             .connect_insecure()
             .unwrap();
-
-        let result = acceptor_thread.join();
-        assert!(result.is_err())
-    }
-
-    #[test]
-    fn respects_max_connections() {
-        let address = localhost();
-        let client_factory_fn = mock_client_factory_fn(None);
-        let main_thread_spawn_fn = main_thread_spawn_fn();
-
-        let connection_acceptor =
-            WebsocketConnectionAcceptor::try_new(address, client_factory_fn, main_thread_spawn_fn)
-                .unwrap();
-
-        let address = connection_acceptor.address();
-        let acceptor_thread = thread::spawn(move || {
-            connection_acceptor.run();
-        });
-
-        let first_client = ClientBuilder::new(&format!("ws://{}", address))
-            .unwrap()
-            .connect_insecure()
-            .unwrap();
-
-        let second_client = ClientBuilder::new(&format!("ws://{}", address))
-            .unwrap()
-            .connect_insecure()
-            .unwrap();
-
-        let result = acceptor_thread.join();
-        assert!(result.is_err())
     }
 
     fn localhost() -> SocketAddr {
@@ -202,6 +172,12 @@ mod tests {
     struct ClientMock {
         expect_run: AtomicBool,
         run_was_called: AtomicBool,
+    }
+
+    impl ClientMock {
+        fn expect_run(&mut self) {
+            self.expect_run.store(true, Ordering::SeqCst);
+        }
     }
 
     impl Clone for ClientMock {
