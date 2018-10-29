@@ -79,11 +79,17 @@ mod mock {
     pub(crate) struct ConnectionAcceptorMock {
         expect_run: AtomicBool,
         run_was_called: AtomicBool,
+        expect_address_and_return: Option<SocketAddr>,
+        address_was_called: AtomicBool,
     }
 
     impl ConnectionAcceptorMock {
         pub(crate) fn expect_run(&mut self) {
             self.expect_run.store(true, Ordering::SeqCst);
+        }
+
+        pub(crate) fn expect_address(&mut self, addr: SocketAddr) {
+            self.expect_address_and_return = Some(addr);
         }
     }
 
@@ -97,7 +103,13 @@ mod mock {
         }
 
         fn address(&self) -> SocketAddr {
-            unimplemented!()
+            match self.expect_address_and_return {
+                None => panic!("address() was called unexpectedly"),
+                Some(address) => {
+                    self.address_was_called.store(true, Ordering::SeqCst);
+                    address
+                }
+            }
         }
     }
 
@@ -110,6 +122,12 @@ mod mock {
                 assert!(
                     self.run_was_called.load(Ordering::SeqCst),
                     "run() was not called, but was expected"
+                );
+            }
+            if self.expect_address_and_return.is_some() {
+                assert!(
+                    self.address_was_called.load(Ordering::SeqCst),
+                    "address() was not called, but was expected"
                 );
             }
         }
