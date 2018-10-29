@@ -1,14 +1,12 @@
 #[cfg(test)]
 pub(crate) use self::mock::*;
 
-use crate::connection::{Connection, Socket};
 use crate::controller::{Client, ConnectionAcceptor};
 use std::boxed::FnBox;
 use std::fmt::{self, Debug};
 use std::io;
 use std::net::{SocketAddr, TcpStream};
 use std::sync::Arc;
-use uuid::Uuid;
 use websocket::server::upgrade::{sync::Buffer, WsUpgrade as Request};
 use websocket::server::NoTlsAcceptor;
 use websocket::sync::{Client as WsClient, Server};
@@ -40,14 +38,14 @@ impl ConnectionAcceptor for WebsocketConnectionAcceptor {
     fn run(self) {
         for request in self.websocket_server.filter_map(Result::ok) {
             let client_factory_fn = self.client_factory_fn.clone();
-            (self.thread_spawn_fn)(Box::new(move || {
+            (self.thread_spawn_fn)(box move || {
                 if should_accept(&request) {
                     if let Ok(client_stream) = request.accept() {
                         let mut client = (client_factory_fn)(client_stream);
                         client.run();
                     }
                 }
-            }))
+            })
         }
     }
 
@@ -119,7 +117,6 @@ mod mock {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::connection::SocketMock;
     use std::net::{Ipv4Addr, SocketAddrV4};
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::thread::{self, panicking};
@@ -157,7 +154,7 @@ mod tests {
     fn mock_client_factory_fn(expected_call: Option<ClientMock>) -> Arc<ClientFactoryFn> {
         Arc::new(move |_client_stream| {
             if let Some(ref return_value) = expected_call {
-                Box::new(return_value.clone())
+                box return_value.clone()
             } else {
                 panic!("No call to client_factory_fn was expected")
             }
@@ -165,7 +162,7 @@ mod tests {
     }
 
     fn main_thread_spawn_fn() -> Box<ThreadSpawnFn> {
-        Box::new(move |function| function())
+        box move |function| function()
     }
 
     #[derive(Debug, Default)]
