@@ -1,6 +1,6 @@
 //! In-browser visualization for myelin using a canvas with WASM
 
-#![feature(duration_float)]
+#![feature(duration_float, fnbox, box_syntax)]
 #![deny(
     rust_2018_idioms,
     missing_debug_implementations,
@@ -24,6 +24,7 @@ mod fixed_interval_sleeper;
 
 mod client;
 mod connection;
+mod connection_acceptor;
 mod constant;
 mod controller;
 mod presenter;

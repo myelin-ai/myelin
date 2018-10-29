@@ -5,7 +5,7 @@ use myelin_environment::Simulation;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
 use std::collections::HashMap;
 use std::fmt::{self, Debug};
-use std::sync::mpsc::{Receiver, Sender};
+use std::net::SocketAddr;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
@@ -23,8 +23,10 @@ pub(crate) trait Presenter: Debug {
     ) -> ViewModelDelta;
 }
 
-pub(crate) trait ConnectionAccepter: Debug + Send {
-    fn run(&mut self, sender: Sender<Connection>);
+pub(crate) trait ConnectionAcceptor: Debug {
+    fn run(self);
+    /// Returns the address that the [`ConnectionAcceptor`] listens on.
+    fn address(&self) -> SocketAddr;
 }
 
 pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send;
@@ -36,26 +38,17 @@ pub(crate) trait Client: Debug {
 pub(crate) type SimulationFactory = dyn Fn() -> Box<dyn Simulation>;
 pub(crate) type CurrentSnapshotFnFactory = dyn Fn() -> Box<CurrentSnapshotFn>;
 
-pub(crate) trait ClientSpawner {
-    fn accept_new_connections(
-        &self,
-        receiver: Receiver<Connection>,
-        current_snapshot_fn_factory: Box<CurrentSnapshotFnFactory>,
-    );
-}
-
 pub(crate) struct ControllerImpl {
     simulation_factory: Box<SimulationFactory>,
-    connection_accepter: Box<dyn ConnectionAccepter>,
+    connection_acceptor: Box<dyn ConnectionAcceptor>,
     expected_delta: Duration,
     current_snapshot: Arc<RwLock<Snapshot>>,
-    client_spawner: Box<dyn ClientSpawner>,
 }
 
 impl Debug for ControllerImpl {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("ControllerImpl")
-            .field("connection_accepter", &self.connection_accepter)
+            .field("connection_acceptor", &self.connection_acceptor)
             .field("expected_delta", &self.expected_delta)
             .finish()
     }
@@ -70,15 +63,13 @@ impl Controller for ControllerImpl {
 impl ControllerImpl {
     pub(crate) fn new(
         simulation_factory: Box<SimulationFactory>,
-        connection_accepter: Box<dyn ConnectionAccepter>,
-        client_spawner: Box<dyn ClientSpawner>,
+        connection_acceptor: Box<dyn ConnectionAcceptor>,
         expected_delta: Duration,
     ) -> Self {
         Self {
             simulation_factory,
-            connection_accepter,
+            connection_acceptor,
             expected_delta,
-            client_spawner,
             current_snapshot: Default::default(),
         }
     }
@@ -87,13 +78,11 @@ impl ControllerImpl {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::presenter::PresenterMock;
+    use crate::connection_acceptor::ConnectionAcceptorMock;
     use myelin_environment::object::*;
-    use myelin_environment::object_builder::*;
     use myelin_environment::Simulation;
     use myelin_worldgen::WorldGenerator;
     use std::cell::RefCell;
-    use std::error::Error;
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::thread::panicking;
 
@@ -104,8 +93,7 @@ mod tests {
     fn assembles_stuff() {
         let mut controller = ControllerImpl::new(
             Box::new(|| Box::new(SimulationMock::new(Vec::new()))),
-            Box::new(ConnectionAccepterMock::default()),
-            Box::new(ClientSpawnerMock::default()),
+            Box::new(ConnectionAcceptorMock::default()),
             EXPECTED_DELTA,
         );
         controller.run();
@@ -205,81 +193,4 @@ mod tests {
         }
     }
 
-    #[derive(Debug, Default)]
-    struct ConnectionAccepterMock {
-        connection: Option<Connection>,
-        run_was_called: AtomicBool,
-    }
-
-    impl ConnectionAccepterMock {}
-
-    impl ConnectionAccepter for ConnectionAccepterMock {
-        fn run(&mut self, sender: Sender<Connection>) {}
-    }
-
-    #[derive(Debug, Default)]
-    struct ClientSpawnerMock {
-        expect_accept_new_connections: Option<(Connection, Snapshot)>,
-        accept_new_connections_was_called: AtomicBool,
-    }
-
-    impl ClientSpawnerMock {
-        fn expect_accept_new_connections(
-            &mut self,
-            connection: Connection,
-            current_snapshot_fn_factory: Box<CurrentSnapshotFnFactory>,
-        ) {
-            let current_snapshot_fn = current_snapshot_fn_factory();
-            let snapshot = current_snapshot_fn();
-            self.expect_accept_new_connections = Some((connection, snapshot))
-        }
-    }
-
-    impl ClientSpawner for ClientSpawnerMock {
-        fn accept_new_connections(
-            &self,
-            receiver: Receiver<Connection>,
-            current_snapshot_fn_factory: Box<CurrentSnapshotFnFactory>,
-        ) {
-            self.accept_new_connections_was_called
-                .store(true, Ordering::SeqCst);
-            if let Some((ref expected_connection, ref expected_snapshot)) =
-                self.expect_accept_new_connections
-            {
-                let connection = receiver.recv().expect("Sender disconnected");
-                assert_eq!(
-                    *expected_connection, connection,
-                    "accept_new_connections() received connection {:#?}, expected {:#?}",
-                    connection, expected_connection
-                );
-                let snapshot = (current_snapshot_fn_factory)()();
-                assert_eq!(
-                    *expected_snapshot, snapshot,
-                    "accept_new_connections() received {:#?} from current_snapshot_fn_factory, expected {:#?}",
-                    snapshot, expected_snapshot
-                );
-            } else {
-                match receiver.try_recv() {
-                    Err(std::sync::mpsc::TryRecvError::Empty) => {}
-                    otherwise => panic!("No connection expected, but got {:#?}", otherwise),
-                }
-            }
-        }
-    }
-
-    impl Drop for ClientSpawnerMock {
-        fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-
-            if self.expect_accept_new_connections.is_some() {
-                assert!(
-                    self.accept_new_connections_was_called
-                        .load(Ordering::SeqCst),
-                    "accept_new_connections() was not called but was expected"
-                );
-            }
-        }
-    }
 }
