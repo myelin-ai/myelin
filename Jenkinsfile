@@ -17,7 +17,7 @@ pipeline {
       parallel {
         stage('yarn') {
           steps {
-            sh 'yarn'
+            sh '(cd visualization && yarn)'
           }
         }
       }
@@ -31,10 +31,15 @@ pipeline {
         }
         stage('cargo doc') {
           when {
-            anyOf {
-              branch 'master'
-              changeRequest()
-            }
+            branch 'master'
+          }
+          steps {
+            sh 'cargo doc'
+          }
+        }
+        stage('cargo doc --no-deps') {
+          when {
+            changeRequest()
           }
           steps {
             sh 'cargo doc --no-deps'
@@ -63,6 +68,11 @@ pipeline {
         stage('clippy') {
           steps {
             sh 'cargo clippy -- -Dwarnings'
+          }
+        }
+        stage('clippy --tests') {
+          steps {
+            sh 'cargo clippy -- -Dwarnings --tests'
           }
         }
         stage('rustfmt') {
