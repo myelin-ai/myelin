@@ -130,7 +130,7 @@ mod tests {
                     .expect("Created invalid vertex"),
             ),
             location: Some(Location { x: 20, y: 40 }),
-            rotation: Some(Radians::new(6.0).unwrap()),
+            rotation: Some(Radians::try_new(6.0).unwrap()),
             mobility: None,
             kind: None,
             sensor: None,
