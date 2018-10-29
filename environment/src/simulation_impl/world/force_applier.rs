@@ -80,6 +80,7 @@ mod tests {
     use crate::simulation_impl::world::collision_filter::IgnoringCollisionFilterMock;
     use crate::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
     use crate::simulation_impl::world::{NphysicsWorld, PhysicalBody, World};
+    use std::collections::VecDeque;
     use std::sync::{Arc, RwLock};
 
     const DEFAULT_TIMESTEP: f64 = 1.0;
@@ -271,10 +272,15 @@ mod tests {
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
-            collision_filter,
+            collision_filter.clone(),
         );
 
         let handle = world.add_body(body.clone());
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_body_ignored_and_return(VecDeque::from(vec![(handle, false)]));
 
         const BODY_HANDLE_ERROR: &str = "Invalid object handle";
         world.apply_force(handle, force).expect(BODY_HANDLE_ERROR);

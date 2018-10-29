@@ -302,12 +302,7 @@ impl World for NphysicsWorld {
         if let Some(sensor_handle) = self.body_sensors.remove(&body_handle) {
             self.sensor_collisions.remove(&sensor_handle)?;
         }
-        if self
-            .collision_filter
-            .read()
-            .expect("RwLock was poisoned")
-            .is_body_ignored(body_handle)
-        {
+        if physical_body.passable {
             self.collision_filter
                 .write()
                 .expect("RwLock was poisoned")
@@ -487,11 +482,17 @@ mod tests {
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
-            collision_filter,
+            collision_filter.clone(),
         );
         let movable_body = movable_body(Radians::try_new(3.0).unwrap());
 
         let handle = world.add_body(movable_body);
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_body_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+
         world.body(handle);
     }
 
@@ -507,11 +508,17 @@ mod tests {
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
-            collision_filter,
+            collision_filter.clone(),
         );
         let body = immovable_body(Radians::try_new(3.0).unwrap());
 
         let handle = world.add_body(body);
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_body_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+
         world.body(handle);
     }
 
@@ -527,11 +534,17 @@ mod tests {
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
-            collision_filter,
+            collision_filter.clone(),
         );
         let expected_body = movable_body(Radians::try_new(3.0).unwrap());
 
         let handle = world.add_body(expected_body.clone());
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_body_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+
         let physical_body = world.remove_body(handle).expect("Invalid handle");
         assert_eq!(expected_body, physical_body);
     }
@@ -547,11 +560,17 @@ mod tests {
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
-            collision_filter,
+            collision_filter.clone(),
         );
         let expected_body = movable_body(Radians::default());
 
         let handle = world.add_body(expected_body.clone());
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_body_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+
         world
             .attach_sensor(handle, sensor())
             .expect("Invalid handle");
@@ -571,11 +590,17 @@ mod tests {
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
-            collision_filter,
+            collision_filter.clone(),
         );
         let expected_body = movable_body(Radians::try_new(3.0).unwrap());
 
         let handle = world.add_body(expected_body.clone());
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_body_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+
         let _physical_body = world.remove_body(handle).expect("Invalid handle");
         let removed_body = world.body(handle);
         assert!(removed_body.is_none())
@@ -593,13 +618,21 @@ mod tests {
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
-            collision_filter,
+            collision_filter.clone(),
         );
         let rigid_object = movable_body(Radians::try_new(3.0).unwrap());
         let grounded_object = immovable_body(Radians::try_new(3.0).unwrap());
 
         let rigid_handle = world.add_body(rigid_object);
         let grounded_handle = world.add_body(grounded_object);
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_body_ignored_and_return(VecDeque::from(vec![
+                (rigid_handle, false),
+                (grounded_handle, false),
+            ]));
 
         let _rigid_body = world.body(rigid_handle);
         let _grounded_body = world.body(grounded_handle);
@@ -617,10 +650,16 @@ mod tests {
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
-            collision_filter,
+            collision_filter.clone(),
         );
         let expected_body = movable_body(Radians::try_new(3.0).unwrap());
         let handle = world.add_body(expected_body.clone());
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_body_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+
         let actual_body = world.body(handle);
 
         assert_eq!(Some(expected_body), actual_body)
@@ -638,10 +677,16 @@ mod tests {
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
-            collision_filter,
+            collision_filter.clone(),
         );
         let expected_body = immovable_body(Radians::try_new(3.0).unwrap());
         let handle = world.add_body(expected_body.clone());
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_body_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+
         let actual_body = world.body(handle);
 
         assert_eq!(Some(expected_body), actual_body)
@@ -789,7 +834,7 @@ mod tests {
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
-            collision_filter,
+            collision_filter.clone(),
         );
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
@@ -805,7 +850,16 @@ mod tests {
             },
             ..movable_body(Radians::default())
         };
-        world.add_body(close_body);
+        let handle_two = world.add_body(close_body);
+
+        // collision_filter
+        //     .write()
+        //     .expect("RwLock was poisoned")
+        //     .expect_is_body_ignored_and_return(VecDeque::from(vec![
+        //         (handle_one, false),
+        //         (handle_two, false),
+        //     ]))
+        //     .expect_is_pair_valid_and_return(handle_one, handle_two, true);
 
         world.step();
 
