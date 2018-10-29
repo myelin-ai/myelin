@@ -168,7 +168,7 @@ mod tests {
                     .expect("Created invalid vertex"),
             )
             .location(20, 40)
-            .rotation(Radians::new(6.0).unwrap())
+            .rotation(Radians::try_new(6.0).unwrap())
             .mobility(Mobility::Movable(Velocity { x: 0, y: -1 }))
             .kind(Kind::Organism)
             .build()

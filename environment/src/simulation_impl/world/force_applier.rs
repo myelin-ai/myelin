@@ -126,7 +126,7 @@ mod tests {
             torque: Torque::default(),
         };
         let expected_body = body.clone();
-        test_force(body, expected_body, force);
+        test_force(&body, &expected_body, force);
     }
 
     #[test]
@@ -138,12 +138,12 @@ mod tests {
         };
         let expected_body = PhysicalBody {
             position: Position {
-                rotation: Radians::new(0.6093).unwrap(),
+                rotation: Radians::try_new(0.6093).unwrap(),
                 ..body.position.clone()
             },
             ..body
         };
-        test_force(physical_body(), expected_body, force);
+        test_force(&physical_body(), &expected_body, force);
     }
 
     #[test]
@@ -155,12 +155,12 @@ mod tests {
         };
         let expected_body = PhysicalBody {
             position: Position {
-                rotation: Radians::new(5.0711853071795865).unwrap(),
+                rotation: Radians::try_new(5.071_185_307_179_586_5).unwrap(),
                 ..body.position.clone()
             },
             ..body
         };
-        test_force(physical_body(), expected_body, force);
+        test_force(&physical_body(), &expected_body, force);
     }
 
     #[test]
@@ -178,7 +178,7 @@ mod tests {
             mobility: Mobility::Movable(Velocity { x: 9, y: 9 }),
             ..body
         };
-        test_force(physical_body(), expected_body, force);
+        test_force(&physical_body(), &expected_body, force);
     }
 
     #[test]
@@ -196,7 +196,7 @@ mod tests {
             mobility: Mobility::Movable(Velocity { x: -4, y: -4 }),
             ..body
         };
-        test_force(physical_body(), expected_body, force);
+        test_force(&physical_body(), &expected_body, force);
     }
 
     #[test]
@@ -209,15 +209,15 @@ mod tests {
         let expected_body = PhysicalBody {
             position: Position {
                 location: Location {
-                    x: 4294967292,
-                    y: 4294967282,
+                    x: 4_294_967_292,
+                    y: 4_294_967_282,
                 },
                 ..body.position.clone()
             },
             mobility: Mobility::Movable(Velocity { x: -9, y: -19 }),
             ..body
         };
-        test_force(physical_body(), expected_body, force);
+        test_force(&physical_body(), &expected_body, force);
     }
 
     #[test]
@@ -231,12 +231,12 @@ mod tests {
         let expected_body = PhysicalBody {
             position: Position {
                 location: Location { x: 10, y: 15 },
-                rotation: Radians::new(0.009000000000000001).unwrap(),
+                rotation: Radians::try_new(0.009_000_000_000_000_001).unwrap(),
             },
             mobility: Mobility::Movable(Velocity { x: 4, y: 9 }),
             ..body
         };
-        test_force(physical_body(), expected_body, force);
+        test_force(&physical_body(), &expected_body, force);
     }
 
     fn physical_body() -> PhysicalBody {
@@ -256,7 +256,7 @@ mod tests {
         }
     }
 
-    fn test_force(body: PhysicalBody, expected_body: PhysicalBody, force: Force) {
+    fn test_force(body: &PhysicalBody, expected_body: &PhysicalBody, force: Force) {
         let rotation_translator = NphysicsRotationTranslatorImpl::default();
         let force_applier = SingleTimeForceApplierImpl::default();
         let mut world = NphysicsWorld::with_timestep(
@@ -274,7 +274,7 @@ mod tests {
         world.step();
 
         let actual_body = world.body(handle).expect(BODY_HANDLE_ERROR);
-        assert_eq!(expected_body, actual_body);
+        assert_eq!(*expected_body, actual_body);
     }
 
 }
