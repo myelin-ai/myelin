@@ -4,6 +4,7 @@ use crate::simulation_impl::BodyHandle;
 use ncollide2d::broad_phase::BroadPhasePairFilter;
 use ncollide2d::world::CollisionObject;
 use nphysics2d::object::ColliderData;
+use std::collections::HashSet;
 use std::fmt::Debug;
 use std::sync::{Arc, RwLock};
 
@@ -18,7 +19,7 @@ where
 
 #[derive(Debug, Default)]
 pub struct IgnoringCollisionFilterImpl {
-    ignored_body_handles: Vec<BodyHandle>,
+    ignored_body_handles: HashSet<BodyHandle>,
 }
 
 impl IgnoringCollisionFilterImpl {}
@@ -28,15 +29,15 @@ where
     N: Real,
 {
     fn add_ignored_body_handle(&mut self, body_handle: BodyHandle) {
-        self.ignored_body_handles.push(body_handle);
+        self.ignored_body_handles.insert(body_handle);
     }
 
     fn is_body_ignored(&self, body_handle: BodyHandle) -> bool {
-        unimplemented!()
+        self.ignored_body_handles.contains(&body_handle)
     }
 
     fn remove_ignored_body_handle(&mut self, body_handle: BodyHandle) {
-        unimplemented!()
+        self.ignored_body_handles.remove(&body_handle);
     }
 }
 
