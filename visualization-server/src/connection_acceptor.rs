@@ -21,7 +21,6 @@ pub(crate) type SocketFactoryFn = dyn Fn(WsClient<TcpStream>) -> Box<dyn Socket>
 pub(crate) type ThreadSpawnFn = dyn Fn(Box<dyn FnBox() + Send>) + Send + Sync;
 
 pub(crate) struct WebsocketConnectionAcceptor {
-    thread_pool: ThreadPool,
     websocket_server: Server<NoTlsAcceptor>,
     client_factory_fn: Arc<ClientFactoryFn>,
     socket_factory_fn: Arc<SocketFactoryFn>,
@@ -30,23 +29,17 @@ pub(crate) struct WebsocketConnectionAcceptor {
 
 impl WebsocketConnectionAcceptor {
     pub(crate) fn try_new(
-        max_connections: usize,
         address: SocketAddr,
         client_factory_fn: Arc<ClientFactoryFn>,
         socket_factory_fn: Arc<SocketFactoryFn>,
         thread_spawn_fn: Box<ThreadSpawnFn>,
-    ) -> Result<Self, WebsocketConnectionAcceptorError> {
-        if max_connections == 0 {
-            Err(WebsocketConnectionAcceptorError::NoAllowedConnectionsError)
-        } else {
-            Ok(Self {
-                thread_pool: ThreadPool::with_name("Client spawner".to_string(), max_connections),
-                websocket_server: Server::bind(address)?,
-                client_factory_fn,
-                socket_factory_fn,
-                thread_spawn_fn,
-            })
-        }
+    ) -> Result<Self, io::Error> {
+        Ok(Self {
+            websocket_server: Server::bind(address)?,
+            client_factory_fn,
+            socket_factory_fn,
+            thread_spawn_fn,
+        })
     }
 }
 
@@ -92,18 +85,6 @@ impl Debug for WebsocketConnectionAcceptor {
 
 fn should_accept(_request: &Request<TcpStream, Option<Buffer>>) -> bool {
     true
-}
-
-#[derive(Debug)]
-pub(crate) enum WebsocketConnectionAcceptorError {
-    NoAllowedConnectionsError,
-    WebsocketServerError(io::Error),
-}
-
-impl From<io::Error> for WebsocketConnectionAcceptorError {
-    fn from(error: io::Error) -> Self {
-        WebsocketConnectionAcceptorError::WebsocketServerError(error)
-    }
 }
 
 #[cfg(test)]
@@ -163,37 +144,13 @@ mod tests {
     use websocket::{ClientBuilder, Message};
 
     #[test]
-    fn returns_err_on_no_allowed_connections() {
-        let max_connections = 0;
-        let address = localhost();
-        let client_factory_fn = mock_client_factory_fn(None);
-        let socket_factory_fn = mock_socket_factory_fn(Some(SocketMock::default()));
-        let main_thread_spawn_fn = main_thread_spawn_fn();
-
-        let connection_acceptor_result = WebsocketConnectionAcceptor::try_new(
-            max_connections,
-            address,
-            client_factory_fn,
-            socket_factory_fn,
-            main_thread_spawn_fn,
-        );
-
-        match connection_acceptor_result {
-            Err(WebsocketConnectionAcceptorError::NoAllowedConnectionsError) => {}
-            _ => panic!("Test didn't return expected error"),
-        };
-    }
-
-    #[test]
     fn accepts_connections() {
-        let max_connections = 1;
         let address = localhost();
         let client_factory_fn = mock_client_factory_fn(None);
         let socket_factory_fn = mock_socket_factory_fn(Some(SocketMock::default()));
         let main_thread_spawn_fn = main_thread_spawn_fn();
 
         let connection_acceptor = WebsocketConnectionAcceptor::try_new(
-            max_connections,
             address,
             client_factory_fn,
             socket_factory_fn,
@@ -210,20 +167,19 @@ mod tests {
             .unwrap()
             .connect_insecure()
             .unwrap();
+
         let result = acceptor_thread.join();
         assert!(result.is_err())
     }
 
     #[test]
     fn respects_max_connections() {
-        let max_connections = 1;
         let address = localhost();
         let client_factory_fn = mock_client_factory_fn(None);
         let socket_factory_fn = mock_socket_factory_fn(Some(SocketMock::default()));
         let main_thread_spawn_fn = main_thread_spawn_fn();
 
         let connection_acceptor = WebsocketConnectionAcceptor::try_new(
-            max_connections,
             address,
             client_factory_fn,
             socket_factory_fn,
@@ -245,6 +201,9 @@ mod tests {
             .unwrap()
             .connect_insecure()
             .unwrap();
+
+        let result = acceptor_thread.join();
+        assert!(result.is_err())
     }
 
     fn localhost() -> SocketAddr {
