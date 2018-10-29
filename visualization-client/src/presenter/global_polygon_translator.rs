@@ -111,7 +111,7 @@ mod test {
                     view_model::Vertex { x: 40, y: 30 },
                 ],
             },
-            translator.to_global_polygon(&polygon(), &position(Radians::new(PI).unwrap()))
+            translator.to_global_polygon(&polygon(), &position(Radians::try_new(PI).unwrap()))
         );
     }
 
@@ -140,7 +140,7 @@ mod test {
                     },
                 ],
             },
-            translator.to_global_polygon(&polygon(), &position(Radians::new(3.0).unwrap()))
+            translator.to_global_polygon(&polygon(), &position(Radians::try_new(3.0).unwrap()))
         );
     }
 }
