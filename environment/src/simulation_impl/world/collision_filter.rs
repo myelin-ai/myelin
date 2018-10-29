@@ -1,6 +1,5 @@
-use super::to_body_handle;
 use alga::general::Real;
-use crate::simulation_impl::BodyHandle;
+use crate::simulation_impl::Handle;
 use ncollide2d::broad_phase::BroadPhasePairFilter;
 use ncollide2d::world::CollisionObject;
 use nphysics2d::object::ColliderData;
@@ -9,34 +8,34 @@ use std::fmt::Debug;
 use std::sync::{Arc, RwLock};
 
 pub trait IgnoringCollisionFilter: Send + Sync + Debug {
-    fn add_ignored_body_handle(&mut self, body_handle: BodyHandle);
-    fn is_body_ignored(&self, body_handle: BodyHandle) -> bool;
-    fn remove_ignored_body_handle(&mut self, body_handle: BodyHandle);
-    fn is_pair_valid(&self, b1: BodyHandle, b2: BodyHandle) -> bool;
+    fn add_ignored_handle(&mut self, handle: Handle);
+    fn is_handle_ignored(&self, handle: Handle) -> bool;
+    fn remove_ignored_handle(&mut self, handle: Handle);
+    fn is_pair_valid(&self, h1: Handle, h2: Handle) -> bool;
 }
 
 #[derive(Debug, Default)]
 pub struct IgnoringCollisionFilterImpl {
-    ignored_body_handles: HashSet<BodyHandle>,
+    ignored_handles: HashSet<Handle>,
 }
 
 impl IgnoringCollisionFilterImpl {}
 
 impl IgnoringCollisionFilter for IgnoringCollisionFilterImpl {
-    fn add_ignored_body_handle(&mut self, body_handle: BodyHandle) {
-        self.ignored_body_handles.insert(body_handle);
+    fn add_ignored_handle(&mut self, handle: Handle) {
+        self.ignored_handles.insert(handle);
     }
 
-    fn is_body_ignored(&self, body_handle: BodyHandle) -> bool {
-        self.ignored_body_handles.contains(&body_handle)
+    fn is_handle_ignored(&self, handle: Handle) -> bool {
+        self.ignored_handles.contains(&handle)
     }
 
-    fn remove_ignored_body_handle(&mut self, body_handle: BodyHandle) {
-        self.ignored_body_handles.remove(&body_handle);
+    fn remove_ignored_handle(&mut self, handle: Handle) {
+        self.ignored_handles.remove(&handle);
     }
 
-    fn is_pair_valid(&self, b1: BodyHandle, b2: BodyHandle) -> bool {
-        !(self.ignored_body_handles.contains(&b1) || self.ignored_body_handles.contains(&b2))
+    fn is_pair_valid(&self, b1: Handle, b2: Handle) -> bool {
+        !(self.ignored_handles.contains(&b1) || self.ignored_handles.contains(&b2))
     }
 }
 
@@ -57,7 +56,7 @@ where
         self.collision_filter
             .read()
             .expect("Lock was poisoned")
-            .is_pair_valid(to_body_handle(b1.handle()), to_body_handle(b2.handle()))
+            .is_pair_valid(b1.handle(), b2.handle())
     }
 }
 
@@ -74,40 +73,40 @@ mod mock {
 
     #[derive(Default)]
     pub(crate) struct IgnoringCollisionFilterMock {
-        expect_add_ignored_body_handle: Option<BodyHandle>,
-        expect_is_body_ignored_and_return: RwLock<VecDeque<(BodyHandle, bool)>>,
-        expect_remove_ignored_body_handle: Option<BodyHandle>,
-        expect_is_pair_valid_and_return: Option<((BodyHandle, BodyHandle), bool)>,
+        expect_add_ignored_handle: Option<Handle>,
+        expect_is_handle_ignored_and_return: RwLock<VecDeque<(Handle, bool)>>,
+        expect_remove_ignored_handle: Option<Handle>,
+        expect_is_pair_valid_and_return: Option<((Handle, Handle), bool)>,
 
-        add_ignored_body_handle_was_called: AtomicBool,
-        is_body_ignored_was_called: AtomicU32,
-        remove_ignored_body_handle_was_called: AtomicBool,
+        add_ignored_handle_was_called: AtomicBool,
+        is_handle_ignored_was_called: AtomicU32,
+        remove_ignored_handle_was_called: AtomicBool,
         is_pair_valid_was_called: AtomicBool,
     }
 
     impl IgnoringCollisionFilterMock {
-        pub fn expect_add_ignored_body_handle(&mut self, body_handle: BodyHandle) -> &mut Self {
-            self.expect_add_ignored_body_handle = Some(body_handle);
+        pub fn expect_add_ignored_handle(&mut self, handle: Handle) -> &mut Self {
+            self.expect_add_ignored_handle = Some(handle);
             self
         }
 
-        pub fn expect_is_body_ignored_and_return(
+        pub fn expect_is_handle_ignored_and_return(
             &mut self,
-            expected_calls: VecDeque<(BodyHandle, bool)>,
+            expected_calls: VecDeque<(Handle, bool)>,
         ) -> &mut Self {
-            self.expect_is_body_ignored_and_return = RwLock::new(expected_calls);
+            self.expect_is_handle_ignored_and_return = RwLock::new(expected_calls);
             self
         }
 
-        pub fn expect_remove_ignored_body_handle(&mut self, body_handle: BodyHandle) -> &mut Self {
-            self.expect_remove_ignored_body_handle = Some(body_handle);
+        pub fn expect_remove_ignored_handle(&mut self, handle: Handle) -> &mut Self {
+            self.expect_remove_ignored_handle = Some(handle);
             self
         }
 
         pub fn expect_is_pair_valid_and_return(
             &mut self,
-            b1: BodyHandle,
-            b2: BodyHandle,
+            b1: Handle,
+            b2: Handle,
             is_valid: bool,
         ) -> &mut Self {
             self.expect_is_pair_valid_and_return = Some(((b1, b2), is_valid));
@@ -131,72 +130,76 @@ mod mock {
     }
 
     impl IgnoringCollisionFilter for IgnoringCollisionFilterMock {
-        fn add_ignored_body_handle(&mut self, body_handle: BodyHandle) {
-            self.add_ignored_body_handle_was_called
+        fn add_ignored_handle(&mut self, handle: Handle) {
+            self.add_ignored_handle_was_called
                 .store(true, Ordering::SeqCst);
 
-            if let Some(expected_input) = self.expect_add_ignored_body_handle {
-                if body_handle != expected_input {
+            if let Some(expected_input) = self.expect_add_ignored_handle {
+                if handle != expected_input {
                     panic!(
-                        "add_ignored_body_handle() was called with an unexpected input value: {:?}",
-                        body_handle
+                        "add_ignored_handle() was called with an unexpected input value: {:?}",
+                        handle
                     )
                 }
             } else {
-                panic!("add_ignored_body_handle() was called unexpectedly")
+                panic!("add_ignored_handle() was called unexpectedly")
             }
         }
 
-        fn is_body_ignored(&self, body_handle: BodyHandle) -> bool {
-            self.is_body_ignored_was_called.store(
-                self.is_body_ignored_was_called.load(Ordering::SeqCst) + 1,
+        fn is_handle_ignored(&self, handle: Handle) -> bool {
+            self.is_handle_ignored_was_called.store(
+                self.is_handle_ignored_was_called.load(Ordering::SeqCst) + 1,
                 Ordering::SeqCst,
             );
 
             if let Some((expected_input, expected_output)) = self
-                .expect_is_body_ignored_and_return
+                .expect_is_handle_ignored_and_return
                 .write()
                 .expect("RwLock was poisoned")
                 .pop_front()
             {
-                if body_handle != expected_input {
+                if handle != expected_input {
                     panic!(
-                        "is_body_ignored() was called with an unexpected input value: {:?}",
-                        body_handle
+                        "is_handle_ignored() was called with an unexpected input value: {:?}",
+                        handle
                     )
                 }
 
                 expected_output
             } else {
-                panic!("is_body_ignored() was called unexpectedly")
+                panic!("is_handle_ignored() was called unexpectedly")
             }
         }
 
-        fn remove_ignored_body_handle(&mut self, body_handle: BodyHandle) {
-            self.remove_ignored_body_handle_was_called
+        fn remove_ignored_handle(&mut self, handle: Handle) {
+            self.remove_ignored_handle_was_called
                 .store(true, Ordering::SeqCst);
 
-            if let Some(expected_input) = self.expect_remove_ignored_body_handle {
-                if body_handle != expected_input {
+            if let Some(expected_input) = self.expect_remove_ignored_handle {
+                if handle != expected_input {
                     panic!(
-                        "remove_ignored_body_handle() was called with an unexpected input value: {:?}",
-                        body_handle
+                        "remove_ignored_handle() was called with an unexpected input value: {:?}",
+                        handle
                     )
                 }
             } else {
-                panic!("remove_ignored_body_handle() was called unexpectedly")
+                panic!("remove_ignored_handle() was called unexpectedly")
             }
         }
 
-        fn is_pair_valid(&self, b1: BodyHandle, b2: BodyHandle) -> bool {
+        fn is_pair_valid(&self, b1: Handle, b2: Handle) -> bool {
             self.is_pair_valid_was_called.store(true, Ordering::SeqCst);
 
             if let Some(((ref expected_b1, ref expected_b2), expected_output)) =
                 self.expect_is_pair_valid_and_return
             {
-                if b1 != *expected_b1 || b2 != *expected_b2 {
+                if (b1 != *expected_b1 || b2 != *expected_b2)
+                    && (b1 != *expected_b2 || b2 != *expected_b1)
+                {
+                    println!("{:?}, {:?}", *expected_b1, *expected_b2);
+
                     panic!(
-                        "is_pair_valid() was called with an unexpected input values: handle1: {:?} and handle2: {:?}",
+                        "is_pair_valid() was called with unexpected input values: handle1: {:?} and handle2: {:?}",
                         b1,
                         b2
                     )

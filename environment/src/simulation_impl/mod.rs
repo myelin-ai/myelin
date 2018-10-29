@@ -311,6 +311,12 @@ pub struct BodyHandle(pub usize);
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct SensorHandle(pub usize);
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub enum Handle {
+    Body(BodyHandle),
+    Sensor(SensorHandle),
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
