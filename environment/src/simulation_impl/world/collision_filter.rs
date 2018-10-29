@@ -85,28 +85,136 @@ pub(crate) use self::mock::IgnoringCollisionFilterMock;
 #[cfg(test)]
 mod mock {
     use super::*;
+    use std::fmt::{self, Debug};
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::thread::panicking;
 
-    #[derive(Debug, Default)]
-    pub(crate) struct IgnoringCollisionFilterMock {}
+    #[derive(Default)]
+    pub(crate) struct IgnoringCollisionFilterMock<N>
+    where
+        N: Real,
+    {
+        expect_add_ignored_body_handle: Option<BodyHandle>,
+        expect_is_body_ignored_and_return: Option<(BodyHandle, bool)>,
+        expect_remove_ignored_body_handle: Option<BodyHandle>,
+        expect_is_pair_valid_and_return: Option<(
+            (
+                CollisionObject<N, ColliderData<N>>,
+                CollisionObject<N, ColliderData<N>>,
+            ),
+            bool,
+        )>,
 
-    impl<N> IgnoringCollisionFilter<N> for IgnoringCollisionFilterMock
+        add_ignored_body_handle_was_called: AtomicBool,
+        is_body_ignored_was_called: AtomicBool,
+        remove_ignored_body_handle_was_called: AtomicBool,
+        is_pair_valid_was_called: AtomicBool,
+    }
+
+    impl<N> IgnoringCollisionFilterMock<N>
+    where
+        N: Real,
+    {
+        fn expect_add_ignored_body_handle(&mut self, body_handle: BodyHandle) {
+            self.expect_add_ignored_body_handle = Some(body_handle);
+        }
+
+        fn expect_is_body_ignored_and_return(&mut self, body_handle: BodyHandle, is_ignored: bool) {
+            self.expect_is_body_ignored_and_return = Some((body_handle, is_ignored));
+        }
+
+        fn expect_remove_ignored_body_handle(&mut self, body_handle: BodyHandle) {
+            self.expect_remove_ignored_body_handle = Some(body_handle);
+        }
+
+        fn expect_is_pair_valid_and_return(
+            &mut self,
+            o1: CollisionObject<N, ColliderData<N>>,
+            o2: CollisionObject<N, ColliderData<N>>,
+            is_valid: bool,
+        ) {
+            self.expect_is_pair_valid_and_return = Some(((o1, o2), is_valid))
+        }
+    }
+
+    impl<N> Drop for IgnoringCollisionFilterMock<N>
+    where
+        N: Real,
+    {
+        fn drop(&mut self) {
+            if panicking() {
+                return;
+            }
+        }
+    }
+
+    impl<N> Debug for IgnoringCollisionFilterMock<N>
+    where
+        N: Real,
+    {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            f.debug_struct(name_of_type!(IgnoringCollisionFilterMock<N>))
+                .finish()
+        }
+    }
+
+    impl<N> IgnoringCollisionFilter<N> for IgnoringCollisionFilterMock<N>
     where
         N: Real,
     {
         fn add_ignored_body_handle(&mut self, body_handle: BodyHandle) {
-            unimplemented!()
+            self.add_ignored_body_handle_was_called
+                .store(true, Ordering::SeqCst);
+
+            if let Some(expected_input) = self.expect_add_ignored_body_handle {
+                if body_handle != expected_input {
+                    panic!(
+                        "add_ignored_body_handle() was called with an unexpected input value: {:?}",
+                        body_handle
+                    )
+                }
+            } else {
+                panic!("add_ignored_body_handle() was called unexpectedly")
+            }
         }
 
         fn is_body_ignored(&self, body_handle: BodyHandle) -> bool {
-            unimplemented!()
+            self.is_body_ignored_was_called
+                .store(true, Ordering::SeqCst);
+
+            if let Some((expected_input, expected_output)) = self.expect_is_body_ignored_and_return
+            {
+                if body_handle != expected_input {
+                    panic!(
+                        "is_body_ignored() was called with an unexpected input value: {:?}",
+                        body_handle
+                    )
+                }
+
+                expected_output
+            } else {
+                panic!("is_body_ignored() was called unexpectedly")
+            }
         }
 
         fn remove_ignored_body_handle(&mut self, body_handle: BodyHandle) {
-            unimplemented!()
+            self.remove_ignored_body_handle_was_called
+                .store(true, Ordering::SeqCst);
+
+            if let Some(expected_input) = self.expect_remove_ignored_body_handle {
+                if body_handle != expected_input {
+                    panic!(
+                        "remove_ignored_body_handle() was called with an unexpected input value: {:?}",
+                        body_handle
+                    )
+                }
+            } else {
+                panic!("remove_ignored_body_handle() was called unexpectedly")
+            }
         }
     }
 
-    impl<N> BroadPhasePairFilter<N, ColliderData<N>> for IgnoringCollisionFilterMock
+    impl<N> BroadPhasePairFilter<N, ColliderData<N>> for IgnoringCollisionFilterMock<N>
     where
         N: Real,
     {
@@ -115,7 +223,23 @@ mod mock {
             b1: &CollisionObject<N, ColliderData<N>>,
             b2: &CollisionObject<N, ColliderData<N>>,
         ) -> bool {
-            unimplemented!()
+            self.is_pair_valid_was_called.store(true, Ordering::SeqCst);
+
+            if let Some(((ref expected_b1, ref expected_b2), expected_output)) =
+                self.expect_is_pair_valid_and_return
+            {
+                if b1.handle() != expected_b1.handle() || b2.handle() != expected_b2.handle() {
+                    panic!(
+                        "is_pair_valid() was called with an unexpected input values: handle1: {:?} and handle2: {:?}",
+                        b1.handle(),
+                        b2.handle()
+                    )
+                }
+
+                expected_output
+            } else {
+                panic!("is_pair_valid() was called unexpectedly")
+            }
         }
     }
 }

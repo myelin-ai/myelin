@@ -14,6 +14,9 @@ nalgebra = "0.16"
 ncollide2d = "0.17"
 alga = "0.7"
 
+[dev-dependencies]
+nameof = "1.0"
+
 [dependencies.nphysics2d]
 version = "0.9.1"
 default-features = false
