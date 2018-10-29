@@ -150,7 +150,7 @@ mod mock {
 mod tests {
     use super::*;
     use crate::connection::SocketMock;
-    use std::net::{Ipv6Addr, SocketAddrV6};
+    use std::net::{Ipv4Addr, SocketAddrV4};
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::thread::{self, panicking};
     use websocket::{ClientBuilder, Message};
@@ -241,8 +241,8 @@ mod tests {
 
     fn localhost() -> SocketAddr {
         const RANDOM_PORT: u16 = 0;
-        let address = SocketAddrV6::new(Ipv6Addr::LOCALHOST, RANDOM_PORT, 0, 0);
-        SocketAddr::V6(address)
+        let address = SocketAddrV4::new(Ipv4Addr::LOCALHOST, RANDOM_PORT);
+        SocketAddr::V4(address)
     }
 
     fn mock_client_factory_fn(
