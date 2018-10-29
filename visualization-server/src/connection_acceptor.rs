@@ -7,10 +7,7 @@ use std::boxed::FnBox;
 use std::fmt::{self, Debug};
 use std::io;
 use std::net::{SocketAddr, TcpStream};
-use std::sync::mpsc::channel;
 use std::sync::Arc;
-use std::thread;
-use threadpool::ThreadPool;
 use uuid::Uuid;
 use websocket::server::upgrade::{sync::Buffer, WsUpgrade as Request};
 use websocket::server::NoTlsAcceptor;
@@ -141,7 +138,7 @@ mod tests {
     use std::net::{Ipv4Addr, SocketAddrV4};
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::thread::{self, panicking};
-    use websocket::{ClientBuilder, Message};
+    use websocket::ClientBuilder;
 
     #[test]
     fn accepts_connections() {
