@@ -463,6 +463,7 @@ mod test {
             kind: Kind::Terrain,
             mobility: Mobility::Immovable,
             sensor: None,
+            is_passable: false,
         };
 
         assert_eq!(Ok(expected), result);
@@ -477,7 +478,8 @@ mod test {
                 missing_shape: true,
                 missing_location: true,
                 missing_kind: true,
-                missing_mobility: true
+                missing_mobility: true,
+                is_passable: true,
             }),
             result
         );
@@ -541,6 +543,7 @@ mod test {
                     rotation: Radians::new(1.2).unwrap(),
                 },
             }),
+            is_passable: false,
         };
 
         assert_eq!(Ok(expected), result);

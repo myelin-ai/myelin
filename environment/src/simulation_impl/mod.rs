@@ -367,10 +367,13 @@ mod tests {
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
+
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            is_passable: expected_passable,
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
@@ -395,11 +398,13 @@ mod tests {
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            is_passable: expected_passable,
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
@@ -446,11 +451,13 @@ mod tests {
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            is_passable: expected_passable,
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
@@ -491,11 +498,13 @@ mod tests {
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            is_passable: expected_passable,
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
@@ -529,11 +538,13 @@ mod tests {
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            is_passable: expected_passable,
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
@@ -583,11 +594,13 @@ mod tests {
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            is_passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
@@ -631,11 +644,13 @@ mod tests {
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            is_passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
@@ -686,11 +701,13 @@ mod tests {
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            is_passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
@@ -731,11 +748,13 @@ mod tests {
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            is_passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
@@ -781,11 +800,13 @@ mod tests {
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            is_passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
@@ -833,6 +854,7 @@ mod tests {
         expect_bodies_within_sensor_and_return: Option<(SensorHandle, Option<Vec<BodyHandle>>)>,
         expect_apply_force_and_return: Option<(BodyHandle, Force, Option<()>)>,
         expect_set_simulated_timestep: Option<f64>,
+        expect_is_body_passable_and_return: Option<(BodyHandle, bool)>,
 
         step_was_called: RefCell<bool>,
         add_body_was_called: RefCell<bool>,
@@ -842,6 +864,7 @@ mod tests {
         bodies_within_sensor_was_called: RefCell<bool>,
         apply_force_was_called: RefCell<bool>,
         set_simulated_timestep_was_called: RefCell<bool>,
+        is_body_passable: RefCell<bool>,
     }
     impl WorldMock {
         pub(crate) fn new() -> Self {
@@ -966,6 +989,13 @@ mod tests {
                     "remove_body() was not called, but was expected"
                 )
             }
+
+            if self.expect_is_body_passable_and_return.is_some() {
+                assert!(
+                    *self.is_body_passable.borrow(),
+                    "is_body_passable() was not called, but was expected"
+                )
+            }
         }
     }
 
@@ -976,6 +1006,7 @@ mod tests {
                 panic!("step() was called unexpectedly")
             }
         }
+
         fn add_body(&mut self, body: PhysicalBody) -> BodyHandle {
             *self.add_body_was_called.borrow_mut() = true;
             if let Some((ref expected_body, ref return_value)) = self.expect_add_body_and_return {
@@ -1094,6 +1125,24 @@ mod tests {
                 }
             } else {
                 panic!("set_simulated_timestep() was called unexpectedly")
+            }
+        }
+
+        fn is_body_passable(&self, body_handle: BodyHandle) -> bool {
+            *self.is_body_passable.borrow_mut() = true;
+            if let Some((expected_body_handle, return_value)) =
+                self.expect_is_body_passable_and_return
+            {
+                if expected_body_handle == body_handle {
+                    return_value
+                } else {
+                    panic!(
+                        "is_body_passable() was called with {:?}, expected {:?}",
+                        body_handle, expected_body_handle
+                    )
+                }
+            } else {
+                panic!("is_body_passable() was called unexpectedly")
             }
         }
     }

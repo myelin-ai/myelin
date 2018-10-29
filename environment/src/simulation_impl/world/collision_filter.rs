@@ -78,3 +78,44 @@ where
             .is_pair_valid(b1, b2)
     }
 }
+
+#[cfg(test)]
+pub(crate) use self::mock::IgnoringCollisionFilterMock;
+
+#[cfg(test)]
+mod mock {
+    use super::*;
+
+    #[derive(Debug, Default)]
+    pub(crate) struct IgnoringCollisionFilterMock {}
+
+    impl<N> IgnoringCollisionFilter<N> for IgnoringCollisionFilterMock
+    where
+        N: Real,
+    {
+        fn add_ignored_body_handle(&mut self, body_handle: BodyHandle) {
+            unimplemented!()
+        }
+
+        fn is_body_ignored(&self, body_handle: BodyHandle) -> bool {
+            unimplemented!()
+        }
+
+        fn remove_ignored_body_handle(&mut self, body_handle: BodyHandle) {
+            unimplemented!()
+        }
+    }
+
+    impl<N> BroadPhasePairFilter<N, ColliderData<N>> for IgnoringCollisionFilterMock
+    where
+        N: Real,
+    {
+        fn is_pair_valid(
+            &self,
+            b1: &CollisionObject<N, ColliderData<N>>,
+            b2: &CollisionObject<N, ColliderData<N>>,
+        ) -> bool {
+            unimplemented!()
+        }
+    }
+}

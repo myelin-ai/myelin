@@ -77,8 +77,10 @@ mod tests {
     use super::*;
     use crate::object::*;
     use crate::object_builder::PolygonBuilder;
+    use crate::simulation_impl::world::collision_filter::IgnoringCollisionFilterMock;
     use crate::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
     use crate::simulation_impl::world::{NphysicsWorld, PhysicalBody, World};
+    use std::sync::{Arc, RwLock};
 
     const DEFAULT_TIMESTEP: f64 = 1.0;
 
@@ -86,10 +88,12 @@ mod tests {
     fn can_be_injected() {
         let rotation_translator = NphysicsRotationTranslatorImpl::default();
         let force_applier = SingleTimeForceApplierImpl::new();
+        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let _world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
+            collision_filter,
         );
     }
 
@@ -97,10 +101,12 @@ mod tests {
     fn force_does_nothing_before_step() {
         let rotation_translator = NphysicsRotationTranslatorImpl::default();
         let force_applier = SingleTimeForceApplierImpl::default();
+        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
+            collision_filter,
         );
 
         let expected_object = physical_body();
@@ -253,16 +259,19 @@ mod tests {
                 .vertex(5, -5)
                 .build()
                 .unwrap(),
+            is_passable: false,
         }
     }
 
     fn test_force(body: PhysicalBody, expected_body: PhysicalBody, force: Force) {
         let rotation_translator = NphysicsRotationTranslatorImpl::default();
         let force_applier = SingleTimeForceApplierImpl::default();
+        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
+            collision_filter,
         );
 
         let handle = world.add_body(body.clone());
