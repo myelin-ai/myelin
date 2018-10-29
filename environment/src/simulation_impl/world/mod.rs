@@ -6,7 +6,9 @@
 //! [`Objects`]: ../object/struct.Body.html
 use super::{BodyHandle, PhysicalBody, SensorHandle, World};
 use crate::object::*;
-use crate::simulation_impl::world::collision_filter::{CollisionFilter, CollisionFilterWrapper};
+use crate::simulation_impl::world::collision_filter::{
+    IgnoringCollisionFilter, IgnoringCollisionFilterWrapper,
+};
 use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::query::Proximity;
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
@@ -21,6 +23,7 @@ use nphysics2d::volumetric::Volumetric;
 use nphysics2d::world::World as PhysicsWorld;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
+use std::sync::{Arc, RwLock};
 
 type PhysicsType = f64;
 
@@ -41,6 +44,7 @@ pub struct NphysicsWorld {
     body_sensors: HashMap<BodyHandle, SensorHandle>,
     rotation_translator: Box<dyn NphysicsRotationTranslator>,
     force_generator_handle: ForceGeneratorHandle,
+    collision_filter: Arc<RwLock<dyn IgnoringCollisionFilter<PhysicsType>>>,
 }
 
 impl NphysicsWorld {
@@ -59,7 +63,7 @@ impl NphysicsWorld {
         timestep: f64,
         rotation_translator: Box<dyn NphysicsRotationTranslator>,
         force_applier: Box<dyn SingleTimeForceApplier>,
-        collision_filter: Box<dyn CollisionFilter<PhysicsType>>,
+        collision_filter: Arc<RwLock<dyn IgnoringCollisionFilter<PhysicsType>>>,
     ) -> Self {
         let mut physics_world = PhysicsWorld::new();
 
@@ -67,11 +71,13 @@ impl NphysicsWorld {
         let generic_wrapper = GenericSingleTimeForceApplierWrapper::new(force_applier);
         let force_generator_handle = physics_world.add_force_generator(generic_wrapper);
 
-        let pair_filter = physics_world
+        physics_world
             .collision_world_mut()
             .register_broad_phase_pair_filter(
                 "Collision Filter",
-                CollisionFilterWrapper { collision_filter },
+                IgnoringCollisionFilterWrapper {
+                    collision_filter: collision_filter.clone(),
+                },
             );
 
         Self {
@@ -80,6 +86,7 @@ impl NphysicsWorld {
             body_sensors: HashMap::new(),
             rotation_translator,
             force_generator_handle,
+            collision_filter,
         }
     }
 
@@ -89,11 +96,13 @@ impl NphysicsWorld {
         let shape = self.get_shape(&collider);
         let position = self.get_position(&collider);
         let mobility = self.get_mobility(&collider);
+        let is_passable = self.is_passable(&collider);
 
         Some(PhysicalBody {
             shape,
             position,
             mobility,
+            is_passable,
         })
     }
 
@@ -147,6 +156,14 @@ impl NphysicsWorld {
                 .to_radians(rotation)
                 .expect("Rotation of a collider could not be translated into Radians"),
         }
+    }
+
+    fn is_passable(&self, collider: &Collider<PhysicsType>) -> bool {
+        let body_handle = to_body_handle(collider.handle());
+        self.collision_filter
+            .read()
+            .expect("RwLock was poisoned")
+            .is_body_ignored(body_handle)
     }
 }
 
@@ -265,7 +282,16 @@ impl World for NphysicsWorld {
             }
         };
 
-        to_body_handle(handle)
+        let body_handle = to_body_handle(handle);
+
+        if body.is_passable {
+            self.collision_filter
+                .write()
+                .expect("Lock was poisoned")
+                .add_ignored_body_handle(body_handle);
+        }
+
+        body_handle
     }
 
     #[must_use]
@@ -275,6 +301,17 @@ impl World for NphysicsWorld {
         let nphysics_body_handle = self.physics_world.collider_body_handle(collider_handle)?;
         if let Some(sensor_handle) = self.body_sensors.remove(&body_handle) {
             self.sensor_collisions.remove(&sensor_handle)?;
+        }
+        if self
+            .collision_filter
+            .read()
+            .expect("RwLock was poisoned")
+            .is_body_ignored(body_handle)
+        {
+            self.collision_filter
+                .write()
+                .expect("RwLock was poisoned")
+                .remove_ignored_body_handle(body_handle);
         }
         self.physics_world.remove_bodies(&[nphysics_body_handle]);
         Some(physical_body)
@@ -329,6 +366,13 @@ impl World for NphysicsWorld {
 
     fn set_simulated_timestep(&mut self, timestep: f64) {
         self.physics_world.set_timestep(timestep);
+    }
+
+    fn is_body_passable(&self, body_handle: BodyHandle) -> bool {
+        self.collision_filter
+            .read()
+            .expect("RwLock was poisoned")
+            .is_body_ignored(body_handle)
     }
 }
 

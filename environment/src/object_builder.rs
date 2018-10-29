@@ -39,6 +39,8 @@ pub struct ObjectBuilderError {
     pub missing_kind: bool,
     /// Flag signaling that .mobility(...) was never called
     pub missing_mobility: bool,
+
+    pub is_passable: bool,
 }
 
 /// [`ObjectDescription`] factory, which can be used in order to configure
@@ -54,6 +56,7 @@ pub struct ObjectBuilder {
     mobility: Option<Mobility>,
     kind: Option<Kind>,
     sensor: Option<Sensor>,
+    is_passable: Option<bool>,
 }
 
 impl ObjectBuilder {
@@ -157,6 +160,11 @@ impl ObjectBuilder {
         self
     }
 
+    pub fn is_passable(&mut self, is_passable: bool) -> &mut Self {
+        self.is_passable = Some(is_passable);
+        self
+    }
+
     /// Build the [`ObjectDescription`] with all specified settings
     /// # Errors
     /// If a non-optional member has not specified while building
@@ -192,6 +200,7 @@ impl ObjectBuilder {
             missing_location: self.location.is_none(),
             missing_kind: self.kind.is_none(),
             missing_mobility: self.mobility.is_none(),
+            is_passable: self.is_passable.is_none(),
         };
 
         let object = ObjectDescription {
@@ -201,8 +210,9 @@ impl ObjectBuilder {
                 rotation: self.rotation.take().unwrap_or_else(Default::default),
             },
             kind: self.kind.take().ok_or_else(|| error.clone())?,
-            mobility: self.mobility.take().ok_or(error)?,
+            mobility: self.mobility.take().ok_or_else(|| error.clone())?,
             sensor: self.sensor.take(),
+            is_passable: self.is_passable.take().ok_or_else(|| error.clone())?,
         };
 
         Ok(object)

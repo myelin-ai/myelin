@@ -57,6 +57,7 @@ impl SimulationImpl {
             mobility: physics_body.mobility,
             kind: non_physical_object_data.kind,
             sensor: sensor_without_handle(non_physical_object_data.sensor.clone()),
+            is_passable: self.world.is_body_passable(body_handle),
         })
     }
 
@@ -172,6 +173,7 @@ impl Simulation for SimulationImpl {
             shape: object_description.shape,
             position: object_description.position,
             mobility: object_description.mobility,
+            is_passable: object_description.is_passable,
         };
 
         let body_handle = self.world.add_body(physical_body);
@@ -261,6 +263,8 @@ pub trait World: fmt::Debug {
     /// can run `set_simulated_timestep(1.0/60.0)`. Note that this method
     /// does not block the thread if called faster than expected.
     fn set_simulated_timestep(&mut self, timestep: f64);
+
+    fn is_body_passable(&self, body_handle: BodyHandle) -> bool;
 }
 
 /// The pure physical representation of an object
@@ -280,6 +284,8 @@ pub struct PhysicalBody {
     /// this is defined as a two dimensional vector relative to the
     /// objects center
     pub mobility: Mobility,
+    /// Whether this object is passable or not
+    pub is_passable: bool,
 }
 
 /// A unique identifier that can be used to retrieve a [`PhysicalBody`] from a
