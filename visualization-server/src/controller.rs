@@ -25,6 +25,7 @@ pub(crate) trait Presenter: Debug {
 
 pub(crate) trait ConnectionAcceptor: Debug {
     fn run(self);
+    /// Returns the address that the [`ConnectionAcceptor`] listens on.
     fn address(&self) -> SocketAddr;
 }
 
