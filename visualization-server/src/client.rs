@@ -290,7 +290,7 @@ mod tests {
                         .unwrap(),
                 )
                 .location(50, 50)
-                .rotation(Radians::new(1.0).unwrap())
+                .rotation(Radians::try_new(1.0).unwrap())
                 .sensor(Sensor {
                     shape: PolygonBuilder::new()
                         .vertex(-2, -2)
