@@ -40,7 +40,7 @@ pub struct ObjectBuilderError {
     /// Flag signaling that .mobility(...) was never called
     pub missing_mobility: bool,
 
-    pub is_passable: bool,
+    pub passable: bool,
 }
 
 /// [`ObjectDescription`] factory, which can be used in order to configure
@@ -56,7 +56,7 @@ pub struct ObjectBuilder {
     mobility: Option<Mobility>,
     kind: Option<Kind>,
     sensor: Option<Sensor>,
-    is_passable: Option<bool>,
+    passable: Option<bool>,
 }
 
 impl ObjectBuilder {
@@ -160,8 +160,15 @@ impl ObjectBuilder {
         self
     }
 
-    pub fn is_passable(&mut self, is_passable: bool) -> &mut Self {
-        self.is_passable = Some(is_passable);
+    /// # Examples
+    /// ```
+    /// use myelin_environment::object_builder::ObjectBuilder;
+    /// use myelin_environment::object::Radians;
+    /// ObjectBuilder::new()
+    ///     .passable(false);
+    /// ```
+    pub fn passable(&mut self, passable: bool) -> &mut Self {
+        self.passable = Some(passable);
         self
     }
 
@@ -200,7 +207,7 @@ impl ObjectBuilder {
             missing_location: self.location.is_none(),
             missing_kind: self.kind.is_none(),
             missing_mobility: self.mobility.is_none(),
-            is_passable: self.is_passable.is_none(),
+            passable: self.passable.is_none(),
         };
 
         let object = ObjectDescription {
@@ -212,7 +219,7 @@ impl ObjectBuilder {
             kind: self.kind.take().ok_or_else(|| error.clone())?,
             mobility: self.mobility.take().ok_or_else(|| error.clone())?,
             sensor: self.sensor.take(),
-            is_passable: self.is_passable.take().ok_or_else(|| error.clone())?,
+            passable: self.passable.take().ok_or_else(|| error.clone())?,
         };
 
         Ok(object)
@@ -342,7 +349,7 @@ mod test {
             .rotation(Radians::try_new(0.0).unwrap())
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
-            .is_passable(false)
+            .passable(false)
             .build();
 
         assert_eq!(
@@ -369,7 +376,7 @@ mod test {
             .location(10, 10)
             .rotation(Radians::try_new(0.0).unwrap())
             .mobility(Mobility::Immovable)
-            .is_passable(false)
+            .passable(false)
             .build();
 
         assert_eq!(
@@ -396,7 +403,7 @@ mod test {
             .rotation(Radians::try_new(0.0).unwrap())
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
-            .is_passable(false)
+            .passable(false)
             .build();
 
         assert_eq!(
@@ -423,7 +430,7 @@ mod test {
             .rotation(Radians::try_new(0.0).unwrap())
             .location(30, 40)
             .kind(Kind::Plant)
-            .is_passable(false)
+            .passable(false)
             .build();
 
         assert_eq!(
@@ -436,7 +443,7 @@ mod test {
     }
 
     #[test]
-    fn test_object_builder_should_error_for_missing_is_passable() {
+    fn test_object_builder_should_error_for_missing_passable() {
         let result = ObjectBuilder::new()
             .shape(
                 PolygonBuilder::new()
@@ -455,7 +462,7 @@ mod test {
 
         assert_eq!(
             Err(ObjectBuilderError {
-                is_passable: true,
+                passable: true,
                 ..Default::default()
             }),
             result
@@ -477,7 +484,7 @@ mod test {
             .location(30, 40)
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
-            .is_passable(false)
+            .passable(false)
             .build();
 
         let expected = ObjectDescription {
@@ -496,7 +503,7 @@ mod test {
             kind: Kind::Terrain,
             mobility: Mobility::Immovable,
             sensor: None,
-            is_passable: false,
+            passable: false,
         };
 
         assert_eq!(Ok(expected), result);
@@ -512,7 +519,7 @@ mod test {
                 missing_location: true,
                 missing_kind: true,
                 missing_mobility: true,
-                is_passable: true,
+                passable: true,
             }),
             result
         );
@@ -546,7 +553,7 @@ mod test {
                     rotation: Radians::try_new(1.2).unwrap(),
                 },
             })
-            .is_passable(false)
+            .passable(false)
             .build();
 
         let expected = ObjectDescription {
@@ -577,7 +584,7 @@ mod test {
                     rotation: Radians::try_new(1.2).unwrap(),
                 },
             }),
-            is_passable: false,
+            passable: false,
         };
 
         assert_eq!(Ok(expected), result);

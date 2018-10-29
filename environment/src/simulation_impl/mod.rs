@@ -57,7 +57,7 @@ impl SimulationImpl {
             mobility: physics_body.mobility,
             kind: non_physical_object_data.kind,
             sensor: sensor_without_handle(non_physical_object_data.sensor.clone()),
-            is_passable: self.world.is_body_passable(body_handle),
+            passable: self.world.is_body_passable(body_handle),
         })
     }
 
@@ -173,7 +173,7 @@ impl Simulation for SimulationImpl {
             shape: object_description.shape,
             position: object_description.position,
             mobility: object_description.mobility,
-            is_passable: object_description.is_passable,
+            passable: object_description.passable,
         };
 
         let body_handle = self.world.add_body(physical_body);
@@ -285,7 +285,7 @@ pub struct PhysicalBody {
     /// objects center
     pub mobility: Mobility,
     /// Whether this object is passable or not
-    pub is_passable: bool,
+    pub passable: bool,
 }
 
 /// A unique identifier that can be used to retrieve a [`PhysicalBody`] from a
@@ -373,7 +373,7 @@ mod tests {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
-            is_passable: expected_passable,
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
@@ -404,7 +404,7 @@ mod tests {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
-            is_passable: expected_passable,
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
@@ -457,7 +457,7 @@ mod tests {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
-            is_passable: expected_passable,
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
@@ -504,7 +504,7 @@ mod tests {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
-            is_passable: expected_passable,
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
@@ -544,7 +544,7 @@ mod tests {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
-            is_passable: expected_passable,
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
@@ -600,7 +600,7 @@ mod tests {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
-            is_passable: expected_passable,
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
@@ -650,7 +650,7 @@ mod tests {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
-            is_passable: expected_passable,
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
@@ -707,7 +707,7 @@ mod tests {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
-            is_passable: expected_passable,
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
@@ -754,7 +754,7 @@ mod tests {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
-            is_passable: expected_passable,
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
@@ -806,7 +806,7 @@ mod tests {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
-            is_passable: expected_passable,
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);

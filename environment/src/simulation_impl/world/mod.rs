@@ -96,13 +96,13 @@ impl NphysicsWorld {
         let shape = self.get_shape(&collider);
         let position = self.get_position(&collider);
         let mobility = self.get_mobility(&collider);
-        let is_passable = self.is_passable(&collider);
+        let passable = self.passable(&collider);
 
         Some(PhysicalBody {
             shape,
             position,
             mobility,
-            is_passable,
+            passable,
         })
     }
 
@@ -158,7 +158,7 @@ impl NphysicsWorld {
         }
     }
 
-    fn is_passable(&self, collider: &Collider<PhysicsType>) -> bool {
+    fn passable(&self, collider: &Collider<PhysicsType>) -> bool {
         let body_handle = to_body_handle(collider.handle());
         self.collision_filter
             .read()
@@ -284,7 +284,7 @@ impl World for NphysicsWorld {
 
         let body_handle = to_body_handle(handle);
 
-        if body.is_passable {
+        if body.passable {
             self.collision_filter
                 .write()
                 .expect("Lock was poisoned")
@@ -1083,7 +1083,7 @@ mod tests {
                 .vertex(5, -5)
                 .build()
                 .unwrap(),
-            is_passable: false,
+            passable: false,
         }
     }
 
@@ -1101,7 +1101,7 @@ mod tests {
                 location: Location { x: 300, y: 200 },
                 rotation: orientation,
             },
-            is_passable: false,
+            passable: false,
         }
     }
     #[derive(Debug, Default)]

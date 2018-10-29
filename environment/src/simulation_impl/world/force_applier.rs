@@ -259,7 +259,7 @@ mod tests {
                 .vertex(5, -5)
                 .build()
                 .unwrap(),
-            is_passable: false,
+            passable: false,
         }
     }
 
