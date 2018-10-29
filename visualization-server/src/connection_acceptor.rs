@@ -3,10 +3,13 @@ pub(crate) use self::mock::*;
 
 use crate::connection::{Connection, Socket};
 use crate::controller::{Client, ConnectionAcceptor};
+use std::boxed::FnBox;
 use std::fmt::{self, Debug};
 use std::io;
 use std::net::{SocketAddr, TcpStream};
+use std::sync::mpsc::channel;
 use std::sync::Arc;
+use std::thread;
 use threadpool::ThreadPool;
 use uuid::Uuid;
 use websocket::server::upgrade::{sync::Buffer, WsUpgrade as Request};
@@ -15,12 +18,14 @@ use websocket::sync::{Client as WsClient, Server};
 
 pub(crate) type ClientFactoryFn = dyn Fn(Connection) -> Box<dyn Client> + Send + Sync;
 pub(crate) type SocketFactoryFn = dyn Fn(WsClient<TcpStream>) -> Box<dyn Socket> + Send + Sync;
+pub(crate) type ThreadSpawnFn = dyn Fn(Box<dyn FnBox() + Send>) + Send + Sync;
 
 pub(crate) struct WebsocketConnectionAcceptor {
     thread_pool: ThreadPool,
     websocket_server: Server<NoTlsAcceptor>,
     client_factory_fn: Arc<ClientFactoryFn>,
     socket_factory_fn: Arc<SocketFactoryFn>,
+    thread_spawn_fn: Box<ThreadSpawnFn>,
 }
 
 impl WebsocketConnectionAcceptor {
@@ -29,15 +34,17 @@ impl WebsocketConnectionAcceptor {
         address: SocketAddr,
         client_factory_fn: Arc<ClientFactoryFn>,
         socket_factory_fn: Arc<SocketFactoryFn>,
+        thread_spawn_fn: Box<ThreadSpawnFn>,
     ) -> Result<Self, WebsocketConnectionAcceptorError> {
         if max_connections == 0 {
             Err(WebsocketConnectionAcceptorError::NoAllowedConnectionsError)
         } else {
             Ok(Self {
-                thread_pool: ThreadPool::new(max_connections),
+                thread_pool: ThreadPool::with_name("Client spawner".to_string(), max_connections),
                 websocket_server: Server::bind(address)?,
                 client_factory_fn,
                 socket_factory_fn,
+                thread_spawn_fn,
             })
         }
     }
@@ -48,7 +55,7 @@ impl ConnectionAcceptor for WebsocketConnectionAcceptor {
         for request in self.websocket_server.filter_map(Result::ok) {
             let client_factory_fn = self.client_factory_fn.clone();
             let socket_factory_fn = self.socket_factory_fn.clone();
-            self.thread_pool.execute(move || {
+            (self.thread_spawn_fn)(Box::new(move || {
                 if should_accept(&request) {
                     if let Ok(client) = request.accept() {
                         let connection = to_connection(client, socket_factory_fn);
@@ -56,7 +63,7 @@ impl ConnectionAcceptor for WebsocketConnectionAcceptor {
                         client.run();
                     }
                 }
-            })
+            }))
         }
     }
 
@@ -161,12 +168,14 @@ mod tests {
         let address = localhost();
         let client_factory_fn = mock_client_factory_fn(None);
         let socket_factory_fn = mock_socket_factory_fn(Some(SocketMock::default()));
+        let main_thread_spawn_fn = main_thread_spawn_fn();
 
         let connection_acceptor_result = WebsocketConnectionAcceptor::try_new(
             max_connections,
             address,
             client_factory_fn,
             socket_factory_fn,
+            main_thread_spawn_fn,
         );
 
         match connection_acceptor_result {
@@ -175,19 +184,20 @@ mod tests {
         };
     }
 
-    #[ignore]
     #[test]
-    fn panics_on_invalid_message() {
+    fn accepts_connections() {
         let max_connections = 1;
         let address = localhost();
         let client_factory_fn = mock_client_factory_fn(None);
         let socket_factory_fn = mock_socket_factory_fn(Some(SocketMock::default()));
+        let main_thread_spawn_fn = main_thread_spawn_fn();
 
         let connection_acceptor = WebsocketConnectionAcceptor::try_new(
             max_connections,
             address,
             client_factory_fn,
             socket_factory_fn,
+            main_thread_spawn_fn,
         )
         .unwrap();
 
@@ -196,49 +206,45 @@ mod tests {
             connection_acceptor.run();
         });
 
-        let mut client = ClientBuilder::new(&format!("ws://{}", address))
+        let _client = ClientBuilder::new(&format!("ws://{}", address))
             .unwrap()
             .connect_insecure()
             .unwrap();
-        let message = Message::text("Hello, World!");
-        client.send_message(&message).unwrap();
-
-        // If the test fails, this will timeout in 60 seconds
         let result = acceptor_thread.join();
-        assert!(result.is_err());
+        assert!(result.is_err())
     }
 
-    #[ignore]
     #[test]
-    fn spawns_client() {
+    fn respects_max_connections() {
         let max_connections = 1;
         let address = localhost();
         let client_factory_fn = mock_client_factory_fn(None);
         let socket_factory_fn = mock_socket_factory_fn(Some(SocketMock::default()));
+        let main_thread_spawn_fn = main_thread_spawn_fn();
 
         let connection_acceptor = WebsocketConnectionAcceptor::try_new(
             max_connections,
             address,
             client_factory_fn,
             socket_factory_fn,
+            main_thread_spawn_fn,
         )
         .unwrap();
 
         let address = connection_acceptor.address();
-
         let acceptor_thread = thread::spawn(move || {
             connection_acceptor.run();
         });
-        let mut client = ClientBuilder::new(&format!("ws://{}", address))
+
+        let first_client = ClientBuilder::new(&format!("ws://{}", address))
             .unwrap()
             .connect_insecure()
             .unwrap();
-        let message = Message::text("Hello, World!");
-        client.send_message(&message).unwrap();
 
-        // If the test fails, this will timeout in 60 seconds
-        let result = acceptor_thread.join();
-        assert!(result.is_err());
+        let second_client = ClientBuilder::new(&format!("ws://{}", address))
+            .unwrap()
+            .connect_insecure()
+            .unwrap();
     }
 
     fn localhost() -> SocketAddr {
@@ -273,6 +279,10 @@ mod tests {
                 panic!("No call to socket_factory_fn was expected")
             }
         })
+    }
+
+    fn main_thread_spawn_fn() -> Box<ThreadSpawnFn> {
+        Box::new(move |function| function())
     }
 
     #[derive(Debug, Default)]
