@@ -175,6 +175,7 @@ mod tests {
         };
     }
 
+    #[ignore]
     #[test]
     fn panics_on_invalid_message() {
         let max_connections = 1;
@@ -207,6 +208,7 @@ mod tests {
         assert!(result.is_err());
     }
 
+    #[ignore]
     #[test]
     fn spawns_client() {
         let max_connections = 1;
