@@ -41,6 +41,17 @@ mod mock {
         send_message_was_called: AtomicBool,
     }
 
+    impl Clone for SocketMock {
+        fn clone(&self) -> Self {
+            Self {
+                expect_send_message_and_return: self.expect_send_message_and_return.clone(),
+                send_message_was_called: AtomicBool::new(
+                    self.send_message_was_called.load(Ordering::SeqCst),
+                ),
+            }
+        }
+    }
+
     impl SocketMock {
         pub(crate) fn expect_send_message_and_return(
             &mut self,
@@ -92,6 +103,17 @@ mod mock {
     pub(crate) struct SocketErrorMock {
         expect_is_broken_pipe_and_return: Option<bool>,
         is_broken_pipe_was_called: AtomicBool,
+    }
+
+    impl Clone for SocketErrorMock {
+        fn clone(&self) -> Self {
+            SocketErrorMock {
+                expect_is_broken_pipe_and_return: self.expect_is_broken_pipe_and_return.clone(),
+                is_broken_pipe_was_called: AtomicBool::new(
+                    self.is_broken_pipe_was_called.load(Ordering::SeqCst),
+                ),
+            }
+        }
     }
 
     impl SocketErrorMock {

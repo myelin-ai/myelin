@@ -1,30 +1,34 @@
 #[cfg(test)]
 pub(crate) use self::mock::*;
 
-use crate::connection::Connection;
+use crate::connection::{Connection, Socket};
 use crate::controller::{Client, ConnectionAcceptor};
 use std::fmt::{self, Debug};
 use std::io;
 use std::net::{SocketAddr, TcpStream};
 use std::sync::Arc;
 use threadpool::ThreadPool;
+use uuid::Uuid;
 use websocket::server::upgrade::{sync::Buffer, WsUpgrade as Request};
 use websocket::server::NoTlsAcceptor;
 use websocket::sync::{Client as WsClient, Server};
 
 pub(crate) type ClientFactoryFn = dyn Fn(Connection) -> Box<dyn Client> + Send + Sync;
+pub(crate) type SocketFactoryFn = dyn Fn(WsClient<TcpStream>) -> Box<dyn Socket> + Send + Sync;
 
 pub(crate) struct WebsocketConnectionAcceptor {
     thread_pool: ThreadPool,
     websocket_server: Server<NoTlsAcceptor>,
     client_factory_fn: Arc<ClientFactoryFn>,
+    socket_factory_fn: Arc<SocketFactoryFn>,
 }
 
 impl WebsocketConnectionAcceptor {
-    pub(crate) fn new(
+    pub(crate) fn try_new(
         max_connections: usize,
         address: SocketAddr,
         client_factory_fn: Arc<ClientFactoryFn>,
+        socket_factory_fn: Arc<SocketFactoryFn>,
     ) -> Result<Self, WebsocketConnectionAcceptorError> {
         if max_connections == 0 {
             Err(WebsocketConnectionAcceptorError::NoAllowedConnectionsError)
@@ -33,6 +37,7 @@ impl WebsocketConnectionAcceptor {
                 thread_pool: ThreadPool::new(max_connections),
                 websocket_server: Server::bind(address)?,
                 client_factory_fn,
+                socket_factory_fn,
             })
         }
     }
@@ -42,10 +47,11 @@ impl ConnectionAcceptor for WebsocketConnectionAcceptor {
     fn run(self) {
         for request in self.websocket_server.filter_map(Result::ok) {
             let client_factory_fn = self.client_factory_fn.clone();
+            let socket_factory_fn = self.socket_factory_fn.clone();
             self.thread_pool.execute(move || {
                 if should_accept(&request) {
                     if let Ok(client) = request.accept() {
-                        let connection = to_connection(client);
+                        let connection = to_connection(client, socket_factory_fn);
                         let mut client = (client_factory_fn)(connection);
                         client.run();
                     }
@@ -53,6 +59,15 @@ impl ConnectionAcceptor for WebsocketConnectionAcceptor {
             })
         }
     }
+}
+
+fn to_connection(
+    client: WsClient<TcpStream>,
+    socket_factory_fn: Arc<SocketFactoryFn>,
+) -> Connection {
+    let id = Uuid::new_v4();
+    let socket = (socket_factory_fn)(client);
+    Connection { id, socket }
 }
 
 impl Debug for WebsocketConnectionAcceptor {
@@ -64,10 +79,6 @@ impl Debug for WebsocketConnectionAcceptor {
 
 fn should_accept(_request: &Request<TcpStream, Option<Buffer>>) -> bool {
     true
-}
-
-fn to_connection(client: WsClient<TcpStream>) -> Connection {
-    unimplemented!()
 }
 
 #[derive(Debug)]
@@ -128,6 +139,7 @@ mod mock {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::connection::SocketMock;
     use std::net::{Ipv6Addr, SocketAddrV6};
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::thread::{self, panicking};
@@ -138,9 +150,14 @@ mod tests {
         let max_connections = 0;
         let address = localhost();
         let client_factory_fn = mock_client_factory_fn(None);
+        let socket_factory_fn = mock_socket_factory_fn(Some(SocketMock::default()));
 
-        let connection_acceptor_result =
-            WebsocketConnectionAcceptor::new(max_connections, address, client_factory_fn);
+        let connection_acceptor_result = WebsocketConnectionAcceptor::try_new(
+            max_connections,
+            address,
+            client_factory_fn,
+            socket_factory_fn,
+        );
 
         match connection_acceptor_result {
             Err(WebsocketConnectionAcceptorError::NoAllowedConnectionsError) => {}
@@ -153,9 +170,45 @@ mod tests {
         let max_connections = 1;
         let address = localhost();
         let client_factory_fn = mock_client_factory_fn(None);
+        let socket_factory_fn = mock_socket_factory_fn(Some(SocketMock::default()));
 
-        let connection_acceptor =
-            WebsocketConnectionAcceptor::new(max_connections, address, client_factory_fn).unwrap();
+        let connection_acceptor = WebsocketConnectionAcceptor::try_new(
+            max_connections,
+            address,
+            client_factory_fn,
+            socket_factory_fn,
+        )
+        .unwrap();
+
+        let acceptor_thread = thread::spawn(move || {
+            connection_acceptor.run();
+        });
+        let mut client = ClientBuilder::new(&address.to_string())
+            .unwrap()
+            .connect_insecure()
+            .unwrap();
+        let message = Message::text("Hello, World!");
+        client.send_message(&message).unwrap();
+
+        // If the test fails, this will timeout in 60 seconds
+        let result = acceptor_thread.join();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn spawns_client() {
+        let max_connections = 1;
+        let address = localhost();
+        let client_factory_fn = mock_client_factory_fn(None);
+        let socket_factory_fn = mock_socket_factory_fn(Some(SocketMock::default()));
+
+        let connection_acceptor = WebsocketConnectionAcceptor::try_new(
+            max_connections,
+            address,
+            client_factory_fn,
+            socket_factory_fn,
+        )
+        .unwrap();
 
         let acceptor_thread = thread::spawn(move || {
             connection_acceptor.run();
@@ -192,6 +245,16 @@ mod tests {
                 Box::new(return_value.clone())
             } else {
                 panic!("No call to client_factory_fn was expected")
+            }
+        })
+    }
+
+    fn mock_socket_factory_fn(return_value: Option<SocketMock>) -> Arc<SocketFactoryFn> {
+        Arc::new(move |_| {
+            if let Some(ref return_value) = return_value {
+                Box::new(return_value.clone())
+            } else {
+                panic!("No call to socket_factory_fn was expected")
             }
         })
     }
