@@ -59,6 +59,12 @@ impl ConnectionAcceptor for WebsocketConnectionAcceptor {
             })
         }
     }
+
+    fn address(&self) -> SocketAddr {
+        self.websocket_server
+            .local_addr()
+            .expect("Unable to get local_addr() from socket")
+    }
 }
 
 fn to_connection(
@@ -118,6 +124,10 @@ mod mock {
                 "run() was called unexpectedly"
             );
             self.run_was_called.store(true, Ordering::SeqCst);
+        }
+
+        fn address(&self) -> SocketAddr {
+            unimplemented!()
         }
     }
 
@@ -180,10 +190,12 @@ mod tests {
         )
         .unwrap();
 
+        let address = connection_acceptor.address();
         let acceptor_thread = thread::spawn(move || {
             connection_acceptor.run();
         });
-        let mut client = ClientBuilder::new(&address.to_string())
+
+        let mut client = ClientBuilder::new(&format!("ws://{}", address))
             .unwrap()
             .connect_insecure()
             .unwrap();
@@ -210,10 +222,12 @@ mod tests {
         )
         .unwrap();
 
+        let address = connection_acceptor.address();
+
         let acceptor_thread = thread::spawn(move || {
             connection_acceptor.run();
         });
-        let mut client = ClientBuilder::new(&address.to_string())
+        let mut client = ClientBuilder::new(&format!("ws://{}", address))
             .unwrap()
             .connect_insecure()
             .unwrap();
