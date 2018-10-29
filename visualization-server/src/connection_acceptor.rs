@@ -140,6 +140,24 @@ mod tests {
     use std::thread::{self, panicking};
     use websocket::ClientBuilder;
 
+    const RANDOM_PORT: u16 = 0;
+
+    #[test]
+    fn address_returns_correct_socket_address() {
+        let address = localhost();
+        let client_factory_fn = mock_client_factory_fn(None);
+        let main_thread_spawn_fn = main_thread_spawn_fn();
+
+        let connection_acceptor =
+            WebsocketConnectionAcceptor::try_new(address, client_factory_fn, main_thread_spawn_fn)
+                .unwrap();
+
+        let local_addr = connection_acceptor.address();
+
+        assert_eq!(address.ip(), local_addr.ip());
+        assert!(local_addr.port() != RANDOM_PORT);
+    }
+
     #[test]
     fn accepts_connections() {
         let address = localhost();
@@ -164,7 +182,6 @@ mod tests {
     }
 
     fn localhost() -> SocketAddr {
-        const RANDOM_PORT: u16 = 0;
         let address = SocketAddrV4::new(Ipv4Addr::LOCALHOST, RANDOM_PORT);
         SocketAddr::V4(address)
     }
