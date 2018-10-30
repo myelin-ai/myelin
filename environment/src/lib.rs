@@ -20,6 +20,7 @@ pub mod object_builder;
 pub mod simulation_impl;
 
 use crate::object::{ObjectBehavior, ObjectDescription};
+use std::collections::HashMap;
 use std::fmt;
 
 /// A Simulation that can be filled with [`Object`] on
@@ -40,7 +41,7 @@ pub trait Simulation: fmt::Debug {
         object_behavior: Box<dyn ObjectBehavior>,
     );
     /// Returns a read-only description of all objects currently inhabiting the simulation.
-    fn objects(&self) -> Vec<ObjectDescription>;
+    fn objects(&self) -> HashMap<Id, ObjectDescription>;
     /// Sets how much time in seconds is simulated for each step.
     /// # Examples
     /// If you want to run a simulation with 60 steps per second, you
