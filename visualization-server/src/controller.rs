@@ -7,9 +7,13 @@ use std::collections::HashMap;
 use std::fmt::{self, Debug};
 use std::net::SocketAddr;
 use std::sync::{Arc, RwLock};
+use std::thread;
 use std::time::Duration;
 
 pub(crate) type Snapshot = HashMap<Id, ObjectDescription>;
+pub(crate) type ConnectionAcceptorFactory =
+    dyn Fn(Box<CurrentSnapshotFn>) -> Box<dyn ConnectionAcceptor>;
+pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send;
 
 pub(crate) trait Controller: Debug {
     fn run(&mut self);
@@ -29,18 +33,13 @@ pub(crate) trait ConnectionAcceptor: Debug {
     fn address(&self) -> SocketAddr;
 }
 
-pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send;
-
 pub(crate) trait Client: Debug {
     fn run(&mut self);
 }
 
-pub(crate) type SimulationFactory = dyn Fn() -> Box<dyn Simulation>;
-pub(crate) type CurrentSnapshotFnFactory = dyn Fn() -> Box<CurrentSnapshotFn>;
-
 pub(crate) struct ControllerImpl {
-    simulation_factory: Box<SimulationFactory>,
-    connection_acceptor: Box<dyn ConnectionAcceptor>,
+    simulation: Box<dyn Simulation>,
+    connection_acceptor_factory_fn: Arc<ConnectionAcceptorFactory>,
     expected_delta: Duration,
     current_snapshot: Arc<RwLock<Snapshot>>,
 }
@@ -48,7 +47,6 @@ pub(crate) struct ControllerImpl {
 impl Debug for ControllerImpl {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("ControllerImpl")
-            .field("connection_acceptor", &self.connection_acceptor)
             .field("expected_delta", &self.expected_delta)
             .finish()
     }
@@ -56,19 +54,29 @@ impl Debug for ControllerImpl {
 
 impl Controller for ControllerImpl {
     fn run(&mut self) {
-        unimplemented!()
+        let current_snapshot_fn = Box::new(|| {
+            unimplemented!();
+            HashMap::new()
+        }) as Box<CurrentSnapshotFn>;
+        let connection_acceptor_factory_fn = self.connection_acceptor_factory_fn.clone();
+        thread::spawn(move || {
+            let connection_acceptor = (connection_acceptor_factory_fn)(current_snapshot_fn);
+        });
+        loop {
+            self.simulation.step()
+        }
     }
 }
 
 impl ControllerImpl {
     pub(crate) fn new(
-        simulation_factory: Box<SimulationFactory>,
-        connection_acceptor: Box<dyn ConnectionAcceptor>,
+        simulation: Box<dyn Simulation>,
+        connection_acceptor_factory_fn: Arc<ConnectionAcceptorFactory>,
         expected_delta: Duration,
     ) -> Self {
         Self {
-            simulation_factory,
-            connection_acceptor,
+            simulation,
+            connection_acceptor_factory_fn,
             expected_delta,
             current_snapshot: Default::default(),
         }
@@ -92,7 +100,7 @@ mod tests {
     #[test]
     fn assembles_stuff() {
         let mut controller = ControllerImpl::new(
-            Box::new(|| Box::new(SimulationMock::new(Vec::new()))),
+            Box::new(SimulationMock::new(Vec::new())),
             Box::new(ConnectionAcceptorMock::default()),
             EXPECTED_DELTA,
         );
