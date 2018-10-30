@@ -88,9 +88,10 @@ mod tests {
     use super::*;
     use crate::connection_acceptor::ConnectionAcceptorMock;
     use myelin_environment::object::*;
-    use myelin_environment::Simulation;
+    use myelin_environment::{Id, Simulation};
     use myelin_worldgen::WorldGenerator;
     use std::cell::RefCell;
+    use std::collections::HashMap;
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::thread::panicking;
 
@@ -100,7 +101,7 @@ mod tests {
     #[test]
     fn assembles_stuff() {
         let mut controller = ControllerImpl::new(
-            Box::new(SimulationMock::new(Vec::new())),
+            Box::new(SimulationMock::new(HashMap::new())),
             Box::new(ConnectionAcceptorMock::default()),
             EXPECTED_DELTA,
         );
@@ -110,12 +111,12 @@ mod tests {
     #[derive(Debug)]
     struct SimulationMock {
         step_was_called: bool,
-        returned_objects: Vec<ObjectDescription>,
+        returned_objects: HashMap<Id, ObjectDescription>,
         objects_was_called: RefCell<bool>,
     }
 
     impl SimulationMock {
-        fn new(returned_objects: Vec<ObjectDescription>) -> Self {
+        fn new(returned_objects: HashMap<Id, ObjectDescription>) -> Self {
             Self {
                 step_was_called: false,
                 objects_was_called: RefCell::new(false),
@@ -134,7 +135,7 @@ mod tests {
         fn set_simulated_timestep(&mut self, _: f64) {
             panic!("set_simulated_timestep() called unexpectedly");
         }
-        fn objects(&self) -> Vec<ObjectDescription> {
+        fn objects(&self) -> HashMap<Id, ObjectDescription> {
             *self.objects_was_called.borrow_mut() = true;
             self.returned_objects.clone()
         }
