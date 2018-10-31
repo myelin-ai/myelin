@@ -116,7 +116,7 @@ mod tests {
         collision_filter
             .write()
             .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         let force = Force {
             linear: LinearForce { x: 1000, y: 2000 },
@@ -285,7 +285,7 @@ mod tests {
         collision_filter
             .write()
             .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         const BODY_HANDLE_ERROR: &str = "Invalid object handle";
         world.apply_force(handle, force).expect(BODY_HANDLE_ERROR);

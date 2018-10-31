@@ -312,9 +312,18 @@ pub struct BodyHandle(pub usize);
 pub struct SensorHandle(pub usize);
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub enum Handle {
-    Body(BodyHandle),
-    Sensor(SensorHandle),
+pub struct AnyHandle(pub usize);
+
+impl From<BodyHandle> for AnyHandle {
+    fn from(body_handle: BodyHandle) -> Self {
+        AnyHandle(body_handle.0)
+    }
+}
+
+impl From<SensorHandle> for AnyHandle {
+    fn from(sensor_handle: SensorHandle) -> Self {
+        AnyHandle(sensor_handle.0)
+    }
 }
 
 #[cfg(test)]

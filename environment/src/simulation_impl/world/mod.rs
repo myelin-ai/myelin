@@ -163,7 +163,7 @@ impl NphysicsWorld {
         self.collision_filter
             .read()
             .expect("RwLock was poisoned")
-            .is_handle_ignored(body_handle)
+            .is_handle_ignored(body_handle.into())
     }
 }
 
@@ -288,7 +288,7 @@ impl World for NphysicsWorld {
             self.collision_filter
                 .write()
                 .expect("Lock was poisoned")
-                .add_ignored_handle(body_handle);
+                .add_ignored_handle(body_handle.into());
         }
 
         body_handle
@@ -306,7 +306,7 @@ impl World for NphysicsWorld {
             self.collision_filter
                 .write()
                 .expect("RwLock was poisoned")
-                .remove_ignored_body_handle(body_handle);
+                .remove_ignored_handle(body_handle.into());
         }
         self.physics_world.remove_bodies(&[nphysics_body_handle]);
         Some(physical_body)
@@ -367,7 +367,7 @@ impl World for NphysicsWorld {
         self.collision_filter
             .read()
             .expect("RwLock was poisoned")
-            .is_handle_ignored(body_handle)
+            .is_handle_ignored(body_handle.into())
     }
 }
 
@@ -491,7 +491,7 @@ mod tests {
         collision_filter
             .write()
             .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         world.body(handle);
     }
@@ -517,7 +517,7 @@ mod tests {
         collision_filter
             .write()
             .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         world.body(handle);
     }
@@ -543,7 +543,7 @@ mod tests {
         collision_filter
             .write()
             .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         let physical_body = world.remove_body(handle).expect("Invalid handle");
         assert_eq!(expected_body, physical_body);
@@ -569,7 +569,7 @@ mod tests {
         collision_filter
             .write()
             .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         world
             .attach_sensor(handle, sensor())
@@ -599,7 +599,7 @@ mod tests {
         collision_filter
             .write()
             .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         let _physical_body = world.remove_body(handle).expect("Invalid handle");
         let removed_body = world.body(handle);
@@ -630,8 +630,8 @@ mod tests {
             .write()
             .expect("RwLock was poisoned")
             .expect_is_handle_ignored_and_return(VecDeque::from(vec![
-                (rigid_handle, false),
-                (grounded_handle, false),
+                (rigid_handle.into(), false),
+                (grounded_handle.into(), false),
             ]));
 
         let _rigid_body = world.body(rigid_handle);
@@ -658,7 +658,7 @@ mod tests {
         collision_filter
             .write()
             .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         let actual_body = world.body(handle);
 
@@ -685,7 +685,7 @@ mod tests {
         collision_filter
             .write()
             .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         let actual_body = world.body(handle);
 
@@ -856,10 +856,10 @@ mod tests {
             .write()
             .expect("RwLock was poisoned")
             .expect_is_handle_ignored_and_return(VecDeque::from(vec![
-                (handle_one, false),
-                (handle_two, false),
+                (handle_one.into(), false),
+                (handle_two.into(), false),
             ]))
-            .expect_is_pair_valid_and_return(handle_one, handle_two, true);
+            .expect_is_pair_valid_and_return(handle_one.into(), handle_two.into(), true);
 
         world.step();
 
@@ -911,7 +911,7 @@ mod tests {
         collision_filter
             .write()
             .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle_one, false)]));
+            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle_one.into(), false)]));
 
         world
             .attach_sensor(close_body_handle, sensor())
@@ -981,7 +981,7 @@ mod tests {
         collision_filter
             .write()
             .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         world.step();
         world.step();
@@ -1021,7 +1021,7 @@ mod tests {
         collision_filter
             .write()
             .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         world.step();
         world.step();
@@ -1061,7 +1061,7 @@ mod tests {
         collision_filter
             .write()
             .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         world.step();
         world.step();
@@ -1097,7 +1097,7 @@ mod tests {
         collision_filter
             .write()
             .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle, false)]));
+            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         world.step();
         world.step();
