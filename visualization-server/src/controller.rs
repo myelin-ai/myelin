@@ -12,8 +12,8 @@ use std::time::Duration;
 
 pub(crate) type Snapshot = HashMap<Id, ObjectDescription>;
 pub(crate) type ConnectionAcceptorFactory =
-    dyn Fn(Box<CurrentSnapshotFn>) -> Box<dyn ConnectionAcceptor>;
-pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send;
+    dyn Fn(Box<CurrentSnapshotFn>) -> Box<dyn ConnectionAcceptor> + Send + Sync;
+pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send + Sync;
 
 pub(crate) trait Controller: Debug {
     fn run(&mut self);
@@ -102,7 +102,9 @@ mod tests {
     fn assembles_stuff() {
         let mut controller = ControllerImpl::new(
             Box::new(SimulationMock::new(HashMap::new())),
-            Box::new(ConnectionAcceptorMock::default()),
+            Arc::new(|_| {
+                Box::new(ConnectionAcceptorMock::default()) as Box<dyn ConnectionAcceptor>
+            }),
             EXPECTED_DELTA,
         );
         controller.run();
