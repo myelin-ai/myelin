@@ -54,13 +54,13 @@ impl Debug for ControllerImpl {
 
 impl Controller for ControllerImpl {
     fn run(&mut self) {
-        let current_snapshot_fn = Box::new(|| {
-            unimplemented!();
-            HashMap::new()
-        }) as Box<CurrentSnapshotFn>;
+        let current_snapshot = self.current_snapshot.clone();
+        let current_snapshot_fn =
+            Box::new(move || current_snapshot.read().unwrap().clone()) as Box<CurrentSnapshotFn>;
         let connection_acceptor_factory_fn = self.connection_acceptor_factory_fn.clone();
         thread::spawn(move || {
             let connection_acceptor = (connection_acceptor_factory_fn)(current_snapshot_fn);
+            connection_acceptor.run();
         });
         loop {
             self.simulation.step()
