@@ -63,7 +63,8 @@ impl Controller for ControllerImpl {
             connection_acceptor.run();
         });
         loop {
-            self.simulation.step()
+            self.simulation.step();
+            *self.current_snapshot.write().unwrap() = self.simulation.objects();
         }
     }
 }
