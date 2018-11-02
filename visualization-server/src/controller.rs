@@ -99,6 +99,8 @@ impl ControllerImpl {
 mod tests {
     use super::*;
     use crate::connection_acceptor::ConnectionAcceptorMock;
+    use myelin_environment::object::*;
+    use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
     use myelin_environment::SimulationMock;
 
     const EXPECTED_DELTA: Duration = Duration::from_millis((1.0f64 / 60.0f64) as u64);
@@ -131,9 +133,30 @@ mod tests {
     }
 
     #[test]
-    fn steps_simulation() {
+    fn steps_simulation_with_empty_snapshot() {
         let mut simulation = SimulationMock::default();
         simulation.expect_step();
+        simulation.expect_objects_and_return(HashMap::new());
+        let mut controller = ControllerImpl::new(
+            box simulation,
+            Arc::new(|_| {
+                Box::new(ConnectionAcceptorMock::default()) as Box<dyn ConnectionAcceptor>
+            }),
+            main_thread_spawn_fn(),
+            EXPECTED_DELTA,
+        );
+        controller.step_simulation();
+    }
+
+    #[test]
+    fn steps_simulation_with_snapshot() {
+        let mut simulation = SimulationMock::default();
+        simulation.expect_step();
+        let expected_snapshot = hashmap!{
+           0 => object_description()
+        };
+
+        simulation.expect_objects_and_return(expected_snapshot);
         let mut controller = ControllerImpl::new(
             box simulation,
             Arc::new(|_| {
@@ -147,5 +170,23 @@ mod tests {
 
     fn main_thread_spawn_fn() -> Box<ThreadSpawnFn> {
         box move |function| function()
+    }
+
+    fn object_description() -> ObjectDescription {
+        ObjectBuilder::new()
+            .kind(Kind::Organism)
+            .mobility(Mobility::Immovable)
+            .location(10, 20)
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(-50, -50)
+                    .vertex(50, -50)
+                    .vertex(50, 50)
+                    .vertex(-50, 50)
+                    .build()
+                    .unwrap(),
+            )
+            .build()
+            .unwrap()
     }
 }
