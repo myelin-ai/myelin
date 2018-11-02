@@ -57,17 +57,9 @@ impl Debug for ControllerImpl {
 
 impl Controller for ControllerImpl {
     fn run(&mut self) {
-        let current_snapshot = self.current_snapshot.clone();
-        let current_snapshot_fn =
-            Box::new(move || current_snapshot.read().unwrap().clone()) as Box<CurrentSnapshotFn>;
-        let connection_acceptor_factory_fn = self.connection_acceptor_factory_fn.clone();
-        (self.thread_spawn_fn)(Box::new(move || {
-            let connection_acceptor = (connection_acceptor_factory_fn)(current_snapshot_fn);
-            connection_acceptor.run();
-        }));
+        self.run_connection_acceptor();
         loop {
-            self.simulation.step();
-            *self.current_snapshot.write().unwrap() = self.simulation.objects();
+            self.step_simulation();
         }
     }
 }
@@ -86,6 +78,22 @@ impl ControllerImpl {
             thread_spawn_fn,
             current_snapshot: Default::default(),
         }
+    }
+
+    fn run_connection_acceptor(&mut self) {
+        let current_snapshot = self.current_snapshot.clone();
+        let current_snapshot_fn =
+            Box::new(move || current_snapshot.read().unwrap().clone()) as Box<CurrentSnapshotFn>;
+        let connection_acceptor_factory_fn = self.connection_acceptor_factory_fn.clone();
+        (self.thread_spawn_fn)(Box::new(move || {
+            let connection_acceptor = (connection_acceptor_factory_fn)(current_snapshot_fn);
+            connection_acceptor.run();
+        }));
+    }
+
+    fn step_simulation(&mut self) {
+        self.simulation.step();
+        *self.current_snapshot.write().unwrap() = self.simulation.objects();
     }
 }
 
