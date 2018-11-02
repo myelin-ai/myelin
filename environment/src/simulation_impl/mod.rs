@@ -31,6 +31,7 @@ impl SimulationImpl {
     /// Create a new SimulationImpl by injecting a [`World`]
     /// # Examples
     /// ```
+    /// #![feature(box_syntax)]
     /// use myelin_environment::simulation_impl::{
     ///     SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl
     /// };
@@ -41,12 +42,12 @@ impl SimulationImpl {
     /// let rotation_translator = NphysicsRotationTranslatorImpl::default();
     /// let force_applier = SingleTimeForceApplierImpl::default();
     /// let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterImpl::default()));
-    /// let world = Box::new(NphysicsWorld::with_timestep(
+    /// let world = box NphysicsWorld::with_timestep(
     ///     1.0,
-    ///     Box::new(rotation_translator),
-    ///     Box::new(force_applier),
+    ///     box rotation_translator,
+    ///     box force_applier,
     ///     collision_filter,
-    /// ));
+    /// );
     /// let simulation = SimulationImpl::new(world);
     /// ```
     /// [`World`]: ./trait.World.html
