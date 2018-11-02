@@ -104,12 +104,37 @@ mod tests {
     use myelin_worldgen::WorldGenerator;
     use std::cell::RefCell;
     use std::collections::HashMap;
+    use std::thread::panicking;
 
     const EXPECTED_DELTA: Duration = Duration::from_millis((1.0f64 / 60.0f64) as u64);
 
-    #[ignore]
     #[test]
-    fn assembles_stuff() {
+    fn can_be_assembled() {
+        ControllerImpl::new(
+            Box::new(SimulationMock::new(HashMap::new())),
+            Arc::new(|_| {
+                Box::new(ConnectionAcceptorMock::default()) as Box<dyn ConnectionAcceptor>
+            }),
+            main_thread_spawn_fn(),
+            EXPECTED_DELTA,
+        );
+    }
+
+    #[test]
+    fn runs_connection_acceptor() {
+        let controller = ControllerImpl::new(
+            Box::new(SimulationMock::new(HashMap::new())),
+            Arc::new(|_| {
+                Box::new(ConnectionAcceptorMock::default()) as Box<dyn ConnectionAcceptor>
+            }),
+            main_thread_spawn_fn(),
+            EXPECTED_DELTA,
+        );
+        controller.run_connection_acceptor();
+    }
+
+    #[test]
+    fn steps_simulation() {
         let mut controller = ControllerImpl::new(
             Box::new(SimulationMock::new(HashMap::new())),
             Arc::new(|_| {
@@ -118,7 +143,7 @@ mod tests {
             main_thread_spawn_fn(),
             EXPECTED_DELTA,
         );
-        controller.run();
+        controller.step_simulation();
     }
 
     fn main_thread_spawn_fn() -> Box<ThreadSpawnFn> {
@@ -160,6 +185,9 @@ mod tests {
 
     impl Drop for SimulationMock {
         fn drop(&mut self) {
+            if panicking() {
+                return;
+            }
             assert!(*self.objects_was_called.borrow());
             assert!(self.step_was_called);
         }
@@ -215,6 +243,9 @@ mod tests {
 
     impl Drop for WorldGeneratorMock {
         fn drop(&mut self) {
+            if panicking() {
+                return;
+            }
             assert!(*self.generate_was_called.borrow());
         }
     }
