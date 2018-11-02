@@ -126,6 +126,7 @@ mod mock {
             }
         }
     }
+
     impl Drop for SimulationMock {
         fn drop(&mut self) {
             if panicking() {

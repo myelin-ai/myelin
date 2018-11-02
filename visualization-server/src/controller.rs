@@ -120,7 +120,9 @@ mod tests {
         let controller = ControllerImpl::new(
             Box::new(SimulationMock::default()),
             Arc::new(|_| {
-                Box::new(ConnectionAcceptorMock::default()) as Box<dyn ConnectionAcceptor>
+                let mut connection_acceptor = Box::new(ConnectionAcceptorMock::default());
+                connection_acceptor.expect_run();
+                connection_acceptor as Box<dyn ConnectionAcceptor>
             }),
             main_thread_spawn_fn(),
             EXPECTED_DELTA,
@@ -130,8 +132,10 @@ mod tests {
 
     #[test]
     fn steps_simulation() {
+        let mut simulation = SimulationMock::default();
+        simulation.expect_step();
         let mut controller = ControllerImpl::new(
-            Box::new(SimulationMock::default()),
+            box simulation,
             Arc::new(|_| {
                 Box::new(ConnectionAcceptorMock::default()) as Box<dyn ConnectionAcceptor>
             }),
