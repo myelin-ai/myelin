@@ -1,4 +1,3 @@
-use crate::connection::Connection;
 use myelin_environment::object::ObjectDescription;
 use myelin_environment::Id;
 use myelin_environment::Simulation;
@@ -8,7 +7,6 @@ use std::collections::HashMap;
 use std::fmt::{self, Debug};
 use std::net::SocketAddr;
 use std::sync::{Arc, RwLock};
-use std::thread;
 use std::time::Duration;
 
 pub(crate) type Snapshot = HashMap<Id, ObjectDescription>;
@@ -106,8 +104,6 @@ mod tests {
     use myelin_worldgen::WorldGenerator;
     use std::cell::RefCell;
     use std::collections::HashMap;
-    use std::sync::atomic::{AtomicBool, Ordering};
-    use std::thread::panicking;
 
     const EXPECTED_DELTA: Duration = Duration::from_millis((1.0f64 / 60.0f64) as u64);
 
