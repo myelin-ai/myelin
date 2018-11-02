@@ -54,6 +54,7 @@ pub struct ObjectBuilder {
     mobility: Option<Mobility>,
     kind: Option<Kind>,
     sensor: Option<Sensor>,
+    passable: bool,
 }
 
 impl ObjectBuilder {
@@ -157,6 +158,17 @@ impl ObjectBuilder {
         self
     }
 
+    /// # Examples
+    /// ```
+    /// use myelin_environment::object_builder::ObjectBuilder;
+    ///
+    /// let builder = ObjectBuilder::new();
+    /// ```
+    pub fn passable(&mut self, passable: bool) -> &mut Self {
+        self.passable = passable;
+        self
+    }
+
     /// Build the [`ObjectDescription`] with all specified settings
     /// # Errors
     /// If a non-optional member has not specified while building
@@ -201,8 +213,9 @@ impl ObjectBuilder {
                 rotation: self.rotation.take().unwrap_or_else(Default::default),
             },
             kind: self.kind.take().ok_or_else(|| error.clone())?,
-            mobility: self.mobility.take().ok_or(error)?,
+            mobility: self.mobility.take().ok_or_else(|| error.clone())?,
             sensor: self.sensor.take(),
+            passable: self.passable,
         };
 
         Ok(object)
@@ -359,6 +372,7 @@ mod test {
             .rotation(Radians::try_new(0.0).unwrap())
             .mobility(Mobility::Immovable)
             .build();
+
         assert_eq!(
             Err(ObjectBuilderError {
                 missing_kind: true,
@@ -453,6 +467,48 @@ mod test {
             kind: Kind::Terrain,
             mobility: Mobility::Immovable,
             sensor: None,
+            passable: false,
+        };
+
+        assert_eq!(Ok(expected), result);
+    }
+
+    #[test]
+    fn test_object_builder_uses_passable() {
+        let result = ObjectBuilder::new()
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(0, 0)
+                    .vertex(0, 1)
+                    .vertex(1, 0)
+                    .vertex(1, 1)
+                    .build()
+                    .unwrap(),
+            )
+            .rotation(Radians::try_new(0.0).unwrap())
+            .location(30, 40)
+            .kind(Kind::Terrain)
+            .mobility(Mobility::Immovable)
+            .passable(true)
+            .build();
+
+        let expected = ObjectDescription {
+            shape: Polygon {
+                vertices: vec![
+                    Vertex { x: 0, y: 0 },
+                    Vertex { x: 0, y: 1 },
+                    Vertex { x: 1, y: 0 },
+                    Vertex { x: 1, y: 1 },
+                ],
+            },
+            position: Position {
+                rotation: Radians::try_new(0.0).unwrap(),
+                location: Location { x: 30, y: 40 },
+            },
+            kind: Kind::Terrain,
+            mobility: Mobility::Immovable,
+            sensor: None,
+            passable: true,
         };
 
         assert_eq!(Ok(expected), result);
@@ -467,7 +523,7 @@ mod test {
                 missing_shape: true,
                 missing_location: true,
                 missing_kind: true,
-                missing_mobility: true
+                missing_mobility: true,
             }),
             result
         );
@@ -531,6 +587,7 @@ mod test {
                     rotation: Radians::try_new(1.2).unwrap(),
                 },
             }),
+            passable: false,
         };
 
         assert_eq!(Ok(expected), result);

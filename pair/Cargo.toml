@@ -1,5 +1,5 @@
 [package]
-name = "myelin-object-behavior"
+name = "myelin-pair"
 version = "0.1.0"
 authors = [
     "Jan Nils Ferner <jan@myelin.ch>",
@@ -8,6 +8,3 @@ authors = [
     "Jeremy Stucki <jeremy@myelin.ch>",
 ]
 edition = "2018"
-
-[dependencies]
-myelin-environment = { path = "../environment" }
