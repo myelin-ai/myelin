@@ -526,6 +526,7 @@ mod tests {
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
         world.expect_body_and_return(returned_handle, Some(expected_physical_body));
+        world.expect_is_body_passable_and_return(returned_handle.into(), expected_passable);
 
         let expected_object_description = ObjectBuilder::new()
             .location(expected_position.location.x, expected_position.location.y)
@@ -533,6 +534,7 @@ mod tests {
             .shape(expected_shape)
             .kind(Kind::Organism)
             .mobility(expected_mobility)
+            .passable(expected_passable)
             .build()
             .unwrap();
 
@@ -624,8 +626,9 @@ mod tests {
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
         world.expect_body_and_return(returned_handle, Some(expected_physical_body));
-        let mut simulation = SimulationImpl::new(world);
+        world.expect_is_body_passable_and_return(returned_handle, expected_passable);
 
+        let mut simulation = SimulationImpl::new(world);
         let object_behavior = ObjectBehaviorMock::new();
 
         let expected_object_description = ObjectBuilder::new()
@@ -634,7 +637,7 @@ mod tests {
             .shape(expected_shape)
             .kind(Kind::Organism)
             .mobility(expected_mobility)
-            .passable(false)
+            .passable(expected_passable)
             .build()
             .unwrap();
 

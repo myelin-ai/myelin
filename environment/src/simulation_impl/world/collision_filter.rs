@@ -72,6 +72,7 @@ pub(crate) use self::mock::IgnoringCollisionFilterMock;
 #[cfg(test)]
 mod mock {
     use super::*;
+    use std::collections::HashMap;
     use std::collections::VecDeque;
     use std::fmt::{self, Debug};
     use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
@@ -82,7 +83,7 @@ mod mock {
         expect_add_ignored_handle: Option<AnyHandle>,
         expect_is_handle_ignored_and_return: RwLock<VecDeque<(AnyHandle, bool)>>,
         expect_remove_ignored_handle: Option<AnyHandle>,
-        expect_is_pair_valid_and_return: Option<((AnyHandle, AnyHandle), bool)>,
+        expect_is_pair_valid_and_return: RwLock<HashMap<(AnyHandle, AnyHandle), bool>>,
 
         add_ignored_handle_was_called: AtomicBool,
         is_handle_ignored_was_called: AtomicU32,
@@ -111,11 +112,9 @@ mod mock {
 
         pub fn expect_is_pair_valid_and_return(
             &mut self,
-            b1: AnyHandle,
-            b2: AnyHandle,
-            is_valid: bool,
+            expected_calls: HashMap<(AnyHandle, AnyHandle), bool>,
         ) -> &mut Self {
-            self.expect_is_pair_valid_and_return = Some(((b1, b2), is_valid));
+            self.expect_is_pair_valid_and_return = RwLock::new(expected_calls);
             self
         }
     }
@@ -196,25 +195,29 @@ mod mock {
         fn is_pair_valid(&self, b1: AnyHandle, b2: AnyHandle) -> bool {
             self.is_pair_valid_was_called.store(true, Ordering::SeqCst);
 
-            if let Some(((ref expected_b1, ref expected_b2), expected_output)) =
-                self.expect_is_pair_valid_and_return
-            {
-                if (b1 != *expected_b1 || b2 != *expected_b2)
-                    && (b1 != *expected_b2 || b2 != *expected_b1)
-                {
-                    println!("{:?}, {:?}", *expected_b1, *expected_b2);
+            println!("{:?}, {:?}", b1, b2);
 
-                    panic!(
-                        "is_pair_valid() was called with unexpected input values: handle1: {:?} and handle2: {:?}",
-                        b1,
-                        b2
-                    )
-                }
+            let mut expected_calls = self
+                .expect_is_pair_valid_and_return
+                .write()
+                .expect("RwLock was poisoned");
 
-                expected_output
-            } else {
-                panic!("is_pair_valid() was called unexpectedly")
+            if expected_calls.is_empty() {
+                panic!("is_pair_valid() was called unexpectedly");
             }
+
+            if let Some(expected_output) = expected_calls
+                .get(&(b1, b2))
+                .or_else(|| expected_calls.get(&(b2, b1)))
+            {
+                return *expected_output;
+            }
+
+            panic!(
+                "is_pair_valid() was called with unexpected input values: handle1: {:?} and handle2: {:?}",
+                b1,
+                b2
+            )
         }
     }
 }

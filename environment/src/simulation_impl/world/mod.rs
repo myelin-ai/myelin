@@ -756,7 +756,7 @@ mod tests {
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
-            collision_filter,
+            collision_filter.clone(),
         );
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
@@ -773,6 +773,16 @@ mod tests {
             ..movable_body(Radians::default())
         };
         let expected_handle = world.add_body(close_body);
+
+        let mut expected_is_valid_pairs = HashMap::new();
+        expected_is_valid_pairs.insert((handle_one.into(), sensor_handle.into()), true);
+        expected_is_valid_pairs.insert((handle_one.into(), expected_handle.into()), true);
+        expected_is_valid_pairs.insert((sensor_handle.into(), expected_handle.into()), true);
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_pair_valid_and_return(expected_is_valid_pairs);
 
         world.step();
 
@@ -795,7 +805,7 @@ mod tests {
             DEFAULT_TIMESTEP,
             Box::new(rotation_translator),
             Box::new(force_applier),
-            collision_filter,
+            collision_filter.clone(),
         );
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
@@ -812,6 +822,20 @@ mod tests {
             ..movable_body(Radians::default())
         };
         let expected_handle = world.add_body(close_body);
+
+        let mut expected_is_valid_pairs = HashMap::new();
+        expected_is_valid_pairs.insert((handle_one.into(), sensor_handle.into()), true);
+        expected_is_valid_pairs.insert((handle_one.into(), expected_handle.into()), true);
+        expected_is_valid_pairs.insert((sensor_handle.into(), expected_handle.into()), true);
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_handle_ignored_and_return(VecDeque::from(vec![
+                (handle_one.into(), false),
+                (expected_handle.into(), false),
+            ]))
+            .expect_is_pair_valid_and_return(expected_is_valid_pairs);
 
         world.step();
 
@@ -852,6 +876,11 @@ mod tests {
         };
         let handle_two = world.add_body(close_body);
 
+        let mut expected_is_valid_pairs = HashMap::new();
+        expected_is_valid_pairs.insert((handle_one.into(), sensor_handle.into()), true);
+        expected_is_valid_pairs.insert((handle_one.into(), handle_two.into()), true);
+        expected_is_valid_pairs.insert((sensor_handle.into(), handle_two.into()), true);
+
         collision_filter
             .write()
             .expect("RwLock was poisoned")
@@ -859,7 +888,7 @@ mod tests {
                 (handle_one.into(), false),
                 (handle_two.into(), false),
             ]))
-            .expect_is_pair_valid_and_return(handle_one.into(), handle_two.into(), true);
+            .expect_is_pair_valid_and_return(expected_is_valid_pairs);
 
         world.step();
 
@@ -872,15 +901,8 @@ mod tests {
 
     #[test]
     fn sensor_does_not_detect_touching_sensors() {
-        test_close_sensors(Location { x: 25, y: 0 });
-    }
+        let close_body_location = Location { x: 25, y: 0 };
 
-    #[test]
-    fn sensor_does_not_detect_overlapping_sensors() {
-        test_close_sensors(Location { x: 25 - 2, y: 0 });
-    }
-
-    fn test_close_sensors(close_body_location: Location) {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
         let mut force_applier = SingleTimeForceApplierMock::default();
@@ -907,15 +929,98 @@ mod tests {
             ..movable_body(Radians::default())
         };
         let close_body_handle = world.add_body(close_body);
+        let close_body_sensor_handle = world
+            .attach_sensor(close_body_handle, sensor())
+            .expect("body handle was invalid");
+
+        let mut expected_is_valid_pairs = HashMap::new();
+        expected_is_valid_pairs.insert((handle_one.into(), sensor_handle.into()), true);
+        expected_is_valid_pairs.insert((handle_one.into(), close_body_handle.into()), true);
+        expected_is_valid_pairs.insert((handle_one.into(), close_body_sensor_handle.into()), true);
+        expected_is_valid_pairs.insert((close_body_handle.into(), sensor_handle.into()), true);
+        expected_is_valid_pairs.insert(
+            (close_body_sensor_handle.into(), sensor_handle.into()),
+            true,
+        );
+        expected_is_valid_pairs.insert(
+            (close_body_handle.into(), close_body_sensor_handle.into()),
+            true,
+        );
 
         collision_filter
             .write()
             .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle_one.into(), false)]));
+            .expect_is_handle_ignored_and_return(VecDeque::from(vec![
+                (handle_one.into(), false),
+                (close_body_handle.into(), false),
+            ]))
+            .expect_is_pair_valid_and_return(expected_is_valid_pairs);
 
-        world
+        world.step();
+
+        let bodies = world
+            .bodies_within_sensor(sensor_handle)
+            .expect("sensor handle was invalid");
+
+        assert!(bodies.is_empty());
+    }
+
+    #[test]
+    fn sensor_does_not_detect_overlapping_sensors() {
+        let close_body_location = Location { x: 25 - 2, y: 0 };
+
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
+        let mut force_applier = SingleTimeForceApplierMock::default();
+        force_applier.expect_apply_and_return(true);
+        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            Box::new(rotation_translator),
+            Box::new(force_applier),
+            collision_filter.clone(),
+        );
+        let body = movable_body(Radians::default());
+        let handle_one = world.add_body(body);
+
+        let sensor_handle = world
+            .attach_sensor(handle_one, sensor())
+            .expect("body handle was invalid");
+
+        let close_body = PhysicalBody {
+            position: Position {
+                location: close_body_location,
+                rotation: Radians::default(),
+            },
+            ..movable_body(Radians::default())
+        };
+        let close_body_handle = world.add_body(close_body);
+        let close_body_sensor_handle = world
             .attach_sensor(close_body_handle, sensor())
             .expect("body handle was invalid");
+
+        let mut expected_is_valid_pairs = HashMap::new();
+        expected_is_valid_pairs.insert((handle_one.into(), sensor_handle.into()), true);
+        expected_is_valid_pairs.insert((handle_one.into(), close_body_handle.into()), true);
+        expected_is_valid_pairs.insert((handle_one.into(), close_body_sensor_handle.into()), true);
+        expected_is_valid_pairs.insert((close_body_handle.into(), sensor_handle.into()), true);
+        expected_is_valid_pairs.insert(
+            (close_body_sensor_handle.into(), sensor_handle.into()),
+            true,
+        );
+        expected_is_valid_pairs.insert(
+            (close_body_handle.into(), close_body_sensor_handle.into()),
+            true,
+        );
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_is_handle_ignored_and_return(VecDeque::from(vec![
+                (handle_one.into(), false),
+                (close_body_handle.into(), false),
+            ]))
+            .expect_is_pair_valid_and_return(expected_is_valid_pairs);
 
         world.step();
 

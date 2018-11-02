@@ -45,6 +45,7 @@ mod tests {
             .rotation(Radians::try_new(FRAC_PI_2).unwrap())
             .kind(Kind::Organism)
             .mobility(Mobility::Movable(Velocity { x: 3, y: 5 }))
+            .passable(false)
             .build()
             .unwrap();
         let mut object = Static::new();
