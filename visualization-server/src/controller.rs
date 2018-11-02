@@ -99,11 +99,7 @@ impl ControllerImpl {
 mod tests {
     use super::*;
     use crate::connection_acceptor::ConnectionAcceptorMock;
-    use myelin_environment::object::*;
-    use myelin_environment::{Simulation, SimulationMock};
-    use myelin_worldgen::WorldGenerator;
-    use std::cell::RefCell;
-    use std::thread::panicking;
+    use myelin_environment::SimulationMock;
 
     const EXPECTED_DELTA: Duration = Duration::from_millis((1.0f64 / 60.0f64) as u64);
 
@@ -148,62 +144,4 @@ mod tests {
     fn main_thread_spawn_fn() -> Box<ThreadSpawnFn> {
         box move |function| function()
     }
-
-    struct NphysicsRotationTranslatorMock {
-        expect_to_nphysics_rotation_and_return: Option<(Radians, f64)>,
-        expect_to_radians_and_return: Option<(f64, Radians)>,
-
-        to_nphysics_rotation_was_called: RefCell<bool>,
-        to_radians_was_called: RefCell<bool>,
-    }
-
-    impl NphysicsRotationTranslatorMock {
-        fn expect_to_nphysics_rotation_and_return(
-            &mut self,
-            input_value: Radians,
-            return_value: f64,
-        ) {
-            self.expect_to_nphysics_rotation_and_return = Some((input_value, return_value))
-        }
-
-        fn expect_to_radians_and_return(&mut self, input_value: f64, return_value: Radians) {
-            self.expect_to_radians_and_return = Some((input_value, return_value))
-        }
-    }
-
-    struct WorldGeneratorMock {
-        simulation_factory: Box<dyn Fn(Vec<ObjectDescription>) -> Box<dyn Simulation>>,
-        generate_was_called: RefCell<bool>,
-        objects_to_return: Vec<ObjectDescription>,
-    }
-
-    impl WorldGeneratorMock {
-        fn new(
-            simulation_factory: Box<dyn Fn(Vec<ObjectDescription>) -> Box<dyn Simulation>>,
-            objects_to_return: Vec<ObjectDescription>,
-        ) -> Self {
-            Self {
-                generate_was_called: RefCell::new(false),
-                simulation_factory,
-                objects_to_return,
-            }
-        }
-    }
-
-    impl WorldGenerator for WorldGeneratorMock {
-        fn generate(&self) -> Box<dyn Simulation> {
-            *self.generate_was_called.borrow_mut() = true;
-            (self.simulation_factory)(self.objects_to_return.clone())
-        }
-    }
-
-    impl Drop for WorldGeneratorMock {
-        fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            assert!(*self.generate_was_called.borrow());
-        }
-    }
-
 }
