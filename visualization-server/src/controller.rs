@@ -80,7 +80,7 @@ impl ControllerImpl {
         }
     }
 
-    fn run_connection_acceptor(&mut self) {
+    fn run_connection_acceptor(&self) {
         let current_snapshot = self.current_snapshot.clone();
         let current_snapshot_fn =
             Box::new(move || current_snapshot.read().unwrap().clone()) as Box<CurrentSnapshotFn>;
