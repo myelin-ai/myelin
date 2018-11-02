@@ -140,9 +140,7 @@ mod tests {
         simulation.expect_objects_and_return(HashMap::new());
         let mut controller = ControllerImpl::new(
             box simulation,
-            Arc::new(move |_| {
-                Box::new(ConnectionAcceptorMock::default()) as Box<dyn ConnectionAcceptor>
-            }),
+            Arc::new(move |_| panic!("No connection acceptor is expected to be created")),
             main_thread_spawn_fn(),
             EXPECTED_DELTA,
         );
@@ -160,9 +158,7 @@ mod tests {
         simulation.expect_objects_and_return(expected_snapshot);
         let mut controller = ControllerImpl::new(
             box simulation,
-            Arc::new(move |_| {
-                Box::new(ConnectionAcceptorMock::default()) as Box<dyn ConnectionAcceptor>
-            }),
+            Arc::new(move |_| panic!("No connection acceptor is expected to be created")),
             main_thread_spawn_fn(),
             EXPECTED_DELTA,
         );
@@ -170,14 +166,39 @@ mod tests {
     }
 
     #[test]
+    fn snapshot_is_empty_before_step() {
+        let simulation = SimulationMock::default();
+
+        let current_snapshot_fn: Arc<Mutex<Option<Box<CurrentSnapshotFn>>>> = Default::default();
+        let snapshot_fn = current_snapshot_fn.clone();
+        let controller = ControllerImpl::new(
+            box simulation,
+            Arc::new(move |current_snapshot_fn| {
+                *snapshot_fn.lock().unwrap() = Some(current_snapshot_fn);
+                let mut connection_acceptor = box ConnectionAcceptorMock::default();
+                connection_acceptor.expect_run();
+                connection_acceptor as Box<dyn ConnectionAcceptor>
+            }),
+            main_thread_spawn_fn(),
+            EXPECTED_DELTA,
+        );
+        controller.run_connection_acceptor();
+
+        let current_snapshot_fn = current_snapshot_fn.lock().unwrap();
+        let actual_snapshot = (current_snapshot_fn.as_ref().unwrap())();
+        assert_eq!(HashMap::new(), actual_snapshot);
+    }
+
+    #[test]
     fn stepping_simulation_sets_snapshot() {
         let mut simulation = SimulationMock::default();
         simulation.expect_step();
+
         let expected_snapshot = hashmap!{
            0 => object_description()
         };
-
         simulation.expect_objects_and_return(expected_snapshot.clone());
+
         let current_snapshot_fn: Arc<Mutex<Option<Box<CurrentSnapshotFn>>>> = Default::default();
         let snapshot_fn = current_snapshot_fn.clone();
         let mut controller = ControllerImpl::new(
