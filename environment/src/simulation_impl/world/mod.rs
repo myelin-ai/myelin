@@ -74,10 +74,12 @@ impl NphysicsWorld {
         let generic_wrapper = GenericSingleTimeForceApplierWrapper::new(force_applier);
         let force_generator_handle = physics_world.add_force_generator(generic_wrapper);
 
+        const IGNORING_COLLISION_FILTER_NAME: &str = "Collision Filter";
+
         physics_world
             .collision_world_mut()
             .register_broad_phase_pair_filter(
-                "Collision Filter",
+                IGNORING_COLLISION_FILTER_NAME,
                 IgnoringCollisionFilterWrapper {
                     collision_filter: collision_filter.clone(),
                 },

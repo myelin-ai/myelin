@@ -474,6 +474,47 @@ mod test {
     }
 
     #[test]
+    fn test_object_builder_uses_passable() {
+        let result = ObjectBuilder::new()
+            .shape(
+                PolygonBuilder::new()
+                    .vertex(0, 0)
+                    .vertex(0, 1)
+                    .vertex(1, 0)
+                    .vertex(1, 1)
+                    .build()
+                    .unwrap(),
+            )
+            .rotation(Radians::try_new(0.0).unwrap())
+            .location(30, 40)
+            .kind(Kind::Terrain)
+            .mobility(Mobility::Immovable)
+            .passable(true)
+            .build();
+
+        let expected = ObjectDescription {
+            shape: Polygon {
+                vertices: vec![
+                    Vertex { x: 0, y: 0 },
+                    Vertex { x: 0, y: 1 },
+                    Vertex { x: 1, y: 0 },
+                    Vertex { x: 1, y: 1 },
+                ],
+            },
+            position: Position {
+                rotation: Radians::try_new(0.0).unwrap(),
+                location: Location { x: 30, y: 40 },
+            },
+            kind: Kind::Terrain,
+            mobility: Mobility::Immovable,
+            sensor: None,
+            passable: true,
+        };
+
+        assert_eq!(Ok(expected), result);
+    }
+
+    #[test]
     fn test_object_builder_should_error_with_everything_missing() {
         let result = ObjectBuilder::new().build();
 

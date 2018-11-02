@@ -1,7 +1,7 @@
 use alga::general::Real;
 use crate::simulation_impl::AnyHandle;
 use ncollide2d::broad_phase::BroadPhasePairFilter;
-use ncollide2d::world::{CollisionObject, CollisionObjectHandle};
+use ncollide2d::world::CollisionObject;
 use nphysics2d::object::ColliderData;
 use std::collections::HashSet;
 use std::fmt::Debug;
@@ -60,12 +60,6 @@ where
     }
 }
 
-impl From<CollisionObjectHandle> for AnyHandle {
-    fn from(collision_object_handle: CollisionObjectHandle) -> Self {
-        AnyHandle(collision_object_handle.0)
-    }
-}
-
 #[cfg(test)]
 pub(crate) use self::mock::IgnoringCollisionFilterMock;
 
@@ -79,7 +73,7 @@ mod mock {
     use std::thread::panicking;
 
     #[test]
-    fn pair_is_valid_if_ignored() {
+    fn pair_is_not_valid_if_ignored() {
         let ignored_handle = AnyHandle(0);
 
         let mut collision_filter = IgnoringCollisionFilterImpl::default();
@@ -99,7 +93,7 @@ mod mock {
     }
 
     #[test]
-    fn pair_is_valid_if_ignored_and_unignored() {
+    fn pair_is_valid_when_handle_added_and_removed() {
         let ignored_handle = AnyHandle(0);
 
         let mut collision_filter = IgnoringCollisionFilterImpl::default();

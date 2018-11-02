@@ -3,6 +3,7 @@
 
 use crate::object::*;
 use crate::Simulation;
+use ncollide2d::world::CollisionObjectHandle;
 use std::collections::HashMap;
 use std::fmt;
 
@@ -331,6 +332,12 @@ impl From<BodyHandle> for AnyHandle {
 impl From<SensorHandle> for AnyHandle {
     fn from(sensor_handle: SensorHandle) -> Self {
         AnyHandle(sensor_handle.0)
+    }
+}
+
+impl From<CollisionObjectHandle> for AnyHandle {
+    fn from(collision_object_handle: CollisionObjectHandle) -> Self {
+        AnyHandle(collision_object_handle.0)
     }
 }
 
