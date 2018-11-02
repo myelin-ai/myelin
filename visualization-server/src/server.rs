@@ -1,5 +1,9 @@
-use crate::constant::SIMULATED_TIMESTEP;
+use crate::client::ClientHandler;
+use crate::connection::{Connection, WebsocketClient};
+use crate::connection_acceptor::{Client, WebsocketConnectionAcceptor};
+use crate::constant::*;
 use crate::controller::{Controller, ControllerImpl};
+use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
 use myelin_environment::object::{Kind, ObjectBehavior};
 use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
@@ -12,10 +16,12 @@ use myelin_visualization_core::transmission::ViewModelTransmitter;
 use myelin_worldgen::generator::HardcodedGenerator;
 use spmc::{channel, Sender};
 use std::error::Error;
-use std::fmt;
 use std::net::SocketAddr;
-use std::thread;
+use std::sync::Arc;
+use std::time::Duration;
+use std::{fmt, thread};
 use threadpool::ThreadPool;
+use uuid::Uuid;
 use websocket::sync::Server;
 use websocket::OwnedMessage;
 
@@ -44,7 +50,7 @@ fn run_simulation(tx: Sender<Vec<u8>>) {
             let rotation_translator = NphysicsRotationTranslatorImpl::default();
             let force_applier = SingleTimeForceApplierImpl::default();
             let world = Box::new(NphysicsWorld::with_timestep(
-                SIMULATED_TIMESTEP,
+                SIMULATED_TIMESTEP_IN_SI_UNITS,
                 Box::new(rotation_translator),
                 Box::new(force_applier),
             ));
@@ -75,11 +81,42 @@ pub fn start_server<A>(addr: A)
 where
     A: Into<SocketAddr>,
 {
-    let addr: SocketAddr = addr.into();
-    let (tx, rx) = channel();
-    let server = Server::bind(addr).expect("unable to create server");
+    let rotation_translator = NphysicsRotationTranslatorImpl::default();
+    let force_applier = SingleTimeForceApplierImpl::default();
+    let world = NphysicsWorld::with_timestep(
+        SIMULATED_TIMESTEP_IN_SI_UNITS,
+        box rotation_translator,
+        box force_applier,
+    );
+    let simulation = SimulationImpl::new(box world);
 
-    info!("Server is listening on {}", addr);
+    let interval = Duration::from_millis(SIMULATED_TIMESTEP_IN_MILLIS as u64);
+    let fixed_interval_sleeper = FixedIntervalSleeperImpl::default();
+    let presenter = DeltaPresenter::default();
+    let view_model_serializer = JsonSerializer::new();
+    let client_factory_fn = Arc::new(move |websocket_client, current_snapshot_fn| {
+        let connection = Connection {
+            id: Uuid::new_v4(),
+            socket: box WebsocketClient::new(websocket_client),
+        };
+        box ClientHandler::new(
+            interval,
+            box fixed_interval_sleeper,
+            box presenter,
+            box view_model_serializer,
+            connection,
+            current_snapshot_fn,
+        ) as Box<dyn Client>
+    });
+    let conection_acceptor_factory_fn = Arc::new(move |current_snapshot_fn| {
+        WebsocketConnectionAcceptor::try_new(
+            addr.into(),
+            client_factory_fn,
+            thread_spawn,
+            current_snapshot_fn,
+        )
+    });
+    let controller = ControllerImpl::new(box simulation, conection_acceptor_factory_fn);
 
     const MAX_CONNECTIONS: usize = 255;
     let thread_pool = ThreadPool::new(MAX_CONNECTIONS);

@@ -1,7 +1,7 @@
 #[cfg(test)]
 pub(crate) use self::mock::*;
 
-use crate::controller::{Client, ConnectionAcceptor};
+use crate::controller::{ConnectionAcceptor, CurrentSnapshotFn};
 use std::boxed::FnBox;
 use std::fmt::{self, Debug};
 use std::io;
@@ -11,13 +11,18 @@ use websocket::server::upgrade::{sync::Buffer, WsUpgrade as Request};
 use websocket::server::NoTlsAcceptor;
 use websocket::sync::{Client as WsClient, Server};
 
-pub(crate) type ClientFactoryFn = dyn Fn(WsClient<TcpStream>) -> Box<dyn Client> + Send + Sync;
+pub(crate) trait Client: Debug {
+    fn run(&mut self);
+}
+pub(crate) type ClientFactoryFn =
+    dyn Fn(WsClient<TcpStream>, Arc<CurrentSnapshotFn>) -> Box<dyn Client> + Send + Sync;
 pub(crate) type ThreadSpawnFn = dyn Fn(Box<dyn FnBox() + Send>) + Send + Sync;
 
 pub(crate) struct WebsocketConnectionAcceptor {
     websocket_server: Server<NoTlsAcceptor>,
     client_factory_fn: Arc<ClientFactoryFn>,
     thread_spawn_fn: Box<ThreadSpawnFn>,
+    current_snapshot_fn: Arc<CurrentSnapshotFn>,
 }
 
 impl WebsocketConnectionAcceptor {
@@ -25,11 +30,13 @@ impl WebsocketConnectionAcceptor {
         address: SocketAddr,
         client_factory_fn: Arc<ClientFactoryFn>,
         thread_spawn_fn: Box<ThreadSpawnFn>,
+        current_snapshot_fn: Arc<CurrentSnapshotFn>,
     ) -> Result<Self, io::Error> {
         Ok(Self {
             websocket_server: Server::bind(address)?,
             client_factory_fn,
             thread_spawn_fn,
+            current_snapshot_fn,
         })
     }
 }

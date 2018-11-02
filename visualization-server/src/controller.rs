@@ -33,10 +33,6 @@ pub(crate) trait ConnectionAcceptor: Debug {
     fn address(&self) -> SocketAddr;
 }
 
-pub(crate) trait Client: Debug {
-    fn run(&mut self);
-}
-
 pub(crate) struct ControllerImpl {
     simulation: Box<dyn Simulation>,
     connection_acceptor_factory_fn: Arc<ConnectionAcceptorFactoryFn>,

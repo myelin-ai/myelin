@@ -1,8 +1,10 @@
 use crate::connection::Connection;
-use crate::controller::{Client, CurrentSnapshotFn, Presenter, Snapshot};
+use crate::connection_acceptor::Client;
+use crate::controller::{CurrentSnapshotFn, Presenter, Snapshot};
 use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperError};
 use myelin_visualization_core::serialization::ViewModelSerializer;
 use std::fmt::{self, Debug};
+use std::sync::Arc;
 use std::time::Duration;
 
 pub(crate) struct ClientHandler {
@@ -11,7 +13,7 @@ pub(crate) struct ClientHandler {
     presenter: Box<dyn Presenter>,
     serializer: Box<dyn ViewModelSerializer>,
     connection: Connection,
-    current_snapshot_fn: Box<CurrentSnapshotFn>,
+    current_snapshot_fn: Arc<CurrentSnapshotFn>,
 }
 
 impl ClientHandler {
@@ -21,7 +23,7 @@ impl ClientHandler {
         presenter: Box<dyn Presenter>,
         serializer: Box<dyn ViewModelSerializer>,
         connection: Connection,
-        current_snapshot_fn: Box<CurrentSnapshotFn>,
+        current_snapshot_fn: Arc<CurrentSnapshotFn>,
     ) -> Self {
         Self {
             interval,
@@ -167,7 +169,7 @@ mod tests {
             id: Uuid::new_v4(),
             socket,
         };
-        let current_snapshot_fn = Box::new(|| Snapshot::new());
+        let current_snapshot_fn = Arc::new(|| Snapshot::new());
         let _client = ClientHandler::new(
             interval,
             Box::new(sleeper),
@@ -197,7 +199,7 @@ mod tests {
             socket,
         };
 
-        let current_snapshot_fn = Box::new(|| snapshot());
+        let current_snapshot_fn = Arc::new(|| snapshot());
         let mut client = ClientHandler::new(
             interval,
             Box::new(sleeper),
@@ -229,7 +231,7 @@ mod tests {
             socket,
         };
 
-        let current_snapshot_fn = Box::new(|| snapshot());
+        let current_snapshot_fn = Arc::new(|| snapshot());
         let mut client = ClientHandler::new(
             interval,
             Box::new(sleeper),
@@ -263,7 +265,7 @@ mod tests {
             socket,
         };
 
-        let current_snapshot_fn = Box::new(|| snapshot());
+        let current_snapshot_fn = Arc::new(|| snapshot());
         let mut client = ClientHandler::new(
             interval,
             Box::new(sleeper),
