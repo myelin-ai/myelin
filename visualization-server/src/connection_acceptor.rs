@@ -166,10 +166,12 @@ mod tests {
         let client_factory_fn = mock_client_factory_fn(Some(expected_client));
         let main_thread_spawn_fn = main_thread_spawn_fn();
 
-        let connection_acceptor = Box::new(
-            WebsocketConnectionAcceptor::try_new(address, client_factory_fn, main_thread_spawn_fn)
-                .unwrap(),
-        );
+        let connection_acceptor = box WebsocketConnectionAcceptor::try_new(
+            address,
+            client_factory_fn,
+            main_thread_spawn_fn,
+        )
+        .unwrap();
 
         let address = connection_acceptor.address();
         let _acceptor_thread = thread::spawn(move || {
