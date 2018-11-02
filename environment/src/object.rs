@@ -84,6 +84,9 @@ pub struct ObjectDescription {
 
     /// The object's sensor
     pub sensor: Option<Sensor>,
+
+    /// Whether the object is passable or not
+    pub passable: bool,
 }
 
 /// An object's mobility and, if present, its
