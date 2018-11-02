@@ -11,7 +11,7 @@ use std::thread;
 use std::time::Duration;
 
 pub(crate) type Snapshot = HashMap<Id, ObjectDescription>;
-pub(crate) type ConnectionAcceptorFactory =
+pub(crate) type ConnectionAcceptorFactoryFn =
     dyn Fn(Box<CurrentSnapshotFn>) -> Box<dyn ConnectionAcceptor> + Send + Sync;
 pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send + Sync;
 
@@ -39,7 +39,7 @@ pub(crate) trait Client: Debug {
 
 pub(crate) struct ControllerImpl {
     simulation: Box<dyn Simulation>,
-    connection_acceptor_factory_fn: Arc<ConnectionAcceptorFactory>,
+    connection_acceptor_factory_fn: Arc<ConnectionAcceptorFactoryFn>,
     expected_delta: Duration,
     current_snapshot: Arc<RwLock<Snapshot>>,
 }
@@ -72,7 +72,7 @@ impl Controller for ControllerImpl {
 impl ControllerImpl {
     pub(crate) fn new(
         simulation: Box<dyn Simulation>,
-        connection_acceptor_factory_fn: Arc<ConnectionAcceptorFactory>,
+        connection_acceptor_factory_fn: Arc<ConnectionAcceptorFactoryFn>,
         expected_delta: Duration,
     ) -> Self {
         Self {
