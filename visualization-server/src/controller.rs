@@ -100,10 +100,9 @@ mod tests {
     use super::*;
     use crate::connection_acceptor::ConnectionAcceptorMock;
     use myelin_environment::object::*;
-    use myelin_environment::{Id, Simulation};
+    use myelin_environment::{Simulation, SimulationMock};
     use myelin_worldgen::WorldGenerator;
     use std::cell::RefCell;
-    use std::collections::HashMap;
     use std::thread::panicking;
 
     const EXPECTED_DELTA: Duration = Duration::from_millis((1.0f64 / 60.0f64) as u64);
@@ -111,7 +110,7 @@ mod tests {
     #[test]
     fn can_be_assembled() {
         ControllerImpl::new(
-            Box::new(SimulationMock::new(HashMap::new())),
+            Box::new(SimulationMock::default()),
             Arc::new(|_| {
                 Box::new(ConnectionAcceptorMock::default()) as Box<dyn ConnectionAcceptor>
             }),
@@ -123,7 +122,7 @@ mod tests {
     #[test]
     fn runs_connection_acceptor() {
         let controller = ControllerImpl::new(
-            Box::new(SimulationMock::new(HashMap::new())),
+            Box::new(SimulationMock::default()),
             Arc::new(|_| {
                 Box::new(ConnectionAcceptorMock::default()) as Box<dyn ConnectionAcceptor>
             }),
@@ -136,7 +135,7 @@ mod tests {
     #[test]
     fn steps_simulation() {
         let mut controller = ControllerImpl::new(
-            Box::new(SimulationMock::new(HashMap::new())),
+            Box::new(SimulationMock::default()),
             Arc::new(|_| {
                 Box::new(ConnectionAcceptorMock::default()) as Box<dyn ConnectionAcceptor>
             }),
@@ -148,49 +147,6 @@ mod tests {
 
     fn main_thread_spawn_fn() -> Box<ThreadSpawnFn> {
         box move |function| function()
-    }
-
-    #[derive(Debug)]
-    struct SimulationMock {
-        step_was_called: bool,
-        returned_objects: HashMap<Id, ObjectDescription>,
-        objects_was_called: RefCell<bool>,
-    }
-
-    impl SimulationMock {
-        fn new(returned_objects: HashMap<Id, ObjectDescription>) -> Self {
-            Self {
-                step_was_called: false,
-                objects_was_called: RefCell::new(false),
-                returned_objects,
-            }
-        }
-    }
-
-    impl Simulation for SimulationMock {
-        fn step(&mut self) {
-            self.step_was_called = true;
-        }
-        fn add_object(&mut self, _: ObjectDescription, _: Box<dyn ObjectBehavior>) {
-            panic!("add_object() was called unexpectedly")
-        }
-        fn set_simulated_timestep(&mut self, _: f64) {
-            panic!("set_simulated_timestep() called unexpectedly");
-        }
-        fn objects(&self) -> HashMap<Id, ObjectDescription> {
-            *self.objects_was_called.borrow_mut() = true;
-            self.returned_objects.clone()
-        }
-    }
-
-    impl Drop for SimulationMock {
-        fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            assert!(*self.objects_was_called.borrow());
-            assert!(self.step_was_called);
-        }
     }
 
     struct NphysicsRotationTranslatorMock {

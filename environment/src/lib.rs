@@ -53,11 +53,11 @@ pub trait Simulation: fmt::Debug {
 /// Unique identifier of an Object
 pub type Id = usize;
 
-#[cfg(test)]
+#[cfg(feature = "use-mocks")]
 pub use self::mock::*;
 
-#[cfg(test)]
-pub mod mock {
+#[cfg(feature = "use-mocks")]
+mod mock {
     use super::*;
     use crate::object::Action;
     use std::cell::RefCell;
@@ -159,7 +159,7 @@ pub mod mock {
     }
 
     #[derive(Debug, Default, Clone)]
-    struct ObjectBehaviorMock {
+    pub struct ObjectBehaviorMock {
         expect_step_and_return: Option<(ObjectDescription, Vec<ObjectDescription>, Option<Action>)>,
 
         step_was_called: RefCell<bool>,
