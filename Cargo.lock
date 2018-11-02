@@ -215,7 +215,9 @@ dependencies = [
 name = "myelin-environment"
 version = "0.1.0"
 dependencies = [
+ "alga 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "nalgebra 0.16.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nameof 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "ncollide2d 0.17.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "nphysics2d 0.9.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -261,6 +263,11 @@ dependencies = [
  "rand 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "typenum 1.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "nameof"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "ncollide2d"
@@ -706,6 +713,7 @@ dependencies = [
 "checksum matrixmultiply 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)" = "cac1a66eab356036af85ea093101a14223dc6e3f4c02a59b7d572e5b93270bf7"
 "checksum memchr 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "4b3629fe9fdbff6daa6c33b90f7c08355c1aca05a3d01fa8063b822fcf185f3b"
 "checksum nalgebra 0.16.3 (registry+https://github.com/rust-lang/crates.io-index)" = "4eb9f4f297b977ed3988a4e6127784e074fde2b882c7a2ac5895076ed8ce4c48"
+"checksum nameof 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "2e90fbc8c7ae00979152d976d59e1d98a47d9967cae51af4b94b188ad3ca2e68"
 "checksum ncollide2d 0.17.1 (registry+https://github.com/rust-lang/crates.io-index)" = "425882363e3630b61ec2462d0d4ad650e692bcff1bd199a8d085226a9dc0f79e"
 "checksum nom 4.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "898696750eb5c3ce5eb5afbfbe46e7f7c4e1936e19d3e97be4b7937da7b6d114"
 "checksum nphysics2d 0.9.2 (registry+https://github.com/rust-lang/crates.io-index)" = "72e59f037c360ccbefba54fc54077213bf0a10cddcd3e8b83f34503666759b16"
