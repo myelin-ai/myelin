@@ -2,6 +2,7 @@ use crate::constant::SIMULATED_TIMESTEP;
 use crate::controller::{Controller, ControllerImpl};
 use crate::presenter::DeltaPresenter;
 use myelin_environment::object::{Kind, ObjectBehavior};
+use myelin_environment::simulation_impl::world::collision_filter::IgnoringCollisionFilterImpl;
 use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
 use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
 use myelin_environment::simulation_impl::world::NphysicsWorld;
@@ -14,6 +15,7 @@ use spmc::{channel, Sender};
 use std::error::Error;
 use std::fmt;
 use std::net::SocketAddr;
+use std::sync::{Arc, RwLock};
 use std::thread;
 use threadpool::ThreadPool;
 use websocket::sync::Server;
@@ -43,10 +45,12 @@ fn run_simulation(tx: Sender<Vec<u8>>) {
         let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
             let rotation_translator = NphysicsRotationTranslatorImpl::default();
             let force_applier = SingleTimeForceApplierImpl::default();
+            let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterImpl::default()));
             let world = Box::new(NphysicsWorld::with_timestep(
                 SIMULATED_TIMESTEP,
                 Box::new(rotation_translator),
                 Box::new(force_applier),
+                collision_filter,
             ));
             Box::new(SimulationImpl::new(world))
         });
