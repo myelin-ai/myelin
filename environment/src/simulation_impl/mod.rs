@@ -34,10 +34,18 @@ impl SimulationImpl {
     ///     SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl
     /// };
     /// use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
+    /// use std::sync::{Arc, RwLock};
+    /// use myelin_environment::simulation_impl::world::collision_filter::IgnoringCollisionFilterImpl;
     ///
     /// let rotation_translator = NphysicsRotationTranslatorImpl::default();
     /// let force_applier = SingleTimeForceApplierImpl::default();
-    /// let world = Box::new(NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator), Box::new(force_applier)));
+    /// let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterImpl::default()));
+    /// let world = Box::new(NphysicsWorld::with_timestep(
+    ///     1.0,
+    ///     Box::new(rotation_translator),
+    ///     Box::new(force_applier),
+    ///     collision_filter,
+    /// ));
     /// let simulation = SimulationImpl::new(world);
     /// ```
     /// [`World`]: ./trait.World.html
@@ -452,7 +460,6 @@ mod tests {
             .kind(Kind::Organism)
             .mobility(expected_mobility)
             .sensor(expected_sensor)
-            .passable(false)
             .build()
             .unwrap();
         let object_behavior = ObjectBehaviorMock::new();
@@ -593,7 +600,6 @@ mod tests {
             .kind(Kind::Organism)
             .mobility(expected_mobility)
             .sensor(expected_sensor)
-            .passable(false)
             .build()
             .unwrap();
 

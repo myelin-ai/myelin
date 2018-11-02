@@ -39,8 +39,6 @@ pub struct ObjectBuilderError {
     pub missing_kind: bool,
     /// Flag signaling that .mobility(...) was never called
     pub missing_mobility: bool,
-
-    pub passable: bool,
 }
 
 /// [`ObjectDescription`] factory, which can be used in order to configure
@@ -56,7 +54,7 @@ pub struct ObjectBuilder {
     mobility: Option<Mobility>,
     kind: Option<Kind>,
     sensor: Option<Sensor>,
-    passable: Option<bool>,
+    passable: bool,
 }
 
 impl ObjectBuilder {
@@ -163,12 +161,11 @@ impl ObjectBuilder {
     /// # Examples
     /// ```
     /// use myelin_environment::object_builder::ObjectBuilder;
-    /// use myelin_environment::object::Radians;
-    /// ObjectBuilder::new()
-    ///     .passable(false);
+    ///
+    /// let builder = ObjectBuilder::new();
     /// ```
     pub fn passable(&mut self, passable: bool) -> &mut Self {
-        self.passable = Some(passable);
+        self.passable = passable;
         self
     }
 
@@ -207,7 +204,6 @@ impl ObjectBuilder {
             missing_location: self.location.is_none(),
             missing_kind: self.kind.is_none(),
             missing_mobility: self.mobility.is_none(),
-            passable: self.passable.is_none(),
         };
 
         let object = ObjectDescription {
@@ -219,7 +215,7 @@ impl ObjectBuilder {
             kind: self.kind.take().ok_or_else(|| error.clone())?,
             mobility: self.mobility.take().ok_or_else(|| error.clone())?,
             sensor: self.sensor.take(),
-            passable: self.passable.take().ok_or_else(|| error.clone())?,
+            passable: self.passable,
         };
 
         Ok(object)
@@ -349,7 +345,6 @@ mod test {
             .rotation(Radians::try_new(0.0).unwrap())
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
-            .passable(false)
             .build();
 
         assert_eq!(
@@ -376,7 +371,6 @@ mod test {
             .location(10, 10)
             .rotation(Radians::try_new(0.0).unwrap())
             .mobility(Mobility::Immovable)
-            .passable(false)
             .build();
 
         assert_eq!(
@@ -403,7 +397,6 @@ mod test {
             .rotation(Radians::try_new(0.0).unwrap())
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
-            .passable(false)
             .build();
 
         assert_eq!(
@@ -430,39 +423,11 @@ mod test {
             .rotation(Radians::try_new(0.0).unwrap())
             .location(30, 40)
             .kind(Kind::Plant)
-            .passable(false)
             .build();
 
         assert_eq!(
             Err(ObjectBuilderError {
                 missing_mobility: true,
-                ..Default::default()
-            }),
-            result
-        );
-    }
-
-    #[test]
-    fn test_object_builder_should_error_for_missing_passable() {
-        let result = ObjectBuilder::new()
-            .shape(
-                PolygonBuilder::new()
-                    .vertex(0, 0)
-                    .vertex(0, 1)
-                    .vertex(1, 0)
-                    .vertex(1, 1)
-                    .build()
-                    .unwrap(),
-            )
-            .rotation(Radians::try_new(0.0).unwrap())
-            .location(30, 40)
-            .kind(Kind::Plant)
-            .mobility(Mobility::Immovable)
-            .build();
-
-        assert_eq!(
-            Err(ObjectBuilderError {
-                passable: true,
                 ..Default::default()
             }),
             result
@@ -484,7 +449,6 @@ mod test {
             .location(30, 40)
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
-            .passable(false)
             .build();
 
         let expected = ObjectDescription {
@@ -519,7 +483,6 @@ mod test {
                 missing_location: true,
                 missing_kind: true,
                 missing_mobility: true,
-                passable: true,
             }),
             result
         );
@@ -553,7 +516,6 @@ mod test {
                     rotation: Radians::try_new(1.2).unwrap(),
                 },
             })
-            .passable(false)
             .build();
 
         let expected = ObjectDescription {

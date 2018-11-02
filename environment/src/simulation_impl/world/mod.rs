@@ -54,10 +54,13 @@ impl NphysicsWorld {
     /// use myelin_environment::simulation_impl::world::NphysicsWorld;
     /// use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
     /// use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
+    /// use myelin_environment::simulation_impl::world::collision_filter::IgnoringCollisionFilterImpl;
+    /// use std::sync::{Arc, RwLock};
     ///
     /// let rotation_translator = NphysicsRotationTranslatorImpl::default();
     /// let force_applier = SingleTimeForceApplierImpl::default();
-    /// let mut world = NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator), Box::new(force_applier));
+    /// let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterImpl::default()));
+    /// let mut world = NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator), Box::new(force_applier), collision_filter);
     /// ```
     pub fn with_timestep(
         timestep: f64,
