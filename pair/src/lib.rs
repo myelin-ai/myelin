@@ -1,3 +1,5 @@
+//! This crate provides a tuple struct for an unordered pair
+
 use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 
@@ -16,6 +18,7 @@ impl<T> Into<(T, T)> for UnorderedPair<T> {
     }
 }
 
+/// Compares two pairs while disregarding the order of the contained items
 impl<T> PartialEq for UnorderedPair<T>
 where
     T: PartialEq,
@@ -25,6 +28,7 @@ where
     }
 }
 
+/// Computes the same hash regardless of the order of the contained items
 impl<T> Hash for UnorderedPair<T>
 where
     T: Ord + Hash,
