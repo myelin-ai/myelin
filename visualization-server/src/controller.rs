@@ -179,25 +179,23 @@ mod tests {
 
         simulation.expect_objects_and_return(expected_snapshot.clone());
         let current_snapshot_fn: Arc<Mutex<Option<Box<CurrentSnapshotFn>>>> = Default::default();
-        let snapshot_fn = Arc::downgrade(&current_snapshot_fn);
+        let snapshot_fn = current_snapshot_fn.clone();
         let mut controller = ControllerImpl::new(
             box simulation,
             Arc::new(move |current_snapshot_fn| {
-                *snapshot_fn.upgrade().unwrap().lock().unwrap() = Some(current_snapshot_fn);
-                Box::new(ConnectionAcceptorMock::default()) as Box<dyn ConnectionAcceptor>
+                *snapshot_fn.lock().unwrap() = Some(current_snapshot_fn);
+                let mut connection_acceptor = box ConnectionAcceptorMock::default();
+                connection_acceptor.expect_run();
+                connection_acceptor as Box<dyn ConnectionAcceptor>
             }),
             main_thread_spawn_fn(),
             EXPECTED_DELTA,
         );
+        controller.run_connection_acceptor();
         controller.step_simulation();
 
-        let current_snapshot_fn = Arc::try_unwrap(current_snapshot_fn).unwrap_or_else(|_| {
-            panic!(
-                "Tried to unwrap current_snapshot_fn while more than one strong references exist"
-            )
-        });
-        let current_snapshot_fn = current_snapshot_fn.into_inner().unwrap();
-        let actual_snapshot = (current_snapshot_fn.unwrap())();
+        let current_snapshot_fn = current_snapshot_fn.lock().unwrap();
+        let actual_snapshot = (current_snapshot_fn.as_ref().unwrap())();
         assert_eq!(expected_snapshot, actual_snapshot);
     }
 
