@@ -11,6 +11,7 @@
 use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 
+/// A tuple struct representing an unordered pair
 #[derive(Debug, Clone)]
 pub struct UnorderedPair<T>(pub T, pub T);
 
