@@ -1,7 +1,7 @@
 [package]
 name = "myelin-worldgen"
 version = "0.1.0"
-authors = [    
+authors = [
     "Jan Nils Ferner <jan@myelin.ch>",
     "Mathias Fischler <mathias@myelin.ch>",
     "Ruben Schmidmeister <ruben@myelin.ch>",
