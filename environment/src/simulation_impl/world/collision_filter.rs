@@ -78,6 +78,41 @@ mod mock {
     use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
     use std::thread::panicking;
 
+    #[test]
+    fn pair_is_valid_if_ignored() {
+        let ignored_handle = AnyHandle(0);
+
+        let mut collision_filter = IgnoringCollisionFilterImpl::default();
+        collision_filter.add_ignored_handle(ignored_handle);
+
+        assert!(collision_filter.is_handle_ignored(ignored_handle));
+        assert!(!collision_filter.is_pair_valid(ignored_handle, AnyHandle(1)));
+        assert!(!collision_filter.is_pair_valid(AnyHandle(1), ignored_handle));
+    }
+
+    #[test]
+    fn pair_is_valid_if_not_ignored() {
+        let collision_filter = IgnoringCollisionFilterImpl::default();
+
+        assert!(collision_filter.is_pair_valid(AnyHandle(0), AnyHandle(1)));
+        assert!(collision_filter.is_pair_valid(AnyHandle(1), AnyHandle(0)));
+    }
+
+    #[test]
+    fn pair_is_valid_if_ignored_and_unignored() {
+        let ignored_handle = AnyHandle(0);
+
+        let mut collision_filter = IgnoringCollisionFilterImpl::default();
+        collision_filter.add_ignored_handle(ignored_handle);
+
+        assert!(collision_filter.is_handle_ignored(ignored_handle));
+
+        collision_filter.remove_ignored_handle(ignored_handle);
+
+        assert!(collision_filter.is_pair_valid(ignored_handle, AnyHandle(1)));
+        assert!(collision_filter.is_pair_valid(AnyHandle(1), ignored_handle));
+    }
+
     #[derive(Default)]
     pub(crate) struct IgnoringCollisionFilterMock {
         expect_add_ignored_handle: Option<AnyHandle>,
@@ -197,7 +232,7 @@ mod mock {
 
             println!("{:?}, {:?}", b1, b2);
 
-            let mut expected_calls = self
+            let expected_calls = self
                 .expect_is_pair_valid_and_return
                 .write()
                 .expect("RwLock was poisoned");
