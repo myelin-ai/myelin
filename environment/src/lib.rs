@@ -12,6 +12,10 @@
 )]
 #![cfg_attr(test, allow(clippy::float_cmp))]
 
+#[cfg_attr(test, macro_use)]
+#[cfg(test)]
+extern crate nameof;
+
 pub mod object;
 pub mod object_builder;
 pub mod simulation_impl;
