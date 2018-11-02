@@ -140,12 +140,12 @@ mod tests {
     }
 
     fn mock_controller(expected_objects: Vec<ObjectDescription>) -> ControllerImpl {
-        let simulation_factory = Box::new(|objects_present| -> Box<dyn Simulation> {
-            Box::new(SimulationMock::new(objects_present))
-        });
+        let simulation_factory = box |objects_present| -> Box<dyn Simulation> {
+            box SimulationMock::new(objects_present)
+        };
         let world_generator = WorldGeneratorMock::new(simulation_factory, expected_objects.clone());
         let presenter: PresenterMock = PresenterMock::new(expected_objects);
-        ControllerImpl::new(Box::new(presenter), &world_generator)
+        ControllerImpl::new(box presenter, &world_generator)
     }
 
     #[test]
