@@ -1,5 +1,13 @@
 //! This crate provides a tuple struct for an unordered pair
 
+#![deny(
+    rust_2018_idioms,
+    missing_debug_implementations,
+    clippy::missing_doc,
+    clippy::doc_markdown,
+    clippy::unimplemented
+)]
+
 use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 
