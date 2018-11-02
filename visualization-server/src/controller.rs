@@ -102,6 +102,7 @@ mod tests {
     use myelin_environment::object::*;
     use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
     use myelin_environment::SimulationMock;
+    use std::sync::Mutex;
 
     const EXPECTED_DELTA: Duration = Duration::from_millis((1.0f64 / 60.0f64) as u64);
 
@@ -109,7 +110,7 @@ mod tests {
     fn can_be_assembled() {
         ControllerImpl::new(
             Box::new(SimulationMock::default()),
-            Arc::new(|_| {
+            Arc::new(move |_| {
                 Box::new(ConnectionAcceptorMock::default()) as Box<dyn ConnectionAcceptor>
             }),
             main_thread_spawn_fn(),
@@ -121,7 +122,7 @@ mod tests {
     fn runs_connection_acceptor() {
         let controller = ControllerImpl::new(
             Box::new(SimulationMock::default()),
-            Arc::new(|_| {
+            Arc::new(move |_| {
                 let mut connection_acceptor = Box::new(ConnectionAcceptorMock::default());
                 connection_acceptor.expect_run();
                 connection_acceptor as Box<dyn ConnectionAcceptor>
@@ -139,7 +140,7 @@ mod tests {
         simulation.expect_objects_and_return(HashMap::new());
         let mut controller = ControllerImpl::new(
             box simulation,
-            Arc::new(|_| {
+            Arc::new(move |_| {
                 Box::new(ConnectionAcceptorMock::default()) as Box<dyn ConnectionAcceptor>
             }),
             main_thread_spawn_fn(),
@@ -159,13 +160,45 @@ mod tests {
         simulation.expect_objects_and_return(expected_snapshot);
         let mut controller = ControllerImpl::new(
             box simulation,
-            Arc::new(|_| {
+            Arc::new(move |_| {
                 Box::new(ConnectionAcceptorMock::default()) as Box<dyn ConnectionAcceptor>
             }),
             main_thread_spawn_fn(),
             EXPECTED_DELTA,
         );
         controller.step_simulation();
+    }
+
+    #[test]
+    fn stepping_simulation_sets_snapshot() {
+        let mut simulation = SimulationMock::default();
+        simulation.expect_step();
+        let expected_snapshot = hashmap!{
+           0 => object_description()
+        };
+
+        simulation.expect_objects_and_return(expected_snapshot.clone());
+        let current_snapshot_fn: Arc<Mutex<Option<Box<CurrentSnapshotFn>>>> = Default::default();
+        let snapshot_fn = Arc::downgrade(&current_snapshot_fn);
+        let mut controller = ControllerImpl::new(
+            box simulation,
+            Arc::new(move |current_snapshot_fn| {
+                *snapshot_fn.upgrade().unwrap().lock().unwrap() = Some(current_snapshot_fn);
+                Box::new(ConnectionAcceptorMock::default()) as Box<dyn ConnectionAcceptor>
+            }),
+            main_thread_spawn_fn(),
+            EXPECTED_DELTA,
+        );
+        controller.step_simulation();
+
+        let current_snapshot_fn = Arc::try_unwrap(current_snapshot_fn).unwrap_or_else(|_| {
+            panic!(
+                "Tried to unwrap current_snapshot_fn while more than one strong references exist"
+            )
+        });
+        let current_snapshot_fn = current_snapshot_fn.into_inner().unwrap();
+        let actual_snapshot = (current_snapshot_fn.unwrap())();
+        assert_eq!(expected_snapshot, actual_snapshot);
     }
 
     fn main_thread_spawn_fn() -> Box<ThreadSpawnFn> {
