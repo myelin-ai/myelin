@@ -228,6 +228,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "myelin-pair"
+version = "0.1.0"
+
+[[package]]
 name = "myelin-visualization"
 version = "0.1.0"
 dependencies = [
