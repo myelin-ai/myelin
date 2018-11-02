@@ -3,6 +3,7 @@ use myelin_environment::object::ObjectDescription;
 use myelin_environment::Id;
 use myelin_environment::Simulation;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
+use std::boxed::FnBox;
 use std::collections::HashMap;
 use std::fmt::{self, Debug};
 use std::net::SocketAddr;
@@ -14,6 +15,7 @@ pub(crate) type Snapshot = HashMap<Id, ObjectDescription>;
 pub(crate) type ConnectionAcceptorFactoryFn =
     dyn Fn(Box<CurrentSnapshotFn>) -> Box<dyn ConnectionAcceptor> + Send + Sync;
 pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send + Sync;
+pub(crate) type ThreadSpawnFn = dyn Fn(Box<dyn FnBox() + Send>) + Send + Sync;
 
 pub(crate) trait Controller: Debug {
     fn run(&mut self);
@@ -40,8 +42,9 @@ pub(crate) trait Client: Debug {
 pub(crate) struct ControllerImpl {
     simulation: Box<dyn Simulation>,
     connection_acceptor_factory_fn: Arc<ConnectionAcceptorFactoryFn>,
-    expected_delta: Duration,
     current_snapshot: Arc<RwLock<Snapshot>>,
+    thread_spawn_fn: Box<ThreadSpawnFn>,
+    expected_delta: Duration,
 }
 
 impl Debug for ControllerImpl {
@@ -58,10 +61,10 @@ impl Controller for ControllerImpl {
         let current_snapshot_fn =
             Box::new(move || current_snapshot.read().unwrap().clone()) as Box<CurrentSnapshotFn>;
         let connection_acceptor_factory_fn = self.connection_acceptor_factory_fn.clone();
-        thread::spawn(move || {
+        (self.thread_spawn_fn)(Box::new(move || {
             let connection_acceptor = (connection_acceptor_factory_fn)(current_snapshot_fn);
             connection_acceptor.run();
-        });
+        }));
         loop {
             self.simulation.step();
             *self.current_snapshot.write().unwrap() = self.simulation.objects();
@@ -73,12 +76,14 @@ impl ControllerImpl {
     pub(crate) fn new(
         simulation: Box<dyn Simulation>,
         connection_acceptor_factory_fn: Arc<ConnectionAcceptorFactoryFn>,
+        thread_spawn_fn: Box<ThreadSpawnFn>,
         expected_delta: Duration,
     ) -> Self {
         Self {
             simulation,
             connection_acceptor_factory_fn,
             expected_delta,
+            thread_spawn_fn,
             current_snapshot: Default::default(),
         }
     }
@@ -106,9 +111,14 @@ mod tests {
             Arc::new(|_| {
                 Box::new(ConnectionAcceptorMock::default()) as Box<dyn ConnectionAcceptor>
             }),
+            main_thread_spawn_fn(),
             EXPECTED_DELTA,
         );
         controller.run();
+    }
+
+    fn main_thread_spawn_fn() -> Box<ThreadSpawnFn> {
+        box move |function| function()
     }
 
     #[derive(Debug)]
