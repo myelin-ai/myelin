@@ -76,6 +76,24 @@ mod mock {
         set_simulated_timestep_was_called: RefCell<bool>,
     }
 
+    impl SimulationMock {
+        pub fn expect_step(&mut self) {
+            self.expect_step = Some(());
+        }
+
+        pub fn expect_add_object(&mut self, object_description: ObjectDescription) {
+            self.expect_add_object = Some(object_description)
+        }
+
+        pub fn expect_objects_and_return(&mut self, return_value: HashMap<Id, ObjectDescription>) {
+            self.expect_objects_and_return = Some(return_value)
+        }
+
+        pub fn expect_set_simulated_timestep(&mut self, timestep: f64) {
+            self.expect_set_simulated_timestep = Some(timestep)
+        }
+    }
+
     impl Simulation for SimulationMock {
         fn step(&mut self) {
             *self.step_was_called.borrow_mut() = true;
@@ -165,6 +183,18 @@ mod mock {
 
         step_was_called: RefCell<bool>,
     }
+
+    impl ObjectBehaviorMock {
+        pub fn expect_step_and_return(
+            &mut self,
+            own_description: ObjectDescription,
+            sensor_collisions: Vec<ObjectDescription>,
+            return_value: Option<Action>,
+        ) {
+            self.expect_step_and_return = Some((own_description, sensor_collisions, return_value))
+        }
+    }
+
     impl ObjectBehavior for ObjectBehaviorMock {
         fn step(
             &mut self,
