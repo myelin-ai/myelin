@@ -35,7 +35,7 @@ impl WebsocketConnectionAcceptor {
 }
 
 impl ConnectionAcceptor for WebsocketConnectionAcceptor {
-    fn run(self) {
+    fn run(self: Box<Self>) {
         for request in self.websocket_server.filter_map(Result::ok) {
             let client_factory_fn = self.client_factory_fn.clone();
             (self.thread_spawn_fn)(box move || {
@@ -92,7 +92,7 @@ mod mock {
     }
 
     impl ConnectionAcceptor for ConnectionAcceptorMock {
-        fn run(self) {
+        fn run(self: Box<Self>) {
             assert!(
                 self.expect_run.load(Ordering::SeqCst),
                 "run() was called unexpectedly"
@@ -166,9 +166,12 @@ mod tests {
         let client_factory_fn = mock_client_factory_fn(Some(expected_client));
         let main_thread_spawn_fn = main_thread_spawn_fn();
 
-        let connection_acceptor =
-            WebsocketConnectionAcceptor::try_new(address, client_factory_fn, main_thread_spawn_fn)
-                .unwrap();
+        let connection_acceptor = box WebsocketConnectionAcceptor::try_new(
+            address,
+            client_factory_fn,
+            main_thread_spawn_fn,
+        )
+        .unwrap();
 
         let address = connection_acceptor.address();
         let _acceptor_thread = thread::spawn(move || {
