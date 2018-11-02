@@ -188,6 +188,7 @@ fn build_plant(x: u32, y: u32) -> ObjectDescription {
                 .expect("Generated an invalid vertex"),
             position: Position::default(),
         })
+        .passable(true)
         .build()
         .expect("Failed to build plant")
 }
