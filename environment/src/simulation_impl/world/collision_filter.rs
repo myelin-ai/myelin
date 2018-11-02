@@ -75,7 +75,7 @@ mod mock {
     use std::collections::HashMap;
     use std::collections::VecDeque;
     use std::fmt::{self, Debug};
-    use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+    use std::sync::atomic::{AtomicBool, Ordering};
     use std::thread::panicking;
 
     #[test]
@@ -121,7 +121,7 @@ mod mock {
         expect_is_pair_valid_and_return: RwLock<HashMap<(AnyHandle, AnyHandle), bool>>,
 
         add_ignored_handle_was_called: AtomicBool,
-        is_handle_ignored_was_called: AtomicU32,
+        is_handle_ignored_was_called: AtomicBool,
         remove_ignored_handle_was_called: AtomicBool,
         is_pair_valid_was_called: AtomicBool,
     }
@@ -159,6 +159,44 @@ mod mock {
             if panicking() {
                 return;
             }
+
+            if self.expect_add_ignored_handle.is_some() {
+                assert!(
+                    self.add_ignored_handle_was_called.load(Ordering::SeqCst),
+                    "add_ignored_handle() was not called, but was expected"
+                );
+            }
+
+            if !self
+                .expect_is_handle_ignored_and_return
+                .read()
+                .expect("Lock was poisoned")
+                .is_empty()
+            {
+                assert!(
+                    self.is_handle_ignored_was_called.load(Ordering::SeqCst),
+                    "is_handle_ignored() was not called, but was expected"
+                );
+            }
+
+            if self.expect_remove_ignored_handle.is_some() {
+                assert!(
+                    self.remove_ignored_handle_was_called.load(Ordering::SeqCst),
+                    "remove_ignored_handle() was not called, but was expected"
+                );
+            }
+
+            if !self
+                .expect_is_pair_valid_and_return
+                .read()
+                .expect("Lock was poisoned")
+                .is_empty()
+            {
+                assert!(
+                    self.is_pair_valid_was_called.load(Ordering::SeqCst),
+                    "is_pair_valid() was not called, but was expected"
+                );
+            }
         }
     }
 
@@ -187,10 +225,8 @@ mod mock {
         }
 
         fn is_handle_ignored(&self, handle: AnyHandle) -> bool {
-            self.is_handle_ignored_was_called.store(
-                self.is_handle_ignored_was_called.load(Ordering::SeqCst) + 1,
-                Ordering::SeqCst,
-            );
+            self.is_handle_ignored_was_called
+                .store(true, Ordering::SeqCst);
 
             if let Some((expected_input, expected_output)) = self
                 .expect_is_handle_ignored_and_return
@@ -229,8 +265,6 @@ mod mock {
 
         fn is_pair_valid(&self, b1: AnyHandle, b2: AnyHandle) -> bool {
             self.is_pair_valid_was_called.store(true, Ordering::SeqCst);
-
-            println!("{:?}, {:?}", b1, b2);
 
             let expected_calls = self
                 .expect_is_pair_valid_and_return

@@ -2,7 +2,7 @@
 //! the simulation, as well as the objects that reside
 //! within it.
 
-#![feature(specialization, non_exhaustive, integer_atomics)]
+#![feature(specialization, non_exhaustive)]
 #![deny(
     rust_2018_idioms,
     missing_debug_implementations,
