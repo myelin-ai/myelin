@@ -52,3 +52,162 @@ pub trait Simulation: fmt::Debug {
 
 /// Unique identifier of an Object
 pub type Id = usize;
+
+#[cfg(test)]
+pub use self::mock::*;
+
+#[cfg(test)]
+pub mod mock {
+    use super::*;
+    use crate::object::Action;
+    use std::cell::RefCell;
+    use std::thread::panicking;
+
+    #[derive(Debug, Default, Clone)]
+    pub struct SimulationMock {
+        expect_step: Option<()>,
+        expect_add_object: Option<ObjectDescription>,
+        expect_objects_and_return: Option<HashMap<Id, ObjectDescription>>,
+        expect_set_simulated_timestep: Option<f64>,
+
+        step_was_called: RefCell<bool>,
+        add_object_was_called: RefCell<bool>,
+        objects_was_called: RefCell<bool>,
+        set_simulated_timestep_was_called: RefCell<bool>,
+    }
+
+    impl Simulation for SimulationMock {
+        fn step(&mut self) {
+            *self.step_was_called.borrow_mut() = true;
+
+            if !self.expect_step.is_some() {
+                panic!("step() was called unexpectedly")
+            }
+        }
+        fn add_object(
+            &mut self,
+            object_description: ObjectDescription,
+            _object_behavior: Box<dyn ObjectBehavior>,
+        ) {
+            *self.add_object_was_called.borrow_mut() = true;
+
+            if let Some((ref expected_object_description)) = self.expect_add_object {
+                if object_description != *expected_object_description {
+                    panic!(
+                        "add_object() was called with {:?}, expected {:?} ",
+                        object_description, expected_object_description,
+                    )
+                }
+            } else {
+                panic!("add_object() was called unexpectedly")
+            }
+        }
+        fn objects(&self) -> HashMap<Id, ObjectDescription> {
+            *self.objects_was_called.borrow_mut() = true;
+
+            if let Some(ref return_value) = self.expect_objects_and_return {
+                return_value.clone()
+            } else {
+                panic!("objects() was called unexpectedly")
+            }
+        }
+        fn set_simulated_timestep(&mut self, timestep: f64) {
+            *self.set_simulated_timestep_was_called.borrow_mut() = true;
+
+            if let Some((ref expected_timestep)) = self.expect_set_simulated_timestep {
+                if timestep != *expected_timestep {
+                    panic!(
+                        "set_simulated_timestep() was called with {:?}, expected {:?} ",
+                        timestep, expected_timestep,
+                    )
+                }
+            } else {
+                panic!("set_simulated_timestep() was called unexpectedly")
+            }
+        }
+    }
+    impl Drop for SimulationMock {
+        fn drop(&mut self) {
+            if panicking() {
+                return;
+            }
+            if self.expect_step.is_some() {
+                assert!(
+                    *self.step_was_called.borrow(),
+                    "step() was not called, but expected"
+                )
+            }
+            if self.expect_add_object.is_some() {
+                assert!(
+                    *self.add_object_was_called.borrow(),
+                    "add_object() was not called, but expected"
+                )
+            }
+            if self.expect_objects_and_return.is_some() {
+                assert!(
+                    *self.objects_was_called.borrow(),
+                    "objects() was not called, but expected"
+                )
+            }
+            if self.expect_set_simulated_timestep.is_some() {
+                assert!(
+                    *self.set_simulated_timestep_was_called.borrow(),
+                    "set_simulated_timestep() was not called, but expected"
+                )
+            }
+        }
+    }
+
+    #[derive(Debug, Default, Clone)]
+    struct ObjectBehaviorMock {
+        expect_step_and_return: Option<(ObjectDescription, Vec<ObjectDescription>, Option<Action>)>,
+
+        step_was_called: RefCell<bool>,
+    }
+    impl ObjectBehavior for ObjectBehaviorMock {
+        fn step(
+            &mut self,
+            own_description: &ObjectDescription,
+            sensor_collisions: &[ObjectDescription],
+        ) -> Option<Action> {
+            *self.step_was_called.borrow_mut() = true;
+
+            if let Some((
+                ref expected_own_description,
+                ref expected_sensor_collisions,
+                ref return_value,
+            )) = self.expect_step_and_return
+            {
+                if *own_description == *expected_own_description
+                    && sensor_collisions.to_vec() == *expected_sensor_collisions
+                {
+                    return_value.clone()
+                } else {
+                    panic!(
+                        "step() was called with {:?} and {:?}, expected {:?} and {:?}",
+                        own_description,
+                        sensor_collisions,
+                        expected_own_description,
+                        expected_sensor_collisions,
+                    )
+                }
+            } else {
+                panic!("step() was called unexpectedly")
+            }
+        }
+    }
+
+    impl Drop for ObjectBehaviorMock {
+        fn drop(&mut self) {
+            if panicking() {
+                return;
+            }
+            if self.expect_step_and_return.is_some() {
+                assert!(
+                    *self.step_was_called.borrow(),
+                    "step() was not called, but expected"
+                )
+            }
+        }
+    }
+}
