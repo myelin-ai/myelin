@@ -81,12 +81,12 @@ impl ControllerImpl {
     fn run_connection_acceptor(&self) {
         let current_snapshot = self.current_snapshot.clone();
         let current_snapshot_fn =
-            Box::new(move || current_snapshot.read().unwrap().clone()) as Box<CurrentSnapshotFn>;
+            (box move || current_snapshot.read().unwrap().clone()) as Box<CurrentSnapshotFn>;
         let connection_acceptor_factory_fn = self.connection_acceptor_factory_fn.clone();
-        (self.thread_spawn_fn)(Box::new(move || {
+        (self.thread_spawn_fn)(box move || {
             let connection_acceptor = (connection_acceptor_factory_fn)(current_snapshot_fn);
             connection_acceptor.run();
-        }));
+        });
     }
 
     fn step_simulation(&mut self) {
@@ -109,10 +109,8 @@ mod tests {
     #[test]
     fn can_be_assembled() {
         ControllerImpl::new(
-            Box::new(SimulationMock::default()),
-            Arc::new(move |_| {
-                Box::new(ConnectionAcceptorMock::default()) as Box<dyn ConnectionAcceptor>
-            }),
+            box SimulationMock::default(),
+            Arc::new(move |_| box ConnectionAcceptorMock::default() as Box<dyn ConnectionAcceptor>),
             main_thread_spawn_fn(),
             EXPECTED_DELTA,
         );
@@ -121,9 +119,9 @@ mod tests {
     #[test]
     fn runs_connection_acceptor() {
         let controller = ControllerImpl::new(
-            Box::new(SimulationMock::default()),
+            box SimulationMock::default(),
             Arc::new(move |_| {
-                let mut connection_acceptor = Box::new(ConnectionAcceptorMock::default());
+                let mut connection_acceptor = box ConnectionAcceptorMock::default();
                 connection_acceptor.expect_run();
                 connection_acceptor as Box<dyn ConnectionAcceptor>
             }),
