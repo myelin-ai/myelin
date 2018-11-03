@@ -51,7 +51,6 @@ impl NphysicsWorld {
     /// Instantiates a new empty world
     /// # Examples
     /// ```
-    /// #![feature(box_syntax)]
     /// use myelin_environment::simulation_impl::world::NphysicsWorld;
     /// use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
     /// use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
@@ -61,7 +60,7 @@ impl NphysicsWorld {
     /// let rotation_translator = NphysicsRotationTranslatorImpl::default();
     /// let force_applier = SingleTimeForceApplierImpl::default();
     /// let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterImpl::default()));
-    /// let mut world = NphysicsWorld::with_timestep(1.0, box rotation_translator, box force_applier, collision_filter);
+    /// let mut world = NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator), Box::new(force_applier), collision_filter);
     /// ```
     pub fn with_timestep(
         timestep: f64,

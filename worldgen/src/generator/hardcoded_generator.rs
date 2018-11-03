@@ -27,7 +27,6 @@ impl HardcodedGenerator {
     ///
     /// # Examples
     /// ```
-    /// #![feature(box_syntax)]
     /// use myelin_environment::Simulation;
     /// use myelin_environment::simulation_impl::{
     ///     SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl
@@ -40,20 +39,20 @@ impl HardcodedGenerator {
     /// use myelin_object_behavior::Static;
     /// use std::sync::{Arc, RwLock};
     ///
-    /// let simulation_factory = box || -> Box<dyn Simulation> {
+    /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
     ///     let rotation_translator = NphysicsRotationTranslatorImpl::default();
     ///     let force_applier = SingleTimeForceApplierImpl::default();
     ///     let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterImpl::default()));
-    ///     let world = box NphysicsWorld::with_timestep(
+    ///     let world = Box::new(NphysicsWorld::with_timestep(
     ///         1.0,
-    ///         box rotation_translator,
-    ///         box force_applier,
+    ///         Box::new(rotation_translator),
+    ///         Box::new(force_applier),
     ///         collision_filter,
-    ///     );
-    ///     box SimulationImpl::new(world)
-    /// };
+    ///     ));
+    ///     Box::new(SimulationImpl::new(world))
+    /// });
     ///
-    /// let object_factory = box |_: Kind| -> Box<dyn ObjectBehavior> { box Static::new() };
+    /// let object_factory = Box::new(|_: Kind| -> Box<dyn ObjectBehavior> { Box::new(Static::new()) });
     /// let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
     /// let generated_simulation = worldgen.generate();
     pub fn new(simulation_factory: SimulationFactory, object_factory: ObjectFactory) -> Self {
