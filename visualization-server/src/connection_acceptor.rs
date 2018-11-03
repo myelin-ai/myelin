@@ -45,10 +45,11 @@ impl ConnectionAcceptor for WebsocketConnectionAcceptor {
     fn run(self: Box<Self>) {
         for request in self.websocket_server.filter_map(Result::ok) {
             let client_factory_fn = self.client_factory_fn.clone();
+            let current_snapshot_fn = self.current_snapshot_fn.clone();
             (self.thread_spawn_fn)(box move || {
                 if should_accept(&request) {
                     if let Ok(client_stream) = request.accept() {
-                        let mut client = (client_factory_fn)(client_stream);
+                        let mut client = (client_factory_fn)(client_stream, current_snapshot_fn);
                         client.run();
                     }
                 }

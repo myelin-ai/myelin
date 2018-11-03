@@ -1,8 +1,8 @@
 use crate::client::ClientHandler;
 use crate::connection::{Connection, WebsocketClient};
-use crate::connection_acceptor::{Client, WebsocketConnectionAcceptor};
+use crate::connection_acceptor::{Client, ThreadSpawnFn, WebsocketConnectionAcceptor};
 use crate::constant::*;
-use crate::controller::{Controller, ControllerImpl};
+use crate::controller::{ConnectionAcceptor, Controller, ControllerImpl};
 use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
 use myelin_environment::object::{Kind, ObjectBehavior};
@@ -31,7 +31,7 @@ use websocket::OwnedMessage;
 ///
 pub fn start_server<A>(addr: A)
 where
-    A: Into<SocketAddr>,
+    A: Into<SocketAddr> + Send,
 {
     let rotation_translator = NphysicsRotationTranslatorImpl::default();
     let force_applier = SingleTimeForceApplierImpl::default();
@@ -42,33 +42,53 @@ where
     );
     let simulation = SimulationImpl::new(box world);
 
-    let interval = Duration::from_millis(SIMULATED_TIMESTEP_IN_MILLIS as u64);
-    let fixed_interval_sleeper = FixedIntervalSleeperImpl::default();
-    let presenter = DeltaPresenter::default();
-    let view_model_serializer = JsonSerializer::new();
-    let client_factory_fn = Arc::new(move |websocket_client, current_snapshot_fn| {
-        let connection = Connection {
-            id: Uuid::new_v4(),
-            socket: box WebsocketClient::new(websocket_client),
-        };
-        box ClientHandler::new(
-            interval,
-            box fixed_interval_sleeper,
-            box presenter,
-            box view_model_serializer,
-            connection,
-            current_snapshot_fn,
-        ) as Box<dyn Client>
-    });
-    let conection_acceptor_factory_fn = Arc::new(move |current_snapshot_fn| {
-        WebsocketConnectionAcceptor::try_new(
+    let conection_acceptor_factory_fn = Arc::new(|current_snapshot_fn| {
+        let client_factory_fn = Arc::new(|websocket_client, current_snapshot_fn| {
+            let interval = Duration::from_millis(SIMULATED_TIMESTEP_IN_MILLIS as u64);
+            let fixed_interval_sleeper = FixedIntervalSleeperImpl::default();
+            let presenter = DeltaPresenter::default();
+            let view_model_serializer = JsonSerializer::new();
+
+            let connection = Connection {
+                id: Uuid::new_v4(),
+                socket: box WebsocketClient::new(websocket_client),
+            };
+
+            box ClientHandler::new(
+                interval,
+                box fixed_interval_sleeper,
+                box presenter,
+                box view_model_serializer,
+                connection,
+                current_snapshot_fn,
+            ) as Box<dyn Client>
+        });
+
+        box WebsocketConnectionAcceptor::try_new(
+            // To do: How do we get addr?
             addr.into(),
             client_factory_fn,
-            thread_spawn,
+            spawn_thread_factory(),
             current_snapshot_fn,
         )
+        .expect("Failed to create websocket connection acceptor")
+            as Box<dyn ConnectionAcceptor>
     });
-    let controller = ControllerImpl::new(box simulation, conection_acceptor_factory_fn);
+
+    let expected_delta = Duration::from_millis(SIMULATED_TIMESTEP_IN_MILLIS as u64);
+
+    let controller = ControllerImpl::new(
+        box simulation,
+        conection_acceptor_factory_fn,
+        spawn_thread_factory(),
+        expected_delta,
+    );
 
     const MAX_CONNECTIONS: usize = 255;
+}
+
+fn spawn_thread_factory() -> Box<ThreadSpawnFn> {
+    box move |function| {
+        thread::spawn(function);
+    }
 }

@@ -11,7 +11,7 @@ use std::time::Duration;
 
 pub(crate) type Snapshot = HashMap<Id, ObjectDescription>;
 pub(crate) type ConnectionAcceptorFactoryFn =
-    dyn Fn(Box<CurrentSnapshotFn>) -> Box<dyn ConnectionAcceptor> + Send + Sync;
+    dyn Fn(Arc<CurrentSnapshotFn>) -> Box<dyn ConnectionAcceptor> + Send + Sync;
 pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send + Sync;
 pub(crate) type ThreadSpawnFn = dyn Fn(Box<dyn FnBox() + Send>) + Send + Sync;
 
@@ -77,7 +77,7 @@ impl ControllerImpl {
     fn run_connection_acceptor(&self) {
         let current_snapshot = self.current_snapshot.clone();
         let current_snapshot_fn =
-            (box move || current_snapshot.read().unwrap().clone()) as Box<CurrentSnapshotFn>;
+            (Arc::new(move || current_snapshot.read().unwrap().clone())) as Arc<CurrentSnapshotFn>;
         let connection_acceptor_factory_fn = self.connection_acceptor_factory_fn.clone();
         (self.thread_spawn_fn)(box move || {
             let connection_acceptor = (connection_acceptor_factory_fn)(current_snapshot_fn);
