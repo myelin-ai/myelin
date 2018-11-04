@@ -156,9 +156,13 @@ mod tests {
         let client_factory_fn = mock_client_factory_fn(None);
         let main_thread_spawn_fn = main_thread_spawn_fn();
 
-        let connection_acceptor =
-            WebsocketConnectionAcceptor::try_new(address, client_factory_fn, main_thread_spawn_fn)
-                .unwrap();
+        let connection_acceptor = WebsocketConnectionAcceptor::try_new(
+            address,
+            client_factory_fn,
+            main_thread_spawn_fn,
+            Arc::new(|| panic!("current_snapshot_fn was not expected to be called")),
+        )
+        .unwrap();
 
         let local_addr = connection_acceptor.address();
 
@@ -178,6 +182,7 @@ mod tests {
             address,
             client_factory_fn,
             main_thread_spawn_fn,
+            Arc::new(|| panic!("current_snapshot_fn was not expected to be called")),
         )
         .unwrap();
 
@@ -198,7 +203,7 @@ mod tests {
     }
 
     fn mock_client_factory_fn(expected_call: Option<ClientMock>) -> Arc<ClientFactoryFn> {
-        Arc::new(move |_client_stream| {
+        Arc::new(move |_client_stream, _current_snapshot_fn| {
             if let Some(ref return_value) = expected_call {
                 box return_value.clone()
             } else {

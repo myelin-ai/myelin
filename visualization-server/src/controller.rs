@@ -163,7 +163,7 @@ mod tests {
     fn snapshot_is_empty_before_step() {
         let simulation = SimulationMock::default();
 
-        let current_snapshot_fn: Arc<Mutex<Option<Box<CurrentSnapshotFn>>>> = Default::default();
+        let current_snapshot_fn: Arc<Mutex<Option<Arc<CurrentSnapshotFn>>>> = Default::default();
         let snapshot_fn = current_snapshot_fn.clone();
         let controller = ControllerImpl::new(
             box simulation,
@@ -193,7 +193,7 @@ mod tests {
         };
         simulation.expect_objects_and_return(expected_snapshot.clone());
 
-        let current_snapshot_fn: Arc<Mutex<Option<Box<CurrentSnapshotFn>>>> = Default::default();
+        let current_snapshot_fn: Arc<Mutex<Option<Arc<CurrentSnapshotFn>>>> = Default::default();
         let snapshot_fn = current_snapshot_fn.clone();
         let mut controller = ControllerImpl::new(
             box simulation,
