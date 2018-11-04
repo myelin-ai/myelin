@@ -14,6 +14,7 @@ use myelin_object_behavior::Static;
 use myelin_visualization_core::serialization::JsonSerializer;
 use myelin_visualization_core::transmission::ViewModelTransmitter;
 use myelin_worldgen::generator::HardcodedGenerator;
+use myelin_worldgen::WorldGenerator;
 use spmc::{channel, Sender};
 use std::error::Error;
 use std::net::SocketAddr;
@@ -33,15 +34,20 @@ pub fn start_server<A>(addr: A)
 where
     A: Into<SocketAddr> + Send,
 {
-    let rotation_translator = NphysicsRotationTranslatorImpl::default();
-    let force_applier = SingleTimeForceApplierImpl::default();
-    let world = NphysicsWorld::with_timestep(
-        SIMULATED_TIMESTEP_IN_SI_UNITS,
-        box rotation_translator,
-        box force_applier,
-    );
-    let simulation = SimulationImpl::new(box world);
     let addr = addr.into();
+
+    let simulation_factory = box || -> Box<dyn Simulation> {
+        let rotation_translator = NphysicsRotationTranslatorImpl::default();
+        let force_applier = SingleTimeForceApplierImpl::default();
+        let world = NphysicsWorld::with_timestep(
+            SIMULATED_TIMESTEP_IN_SI_UNITS,
+            box rotation_translator,
+            box force_applier,
+        );
+        box SimulationImpl::new(box world)
+    };
+    let object_factory = box |_: Kind| -> Box<dyn ObjectBehavior> { box Static::new() };
+    let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
 
     let conection_acceptor_factory_fn = Arc::new(move |current_snapshot_fn| {
         let client_factory_fn = Arc::new(|websocket_client, current_snapshot_fn| {
@@ -78,8 +84,8 @@ where
 
     let expected_delta = Duration::from_float_secs(SIMULATED_TIMESTEP_IN_SI_UNITS);
 
-    let controller = ControllerImpl::new(
-        box simulation,
+    let mut controller = ControllerImpl::new(
+        worldgen.generate(),
         conection_acceptor_factory_fn,
         spawn_thread_factory(),
         expected_delta,
