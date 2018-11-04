@@ -41,8 +41,9 @@ where
         box force_applier,
     );
     let simulation = SimulationImpl::new(box world);
+    let addr = addr.into();
 
-    let conection_acceptor_factory_fn = Arc::new(|current_snapshot_fn| {
+    let conection_acceptor_factory_fn = Arc::new(move |current_snapshot_fn| {
         let client_factory_fn = Arc::new(|websocket_client, current_snapshot_fn| {
             let interval = Duration::from_float_secs(SIMULATED_TIMESTEP_IN_SI_UNITS);
             let fixed_interval_sleeper = FixedIntervalSleeperImpl::default();
@@ -66,7 +67,7 @@ where
 
         box WebsocketConnectionAcceptor::try_new(
             // To do: How do we get addr?
-            addr.into(),
+            addr,
             client_factory_fn,
             spawn_thread_factory(),
             current_snapshot_fn,
