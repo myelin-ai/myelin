@@ -8,15 +8,23 @@ Promise.all([
 ]).then(([websocket, wasm]) => {
     const canvas = document.getElementById('visualization') as HTMLCanvasElement
     const inputHandler = wasm.init(canvas)
-    websocket.addEventListener('message', (event) => {
+    const onMessage = (event: MessageEvent) => {
         readBlob(event.data)
             .then((arrayBuffer) => {
-                inputHandler.on_message(new Uint8Array(arrayBuffer))
+                try {
+                    inputHandler.on_message(new Uint8Array(arrayBuffer))
+                } catch (e) {
+                    console.error(e)
+                    websocket.removeEventListener('message', onMessage)
+                    websocket.close()
+                }
             })
             .catch((error) => {
                 console.error('Failed to read websocket message blob', error)
             })
-    })
+    }
+
+    websocket.addEventListener('message', onMessage)
 }).catch((reason) => {
     console.error(reason)
     document.body.appendChild(document.createTextNode('Failed to initialize visualization'))

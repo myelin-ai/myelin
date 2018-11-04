@@ -1,10 +1,11 @@
 use crate::input_handler::Controller;
 use myelin_visualization_core::serialization::ViewModelDeserializer;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
+use std::error::Error;
 use std::fmt;
 
 pub(crate) trait Presenter: fmt::Debug {
-    fn present_delta(&mut self, delta: ViewModelDelta);
+    fn present_delta(&mut self, delta: ViewModelDelta) -> Result<(), Box<dyn Error>>;
 }
 
 #[derive(Debug)]
@@ -14,13 +15,14 @@ pub(crate) struct ControllerImpl {
 }
 
 impl Controller for ControllerImpl {
-    fn on_message(&mut self, message: &[u8]) {
+    fn on_message(&mut self, message: &[u8]) -> Result<(), Box<dyn Error>> {
         let view_model_delta = self
             .view_model_deserializer
-            .deserialize_view_model_delta(message)
-            .expect("Serialized view model delta was not valid");
+            .deserialize_view_model_delta(message)?;
 
-        self.presenter.present_delta(view_model_delta);
+        self.presenter.present_delta(view_model_delta)?;
+
+        Ok(())
     }
 }
 
