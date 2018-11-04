@@ -85,7 +85,7 @@ where
         expected_delta,
     );
 
-    const MAX_CONNECTIONS: usize = 255;
+    controller.run();
 }
 
 fn spawn_thread_factory() -> Box<ThreadSpawnFn> {
