@@ -12,19 +12,13 @@ use myelin_environment::simulation_impl::world::NphysicsWorld;
 use myelin_environment::{simulation_impl::SimulationImpl, Simulation};
 use myelin_object_behavior::Static;
 use myelin_visualization_core::serialization::JsonSerializer;
-use myelin_visualization_core::transmission::ViewModelTransmitter;
 use myelin_worldgen::generator::HardcodedGenerator;
 use myelin_worldgen::WorldGenerator;
-use spmc::{channel, Sender};
-use std::error::Error;
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::thread;
 use std::time::Duration;
-use std::{fmt, thread};
-use threadpool::ThreadPool;
 use uuid::Uuid;
-use websocket::sync::Server;
-use websocket::OwnedMessage;
 
 ///
 /// Starts the simulation and a websocket server, that broadcasts
