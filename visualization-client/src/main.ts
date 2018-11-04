@@ -1,4 +1,4 @@
-import { createWebsocket, readBlob } from './websocket'
+import { createWebsocket } from './websocket'
 
 const websocketUrl = `ws://${window.location.hostname}:6956`
 
@@ -6,22 +6,19 @@ Promise.all([
     createWebsocket(websocketUrl),
     import('../out/myelin_visualization_client'),
 ]).then(([websocket, wasm]) => {
+    websocket.binaryType = 'arraybuffer'
+
     const canvas = document.getElementById('visualization') as HTMLCanvasElement
     const inputHandler = wasm.init(canvas)
+
     const onMessage = (event: MessageEvent) => {
-        readBlob(event.data)
-            .then((arrayBuffer) => {
-                try {
-                    inputHandler.on_message(new Uint8Array(arrayBuffer))
-                } catch (e) {
-                    console.error(e)
-                    websocket.removeEventListener('message', onMessage)
-                    websocket.close()
-                }
-            })
-            .catch((error) => {
-                console.error('Failed to read websocket message blob', error)
-            })
+        try {
+            inputHandler.on_message(new Uint8Array(event.data))
+        } catch (e) {
+            console.error(e)
+            websocket.removeEventListener('message', onMessage)
+            websocket.close()
+        }
     }
 
     websocket.addEventListener('message', onMessage)
