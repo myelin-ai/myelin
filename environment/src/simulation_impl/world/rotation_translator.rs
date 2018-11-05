@@ -1,7 +1,7 @@
 //! Implementation for `NphysicsRotationTranslator`
 
 use super::NphysicsRotationTranslator;
-use crate::object::Radians;
+use crate::object::{Radians, RadiansError};
 use std::f64::consts::PI;
 
 /// Translates the rotation from Radians to the range (-π; π] defined by nphysics
@@ -25,10 +25,15 @@ impl NphysicsRotationTranslator for NphysicsRotationTranslatorImpl {
             nphysics_rotation
         };
 
-        if rounded_rotation >= 0.0 {
+        let rotation = if rounded_rotation >= 0.0 {
             Radians::try_new(rounded_rotation)
         } else {
             Radians::try_new((2.0 * PI) + rounded_rotation)
+        };
+
+        match rotation {
+            Ok(radians) => Some(radians),
+            Err(RadiansError::OutOfRange) => None,
         }
     }
 }
@@ -154,29 +159,32 @@ mod tests {
 
     #[test]
     fn to_radians_returns_0_when_passed_0() {
-        verify_to_radians_returns_expected_result(0.0, Radians::try_new(0.0))
+        verify_to_radians_returns_expected_result(0.0, Radians::try_new(0.0).ok())
     }
 
     #[test]
     fn to_radians_returns_half_pi_when_passed_half_pi() {
-        verify_to_radians_returns_expected_result(FRAC_PI_2, Radians::try_new(FRAC_PI_2))
+        verify_to_radians_returns_expected_result(FRAC_PI_2, Radians::try_new(FRAC_PI_2).ok())
     }
 
     #[test]
     fn to_radians_returns_returns_pi_when_passed_pi() {
-        verify_to_radians_returns_expected_result(PI, Radians::try_new(PI))
+        verify_to_radians_returns_expected_result(PI, Radians::try_new(PI).ok())
     }
 
     #[test]
     fn to_radians_returns_one_and_a_half_pi_when_passed_negative_half_pi() {
-        verify_to_radians_returns_expected_result(-FRAC_PI_2, Radians::try_new(3.0 * FRAC_PI_2))
+        verify_to_radians_returns_expected_result(
+            -FRAC_PI_2,
+            Radians::try_new(3.0 * FRAC_PI_2).ok(),
+        )
     }
 
     #[test]
     fn to_radians_works_with_almost_zero_value() {
         verify_to_radians_returns_expected_result(
             -0.000_000_000_000_000_275_574_467_583_596_6,
-            Radians::try_new(0.0),
+            Radians::try_new(0.0).ok(),
         )
     }
 

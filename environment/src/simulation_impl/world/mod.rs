@@ -481,7 +481,7 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator
             .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0));
+        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0).ok());
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -507,7 +507,7 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator
             .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0));
+        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0).ok());
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -533,7 +533,7 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator
             .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0));
+        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0).ok());
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -589,7 +589,7 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator
             .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0));
+        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0).ok());
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -617,7 +617,7 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator
             .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0));
+        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0).ok());
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -649,7 +649,7 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator
             .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0));
+        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0).ok());
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -676,7 +676,7 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator
             .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0));
+        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0).ok());
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -1053,7 +1053,7 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator
             .expect_to_nphysics_rotation_and_return(Radians::try_new(0.0).unwrap(), 0.0);
-        rotation_translator.expect_to_radians_and_return(0.0, Radians::try_new(0.0));
+        rotation_translator.expect_to_radians_and_return(0.0, Radians::try_new(0.0).ok());
         let mut force_applier = SingleTimeForceApplierMock::default();
         force_applier.expect_apply_and_return(true);
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
@@ -1090,7 +1090,7 @@ mod tests {
     #[test]
     fn timestep_can_be_changed() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_radians_and_return(0.0, Radians::try_new(0.0));
+        rotation_translator.expect_to_radians_and_return(0.0, Radians::try_new(0.0).ok());
         rotation_translator
             .expect_to_nphysics_rotation_and_return(Radians::try_new(0.0).unwrap(), 0.0);
         let mut force_applier = SingleTimeForceApplierMock::default();
@@ -1134,7 +1134,8 @@ mod tests {
             Radians::try_new(FRAC_PI_2).unwrap(),
             FRAC_PI_2,
         );
-        rotation_translator.expect_to_radians_and_return(FRAC_PI_2, Radians::try_new(FRAC_PI_2));
+        rotation_translator
+            .expect_to_radians_and_return(FRAC_PI_2, Radians::try_new(FRAC_PI_2).ok());
         let mut force_applier = SingleTimeForceApplierMock::default();
         force_applier.expect_apply_and_return(true);
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
@@ -1166,7 +1167,8 @@ mod tests {
             Radians::try_new(FRAC_PI_2).unwrap(),
             FRAC_PI_2,
         );
-        rotation_translator.expect_to_radians_and_return(FRAC_PI_2, Radians::try_new(FRAC_PI_2));
+        rotation_translator
+            .expect_to_radians_and_return(FRAC_PI_2, Radians::try_new(FRAC_PI_2).ok());
         let mut force_applier = SingleTimeForceApplierMock::default();
         force_applier.expect_apply_and_return(true);
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
