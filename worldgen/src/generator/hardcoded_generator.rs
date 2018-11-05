@@ -288,10 +288,8 @@ mod tests {
 
     #[test]
     fn generates_simulation() {
-        let simulation_factory =
-            Box::new(|| -> Box<dyn Simulation> { Box::new(SimulationMock::default()) });
-        let object_factory =
-            Box::new(|_: Kind| -> Box<dyn ObjectBehavior> { Box::new(ObjectBehaviorMock {}) });
+        let simulation_factory = box || -> Box<dyn Simulation> { box SimulationMock::default() };
+        let object_factory = box |_: Kind| -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock {} };
         let generator = HardcodedGenerator::new(simulation_factory, object_factory);
 
         let _simulation = generator.generate();

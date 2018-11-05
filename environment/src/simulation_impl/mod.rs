@@ -353,7 +353,7 @@ mod tests {
 
     #[test]
     fn propagates_step() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         world.expect_step();
         let mut simulation = SimulationImpl::new(world);
         simulation.step();
@@ -361,7 +361,7 @@ mod tests {
 
     #[test]
     fn propagates_simulated_timestep() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         const EXPECTED_TIMESTEP: f64 = 1.0;
         world.expect_set_simulated_timestep(EXPECTED_TIMESTEP);
         let mut simulation = SimulationImpl::new(world);
@@ -371,7 +371,7 @@ mod tests {
     #[should_panic]
     #[test]
     fn panics_on_negative_timestep() {
-        let world = Box::new(WorldMock::new());
+        let world = box WorldMock::new();
         let mut simulation = SimulationImpl::new(world);
         const INVALID_TIMESTEP: f64 = -0.1;
         simulation.set_simulated_timestep(INVALID_TIMESTEP);
@@ -379,7 +379,7 @@ mod tests {
 
     #[test]
     fn propagates_zero_timestep() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         const EXPECTED_TIMESTEP: f64 = 0.0;
         world.expect_set_simulated_timestep(EXPECTED_TIMESTEP);
         let mut simulation = SimulationImpl::new(world);
@@ -388,7 +388,7 @@ mod tests {
 
     #[test]
     fn returns_no_objects_when_empty() {
-        let world = Box::new(WorldMock::new());
+        let world = box WorldMock::new();
         let simulation = SimulationImpl::new(world);
         let objects = simulation.objects();
         assert!(objects.is_empty())
@@ -396,7 +396,7 @@ mod tests {
 
     #[test]
     fn converts_to_physical_body() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
@@ -423,7 +423,7 @@ mod tests {
         let object_behavior = ObjectBehaviorMock::new();
 
         let mut simulation = SimulationImpl::new(world);
-        simulation.add_object(object_description, Box::new(object_behavior));
+        simulation.add_object(object_description, box object_behavior);
     }
 
     #[test]
@@ -474,8 +474,8 @@ mod tests {
             .unwrap();
         let object_behavior = ObjectBehaviorMock::new();
 
-        let mut simulation = SimulationImpl::new(Box::new(world));
-        simulation.add_object(object_description, Box::new(object_behavior));
+        let mut simulation = SimulationImpl::new(box world);
+        simulation.add_object(object_description, box object_behavior);
     }
 
     #[should_panic]
@@ -521,8 +521,8 @@ mod tests {
             .unwrap();
         let object_behavior = ObjectBehaviorMock::new();
 
-        let mut simulation = SimulationImpl::new(Box::new(world));
-        simulation.add_object(object_description, Box::new(object_behavior));
+        let mut simulation = SimulationImpl::new(box world);
+        simulation.add_object(object_description, box object_behavior);
     }
 
     #[test]
@@ -562,14 +562,14 @@ mod tests {
             None,
         );
 
-        let mut simulation = SimulationImpl::new(Box::new(world));
-        simulation.add_object(expected_object_description, Box::new(object_behavior));
+        let mut simulation = SimulationImpl::new(box world);
+        simulation.add_object(expected_object_description, box object_behavior);
         simulation.step();
     }
 
     #[test]
     fn propagates_objects_within_sensor() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         world.expect_step();
         let expected_shape = shape();
         let expected_position = position();
@@ -621,13 +621,13 @@ mod tests {
         world.expect_body_and_return(returned_handle, Some(expected_physical_body));
 
         let mut simulation = SimulationImpl::new(world);
-        simulation.add_object(expected_object_description, Box::new(object_behavior));
+        simulation.add_object(expected_object_description, box object_behavior);
         simulation.step();
     }
 
     #[test]
     fn returns_added_object() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
@@ -657,10 +657,7 @@ mod tests {
             .build()
             .unwrap();
 
-        simulation.add_object(
-            expected_object_description.clone(),
-            Box::new(object_behavior),
-        );
+        simulation.add_object(expected_object_description.clone(), box object_behavior);
 
         let objects = simulation.objects();
         assert_eq!(1, objects.len());
@@ -679,7 +676,7 @@ mod tests {
     #[ignore]
     #[test]
     fn reproducing_spawns_object() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
@@ -721,14 +718,11 @@ mod tests {
             Vec::new(),
             Some(Action::Reproduce(
                 expected_object_description.clone(),
-                Box::new(child_object_behavior),
+                box child_object_behavior,
             )),
         );
 
-        simulation.add_object(
-            expected_object_description.clone(),
-            Box::new(object_behavior),
-        );
+        simulation.add_object(expected_object_description.clone(), box object_behavior);
 
         simulation.step();
         simulation.step();
@@ -736,7 +730,7 @@ mod tests {
 
     #[test]
     fn dying_removes_object() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
@@ -775,17 +769,14 @@ mod tests {
             Some(Action::Die),
         );
 
-        simulation.add_object(
-            expected_object_description.clone(),
-            Box::new(object_behavior),
-        );
+        simulation.add_object(expected_object_description.clone(), box object_behavior);
 
         simulation.step();
     }
 
     #[test]
     fn force_application_is_propagated() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
@@ -828,10 +819,7 @@ mod tests {
             Some(Action::ApplyForce(expected_force)),
         );
 
-        simulation.add_object(
-            expected_object_description.clone(),
-            Box::new(object_behavior),
-        );
+        simulation.add_object(expected_object_description.clone(), box object_behavior);
 
         simulation.step();
     }
@@ -839,7 +827,7 @@ mod tests {
     #[should_panic]
     #[test]
     fn panics_on_invalid_body() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
@@ -866,7 +854,7 @@ mod tests {
             .unwrap();
 
         let object_behavior = ObjectBehaviorMock::default();
-        simulation.add_object(object_description, Box::new(object_behavior));
+        simulation.add_object(object_description, box object_behavior);
         simulation.objects();
     }
 
