@@ -13,9 +13,11 @@ edition = "2018"
 nalgebra = "0.16"
 ncollide2d = "0.17"
 alga = "0.7"
+unordered-pair = "0.2"
 
 [dev-dependencies]
 nameof = "1.0"
+maplit = "1.0"
 
 [dependencies.nphysics2d]
 version = "0.9.1"

@@ -4,5 +4,4 @@ members = [
     "visualization",
     "worldgen",
     "object-behavior",
-    "pair",
 ]
