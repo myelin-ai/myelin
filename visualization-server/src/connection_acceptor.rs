@@ -139,6 +139,7 @@ mod tests {
     use std::net::{Ipv4Addr, SocketAddrV4};
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::thread::{self, panicking};
+    use websocket::message::Message;
     use websocket::ClientBuilder;
 
     const RANDOM_PORT: u16 = 0;
@@ -179,10 +180,12 @@ mod tests {
             connection_acceptor.run();
         });
 
-        let _client = ClientBuilder::new(&format!("ws://{}", address))
+        let mut client = ClientBuilder::new(&format!("ws://{}", address))
             .unwrap()
             .connect_insecure()
             .unwrap();
+
+        client.send_message(&Message::binary(&[] as &[u8])).unwrap();
     }
 
     fn localhost() -> SocketAddr {
