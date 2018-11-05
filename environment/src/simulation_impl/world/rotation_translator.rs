@@ -165,6 +165,14 @@ mod tests {
         verify_to_radians_returns_expected_result(-FRAC_PI_2, Radians::try_new(3.0 * FRAC_PI_2))
     }
 
+    #[test]
+    fn to_radians_works_with_almost_zero_value() {
+        verify_to_radians_returns_expected_result(
+            -0.0000000000000002755744675835966,
+            Radians::try_new(0.0),
+        )
+    }
+
     fn verify_to_nphysics_rotation_returns_expected_result(input: Radians, expected: f64) {
         let translator = NphysicsRotationTranslatorImpl::default();
         assert_eq!(expected, translator.to_nphysics_rotation(input));
