@@ -13,7 +13,7 @@ edition = "2018"
 nalgebra = "0.16"
 ncollide2d = "0.17"
 alga = "0.7"
-myelin-pair = { path = "../pair" }
+unordered-pair = "0.2"
 
 [dev-dependencies]
 nameof = "1.0"

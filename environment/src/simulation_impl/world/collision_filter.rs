@@ -1,12 +1,12 @@
 use alga::general::Real;
 use crate::simulation_impl::AnyHandle;
-use myelin_pair::UnorderedPair;
 use ncollide2d::broad_phase::BroadPhasePairFilter;
 use ncollide2d::world::CollisionObject;
 use nphysics2d::object::ColliderData;
 use std::collections::HashSet;
 use std::fmt::Debug;
 use std::sync::{Arc, RwLock};
+use unordered_pair::UnorderedPair;
 
 pub trait IgnoringCollisionFilter: Send + Sync + Debug {
     fn add_ignored_handle(&mut self, handle: AnyHandle);

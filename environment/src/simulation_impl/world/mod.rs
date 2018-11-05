@@ -433,7 +433,6 @@ mod tests {
     use super::*;
     use crate::object_builder::PolygonBuilder;
     use crate::simulation_impl::world::collision_filter::IgnoringCollisionFilterMock;
-    use myelin_pair::UnorderedPair;
     use nphysics2d::object::BodySet;
     use nphysics2d::solver::IntegrationParameters;
     use std::cell::RefCell;
@@ -441,6 +440,7 @@ mod tests {
     use std::f64::consts::FRAC_PI_2;
     use std::sync::RwLock;
     use std::thread::panicking;
+    use unordered_pair::UnorderedPair;
 
     const DEFAULT_TIMESTEP: f64 = 1.0;
 
