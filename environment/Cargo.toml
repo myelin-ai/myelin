@@ -14,11 +14,15 @@ nalgebra = "0.16"
 ncollide2d = "0.17"
 serde = "1.0"
 serde_derive = "1.0"
+alga = "0.7"
 
 [dependencies.nphysics2d]
 version = "0.9.1"
 default-features = false
 features = ["use-wasm-bindgen"]
+
+[dev-dependencies]
+nameof = "1.0"
 
 [features]
 use-mocks = []

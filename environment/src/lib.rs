@@ -15,6 +15,10 @@
 #[macro_use]
 extern crate serde_derive;
 
+#[cfg_attr(test, macro_use)]
+#[cfg(test)]
+extern crate nameof;
+
 pub mod object;
 pub mod object_builder;
 pub mod simulation_impl;
