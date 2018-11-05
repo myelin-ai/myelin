@@ -12,7 +12,7 @@ use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 
 /// A tuple struct representing an unordered pair
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq)]
 pub struct UnorderedPair<T>(pub T, pub T);
 
 impl<T> From<(T, T)> for UnorderedPair<T> {

@@ -433,6 +433,7 @@ mod tests {
     use super::*;
     use crate::object_builder::PolygonBuilder;
     use crate::simulation_impl::world::collision_filter::IgnoringCollisionFilterMock;
+    use myelin_pair::UnorderedPair;
     use nphysics2d::object::BodySet;
     use nphysics2d::solver::IntegrationParameters;
     use std::cell::RefCell;
@@ -779,10 +780,11 @@ mod tests {
         };
         let expected_handle = world.add_body(close_body);
 
-        let mut expected_is_valid_pairs = HashMap::new();
-        expected_is_valid_pairs.insert((handle_one.into(), sensor_handle.into()), true);
-        expected_is_valid_pairs.insert((handle_one.into(), expected_handle.into()), true);
-        expected_is_valid_pairs.insert((sensor_handle.into(), expected_handle.into()), true);
+        let expected_is_valid_pairs = hashmap!{
+            UnorderedPair(handle_one.into(), sensor_handle.into()) => true,
+            UnorderedPair(handle_one.into(), expected_handle.into()) => true,
+            UnorderedPair(sensor_handle.into(), expected_handle.into()) => true,
+        };
 
         collision_filter
             .write()
@@ -828,10 +830,11 @@ mod tests {
         };
         let expected_handle = world.add_body(close_body);
 
-        let mut expected_is_valid_pairs = HashMap::new();
-        expected_is_valid_pairs.insert((handle_one.into(), sensor_handle.into()), true);
-        expected_is_valid_pairs.insert((handle_one.into(), expected_handle.into()), true);
-        expected_is_valid_pairs.insert((sensor_handle.into(), expected_handle.into()), true);
+        let expected_is_valid_pairs = hashmap!{
+            UnorderedPair(handle_one.into(), sensor_handle.into()) => true,
+            UnorderedPair(handle_one.into(), expected_handle.into()) => true,
+            UnorderedPair(sensor_handle.into(), expected_handle.into()) => true,
+        };
 
         collision_filter
             .write()
@@ -877,10 +880,11 @@ mod tests {
         };
         let handle_two = world.add_body(close_body);
 
-        let mut expected_is_valid_pairs = HashMap::new();
-        expected_is_valid_pairs.insert((handle_one.into(), sensor_handle.into()), true);
-        expected_is_valid_pairs.insert((handle_one.into(), handle_two.into()), true);
-        expected_is_valid_pairs.insert((sensor_handle.into(), handle_two.into()), true);
+        let expected_is_valid_pairs = hashmap!{
+            UnorderedPair(handle_one.into(), sensor_handle.into()) => true,
+            UnorderedPair(handle_one.into(), handle_two.into()) => true,
+            UnorderedPair(sensor_handle.into(), handle_two.into()) => true,
+        };
 
         collision_filter
             .write()
@@ -930,19 +934,14 @@ mod tests {
             .attach_sensor(close_body_handle, sensor())
             .expect("body handle was invalid");
 
-        let mut expected_is_valid_pairs = HashMap::new();
-        expected_is_valid_pairs.insert((handle_one.into(), sensor_handle.into()), true);
-        expected_is_valid_pairs.insert((handle_one.into(), close_body_handle.into()), true);
-        expected_is_valid_pairs.insert((handle_one.into(), close_body_sensor_handle.into()), true);
-        expected_is_valid_pairs.insert((close_body_handle.into(), sensor_handle.into()), true);
-        expected_is_valid_pairs.insert(
-            (close_body_sensor_handle.into(), sensor_handle.into()),
-            true,
-        );
-        expected_is_valid_pairs.insert(
-            (close_body_handle.into(), close_body_sensor_handle.into()),
-            true,
-        );
+        let expected_is_valid_pairs = hashmap!{
+            UnorderedPair(handle_one.into(), sensor_handle.into()) => true,
+            UnorderedPair(handle_one.into(), close_body_handle.into()) => true,
+            UnorderedPair(handle_one.into(), close_body_sensor_handle.into()) => true,
+            UnorderedPair(close_body_handle.into(), sensor_handle.into()) => true,
+            UnorderedPair(close_body_handle.into(), close_body_sensor_handle.into()) => true,
+            UnorderedPair(close_body_sensor_handle.into(), sensor_handle.into()) => true,
+        };
 
         collision_filter
             .write()
@@ -992,19 +991,15 @@ mod tests {
             .attach_sensor(close_body_handle, sensor())
             .expect("body handle was invalid");
 
-        let mut expected_is_valid_pairs = HashMap::new();
-        expected_is_valid_pairs.insert((handle_one.into(), sensor_handle.into()), true);
-        expected_is_valid_pairs.insert((handle_one.into(), close_body_handle.into()), true);
-        expected_is_valid_pairs.insert((handle_one.into(), close_body_sensor_handle.into()), true);
-        expected_is_valid_pairs.insert((close_body_handle.into(), sensor_handle.into()), true);
-        expected_is_valid_pairs.insert(
-            (close_body_sensor_handle.into(), sensor_handle.into()),
-            true,
-        );
-        expected_is_valid_pairs.insert(
-            (close_body_handle.into(), close_body_sensor_handle.into()),
-            true,
-        );
+        let expected_is_valid_pairs = hashmap!{
+            UnorderedPair(handle_one.into(), sensor_handle.into()) => true,
+            UnorderedPair(handle_one.into(), close_body_handle.into()) => true,
+            UnorderedPair(handle_one.into(), close_body_sensor_handle.into()) => true,
+            UnorderedPair(handle_one.into(), sensor_handle.into()) => true,
+            UnorderedPair(close_body_handle.into(), sensor_handle.into()) => true,
+            UnorderedPair(close_body_sensor_handle.into(), sensor_handle.into()) => true,
+            UnorderedPair(close_body_handle.into(), close_body_sensor_handle.into()) => true,
+        };
 
         collision_filter
             .write()
