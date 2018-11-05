@@ -143,7 +143,7 @@ mod tests {
             objects: Vec::new(),
         };
         let view_mock = ViewMock::new(expected_view_model);
-        let presenter = CanvasPresenter::new(Box::new(view_mock));
+        let presenter = CanvasPresenter::new(box view_mock);
         presenter.present_objects(&objects);
     }
 
@@ -164,7 +164,7 @@ mod tests {
             }],
         };
         let view_mock = ViewMock::new(expected_view_model);
-        let presenter = CanvasPresenter::new(Box::new(view_mock));
+        let presenter = CanvasPresenter::new(box view_mock);
         presenter.present_objects(&object_description);
     }
 
@@ -185,7 +185,7 @@ mod tests {
             }],
         };
         let view_mock = ViewMock::new(expected_view_model);
-        let presenter = CanvasPresenter::new(Box::new(view_mock));
+        let presenter = CanvasPresenter::new(box view_mock);
         presenter.present_objects(&object_description);
     }
 
@@ -218,7 +218,7 @@ mod tests {
             }],
         };
         let view_mock = ViewMock::new(expected_view_model);
-        let presenter = CanvasPresenter::new(Box::new(view_mock));
+        let presenter = CanvasPresenter::new(box view_mock);
         presenter.present_objects(&object_description);
     }
 }

@@ -222,7 +222,7 @@ where
     T: ObjectBehavior + Clone + 'static,
 {
     default fn clone_box(&self) -> Box<dyn ObjectBehavior> {
-        Box::new(self.clone())
+        box self.clone()
     }
 }
 
