@@ -64,9 +64,10 @@ mod tests {
     }
 
     impl Presenter for PresenterMock {
-        fn present_delta(&mut self, delta: ViewModelDelta) {
+        fn present_delta(&mut self, delta: ViewModelDelta) -> Result<(), Box<dyn Error>> {
             *self.present_delta_was_called.borrow_mut() = true;
             assert_eq!(self.expected_view_model_delta, delta);
+            Ok(())
         }
     }
 

@@ -55,9 +55,10 @@ mod test {
     }
 
     impl Controller for ControllerMock {
-        fn on_message(&mut self, message: &[u8]) {
+        fn on_message(&mut self, message: &[u8]) -> Result<(), Box<dyn Error>> {
             *self.on_message_was_called.borrow_mut() = true;
             assert_eq!(self.expected_message, message);
+            Ok(())
         }
     }
 
