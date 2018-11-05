@@ -16,6 +16,10 @@
 #[cfg(test)]
 extern crate nameof;
 
+#[cfg_attr(test, macro_use)]
+#[cfg(test)]
+extern crate maplit;
+
 pub mod object;
 pub mod object_builder;
 pub mod simulation_impl;
