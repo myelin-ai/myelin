@@ -34,7 +34,10 @@ $applicationName = "myelin_visualization_client"
 
 cargo build --target wasm32-unknown-unknown $releaseFlag
 
-Remove-Item -Recurse -Path "$targetDir" -ErrorAction SilentlyContinue
+if (Test-Path -Path "$targetDir") {
+    Remove-Item -Recurse -Path "$targetDir"
+}
+
 New-Item -ItemType directory -Path "$targetDir"
 wasm-bindgen ../target/wasm32-unknown-unknown/debug/$applicationName.wasm `
              --out-dir "$targetDir"
