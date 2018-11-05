@@ -27,6 +27,9 @@ use std::sync::{Arc, RwLock};
 
 type PhysicsType = f64;
 
+const COLLIDER_MARGIN: PhysicsType = 0.04;
+const DEFAULT_OBJECT_DENSITY: PhysicsType = 0.1;
+
 pub mod collision_filter;
 pub mod force_applier;
 pub mod rotation_translator;
@@ -252,7 +255,7 @@ impl World for NphysicsWorld {
 
     fn add_body(&mut self, body: PhysicalBody) -> BodyHandle {
         let shape = translate_shape(&body.shape);
-        let local_inertia = shape.inertia(0.1);
+        let local_inertia = shape.inertia(DEFAULT_OBJECT_DENSITY);
         let local_center_of_mass = shape.center_of_mass();
 
         let isometry = translate_position(&body.position, &*self.rotation_translator);
@@ -260,7 +263,7 @@ impl World for NphysicsWorld {
 
         let handle = match body.mobility {
             Mobility::Immovable => self.physics_world.add_collider(
-                0.04,
+                COLLIDER_MARGIN,
                 shape,
                 NphysicsBodyHandle::ground(),
                 isometry,
@@ -278,7 +281,7 @@ impl World for NphysicsWorld {
                     .expect("Invalid body handle");
                 set_velocity(&mut rigid_body, &velocity);
                 self.physics_world.add_collider(
-                    0.04,
+                    COLLIDER_MARGIN,
                     shape,
                     rigid_body_handle,
                     Isometry::identity(),
