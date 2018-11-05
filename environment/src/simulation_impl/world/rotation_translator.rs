@@ -175,7 +175,7 @@ mod tests {
     #[test]
     fn to_radians_works_with_almost_zero_value() {
         verify_to_radians_returns_expected_result(
-            -0.0000000000000002755744675835966,
+            -0.000_000_000_000_000_275_574_467_583_596_6,
             Radians::try_new(0.0),
         )
     }
