@@ -1,6 +1,7 @@
 //! Functionality to communicate with the controller
 //! once it's running.
 
+use std::error::Error;
 use std::fmt::Debug;
 use wasm_bindgen::prelude::*;
 
@@ -16,7 +17,7 @@ pub struct InputHandler {
 }
 
 pub(crate) trait Controller: Debug {
-    fn on_message(&mut self, message: &[u8]);
+    fn on_message(&mut self, message: &[u8]) -> Result<(), Box<dyn Error>>;
 }
 
 #[wasm_bindgen]
@@ -26,7 +27,9 @@ impl InputHandler {
     }
 
     pub fn on_message(&mut self, message: &[u8]) {
-        self.controller.on_message(message);
+        if let Err(err) = self.controller.on_message(message) {
+            wasm_bindgen::throw_str(&format!("{}", err));
+        }
     }
 }
 
@@ -52,9 +55,10 @@ mod test {
     }
 
     impl Controller for ControllerMock {
-        fn on_message(&mut self, message: &[u8]) {
+        fn on_message(&mut self, message: &[u8]) -> Result<(), Box<dyn Error>> {
             *self.on_message_was_called.borrow_mut() = true;
             assert_eq!(self.expected_message, message);
+            Ok(())
         }
     }
 
