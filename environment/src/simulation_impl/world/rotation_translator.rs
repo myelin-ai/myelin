@@ -18,10 +18,17 @@ impl NphysicsRotationTranslator for NphysicsRotationTranslatorImpl {
     }
 
     fn to_radians(&self, nphysics_rotation: f64) -> Option<Radians> {
-        if nphysics_rotation >= 0.0 {
-            Radians::try_new(nphysics_rotation)
+        const EPSILON: f64 = 1.0e-15;
+        let rounded_rotation = if nphysics_rotation.abs() < EPSILON {
+            0.0
         } else {
-            Radians::try_new((2.0 * PI) + nphysics_rotation)
+            nphysics_rotation
+        };
+
+        if rounded_rotation >= 0.0 {
+            Radians::try_new(rounded_rotation)
+        } else {
+            Radians::try_new((2.0 * PI) + rounded_rotation)
         }
     }
 }
@@ -171,6 +178,14 @@ mod tests {
             -0.0000000000000002755744675835966,
             Radians::try_new(0.0),
         )
+    }
+
+    #[test]
+    fn to_radians_works_with_value_close_to_epsilon() {
+        let translator = NphysicsRotationTranslatorImpl::default();
+        assert!(translator
+            .to_radians(-0.000_000_000_000_002_755_744_675_835_966)
+            .is_some());
     }
 
     fn verify_to_nphysics_rotation_returns_expected_result(input: Radians, expected: f64) {
