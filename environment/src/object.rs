@@ -4,6 +4,7 @@
 //! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
 //! [`ObjectDescription`]: ./struct.ObjectDescription.html
 
+use crate::simulation_impl::BodyHandle;
 use std::f64::consts::PI;
 use std::fmt::Debug;
 
@@ -28,6 +29,8 @@ pub enum Action {
     ApplyForce(Force),
     /// Create a new object at the specified location
     Reproduce(ObjectDescription, Box<dyn ObjectBehavior>),
+    /// Destroys another object
+    Destroy(BodyHandle),
     /// Destroy the object
     Die,
 }
@@ -39,6 +42,7 @@ impl Clone for Action {
             Action::Reproduce(object_description, object_behavior) => {
                 Action::Reproduce(object_description.clone(), object_behavior.clone_box())
             }
+            Action::Destroy(body_handle) => Action::Destroy(body_handle.clone()),
             Action::Die => Action::Die,
         }
     }

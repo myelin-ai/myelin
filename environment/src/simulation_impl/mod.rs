@@ -116,6 +116,9 @@ impl SimulationImpl {
             Action::ApplyForce(force) => {
                 self.world.apply_force(body_handle, force)?;
             }
+            Action::Destroy(body_handle) => {
+                self.world.remove_body(body_handle)?;
+            }
             Action::Die => {
                 self.world.remove_body(body_handle)?;
                 self.non_physical_object_data.remove(&body_handle)?;
