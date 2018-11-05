@@ -450,8 +450,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter,
         );
         let invalid_handle = BodyHandle(1337);
@@ -466,8 +466,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter,
         );
         let invalid_handle = BodyHandle(123);
@@ -485,8 +485,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter.clone(),
         );
         let movable_body = movable_body(Radians::try_new(3.0).unwrap());
@@ -511,8 +511,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter.clone(),
         );
         let body = immovable_body(Radians::try_new(3.0).unwrap());
@@ -537,8 +537,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter.clone(),
         );
         let expected_body = movable_body(Radians::try_new(3.0).unwrap());
@@ -563,8 +563,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter.clone(),
         );
         let expected_body = movable_body(Radians::default());
@@ -593,8 +593,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter.clone(),
         );
         let expected_body = movable_body(Radians::try_new(3.0).unwrap());
@@ -621,8 +621,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter.clone(),
         );
         let rigid_object = movable_body(Radians::try_new(3.0).unwrap());
@@ -653,8 +653,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter.clone(),
         );
         let expected_body = movable_body(Radians::try_new(3.0).unwrap());
@@ -680,8 +680,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter.clone(),
         );
         let expected_body = immovable_body(Radians::try_new(3.0).unwrap());
@@ -705,8 +705,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter,
         );
         let body = immovable_body(Radians::default());
@@ -723,8 +723,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter,
         );
         let body = movable_body(Radians::default());
@@ -759,8 +759,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter.clone(),
         );
         let body = movable_body(Radians::default());
@@ -808,8 +808,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter.clone(),
         );
         let body = movable_body(Radians::default());
@@ -857,8 +857,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter.clone(),
         );
         let body = movable_body(Radians::default());
@@ -907,8 +907,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter.clone(),
         );
         let body = movable_body(Radians::default());
@@ -969,8 +969,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter.clone(),
         );
         let body = movable_body(Radians::default());
@@ -1027,8 +1027,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter,
         );
         let invalid_handle = BodyHandle(132_144);
@@ -1043,8 +1043,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter,
         );
         let invalid_handle = SensorHandle(112_358);
@@ -1064,8 +1064,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter.clone(),
         );
 
@@ -1103,8 +1103,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter.clone(),
         );
         world.set_simulated_timestep(2.0);
@@ -1145,8 +1145,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter.clone(),
         );
         let expected_body = immovable_body(Radians::try_new(FRAC_PI_2).unwrap());
@@ -1177,8 +1177,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter.clone(),
         );
         let body = immovable_body(Radians::try_new(FRAC_PI_2).unwrap());
@@ -1217,8 +1217,8 @@ mod tests {
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
-            Box::new(rotation_translator),
-            Box::new(force_applier),
+            box rotation_translator,
+            box force_applier,
             collision_filter,
         );
         let expected_body = movable_body(Radians::try_new(FRAC_PI_2).unwrap());
