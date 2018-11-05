@@ -22,6 +22,9 @@ Promise.all([
     }
 
     websocket.addEventListener('message', onMessage)
+    // Temporary solution: the server waits for any message before
+    // it starts sending deltas, so that the client doesn't miss any of them
+    websocket.send(new ArrayBuffer(0))
 }).catch((reason) => {
     console.error(reason)
     document.body.appendChild(document.createTextNode('Failed to initialize visualization'))

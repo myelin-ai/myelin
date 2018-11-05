@@ -40,7 +40,8 @@ impl ConnectionAcceptor for WebsocketConnectionAcceptor {
             let client_factory_fn = self.client_factory_fn.clone();
             (self.thread_spawn_fn)(box move || {
                 if should_accept(&request) {
-                    if let Ok(client_stream) = request.accept() {
+                    if let Ok(mut client_stream) = request.accept() {
+                        client_stream.recv_message().unwrap();
                         let mut client = (client_factory_fn)(client_stream);
                         client.run();
                     }
