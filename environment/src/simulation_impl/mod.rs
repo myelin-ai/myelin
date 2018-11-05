@@ -775,6 +775,54 @@ mod tests {
     }
 
     #[test]
+    fn destroy_removes_object() {
+        let mut world = box WorldMock::new();
+        let expected_shape = shape();
+        let expected_position = position();
+        let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
+
+        let expected_physical_body = PhysicalBody {
+            shape: expected_shape.clone(),
+            position: expected_position.clone(),
+            mobility: expected_mobility.clone(),
+            passable: expected_passable,
+        };
+
+        let handle_one = BodyHandle(1);
+        let handle_two = BodyHandle(2);
+        world.expect_add_body_and_return(expected_physical_body.clone(), handle_one);
+        world.expect_body_and_return(handle_one, Some(expected_physical_body.clone()));
+        world.expect_is_body_passable_and_return(handle_one, expected_passable);
+        world.expect_step();
+        world.expect_remove_body_and_return(handle_two, Some(expected_physical_body));
+
+        let mut simulation = SimulationImpl::new(world);
+
+        let mut object_behavior = ObjectBehaviorMock::new();
+
+        let expected_object_description = ObjectBuilder::new()
+            .location(expected_position.location.x, expected_position.location.y)
+            .rotation(expected_position.rotation)
+            .shape(expected_shape)
+            .kind(Kind::Organism)
+            .mobility(expected_mobility)
+            .passable(expected_passable)
+            .build()
+            .unwrap();
+
+        object_behavior.expect_step_and_return(
+            expected_object_description.clone(),
+            Vec::new(),
+            Some(Action::Destroy(handle_two)),
+        );
+
+        simulation.add_object(expected_object_description.clone(), box object_behavior);
+
+        simulation.step();
+    }
+
+    #[test]
     fn force_application_is_propagated() {
         let mut world = box WorldMock::new();
         let expected_shape = shape();
