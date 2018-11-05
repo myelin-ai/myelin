@@ -32,7 +32,7 @@ then
   echo "--no-webpack    Builds without webpack"
   echo "--release       Builds in release mode"
   echo "--help          Prints this help"
-  exit 1
+  exit
 fi
 
 crate_dir=$(cd -- "$(dirname -- "$0")/.." && pwd)
