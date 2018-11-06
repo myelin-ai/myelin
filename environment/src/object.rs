@@ -174,7 +174,7 @@ impl Radians {
 /// [`Simulation`]: ../simulation/trait.Simulation.html
 #[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct Location {
-    /// The y component of the [`Location`]
+    /// The x component of the [`Location`]
     pub x: u32,
     /// The y component of the [`Location`]
     pub y: u32,
@@ -184,7 +184,7 @@ pub struct Location {
 /// a two dimensional vector
 #[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct Velocity {
-    /// The y component of the [`Velocity`]
+    /// The x component of the [`Velocity`]
     pub x: i32,
     /// The y component of the [`Velocity`]
     pub y: i32,
@@ -217,7 +217,7 @@ pub struct Force {
 /// Vector describing linear force
 #[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct LinearForce {
-    /// The y component of the [`LinearForce`]
+    /// The x component of the [`LinearForce`]
     pub x: i32,
     /// The y component of the [`LinearForce`]
     pub y: i32,
