@@ -51,7 +51,7 @@ impl IgnoringCollisionFilter for IgnoringCollisionFilterImpl {
 
 /// A wrapper around [`IgnoringCollisionFilter`] which can be passed to nphysics.
 #[derive(Debug)]
-pub struct IgnoringCollisionFilterWrapper {
+pub(crate) struct IgnoringCollisionFilterWrapper {
     pub(crate) collision_filter: Arc<RwLock<dyn IgnoringCollisionFilter>>,
 }
 
