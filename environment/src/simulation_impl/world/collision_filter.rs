@@ -11,7 +11,9 @@ use std::sync::{Arc, RwLock};
 use unordered_pair::UnorderedPair;
 
 /// A filter for the broad phase that checks if a pair should
-/// be examined more closely for collisions.
+/// be examined more closely for collisions. This filter allows the explicit
+/// exclusion of body or sensor handles, which will have all their collisions
+/// marked as invalid.  
 /// Implements [`BroadPhasePairFilter`] through [`IgnoringCollisionFilterWrapper`].
 pub trait IgnoringCollisionFilter: Send + Sync + Debug {
     /// Registers a handle that should be ignored by this filter.
@@ -28,7 +30,10 @@ pub trait IgnoringCollisionFilter: Send + Sync + Debug {
 }
 
 /// A filter for the broad phase that checks if a pair should
-/// be examined more closely for collisions.
+/// be examined more closely for collisions. This filter allows the explicit
+/// exclusion of body or sensor handles, which will have all their collisions
+/// marked as invalid.  
+/// Implements [`BroadPhasePairFilter`] through [`IgnoringCollisionFilterWrapper`].
 #[derive(Debug, Default)]
 pub struct IgnoringCollisionFilterImpl {
     ignored_handles: HashSet<AnyHandle>,
