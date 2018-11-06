@@ -223,7 +223,7 @@ impl ObjectBuilder {
 /// use myelin_environment::object_builder::PolygonBuilder;
 /// let builder = PolygonBuilder::default();
 /// ```
-/// 
+///
 /// [`Polygon`]: ../object/struct.Polygon.html
 #[derive(Default, Debug)]
 pub struct PolygonBuilder {
