@@ -19,12 +19,12 @@ pub trait IgnoringCollisionFilter: Send + Sync + Debug {
     fn add_ignored_handle(&mut self, handle: AnyHandle);
     /// Checks if a handle has been previously registered as ignored with
     /// [`add_ignored_handle`].
-    /// 
+    ///
     /// [`add_ignored_handle`]: #tymethod.add_ignored_handle
     fn is_handle_ignored(&self, handle: AnyHandle) -> bool;
     /// Unregisters a handle that has been previously registered as ignored with
     /// [`add_ignored_handle`].
-    /// 
+    ///
     /// [`add_ignored_handle`]: #tymethod.add_ignored_handle
     fn remove_ignored_handle(&mut self, handle: AnyHandle);
     /// Checks if the pair should be considered a collision or not.
@@ -148,6 +148,7 @@ mod mock {
     }
 
     impl IgnoringCollisionFilterMock {
+        #[allow(dead_code)]
         pub fn expect_add_ignored_handle(&mut self, handle: AnyHandle) -> &mut Self {
             self.expect_add_ignored_handle = Some(handle);
             self
@@ -161,6 +162,7 @@ mod mock {
             self
         }
 
+        #[allow(dead_code)]
         pub fn expect_remove_ignored_handle(&mut self, handle: AnyHandle) -> &mut Self {
             self.expect_remove_ignored_handle = Some(handle);
             self

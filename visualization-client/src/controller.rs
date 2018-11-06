@@ -152,6 +152,6 @@ mod tests {
         let presenter = PresenterMock::new(view_model_delta.clone());
         let mut controller = ControllerImpl::new(box presenter, box view_model_deserializer);
 
-        controller.on_message(&data);
+        controller.on_message(&data).unwrap();
     }
 }

@@ -458,7 +458,7 @@ mod tests {
         let rotation_translator = NphysicsRotationTranslatorMock::default();
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
-        let mut world = NphysicsWorld::with_timestep(
+        let world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
@@ -1045,7 +1045,7 @@ mod tests {
         let rotation_translator = NphysicsRotationTranslatorMock::default();
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
-        let mut world = NphysicsWorld::with_timestep(
+        let world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
