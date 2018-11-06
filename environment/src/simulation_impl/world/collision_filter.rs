@@ -27,6 +27,8 @@ pub trait IgnoringCollisionFilter: Send + Sync + Debug {
     fn is_pair_valid(&self, pair: UnorderedPair<AnyHandle>) -> bool;
 }
 
+/// A filter for the broad phase that checks if a pair should
+/// be examined more closely for collisions.
 #[derive(Debug, Default)]
 pub struct IgnoringCollisionFilterImpl {
     ignored_handles: HashSet<AnyHandle>,
