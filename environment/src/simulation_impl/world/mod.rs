@@ -176,13 +176,16 @@ impl NphysicsWorld {
 ///
 /// [`Radians`]: ../../object/struct.Radians.html
 pub trait NphysicsRotationTranslator: fmt::Debug {
+    /// Converts an `orientation` into a representation that is suitable for nphysics
     fn to_nphysics_rotation(&self, orientation: Radians) -> f64;
+    /// Converts a rotation that originates from nphysics into [`Radians`]
     fn to_radians(&self, nphysics_rotation: f64) -> Option<Radians>;
 }
 
 /// A [`ForceGenerator`] that applies a given force exactly once
 pub trait SingleTimeForceApplier: fmt::Debug + ForceGenerator<PhysicsType> {
-    ///
+    /// Registers a [`Force`] to be applied to the body identified by `handle`
+    /// in the next step
     fn register_force(&mut self, handle: NphysicsBodyHandle, force: Force);
 }
 

@@ -92,8 +92,6 @@ pub struct ObjectDescription {
 
 /// An object's mobility and, if present, its
 /// current [`Velocity`]
-///
-/// [`Velocity`]: ./struct.Velocity.html
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Mobility {
     /// The object cannot have any velocity as
