@@ -273,6 +273,7 @@ pub trait World: fmt::Debug {
     /// does not block the thread if called faster than expected.
     fn set_simulated_timestep(&mut self, timestep: f64);
 
+    /// Checks if the given [`BodyHandle`] is marked passable
     fn is_body_passable(&self, body_handle: BodyHandle) -> bool;
 }
 
