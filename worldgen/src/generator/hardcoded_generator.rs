@@ -52,7 +52,7 @@ impl HardcodedGenerator {
     ///     Box::new(SimulationImpl::new(world))
     /// });
     ///
-    /// let object_factory = Box::new(|_: Kind| -> Box<dyn ObjectBehavior> { Box::new(Static::new()) });
+    /// let object_factory = Box::new(|_: Kind| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
     /// let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
     /// let generated_simulation = worldgen.generate();
     pub fn new(simulation_factory: SimulationFactory, object_factory: ObjectFactory) -> Self {
@@ -82,9 +82,9 @@ impl HardcodedGenerator {
     }
 
     fn populate_with_water(&self, simulation: &mut dyn Simulation) {
-        let object_description = ObjectBuilder::new()
+        let object_description = ObjectBuilder::default()
             .shape(
-                PolygonBuilder::new()
+                PolygonBuilder::default()
                     .vertex(-180, 60)
                     .vertex(0, 200)
                     .vertex(180, 60)
@@ -147,9 +147,9 @@ impl HardcodedGenerator {
 fn build_terrain(location: (u32, u32), width: i32, length: i32) -> ObjectDescription {
     let x_offset = width / 2;
     let y_offset = length / 2;
-    ObjectBuilder::new()
+    ObjectBuilder::default()
         .shape(
-            PolygonBuilder::new()
+            PolygonBuilder::default()
                 .vertex(-x_offset, -y_offset)
                 .vertex(x_offset, -y_offset)
                 .vertex(x_offset, y_offset)
@@ -165,9 +165,9 @@ fn build_terrain(location: (u32, u32), width: i32, length: i32) -> ObjectDescrip
 }
 
 fn build_plant(x: u32, y: u32) -> ObjectDescription {
-    ObjectBuilder::new()
+    ObjectBuilder::default()
         .shape(
-            PolygonBuilder::new()
+            PolygonBuilder::default()
                 .vertex(-10, -10)
                 .vertex(10, -10)
                 .vertex(10, 10)
@@ -179,7 +179,7 @@ fn build_plant(x: u32, y: u32) -> ObjectDescription {
         .mobility(Mobility::Immovable)
         .kind(Kind::Plant)
         .sensor(Sensor {
-            shape: PolygonBuilder::new()
+            shape: PolygonBuilder::default()
                 .vertex(-25, -25)
                 .vertex(25, -25)
                 .vertex(25, 25)
@@ -194,9 +194,9 @@ fn build_plant(x: u32, y: u32) -> ObjectDescription {
 }
 
 fn build_organism(x: u32, y: u32) -> ObjectDescription {
-    ObjectBuilder::new()
+    ObjectBuilder::default()
         .shape(
-            PolygonBuilder::new()
+            PolygonBuilder::default()
                 .vertex(25, 0)
                 .vertex(-25, 20)
                 .vertex(-5, 0)
@@ -209,7 +209,7 @@ fn build_organism(x: u32, y: u32) -> ObjectDescription {
         .mobility(Mobility::Movable(Velocity::default()))
         .kind(Kind::Organism)
         .sensor(Sensor {
-            shape: PolygonBuilder::new()
+            shape: PolygonBuilder::default()
                 .vertex(-25, -25)
                 .vertex(25, -25)
                 .vertex(25, 25)

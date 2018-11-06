@@ -1224,7 +1224,7 @@ mod tests {
 
     fn sensor() -> Sensor {
         Sensor {
-            shape: PolygonBuilder::new()
+            shape: PolygonBuilder::default()
                 .vertex(-10, -10)
                 .vertex(10, -10)
                 .vertex(10, 10)
@@ -1245,7 +1245,7 @@ mod tests {
                 rotation: orientation,
             },
             mobility: Mobility::Movable(Velocity { x: 1, y: 1 }),
-            shape: PolygonBuilder::new()
+            shape: PolygonBuilder::default()
                 .vertex(-5, -5)
                 .vertex(-5, 5)
                 .vertex(5, 5)
@@ -1258,7 +1258,7 @@ mod tests {
 
     fn immovable_body(orientation: Radians) -> PhysicalBody {
         PhysicalBody {
-            shape: PolygonBuilder::new()
+            shape: PolygonBuilder::default()
                 .vertex(-100, -100)
                 .vertex(100, -100)
                 .vertex(100, 100)

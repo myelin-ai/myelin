@@ -12,12 +12,6 @@ pub struct SingleTimeForceApplierImpl {
     forces_to_apply: HashMap<BodyHandle, Force>,
 }
 
-impl SingleTimeForceApplierImpl {
-    pub fn new() -> Self {
-        Self::default()
-    }
-}
-
 impl SingleTimeForceApplier for SingleTimeForceApplierImpl {
     fn register_force(&mut self, handle: BodyHandle, force: Force) {
         self.forces_to_apply.insert(handle, force);
@@ -88,7 +82,7 @@ mod tests {
     #[test]
     fn can_be_injected() {
         let rotation_translator = NphysicsRotationTranslatorImpl::default();
-        let force_applier = SingleTimeForceApplierImpl::new();
+        let force_applier = SingleTimeForceApplierImpl::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let _world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
@@ -258,7 +252,7 @@ mod tests {
                 rotation: Radians::default(),
             },
             mobility: Mobility::Movable(Velocity::default()),
-            shape: PolygonBuilder::new()
+            shape: PolygonBuilder::default()
                 .vertex(-5, -5)
                 .vertex(-5, 5)
                 .vertex(5, 5)

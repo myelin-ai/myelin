@@ -409,7 +409,7 @@ mod tests {
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
 
-        let object_description = ObjectBuilder::new()
+        let object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
@@ -442,7 +442,7 @@ mod tests {
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
 
         let expected_sensor = Sensor {
-            shape: PolygonBuilder::new()
+            shape: PolygonBuilder::default()
                 .vertex(-5, -5)
                 .vertex(5, -5)
                 .vertex(5, 5)
@@ -461,7 +461,7 @@ mod tests {
             sensor_handle,
         );
 
-        let object_description = ObjectBuilder::new()
+        let object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
@@ -495,7 +495,7 @@ mod tests {
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
 
         let sensor = Sensor {
-            shape: PolygonBuilder::new()
+            shape: PolygonBuilder::default()
                 .vertex(-5, -5)
                 .vertex(5, -5)
                 .vertex(5, 5)
@@ -509,7 +509,7 @@ mod tests {
         };
         world.expect_attach_sensor_and_return(returned_handle, sensor, None);
 
-        let object_description = ObjectBuilder::new()
+        let object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
@@ -543,7 +543,7 @@ mod tests {
         world.expect_body_and_return(returned_handle, Some(expected_physical_body));
         world.expect_is_body_passable_and_return(returned_handle.into(), expected_passable);
 
-        let expected_object_description = ObjectBuilder::new()
+        let expected_object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
@@ -601,7 +601,7 @@ mod tests {
             Some(vec![returned_handle]),
         );
 
-        let expected_object_description = ObjectBuilder::new()
+        let expected_object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
@@ -645,7 +645,7 @@ mod tests {
         let mut simulation = SimulationImpl::new(world);
         let object_behavior = ObjectBehaviorMock::new();
 
-        let expected_object_description = ObjectBuilder::new()
+        let expected_object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
@@ -695,7 +695,7 @@ mod tests {
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
-        let expected_object_description = ObjectBuilder::new()
+        let expected_object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
@@ -751,7 +751,7 @@ mod tests {
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
-        let expected_object_description = ObjectBuilder::new()
+        let expected_object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
@@ -801,7 +801,7 @@ mod tests {
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
-        let expected_object_description = ObjectBuilder::new()
+        let expected_object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
@@ -842,7 +842,7 @@ mod tests {
         world.expect_body_and_return(returned_handle, None);
         let mut simulation = SimulationImpl::new(world);
 
-        let object_description = ObjectBuilder::new()
+        let object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
@@ -857,7 +857,7 @@ mod tests {
     }
 
     fn shape() -> Polygon {
-        PolygonBuilder::new()
+        PolygonBuilder::default()
             .vertex(-5, -5)
             .vertex(5, -5)
             .vertex(5, 5)
