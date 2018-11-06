@@ -261,9 +261,9 @@ mod tests {
     }
 
     fn object_description() -> ObjectDescription {
-        ObjectBuilder::new()
+        ObjectBuilder::default()
             .shape(
-                PolygonBuilder::new()
+                PolygonBuilder::default()
                     .vertex(-10, -10)
                     .vertex(10, -10)
                     .vertex(10, 10)

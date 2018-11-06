@@ -124,7 +124,7 @@ mod tests {
     fn object_description_delta() -> ObjectDescriptionDelta {
         ObjectDescriptionDelta {
             shape: Some(
-                PolygonBuilder::new()
+                PolygonBuilder::default()
                     .vertex(-5, -5)
                     .vertex(5, -5)
                     .vertex(5, 5)

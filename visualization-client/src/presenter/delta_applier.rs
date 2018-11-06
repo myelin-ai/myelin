@@ -113,12 +113,12 @@ mod test {
     use std::f64::consts::PI;
 
     fn object_description() -> ObjectDescription {
-        ObjectBuilder::new()
+        ObjectBuilder::default()
             .kind(Kind::Organism)
             .mobility(Mobility::Immovable)
             .location(10, 20)
             .shape(
-                PolygonBuilder::new()
+                PolygonBuilder::default()
                     .vertex(-50, -50)
                     .vertex(50, -50)
                     .vertex(50, 50)
@@ -131,7 +131,7 @@ mod test {
     }
 
     fn polygon() -> Polygon {
-        PolygonBuilder::new()
+        PolygonBuilder::default()
             .vertex(-20, -20)
             .vertex(20, -20)
             .vertex(20, 20)

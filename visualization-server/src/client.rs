@@ -281,9 +281,9 @@ mod tests {
         let mut expected_current_snapshot = Snapshot::new();
         expected_current_snapshot.insert(
             12,
-            ObjectBuilder::new()
+            ObjectBuilder::default()
                 .shape(
-                    PolygonBuilder::new()
+                    PolygonBuilder::default()
                         .vertex(-5, -5)
                         .vertex(5, -5)
                         .vertex(5, 5)
@@ -294,7 +294,7 @@ mod tests {
                 .location(50, 50)
                 .rotation(Radians::try_new(1.0).unwrap())
                 .sensor(Sensor {
-                    shape: PolygonBuilder::new()
+                    shape: PolygonBuilder::default()
                         .vertex(-2, -2)
                         .vertex(2, -2)
                         .vertex(2, 2)

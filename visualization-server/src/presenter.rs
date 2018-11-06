@@ -179,9 +179,9 @@ mod tests {
     use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
 
     fn object_description() -> ObjectDescription {
-        ObjectBuilder::new()
+        ObjectBuilder::default()
             .shape(
-                PolygonBuilder::new()
+                PolygonBuilder::default()
                     .vertex(-10, -10)
                     .vertex(10, -10)
                     .vertex(10, 10)
@@ -287,7 +287,7 @@ mod tests {
         let delta_presenter = DeltaPresenter::default();
         let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
 
-        let expected_object_description = ObjectBuilder::new()
+        let expected_object_description = ObjectBuilder::default()
             .shape(object.shape)
             .location(object.position.location.x, object.position.location.y)
             .rotation(object.position.rotation)

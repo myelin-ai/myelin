@@ -65,7 +65,7 @@ mod test {
     use std::f64::consts::PI;
 
     fn polygon() -> Polygon {
-        PolygonBuilder::new()
+        PolygonBuilder::default()
             .vertex(-10, -10)
             .vertex(10, -10)
             .vertex(10, 10)

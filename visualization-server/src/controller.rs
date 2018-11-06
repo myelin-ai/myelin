@@ -219,12 +219,12 @@ mod tests {
     }
 
     fn object_description() -> ObjectDescription {
-        ObjectBuilder::new()
+        ObjectBuilder::default()
             .kind(Kind::Organism)
             .mobility(Mobility::Immovable)
             .location(10, 20)
             .shape(
-                PolygonBuilder::new()
+                PolygonBuilder::default()
                     .vertex(-50, -50)
                     .vertex(50, -50)
                     .vertex(50, 50)

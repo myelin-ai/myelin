@@ -79,7 +79,7 @@ mod test {
         let object_description_delta = ObjectDescriptionDelta {
             kind: Some(Kind::Organism),
             shape: Some(
-                PolygonBuilder::new()
+                PolygonBuilder::default()
                     .vertex(-5, -5)
                     .vertex(1, 1)
                     .vertex(2, 3)
@@ -91,7 +91,7 @@ mod test {
             location: Some(Location { x: 3, y: 4 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
             sensor: Some(Some(Sensor {
-                shape: PolygonBuilder::new()
+                shape: PolygonBuilder::default()
                     .vertex(-10, -12)
                     .vertex(10, 6)
                     .vertex(16, 0)
@@ -133,7 +133,7 @@ mod test {
         let object_description_delta = ObjectDescriptionDelta {
             kind: Some(Kind::Organism),
             shape: Some(
-                PolygonBuilder::new()
+                PolygonBuilder::default()
                     .vertex(-5, -5)
                     .vertex(1, 1)
                     .vertex(2, 3)
@@ -145,7 +145,7 @@ mod test {
             location: Some(Location { x: 3, y: 4 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
             sensor: Some(Some(Sensor {
-                shape: PolygonBuilder::new()
+                shape: PolygonBuilder::default()
                     .vertex(-10, -12)
                     .vertex(10, 6)
                     .vertex(16, 0)

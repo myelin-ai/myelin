@@ -43,7 +43,7 @@ where
         );
         box SimulationImpl::new(box world)
     };
-    let object_factory = box |_: Kind| -> Box<dyn ObjectBehavior> { box Static::new() };
+    let object_factory = box |_: Kind| -> Box<dyn ObjectBehavior> { box Static::default() };
     let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
 
     let conection_acceptor_factory_fn = Arc::new(move |current_snapshot_fn| {
