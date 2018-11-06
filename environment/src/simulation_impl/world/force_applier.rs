@@ -54,7 +54,7 @@ pub struct GenericSingleTimeForceApplierWrapper {
 
 impl GenericSingleTimeForceApplierWrapper {
     /// Constructs a new wrapper around a [`SingleTimeForceApplier`]
-    pub fn new(force_applier: Box<dyn SingleTimeForceApplier>) -> Self {
+    pub(crate) fn new(force_applier: Box<dyn SingleTimeForceApplier>) -> Self {
         Self { force_applier }
     }
 
