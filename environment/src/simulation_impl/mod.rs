@@ -2,7 +2,7 @@
 //! behaviour into a separate `World` type
 
 use crate::object::*;
-use crate::Simulation;
+use crate::{Id, Simulation};
 use ncollide2d::world::CollisionObjectHandle;
 use std::collections::HashMap;
 use std::fmt;
@@ -197,12 +197,15 @@ impl Simulation for SimulationImpl {
             .insert(body_handle, non_physical_object_data);
     }
 
-    fn objects(&self) -> Vec<ObjectDescription> {
+    fn objects(&self) -> HashMap<Id, ObjectDescription> {
         self.non_physical_object_data
             .keys()
             .map(|&handle| {
-                self.convert_to_object_description(handle)
-                    .expect("Handle stored in simulation was not found in world")
+                (
+                    handle.0,
+                    self.convert_to_object_description(handle)
+                        .expect("Handle stored in simulation was not found in world"),
+                )
             })
             .collect()
     }
@@ -661,7 +664,7 @@ mod tests {
         let objects = simulation.objects();
         assert_eq!(1, objects.len());
 
-        let object_description = &objects[0];
+        let object_description = objects.iter().next().unwrap().1;
         assert_eq!(expected_object_description, *object_description);
     }
 

@@ -242,6 +242,8 @@ impl fmt::Debug for HardcodedGenerator {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use myelin_environment::Id;
+    use std::collections::HashMap;
 
     #[derive(Debug, Default)]
     struct SimulationMock {
@@ -259,7 +261,7 @@ mod tests {
         ) {
             self.objects.push((object_description, object_behavior))
         }
-        fn objects(&self) -> Vec<ObjectDescription> {
+        fn objects(&self) -> HashMap<Id, ObjectDescription> {
             panic!("objects() called unexpectedly")
         }
         fn set_simulated_timestep(&mut self, _: f64) {
