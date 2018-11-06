@@ -151,7 +151,7 @@ impl Radians {
     /// use myelin_environment::object::Radians;
     /// use std::f64::consts::PI;
     ///
-    /// let rotation = Radians::new(PI).expect("Value was outside the range [0.0; 2π)")
+    /// let rotation = Radians::try_new(PI).expect("Value was outside the range [0.0; 2π)");
     /// ```
     pub fn try_new(value: f64) -> Option<Radians> {
         if value >= 0.0 && value < 2.0 * PI {
