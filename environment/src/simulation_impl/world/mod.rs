@@ -180,7 +180,9 @@ pub trait NphysicsRotationTranslator: fmt::Debug {
     fn to_radians(&self, nphysics_rotation: f64) -> Option<Radians>;
 }
 
+/// A [`ForceGenerator`] that applies a given force exactly once
 pub trait SingleTimeForceApplier: fmt::Debug + ForceGenerator<PhysicsType> {
+    ///
     fn register_force(&mut self, handle: NphysicsBodyHandle, force: Force);
 }
 

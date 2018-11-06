@@ -305,9 +305,6 @@ pub struct PhysicalBody {
 ///
 /// Don't construct any of these by yourself, only use the
 /// instances that [`World`] provides you
-///
-/// [`PhysicalBody`]: ./struct.PhysicalBody.html
-/// [`World`]: ./trait.World.html
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct BodyHandle(pub usize);
 
@@ -318,11 +315,13 @@ pub struct BodyHandle(pub usize);
 /// instances that [`World`] provides you
 ///
 /// [`PhysicalBodies`]: ./struct.PhysicalBody.html
-/// [`Sensor`]: ../object/struct.Sensor.html
-/// [`World`]: ./trait.World.html
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct SensorHandle(pub usize);
 
+/// A unique identifier that represents either a [`BodyHandle`]
+/// or a [`SensorHandle`]
+///
+/// You are allowed to construct this handle from either subhandles.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct AnyHandle(pub usize);
 
