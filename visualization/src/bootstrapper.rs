@@ -64,7 +64,7 @@ pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
         );
         box SimulationImpl::new(world)
     };
-    let object_factory = box |_: Kind| -> Box<dyn ObjectBehavior> { box Static::new() };
+    let object_factory = box |_: Kind| -> Box<dyn ObjectBehavior> { box Static::default() };
     let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
     let controller = box ControllerImpl::new(presenter, &worldgen);
     InputHandler::new(controller)

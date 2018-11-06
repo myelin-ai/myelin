@@ -157,9 +157,9 @@ mod tests {
 
     #[test]
     fn propagates_step() {
-        let expected_objects = vec![ObjectBuilder::new()
+        let expected_objects = vec![ObjectBuilder::default()
             .shape(
-                PolygonBuilder::new()
+                PolygonBuilder::default()
                     .vertex(-5, -5)
                     .vertex(5, -5)
                     .vertex(5, 5)
