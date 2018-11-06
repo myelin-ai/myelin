@@ -8,10 +8,10 @@ use std::fmt::Debug;
 use std::sync::{Arc, RwLock};
 use unordered_pair::UnorderedPair;
 
-/// A filter for the broad phase that checks a pair should
-/// be examined more closely for collisions. 
+/// A filter for the broad phase that checks if a pair should
+/// be examined more closely for collisions.
 pub trait IgnoringCollisionFilter: Send + Sync + Debug {
-    /// Registers a handle that should be ignored by this Filter.
+    /// Registers a handle that should be ignored by this filter.
     fn add_ignored_handle(&mut self, handle: AnyHandle);
     /// Checks if a handle has been previously registered as ignored with
     /// [IgnoringCollisionFilter::add_ignored_handle].
@@ -20,7 +20,7 @@ pub trait IgnoringCollisionFilter: Send + Sync + Debug {
     /// [IgnoringCollisionFilter::add_ignored_handle].
     fn remove_ignored_handle(&mut self, handle: AnyHandle);
     /// Checks if the pair should be considered a collision or not.
-    /// Returns `true` if the pair should be ignored.
+    /// Returns `false` if the pair should be ignored.
     fn is_pair_valid(&self, pair: UnorderedPair<AnyHandle>) -> bool;
 }
 
