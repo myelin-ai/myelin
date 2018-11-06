@@ -25,12 +25,12 @@ impl InputHandler {
     pub(crate) fn new(controller: Box<dyn Controller>) -> Self {
         InputHandler { controller }
     }
-    
+
     /// Handles an incoming message.
     /// This should be called from JS with a `Uint8Array`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```ts
     /// inputHandler.on_message(new Uint8Array(event.data))
     /// ```
