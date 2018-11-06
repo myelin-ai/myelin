@@ -9,12 +9,6 @@ use std::collections::HashMap;
 #[derive(Debug, Default)]
 pub(crate) struct DeltaPresenter;
 
-impl DeltaPresenter {
-    pub(crate) fn new() -> Self {
-        Self::default()
-    }
-}
-
 impl Presenter for DeltaPresenter {
     fn calculate_deltas(
         &self,

@@ -1,7 +1,7 @@
 #[cfg(test)]
 pub(crate) use self::mock::*;
 
-use crate::controller::{Client, ConnectionAcceptor};
+use crate::controller::{ConnectionAcceptor, CurrentSnapshotFn};
 use std::boxed::FnBox;
 use std::fmt::{self, Debug};
 use std::io;
@@ -11,13 +11,18 @@ use websocket::server::upgrade::{sync::Buffer, WsUpgrade as Request};
 use websocket::server::NoTlsAcceptor;
 use websocket::sync::{Client as WsClient, Server};
 
-pub(crate) type ClientFactoryFn = dyn Fn(WsClient<TcpStream>) -> Box<dyn Client> + Send + Sync;
+pub(crate) trait Client: Debug {
+    fn run(&mut self);
+}
+pub(crate) type ClientFactoryFn =
+    dyn Fn(WsClient<TcpStream>, Arc<CurrentSnapshotFn>) -> Box<dyn Client> + Send + Sync;
 pub(crate) type ThreadSpawnFn = dyn Fn(Box<dyn FnBox() + Send>) + Send + Sync;
 
 pub(crate) struct WebsocketConnectionAcceptor {
     websocket_server: Server<NoTlsAcceptor>,
     client_factory_fn: Arc<ClientFactoryFn>,
     thread_spawn_fn: Box<ThreadSpawnFn>,
+    current_snapshot_fn: Arc<CurrentSnapshotFn>,
 }
 
 impl WebsocketConnectionAcceptor {
@@ -25,11 +30,13 @@ impl WebsocketConnectionAcceptor {
         address: SocketAddr,
         client_factory_fn: Arc<ClientFactoryFn>,
         thread_spawn_fn: Box<ThreadSpawnFn>,
+        current_snapshot_fn: Arc<CurrentSnapshotFn>,
     ) -> Result<Self, io::Error> {
         Ok(Self {
             websocket_server: Server::bind(address)?,
             client_factory_fn,
             thread_spawn_fn,
+            current_snapshot_fn,
         })
     }
 }
@@ -38,11 +45,12 @@ impl ConnectionAcceptor for WebsocketConnectionAcceptor {
     fn run(self: Box<Self>) {
         for request in self.websocket_server.filter_map(Result::ok) {
             let client_factory_fn = self.client_factory_fn.clone();
+            let current_snapshot_fn = self.current_snapshot_fn.clone();
             (self.thread_spawn_fn)(box move || {
                 if should_accept(&request) {
                     if let Ok(mut client_stream) = request.accept() {
                         client_stream.recv_message().unwrap();
-                        let mut client = (client_factory_fn)(client_stream);
+                        let mut client = (client_factory_fn)(client_stream, current_snapshot_fn);
                         client.run();
                     }
                 }
@@ -78,17 +86,12 @@ mod mock {
     pub(crate) struct ConnectionAcceptorMock {
         expect_run: AtomicBool,
         run_was_called: AtomicBool,
-        expect_address_and_return: Option<SocketAddr>,
         address_was_called: AtomicBool,
     }
 
     impl ConnectionAcceptorMock {
         pub(crate) fn expect_run(&mut self) {
             self.expect_run.store(true, Ordering::SeqCst);
-        }
-
-        pub(crate) fn expect_address(&mut self, addr: SocketAddr) {
-            self.expect_address_and_return = Some(addr);
         }
     }
 
@@ -102,13 +105,7 @@ mod mock {
         }
 
         fn address(&self) -> SocketAddr {
-            match self.expect_address_and_return {
-                None => panic!("address() was called unexpectedly"),
-                Some(address) => {
-                    self.address_was_called.store(true, Ordering::SeqCst);
-                    address
-                }
-            }
+            panic!("address() was called unexpectedly")
         }
     }
 
@@ -121,12 +118,6 @@ mod mock {
                 assert!(
                     self.run_was_called.load(Ordering::SeqCst),
                     "run() was not called, but was expected"
-                );
-            }
-            if self.expect_address_and_return.is_some() {
-                assert!(
-                    self.address_was_called.load(Ordering::SeqCst),
-                    "address() was not called, but was expected"
                 );
             }
         }
@@ -150,9 +141,13 @@ mod tests {
         let client_factory_fn = mock_client_factory_fn(None);
         let main_thread_spawn_fn = main_thread_spawn_fn();
 
-        let connection_acceptor =
-            WebsocketConnectionAcceptor::try_new(address, client_factory_fn, main_thread_spawn_fn)
-                .unwrap();
+        let connection_acceptor = WebsocketConnectionAcceptor::try_new(
+            address,
+            client_factory_fn,
+            main_thread_spawn_fn,
+            Arc::new(|| panic!("current_snapshot_fn was not expected to be called")),
+        )
+        .unwrap();
 
         let local_addr = connection_acceptor.address();
 
@@ -172,6 +167,7 @@ mod tests {
             address,
             client_factory_fn,
             main_thread_spawn_fn,
+            Arc::new(|| panic!("current_snapshot_fn was not expected to be called")),
         )
         .unwrap();
 
@@ -194,7 +190,7 @@ mod tests {
     }
 
     fn mock_client_factory_fn(expected_call: Option<ClientMock>) -> Arc<ClientFactoryFn> {
-        Arc::new(move |_client_stream| {
+        Arc::new(move |_client_stream, _current_snapshot_fn| {
             if let Some(ref return_value) = expected_call {
                 box return_value.clone()
             } else {

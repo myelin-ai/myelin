@@ -1,8 +1,10 @@
 use crate::connection::Connection;
-use crate::controller::{Client, CurrentSnapshotFn, Presenter, Snapshot};
+use crate::connection_acceptor::Client;
+use crate::controller::{CurrentSnapshotFn, Presenter, Snapshot};
 use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperError};
 use myelin_visualization_core::serialization::ViewModelSerializer;
 use std::fmt::{self, Debug};
+use std::sync::Arc;
 use std::time::Duration;
 
 pub(crate) struct ClientHandler {
@@ -11,7 +13,7 @@ pub(crate) struct ClientHandler {
     presenter: Box<dyn Presenter>,
     serializer: Box<dyn ViewModelSerializer>,
     connection: Connection,
-    current_snapshot_fn: Box<CurrentSnapshotFn>,
+    current_snapshot_fn: Arc<CurrentSnapshotFn>,
 }
 
 impl ClientHandler {
@@ -21,7 +23,7 @@ impl ClientHandler {
         presenter: Box<dyn Presenter>,
         serializer: Box<dyn ViewModelSerializer>,
         connection: Connection,
-        current_snapshot_fn: Box<CurrentSnapshotFn>,
+        current_snapshot_fn: Arc<CurrentSnapshotFn>,
     ) -> Self {
         Self {
             interval,
@@ -88,7 +90,7 @@ impl Debug for ClientHandler {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::connection::{Socket, SocketError};
+    use crate::connection::{SocketErrorMock, SocketMock};
     use crate::fixed_interval_sleeper::FixedIntervalSleeperError;
     use crate::presenter::PresenterMock;
     use myelin_environment::object::*;
@@ -99,8 +101,6 @@ mod tests {
     use std::cell::RefCell;
     use std::error::Error;
     use std::fmt::Display;
-    use std::sync::atomic::{AtomicBool, Ordering};
-    use std::sync::Mutex;
     use std::thread::panicking;
     use uuid::Uuid;
 
@@ -167,7 +167,7 @@ mod tests {
             id: Uuid::new_v4(),
             socket,
         };
-        let current_snapshot_fn = Box::new(|| Snapshot::new());
+        let current_snapshot_fn = Arc::new(|| Snapshot::new());
         let _client = ClientHandler::new(
             interval,
             Box::new(sleeper),
@@ -197,7 +197,7 @@ mod tests {
             socket,
         };
 
-        let current_snapshot_fn = Box::new(|| snapshot());
+        let current_snapshot_fn = Arc::new(|| snapshot());
         let mut client = ClientHandler::new(
             interval,
             Box::new(sleeper),
@@ -229,7 +229,7 @@ mod tests {
             socket,
         };
 
-        let current_snapshot_fn = Box::new(|| snapshot());
+        let current_snapshot_fn = Arc::new(|| snapshot());
         let mut client = ClientHandler::new(
             interval,
             Box::new(sleeper),
@@ -263,7 +263,7 @@ mod tests {
             socket,
         };
 
-        let current_snapshot_fn = Box::new(|| snapshot());
+        let current_snapshot_fn = Arc::new(|| snapshot());
         let mut client = ClientHandler::new(
             interval,
             Box::new(sleeper),
@@ -393,80 +393,4 @@ mod tests {
     }
 
     impl Error for ErrorMock {}
-
-    #[derive(Debug, Default)]
-    struct SocketMock {
-        expect_send_message_and_return: Mutex<Option<(Vec<u8>, Result<(), SocketErrorMock>)>>,
-
-        send_message_was_called: AtomicBool,
-    }
-
-    impl SocketMock {
-        fn expect_send_message_and_return(
-            &mut self,
-            payload: Vec<u8>,
-            return_value: Result<(), SocketErrorMock>,
-        ) {
-            self.expect_send_message_and_return = Mutex::new(Some((payload, return_value)));
-        }
-    }
-
-    impl Socket for SocketMock {
-        fn send_message(&mut self, payload: &[u8]) -> Result<(), Box<dyn SocketError>> {
-            self.send_message_was_called.store(true, Ordering::SeqCst);
-
-            if let Some((ref expected_payload, ref return_value)) =
-                *self.expect_send_message_and_return.lock().unwrap()
-            {
-                assert_eq!(
-                    *expected_payload,
-                    payload.to_vec(),
-                    "send_message() was called with {:?}, expected {:?}",
-                    payload,
-                    expected_payload,
-                );
-                return_value
-                    .clone()
-                    .map_err(|mock| Box::new(mock) as Box<dyn SocketError>)
-            } else {
-                panic!("send_message() was called unexpectedly")
-            }
-        }
-    }
-
-    impl Drop for SocketMock {
-        fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            if self
-                .expect_send_message_and_return
-                .lock()
-                .unwrap()
-                .is_some()
-            {
-                assert!(
-                    self.send_message_was_called.load(Ordering::SeqCst),
-                    "send_message() was not called, but expected"
-                )
-            }
-        }
-    }
-
-    #[derive(Debug, Clone)]
-    struct SocketErrorMock;
-
-    impl Display for SocketErrorMock {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            write!(f, "")
-        }
-    }
-
-    impl SocketError for SocketErrorMock {
-        fn is_broken_pipe(&self) -> bool {
-            true
-        }
-    }
-
-    impl Error for SocketErrorMock {}
 }

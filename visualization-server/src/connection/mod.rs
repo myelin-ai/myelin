@@ -1,7 +1,6 @@
 pub(crate) use self::websocket::*;
 use std::error::Error;
-use std::fmt::{self, Debug, Display};
-use std::io::ErrorKind as IoErrorKind;
+use std::fmt::Debug;
 use uuid::Uuid;
 
 mod websocket;
@@ -32,24 +31,15 @@ impl PartialEq for Connection {
 #[cfg(test)]
 mod mock {
     use super::*;
+    use std::fmt::{self, Display};
     use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Mutex;
     use std::thread::panicking;
 
     #[derive(Debug, Default)]
     pub(crate) struct SocketMock {
-        expect_send_message_and_return: Option<(Vec<u8>, Result<(), SocketErrorMock>)>,
+        expect_send_message_and_return: Mutex<Option<(Vec<u8>, Result<(), SocketErrorMock>)>>,
         send_message_was_called: AtomicBool,
-    }
-
-    impl Clone for SocketMock {
-        fn clone(&self) -> Self {
-            Self {
-                expect_send_message_and_return: self.expect_send_message_and_return.clone(),
-                send_message_was_called: AtomicBool::new(
-                    self.send_message_was_called.load(Ordering::SeqCst),
-                ),
-            }
-        }
     }
 
     impl SocketMock {
@@ -58,7 +48,7 @@ mod mock {
             payload: Vec<u8>,
             return_value: Result<(), SocketErrorMock>,
         ) {
-            self.expect_send_message_and_return = Some((payload, return_value));
+            self.expect_send_message_and_return = Mutex::new(Some((payload, return_value)));
         }
     }
 
@@ -67,18 +57,18 @@ mod mock {
             self.send_message_was_called.store(true, Ordering::SeqCst);
 
             if let Some((ref expected_payload, ref return_value)) =
-                self.expect_send_message_and_return
+                *self.expect_send_message_and_return.lock().unwrap()
             {
-                if &payload.to_vec() == expected_payload {
-                    return_value
-                        .clone()
-                        .map_err(|err| Box::new(err) as Box<dyn SocketError>)
-                } else {
-                    panic!(
-                        "send_message() was called with {:?}, expected {:?}",
-                        payload, expected_payload,
-                    )
-                }
+                assert_eq!(
+                    *expected_payload,
+                    payload.to_vec(),
+                    "send_message() was called with {:?}, expected {:?}",
+                    payload,
+                    expected_payload,
+                );
+                return_value
+                    .clone()
+                    .map_err(|mock| Box::new(mock) as Box<dyn SocketError>)
             } else {
                 panic!("send_message() was called unexpectedly")
             }
@@ -90,7 +80,12 @@ mod mock {
             if panicking() {
                 return;
             }
-            if self.expect_send_message_and_return.is_some() {
+            if self
+                .expect_send_message_and_return
+                .lock()
+                .unwrap()
+                .is_some()
+            {
                 assert!(
                     self.send_message_was_called.load(Ordering::SeqCst),
                     "send_message() was not called, but expected"
@@ -99,65 +94,20 @@ mod mock {
         }
     }
 
-    #[derive(Debug, Default)]
-    pub(crate) struct SocketErrorMock {
-        expect_is_broken_pipe_and_return: Option<bool>,
-        is_broken_pipe_was_called: AtomicBool,
-    }
+    #[derive(Debug, Clone)]
+    pub(crate) struct SocketErrorMock;
 
-    impl Clone for SocketErrorMock {
-        fn clone(&self) -> Self {
-            SocketErrorMock {
-                expect_is_broken_pipe_and_return: self.expect_is_broken_pipe_and_return.clone(),
-                is_broken_pipe_was_called: AtomicBool::new(
-                    self.is_broken_pipe_was_called.load(Ordering::SeqCst),
-                ),
-            }
-        }
-    }
-
-    impl SocketErrorMock {
-        pub(crate) fn expect_is_broken_pipe_and_return(&mut self, return_value: bool) {
-            self.expect_is_broken_pipe_and_return = Some(return_value);
+    impl Display for SocketErrorMock {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "")
         }
     }
 
     impl SocketError for SocketErrorMock {
         fn is_broken_pipe(&self) -> bool {
-            self.is_broken_pipe_was_called.store(true, Ordering::SeqCst);
-
-            if let Some(ref return_value) = self.expect_is_broken_pipe_and_return {
-                return_value.clone()
-            } else {
-                panic!("is_broken_pipe() was called unexpectedly")
-            }
-        }
-    }
-
-    impl Display for SocketErrorMock {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            let msg = if let Some(return_value) = self.expect_is_broken_pipe_and_return {
-                format!("is_broken_pipe() expected, will return {}", return_value)
-            } else {
-                "is_broken_pipe() not expected".to_string()
-            };
-            write!(f, "{}", &msg)
+            true
         }
     }
 
     impl Error for SocketErrorMock {}
-
-    impl Drop for SocketErrorMock {
-        fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            if self.expect_is_broken_pipe_and_return.is_some() {
-                assert!(
-                    self.is_broken_pipe_was_called.load(Ordering::SeqCst),
-                    "is_broken_pipe() was not called, but expected"
-                )
-            }
-        }
-    }
 }
