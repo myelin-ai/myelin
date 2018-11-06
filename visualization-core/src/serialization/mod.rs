@@ -1,3 +1,5 @@
+//! Types dealing with serialization and deserialization
+
 pub use self::json::*;
 use crate::view_model_delta::ViewModelDelta;
 use std::error::Error;

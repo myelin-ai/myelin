@@ -1,3 +1,6 @@
+//! The delta of the world's state, i.e. the properties
+//! that changed since the last snapshot
+
 use myelin_environment::object::*;
 use myelin_environment::Id;
 use std::collections::HashMap;

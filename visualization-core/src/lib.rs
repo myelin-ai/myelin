@@ -1,3 +1,5 @@
+//! Functionality shared by [`myelin_visualization_client`] and [`myelin_visualization_server`]
+
 #![feature(duration_float)]
 #![deny(
     rust_2018_idioms,
@@ -15,5 +17,4 @@ extern crate serde_derive;
 extern crate maplit;
 
 pub mod serialization;
-pub mod transmission;
 pub mod view_model_delta;
