@@ -10,6 +10,7 @@ use unordered_pair::UnorderedPair;
 
 /// A filter for the broad phase that checks if a pair should
 /// be examined more closely for collisions.
+/// Implements [`BroadPhasePairFilter`] through [`IgnoringCollisionFilterWrapper`].
 pub trait IgnoringCollisionFilter: Send + Sync + Debug {
     /// Registers a handle that should be ignored by this filter.
     fn add_ignored_handle(&mut self, handle: AnyHandle);
