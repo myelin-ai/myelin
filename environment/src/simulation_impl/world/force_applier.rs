@@ -7,6 +7,7 @@ use nphysics2d::solver::IntegrationParameters;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 
+/// A [`ForceGenerator`] that applies a given force exactly once
 #[derive(Default, Debug)]
 pub struct SingleTimeForceApplierImpl {
     forces_to_apply: HashMap<BodyHandle, Force>,
@@ -41,16 +42,20 @@ impl ForceGenerator<PhysicsType> for SingleTimeForceApplierImpl {
     }
 }
 
+/// A wrapper that is used to implement [`ForceGenerator`] on a box of [`SingleTimeForceApplier`].
+/// This is used to make [`SingleTimeForceApplier`] mockable.
 #[derive(Debug)]
 pub struct GenericSingleTimeForceApplierWrapper {
     force_applier: Box<dyn SingleTimeForceApplier>,
 }
 
 impl GenericSingleTimeForceApplierWrapper {
+    /// Constructs a new wrapper around a [`SingleTimeForceApplier`]
     pub fn new(force_applier: Box<dyn SingleTimeForceApplier>) -> Self {
         Self { force_applier }
     }
 
+    /// Retrieves the wrapped [`SingleTimeForceApplier`]
     pub(crate) fn inner_mut(&mut self) -> &mut dyn SingleTimeForceApplier {
         self.force_applier.borrow_mut()
     }
