@@ -6,7 +6,7 @@
 #![deny(
     rust_2018_idioms,
     missing_debug_implementations,
-    clippy::missing_doc,
+    missing_docs,
     clippy::doc_markdown,
     clippy::unimplemented
 )]
@@ -18,6 +18,10 @@ extern crate serde_derive;
 #[cfg_attr(test, macro_use)]
 #[cfg(test)]
 extern crate nameof;
+
+#[cfg_attr(test, macro_use)]
+#[cfg(test)]
+extern crate maplit;
 
 pub mod object;
 pub mod object_builder;

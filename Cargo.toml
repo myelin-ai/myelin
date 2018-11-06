@@ -6,5 +6,4 @@ members = [
     "visualization-server",
     "worldgen",
     "object-behavior",
-    "pair",
 ]
