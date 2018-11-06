@@ -179,6 +179,8 @@ pub trait NphysicsRotationTranslator: fmt::Debug {
     /// Converts an `orientation` into a representation that is suitable for nphysics
     fn to_nphysics_rotation(&self, orientation: Radians) -> f64;
     /// Converts a rotation that originates from nphysics into [`Radians`]
+    ///
+    /// [`Radians`]: ../../object/struct.Radians.html
     fn to_radians(&self, nphysics_rotation: f64) -> Option<Radians>;
 }
 
