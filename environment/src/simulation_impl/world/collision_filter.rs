@@ -8,10 +8,19 @@ use std::fmt::Debug;
 use std::sync::{Arc, RwLock};
 use unordered_pair::UnorderedPair;
 
+/// A filter for the broad phase that checks a pair should
+/// be examined more closely for collisions. 
 pub trait IgnoringCollisionFilter: Send + Sync + Debug {
+    /// Registers a handle that should be ignored by this Filter.
     fn add_ignored_handle(&mut self, handle: AnyHandle);
+    /// Checks if a handle has been previously registered as ignored with
+    /// [IgnoringCollisionFilter::add_ignored_handle].
     fn is_handle_ignored(&self, handle: AnyHandle) -> bool;
+    /// Unregisters a handle that has been previously registered as ignored with
+    /// [IgnoringCollisionFilter::add_ignored_handle].
     fn remove_ignored_handle(&mut self, handle: AnyHandle);
+    /// Checks if the pair should be considered a collision or not.
+    /// Returns `true` if the pair should be ignored.
     fn is_pair_valid(&self, pair: UnorderedPair<AnyHandle>) -> bool;
 }
 
@@ -40,6 +49,7 @@ impl IgnoringCollisionFilter for IgnoringCollisionFilterImpl {
     }
 }
 
+/// A wrapper around [`IgnoringCollisionFilter`] which can be passed to nphysics.
 #[derive(Debug)]
 pub struct IgnoringCollisionFilterWrapper {
     pub(crate) collision_filter: Arc<RwLock<dyn IgnoringCollisionFilter>>,
