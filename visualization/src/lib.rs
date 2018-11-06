@@ -4,7 +4,6 @@
 #![deny(
     rust_2018_idioms,
     missing_debug_implementations,
-    missing_docs,
     clippy::doc_markdown,
     clippy::unimplemented
 )]
