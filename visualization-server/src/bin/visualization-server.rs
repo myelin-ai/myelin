@@ -2,7 +2,7 @@
 
 use clap::{App, Arg};
 use myelin_visualization_server::start_server;
-use std::net::{IpAddr, Ipv4Addr};
+use std::net::{IpAddr, Ipv6Addr};
 
 struct Arguments {
     host: IpAddr,
@@ -34,7 +34,7 @@ fn parse_arguments() -> Arguments {
         .map(|port| port.parse().expect("port must be a valid port number"))
         .unwrap_or(DEFAULT_PORT);
 
-    const DEFAULT_HOST: IpAddr = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
+    const DEFAULT_HOST: IpAddr = IpAddr::V6(Ipv6Addr::LOCALHOST);
     let host = matches
         .value_of("host")
         .map(|host| {
