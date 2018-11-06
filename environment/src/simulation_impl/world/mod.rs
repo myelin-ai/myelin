@@ -188,6 +188,8 @@ pub trait NphysicsRotationTranslator: fmt::Debug {
 pub trait SingleTimeForceApplier: fmt::Debug + ForceGenerator<PhysicsType> {
     /// Registers a [`Force`] to be applied to the body identified by `handle`
     /// in the next step
+    ///
+    /// [`Force`]: ../../object/struct.Force.html
     fn register_force(&mut self, handle: NphysicsBodyHandle, force: Force);
 }
 

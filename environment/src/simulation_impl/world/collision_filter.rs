@@ -15,14 +15,17 @@ use unordered_pair::UnorderedPair;
 /// exclusion of body or sensor handles, which will have all their collisions
 /// marked as invalid.  
 /// Implements [`BroadPhasePairFilter`] through [`IgnoringCollisionFilterWrapper`].
+///
+/// [`BroadPhasePairFilter`]: ./trait.BroadPhasePairFilter.html
+/// [`IgnoringCollisionFilterWrapper`]: ./struct.IgnoringCollisionFilterWrapper.html
 pub trait IgnoringCollisionFilter: Send + Sync + Debug {
     /// Registers a handle that should be ignored by this filter.
     fn add_ignored_handle(&mut self, handle: AnyHandle);
     /// Checks if a handle has been previously registered as ignored with
-    /// [IgnoringCollisionFilter::add_ignored_handle].
+    /// [`IgnoringCollisionFilter::add_ignored_handle`].
     fn is_handle_ignored(&self, handle: AnyHandle) -> bool;
     /// Unregisters a handle that has been previously registered as ignored with
-    /// [IgnoringCollisionFilter::add_ignored_handle].
+    /// [`IgnoringCollisionFilter::add_ignored_handle`].
     fn remove_ignored_handle(&mut self, handle: AnyHandle);
     /// Checks if the pair should be considered a collision or not.
     /// Returns `false` if the pair should be ignored.
@@ -34,6 +37,9 @@ pub trait IgnoringCollisionFilter: Send + Sync + Debug {
 /// exclusion of body or sensor handles, which will have all their collisions
 /// marked as invalid.  
 /// Implements [`BroadPhasePairFilter`] through [`IgnoringCollisionFilterWrapper`].
+///
+/// [`BroadPhasePairFilter`]: ./trait.BroadPhasePairFilter.html
+/// [`IgnoringCollisionFilterWrapper`]: ./struct.IgnoringCollisionFilterWrapper.html
 #[derive(Debug, Default)]
 pub struct IgnoringCollisionFilterImpl {
     ignored_handles: HashSet<AnyHandle>,
