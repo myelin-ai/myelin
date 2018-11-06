@@ -1,3 +1,6 @@
+//! Implementations of [`ForceGenerator`], which provide
+//! the interface used to apply a [`Force`] on a body
+
 use super::{PhysicsType, SingleTimeForceApplier};
 use crate::object::Force;
 use nphysics2d::force_generator::ForceGenerator;
