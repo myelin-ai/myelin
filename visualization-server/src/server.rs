@@ -11,6 +11,9 @@ use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceAp
 use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
 use myelin_environment::simulation_impl::world::NphysicsWorld;
 use myelin_environment::{simulation_impl::SimulationImpl, Simulation};
+use myelin_object_behavior::stochastic_spreading::{
+    AccumulativeDeterministicChanceChecker, StochasticSpreading,
+};
 use myelin_object_behavior::Static;
 use myelin_visualization_core::serialization::JsonSerializer;
 use myelin_worldgen::generator::HardcodedGenerator;
@@ -43,7 +46,25 @@ where
         );
         box SimulationImpl::new(box world)
     };
-    let object_factory = box |_: Kind| -> Box<dyn ObjectBehavior> { box Static::default() };
+    let object_factory = box |_: Kind| -> Box<dyn ObjectBehavior> {
+        match kind {
+            Kind::Plant => box StochasticSpreading::new(
+                1.0 / 100.0,
+                Sensor {
+                    shape: PolygonBuilder::new()
+                        .vertex(-20, -20)
+                        .vertex(20, -20)
+                        .vertex(20, 20)
+                        .vertex(-20, 20)
+                        .build()
+                        .unwrap(),
+                    position: Position::default(),
+                },
+                box AccumulativeDeterministicChanceChecker::new(),
+            ),
+            _ => box Static::new(),
+        }
+    };
     let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
 
     let conection_acceptor_factory_fn = Arc::new(move |current_snapshot_fn| {
