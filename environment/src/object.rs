@@ -120,7 +120,9 @@ pub struct Polygon {
 /// of a polygon in relation to its center
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Vertex {
+    /// The x component of the [`Vertex`]
     pub x: i32,
+    /// The y component of the [`Vertex`]
     pub y: i32,
 }
 
@@ -141,6 +143,16 @@ pub struct Radians {
 }
 
 impl Radians {
+    /// Creates a new instance of [`Radians`].
+    /// Returns `None` if the given value is outside the range [0.0; 2π)
+    ///
+    /// ### Examples
+    /// ```
+    /// use myelin_environment::object::Radians;
+    /// use std::f64::consts::PI;
+    ///
+    /// let rotation = Radians::new(PI).expect("Value was outside the range [0.0; 2π)")
+    /// ```
     pub fn try_new(value: f64) -> Option<Radians> {
         if value >= 0.0 && value < 2.0 * PI {
             Some(Radians { value })
@@ -149,6 +161,7 @@ impl Radians {
         }
     }
 
+    /// Returns the underlying value
     pub fn value(self) -> f64 {
         self.value
     }
@@ -161,7 +174,9 @@ impl Radians {
 /// [`Simulation`]: ../simulation/trait.Simulation.html
 #[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct Location {
+    /// The y component of the [`Location`]
     pub x: u32,
+    /// The y component of the [`Location`]
     pub y: u32,
 }
 
@@ -169,7 +184,9 @@ pub struct Location {
 /// a two dimensional vector
 #[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct Velocity {
+    /// The y component of the [`Velocity`]
     pub x: i32,
+    /// The y component of the [`Velocity`]
     pub y: i32,
 }
 
@@ -191,14 +208,18 @@ pub enum Kind {
 /// resulting in a rotated force applied to an object
 #[derive(Debug, PartialEq, Clone, Default)]
 pub struct Force {
+    /// The linear component of the [`Force`]
     pub linear: LinearForce,
+    /// The torque (rotation) component of the [`Force`]
     pub torque: Torque,
 }
 
 /// Vector describing linear force
 #[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct LinearForce {
+    /// The y component of the [`LinearForce`]
     pub x: i32,
+    /// The y component of the [`LinearForce`]
     pub y: i32,
 }
 
