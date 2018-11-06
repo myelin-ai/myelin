@@ -6,12 +6,6 @@ pub struct AccumulativeDeterministicChanceChecker {
     counter: f64,
 }
 
-impl AccumulativeDeterministicChanceChecker {
-    pub fn new() -> Self {
-        Self::default()
-    }
-}
-
 impl RandomChanceChecker for AccumulativeDeterministicChanceChecker {
     fn flip_coin_with_probability(&mut self, probability: f64) -> bool {
         if probability < 0.0 || probability > 1.0 {

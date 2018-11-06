@@ -8,6 +8,7 @@ pub struct RandomChanceCheckerImpl {
 }
 
 impl RandomChanceCheckerImpl {
+    /// Constructs a new [`RandomChanceCheckerImpl`] by seeding a new threaded rng source
     pub fn new() -> Self {
         Self { rng: thread_rng() }
     }

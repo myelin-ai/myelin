@@ -55,7 +55,7 @@ impl StochasticSpreading {
         own_description: &ObjectDescription,
         _sensor_collisions: &[ObjectDescription],
     ) -> Option<Action> {
-        let object_description = ObjectBuilder::new()
+        let object_description = ObjectBuilder::default()
             .location(
                 own_description.position.location.x + 10,
                 own_description.position.location.y + 10,
