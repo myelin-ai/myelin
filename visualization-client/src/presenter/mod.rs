@@ -9,6 +9,7 @@ use myelin_environment::Id;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
 use std::borrow::Borrow;
 use std::collections::HashMap;
+use std::error::Error;
 use std::fmt;
 
 mod delta_applier;
@@ -30,10 +31,9 @@ pub(crate) struct CanvasPresenter {
 }
 
 impl Presenter for CanvasPresenter {
-    fn present_delta(&mut self, delta: ViewModelDelta) {
+    fn present_delta(&mut self, delta: ViewModelDelta) -> Result<(), Box<dyn Error>> {
         self.delta_applier
-            .apply_delta(&mut self.current_snapshot, delta)
-            .expect("Received delta was not valid");
+            .apply_delta(&mut self.current_snapshot, delta)?;
 
         let objects = map_objects(
             &self.current_snapshot,
@@ -42,6 +42,8 @@ impl Presenter for CanvasPresenter {
 
         self.view.flush();
         self.view.draw_objects(&ViewModel { objects });
+
+        Ok(())
     }
 }
 

@@ -48,7 +48,8 @@ impl ConnectionAcceptor for WebsocketConnectionAcceptor {
             let current_snapshot_fn = self.current_snapshot_fn.clone();
             (self.thread_spawn_fn)(box move || {
                 if should_accept(&request) {
-                    if let Ok(client_stream) = request.accept() {
+                    if let Ok(mut client_stream) = request.accept() {
+                        client_stream.recv_message().unwrap();
                         let mut client = (client_factory_fn)(client_stream, current_snapshot_fn);
                         client.run();
                     }
@@ -129,6 +130,7 @@ mod tests {
     use std::net::{Ipv4Addr, SocketAddrV4};
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::thread::{self, panicking};
+    use websocket::message::Message;
     use websocket::ClientBuilder;
 
     const RANDOM_PORT: u16 = 0;
@@ -174,10 +176,12 @@ mod tests {
             connection_acceptor.run();
         });
 
-        let _client = ClientBuilder::new(&format!("ws://{}", address))
+        let mut client = ClientBuilder::new(&format!("ws://{}", address))
             .unwrap()
             .connect_insecure()
             .unwrap();
+
+        client.send_message(&Message::binary(&[] as &[u8])).unwrap();
     }
 
     fn localhost() -> SocketAddr {
