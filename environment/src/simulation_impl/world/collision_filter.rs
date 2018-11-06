@@ -1,3 +1,5 @@
+//! Implementations for [`IgnoringCollisionFilter`]
+
 use alga::general::Real;
 use crate::simulation_impl::AnyHandle;
 use ncollide2d::broad_phase::BroadPhasePairFilter;
@@ -6,14 +8,32 @@ use nphysics2d::object::ColliderData;
 use std::collections::HashSet;
 use std::fmt::Debug;
 use std::sync::{Arc, RwLock};
+use unordered_pair::UnorderedPair;
 
+/// A filter for the broad phase that checks if a pair should
+/// be examined more closely for collisions. This filter allows the explicit
+/// exclusion of body or sensor handles, which will have all their collisions
+/// marked as invalid.  
+/// Implements [`BroadPhasePairFilter`] through [`IgnoringCollisionFilterWrapper`].
 pub trait IgnoringCollisionFilter: Send + Sync + Debug {
+    /// Registers a handle that should be ignored by this filter.
     fn add_ignored_handle(&mut self, handle: AnyHandle);
+    /// Checks if a handle has been previously registered as ignored with
+    /// [IgnoringCollisionFilter::add_ignored_handle].
     fn is_handle_ignored(&self, handle: AnyHandle) -> bool;
+    /// Unregisters a handle that has been previously registered as ignored with
+    /// [IgnoringCollisionFilter::add_ignored_handle].
     fn remove_ignored_handle(&mut self, handle: AnyHandle);
-    fn is_pair_valid(&self, h1: AnyHandle, h2: AnyHandle) -> bool;
+    /// Checks if the pair should be considered a collision or not.
+    /// Returns `false` if the pair should be ignored.
+    fn is_pair_valid(&self, pair: UnorderedPair<AnyHandle>) -> bool;
 }
 
+/// A filter for the broad phase that checks if a pair should
+/// be examined more closely for collisions. This filter allows the explicit
+/// exclusion of body or sensor handles, which will have all their collisions
+/// marked as invalid.  
+/// Implements [`BroadPhasePairFilter`] through [`IgnoringCollisionFilterWrapper`].
 #[derive(Debug, Default)]
 pub struct IgnoringCollisionFilterImpl {
     ignored_handles: HashSet<AnyHandle>,
@@ -34,13 +54,14 @@ impl IgnoringCollisionFilter for IgnoringCollisionFilterImpl {
         self.ignored_handles.remove(&handle);
     }
 
-    fn is_pair_valid(&self, b1: AnyHandle, b2: AnyHandle) -> bool {
-        !(self.ignored_handles.contains(&b1) || self.ignored_handles.contains(&b2))
+    fn is_pair_valid(&self, pair: UnorderedPair<AnyHandle>) -> bool {
+        !(self.ignored_handles.contains(&pair.0) || self.ignored_handles.contains(&pair.1))
     }
 }
 
+/// A wrapper around [`IgnoringCollisionFilter`] which can be passed to nphysics.
 #[derive(Debug)]
-pub struct IgnoringCollisionFilterWrapper {
+pub(crate) struct IgnoringCollisionFilterWrapper {
     pub(crate) collision_filter: Arc<RwLock<dyn IgnoringCollisionFilter>>,
 }
 
@@ -56,7 +77,7 @@ where
         self.collision_filter
             .read()
             .expect("Lock was poisoned")
-            .is_pair_valid(b1.handle().into(), b2.handle().into())
+            .is_pair_valid(UnorderedPair(b1.handle().into(), b2.handle().into()))
     }
 }
 
@@ -80,16 +101,16 @@ mod mock {
         collision_filter.add_ignored_handle(ignored_handle);
 
         assert!(collision_filter.is_handle_ignored(ignored_handle));
-        assert!(!collision_filter.is_pair_valid(ignored_handle, AnyHandle(1)));
-        assert!(!collision_filter.is_pair_valid(AnyHandle(1), ignored_handle));
+        assert!(!collision_filter.is_pair_valid(UnorderedPair(ignored_handle, AnyHandle(1))));
+        assert!(!collision_filter.is_pair_valid(UnorderedPair(AnyHandle(1), ignored_handle)));
     }
 
     #[test]
     fn pair_is_valid_if_not_ignored() {
         let collision_filter = IgnoringCollisionFilterImpl::default();
 
-        assert!(collision_filter.is_pair_valid(AnyHandle(0), AnyHandle(1)));
-        assert!(collision_filter.is_pair_valid(AnyHandle(1), AnyHandle(0)));
+        assert!(collision_filter.is_pair_valid(UnorderedPair(AnyHandle(0), AnyHandle(1))));
+        assert!(collision_filter.is_pair_valid(UnorderedPair(AnyHandle(1), AnyHandle(0))));
     }
 
     #[test]
@@ -103,8 +124,8 @@ mod mock {
 
         collision_filter.remove_ignored_handle(ignored_handle);
 
-        assert!(collision_filter.is_pair_valid(ignored_handle, AnyHandle(1)));
-        assert!(collision_filter.is_pair_valid(AnyHandle(1), ignored_handle));
+        assert!(collision_filter.is_pair_valid(UnorderedPair(ignored_handle, AnyHandle(1))));
+        assert!(collision_filter.is_pair_valid(UnorderedPair(AnyHandle(1), ignored_handle)));
     }
 
     #[derive(Default)]
@@ -112,7 +133,7 @@ mod mock {
         expect_add_ignored_handle: Option<AnyHandle>,
         expect_is_handle_ignored_and_return: RwLock<VecDeque<(AnyHandle, bool)>>,
         expect_remove_ignored_handle: Option<AnyHandle>,
-        expect_is_pair_valid_and_return: RwLock<HashMap<(AnyHandle, AnyHandle), bool>>,
+        expect_is_pair_valid_and_return: RwLock<HashMap<UnorderedPair<AnyHandle>, bool>>,
 
         add_ignored_handle_was_called: AtomicBool,
         is_handle_ignored_was_called: AtomicBool,
@@ -141,7 +162,7 @@ mod mock {
 
         pub fn expect_is_pair_valid_and_return(
             &mut self,
-            expected_calls: HashMap<(AnyHandle, AnyHandle), bool>,
+            expected_calls: HashMap<UnorderedPair<AnyHandle>, bool>,
         ) -> &mut Self {
             self.expect_is_pair_valid_and_return = RwLock::new(expected_calls);
             self
@@ -257,7 +278,7 @@ mod mock {
             }
         }
 
-        fn is_pair_valid(&self, b1: AnyHandle, b2: AnyHandle) -> bool {
+        fn is_pair_valid(&self, pair: UnorderedPair<AnyHandle>) -> bool {
             self.is_pair_valid_was_called.store(true, Ordering::SeqCst);
 
             let expected_calls = self
@@ -269,17 +290,14 @@ mod mock {
                 panic!("is_pair_valid() was called unexpectedly");
             }
 
-            if let Some(expected_output) = expected_calls
-                .get(&(b1, b2))
-                .or_else(|| expected_calls.get(&(b2, b1)))
-            {
+            if let Some(expected_output) = expected_calls.get(&pair) {
                 return *expected_output;
             }
 
             panic!(
                 "is_pair_valid() was called with unexpected input values: handle1: {:?} and handle2: {:?}",
-                b1,
-                b2
+                pair.0,
+                pair.1
             )
         }
     }
