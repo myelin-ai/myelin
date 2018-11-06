@@ -31,24 +31,28 @@ impl HardcodedGenerator {
     /// use myelin_environment::simulation_impl::{
     ///     SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl
     /// };
+    /// use myelin_environment::simulation_impl::world::collision_filter::IgnoringCollisionFilterImpl;
     /// use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
     /// use myelin_environment::object::{Kind, ObjectBehavior};
     /// use myelin_worldgen::WorldGenerator;
     /// use myelin_worldgen::generator::HardcodedGenerator;
     /// use myelin_object_behavior::Static;
+    /// use std::sync::{Arc, RwLock};
     ///
     /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
     ///     let rotation_translator = NphysicsRotationTranslatorImpl::default();
     ///     let force_applier = SingleTimeForceApplierImpl::default();
+    ///     let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterImpl::default()));
     ///     let world = Box::new(NphysicsWorld::with_timestep(
     ///         1.0,
     ///         Box::new(rotation_translator),
     ///         Box::new(force_applier),
+    ///         collision_filter,
     ///     ));
     ///     Box::new(SimulationImpl::new(world))
     /// });
     ///
-    /// let object_factory = Box::new(|_: Kind| -> Box<dyn ObjectBehavior> { Box::new(Static::new()) });
+    /// let object_factory = Box::new(|_: Kind| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
     /// let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
     /// let generated_simulation = worldgen.generate();
     pub fn new(simulation_factory: SimulationFactory, object_factory: ObjectFactory) -> Self {
@@ -78,9 +82,9 @@ impl HardcodedGenerator {
     }
 
     fn populate_with_water(&self, simulation: &mut dyn Simulation) {
-        let object_description = ObjectBuilder::new()
+        let object_description = ObjectBuilder::default()
             .shape(
-                PolygonBuilder::new()
+                PolygonBuilder::default()
                     .vertex(-180, 60)
                     .vertex(0, 200)
                     .vertex(180, 60)
@@ -143,9 +147,9 @@ impl HardcodedGenerator {
 fn build_terrain(location: (u32, u32), width: i32, length: i32) -> ObjectDescription {
     let x_offset = width / 2;
     let y_offset = length / 2;
-    ObjectBuilder::new()
+    ObjectBuilder::default()
         .shape(
-            PolygonBuilder::new()
+            PolygonBuilder::default()
                 .vertex(-x_offset, -y_offset)
                 .vertex(x_offset, -y_offset)
                 .vertex(x_offset, y_offset)
@@ -161,9 +165,9 @@ fn build_terrain(location: (u32, u32), width: i32, length: i32) -> ObjectDescrip
 }
 
 fn build_plant(x: u32, y: u32) -> ObjectDescription {
-    ObjectBuilder::new()
+    ObjectBuilder::default()
         .shape(
-            PolygonBuilder::new()
+            PolygonBuilder::default()
                 .vertex(-10, -10)
                 .vertex(10, -10)
                 .vertex(10, 10)
@@ -175,7 +179,7 @@ fn build_plant(x: u32, y: u32) -> ObjectDescription {
         .mobility(Mobility::Immovable)
         .kind(Kind::Plant)
         .sensor(Sensor {
-            shape: PolygonBuilder::new()
+            shape: PolygonBuilder::default()
                 .vertex(-25, -25)
                 .vertex(25, -25)
                 .vertex(25, 25)
@@ -184,14 +188,15 @@ fn build_plant(x: u32, y: u32) -> ObjectDescription {
                 .expect("Generated an invalid vertex"),
             position: Position::default(),
         })
+        .passable(true)
         .build()
         .expect("Failed to build plant")
 }
 
 fn build_organism(x: u32, y: u32) -> ObjectDescription {
-    ObjectBuilder::new()
+    ObjectBuilder::default()
         .shape(
-            PolygonBuilder::new()
+            PolygonBuilder::default()
                 .vertex(25, 0)
                 .vertex(-25, 20)
                 .vertex(-5, 0)
@@ -204,7 +209,7 @@ fn build_organism(x: u32, y: u32) -> ObjectDescription {
         .mobility(Mobility::Movable(Velocity::default()))
         .kind(Kind::Organism)
         .sensor(Sensor {
-            shape: PolygonBuilder::new()
+            shape: PolygonBuilder::default()
                 .vertex(-25, -25)
                 .vertex(25, -25)
                 .vertex(25, 25)
@@ -237,6 +242,8 @@ impl fmt::Debug for HardcodedGenerator {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use myelin_environment::Id;
+    use std::collections::HashMap;
 
     #[derive(Debug, Default)]
     struct SimulationMock {
@@ -254,7 +261,7 @@ mod tests {
         ) {
             self.objects.push((object_description, object_behavior))
         }
-        fn objects(&self) -> Vec<ObjectDescription> {
+        fn objects(&self) -> HashMap<Id, ObjectDescription> {
             panic!("objects() called unexpectedly")
         }
         fn set_simulated_timestep(&mut self, _: f64) {
@@ -281,10 +288,8 @@ mod tests {
 
     #[test]
     fn generates_simulation() {
-        let simulation_factory =
-            Box::new(|| -> Box<dyn Simulation> { Box::new(SimulationMock::default()) });
-        let object_factory =
-            Box::new(|_: Kind| -> Box<dyn ObjectBehavior> { Box::new(ObjectBehaviorMock {}) });
+        let simulation_factory = box || -> Box<dyn Simulation> { box SimulationMock::default() };
+        let object_factory = box |_: Kind| -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock {} };
         let generator = HardcodedGenerator::new(simulation_factory, object_factory);
 
         let _simulation = generator.generate();

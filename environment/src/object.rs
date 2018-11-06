@@ -6,7 +6,6 @@
 
 use std::f64::consts::PI;
 use std::fmt::Debug;
-
 /// Behaviour of an object that can never be moved
 pub trait ObjectBehavior: Debug + ObjectBehaviorClone {
     /// Returns all actions performed by the object
@@ -48,7 +47,7 @@ impl Clone for Action {
 /// which will report any collisions to it.
 ///
 /// [`Object`]: ./enum.Object.html
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct Sensor {
     /// The shape of the sensor
     pub shape: Polygon,
@@ -59,11 +58,11 @@ pub struct Sensor {
     pub position: Position,
 }
 
-/// The dehaviourless description of an object that has
+/// The behaviourless description of an object that has
 /// been placed inside a [`Simulation`].
 ///
 /// [`Simulation`]: ../simulation/trait.Simulation.html
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[non_exhaustive]
 pub struct ObjectDescription {
     /// The vertices defining the shape of the object
@@ -85,13 +84,16 @@ pub struct ObjectDescription {
 
     /// The object's sensor
     pub sensor: Option<Sensor>,
+
+    /// Whether the object is passable or not
+    pub passable: bool,
 }
 
 /// An object's mobility and, if present, its
 /// current [`Velocity`]
 ///
 /// [`Velocity`]: ./struct.Velocity.html
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub enum Mobility {
     /// The object cannot have any velocity as
     /// it cannot be moved. Corresponds to [`ImmovableObject`]
@@ -107,7 +109,7 @@ pub enum Mobility {
 /// This type holds the vertices of an object
 /// in relation to its center, i.e. [0; 0] means
 /// the exact center of the object.
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct Polygon {
     /// The vertices defining the shape of the object
     pub vertices: Vec<Vertex>,
@@ -115,15 +117,17 @@ pub struct Polygon {
 
 /// The coordinates representing a corner
 /// of a polygon in relation to its center
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct Vertex {
+    /// The x component of the [`Vertex`]
     pub x: i32,
+    /// The y component of the [`Vertex`]
     pub y: i32,
 }
 
 /// A position within the world, defined as a combination
 /// of location and rotation
-#[derive(Debug, PartialEq, Clone, Default)]
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Position {
     /// An absolute location
     pub location: Location,
@@ -132,12 +136,22 @@ pub struct Position {
 }
 
 /// A radian confined to the range of [0.0; 2π)
-#[derive(Debug, PartialEq, Copy, Clone, Default)]
+#[derive(Debug, PartialEq, Copy, Clone, Default, Serialize, Deserialize)]
 pub struct Radians {
     value: f64,
 }
 
 impl Radians {
+    /// Creates a new instance of [`Radians`].
+    /// Returns `None` if the given value is outside the range [0.0; 2π)
+    ///
+    /// ### Examples
+    /// ```
+    /// use myelin_environment::object::Radians;
+    /// use std::f64::consts::PI;
+    ///
+    /// let rotation = Radians::try_new(PI).expect("Value was outside the range [0.0; 2π)");
+    /// ```
     pub fn try_new(value: f64) -> Option<Radians> {
         if value >= 0.0 && value < 2.0 * PI {
             Some(Radians { value })
@@ -146,6 +160,7 @@ impl Radians {
         }
     }
 
+    /// Returns the underlying value
     pub fn value(self) -> f64 {
         self.value
     }
@@ -156,23 +171,27 @@ impl Radians {
 /// the [`Simulation`]
 ///
 /// [`Simulation`]: ../simulation/trait.Simulation.html
-#[derive(Debug, Eq, PartialEq, Clone, Default)]
+#[derive(Debug, Eq, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Location {
+    /// The x component of the [`Location`]
     pub x: u32,
+    /// The y component of the [`Location`]
     pub y: u32,
 }
 
 /// The velocity of an object, measured as
 /// a two dimensional vector
-#[derive(Debug, Eq, PartialEq, Clone, Default)]
+#[derive(Debug, Eq, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Velocity {
+    /// The x component of the [`Velocity`]
     pub x: i32,
+    /// The y component of the [`Velocity`]
     pub y: i32,
 }
 
 /// The part of an object that is responsible for custom
 /// behavior and interactions
-#[derive(Debug, Eq, PartialEq, Clone, Copy)]
+#[derive(Debug, Eq, PartialEq, Clone, Copy, Serialize, Deserialize)]
 pub enum Kind {
     /// An intelligent organism featuring a neural network
     Organism,
@@ -188,14 +207,18 @@ pub enum Kind {
 /// resulting in a rotated force applied to an object
 #[derive(Debug, PartialEq, Clone, Default)]
 pub struct Force {
+    /// The linear component of the [`Force`]
     pub linear: LinearForce,
+    /// The torque (rotation) component of the [`Force`]
     pub torque: Torque,
 }
 
 /// Vector describing linear force
 #[derive(Debug, Eq, PartialEq, Clone, Default)]
 pub struct LinearForce {
+    /// The x component of the [`LinearForce`]
     pub x: i32,
+    /// The y component of the [`LinearForce`]
     pub y: i32,
 }
 
@@ -219,7 +242,7 @@ where
     T: ObjectBehavior + Clone + 'static,
 {
     default fn clone_box(&self) -> Box<dyn ObjectBehavior> {
-        Box::new(self.clone())
+        box self.clone()
     }
 }
 

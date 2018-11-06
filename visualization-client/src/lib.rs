@@ -1,16 +1,25 @@
 //! In-browser visualization for myelin using a canvas with WASM
 
+#![feature(box_syntax)]
 #![deny(
     rust_2018_idioms,
     missing_debug_implementations,
-    clippy::missing_doc,
+    missing_docs,
     clippy::doc_markdown,
     clippy::unimplemented
 )]
 
+#[cfg_attr(test, macro_use)]
+#[cfg(test)]
+extern crate maplit;
+
+#[cfg_attr(test, macro_use)]
+#[cfg(test)]
+extern crate nameof;
+
 pub mod bootstrapper;
-pub(crate) mod controller;
+mod controller;
 pub mod input_handler;
-pub(crate) mod presenter;
-pub mod view;
-pub(crate) mod view_model;
+mod presenter;
+mod view;
+mod view_model;

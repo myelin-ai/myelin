@@ -3,10 +3,11 @@
 //!
 //! [`Worlds`]: ../myelin_environment/world/trait.World.html
 
+#![feature(box_syntax)]
 #![deny(
     rust_2018_idioms,
     missing_debug_implementations,
-    clippy::missing_doc,
+    missing_docs,
     clippy::doc_markdown,
     clippy::unimplemented
 )]

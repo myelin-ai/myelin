@@ -17,7 +17,7 @@ pipeline {
       parallel {
         stage('yarn') {
           steps {
-            sh '(cd visualization && yarn)'
+            sh '(cd visualization-client && yarn)'
           }
         }
       }
@@ -47,7 +47,7 @@ pipeline {
         }
         stage('wasm') {
           steps {
-            sh 'bash visualization/scripts/build.sh'
+            sh 'bash visualization-client/scripts/build.sh'
           }
         }
       }
@@ -70,11 +70,6 @@ pipeline {
             sh 'cargo clippy -- -Dwarnings'
           }
         }
-        stage('clippy --tests') {
-          steps {
-            sh 'cargo clippy -- -Dwarnings --tests'
-          }
-        }
         stage('rustfmt') {
           steps {
             sh 'cargo fmt --all -- --check'
@@ -82,7 +77,7 @@ pipeline {
         }
         stage('tslint') {
           steps {
-            sh '(cd visualization && yarn lint)'
+            sh '(cd visualization-client && yarn lint)'
           }
         }
       }

@@ -5,9 +5,9 @@
 //! use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
 //! use std::f64::consts::FRAC_PI_2;
 //!
-//! let object = ObjectBuilder::new()
+//! let object = ObjectBuilder::default()
 //!     .shape(
-//!         PolygonBuilder::new()
+//!         PolygonBuilder::default()
 //!             .vertex(-50, -50)
 //!             .vertex(50, -50)
 //!             .vertex(50, 50)
@@ -45,6 +45,12 @@ pub struct ObjectBuilderError {
 /// the properties of a new object.
 /// Methods can be chained on it in order to configure it.
 ///
+/// # Examples
+/// ```
+/// use myelin_environment::object_builder::ObjectBuilder;
+/// let builder = ObjectBuilder::default();
+/// ```
+///
 /// [`ObjectDescription`]: ../object/struct.ObjectDescription.html
 #[derive(Default, Debug)]
 pub struct ObjectBuilder {
@@ -54,28 +60,16 @@ pub struct ObjectBuilder {
     mobility: Option<Mobility>,
     kind: Option<Kind>,
     sensor: Option<Sensor>,
+    passable: bool,
 }
 
 impl ObjectBuilder {
-    /// Generates the base configuration for creating a [`ObjectDescription`],
-    /// from which configuration methods can be chained.
-    /// # Examples
-    /// ```
-    /// use myelin_environment::object_builder::ObjectBuilder;
-    /// let builder = ObjectBuilder::new();
-    /// ```
-    ///
-    /// [`ObjectDescription`]: ../object/struct.ObjectDescription.html
-    pub fn new() -> Self {
-        Default::default()
-    }
-
     /// # Examples
     /// ```
     /// use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
-    /// ObjectBuilder::new()
+    /// ObjectBuilder::default()
     ///     .shape(
-    ///         PolygonBuilder::new()
+    ///         PolygonBuilder::default()
     ///             .vertex(-50, -50)
     ///             .vertex(50, -50)
     ///             .vertex(50, 50)
@@ -92,7 +86,7 @@ impl ObjectBuilder {
     /// # Examples
     /// ```
     /// use myelin_environment::object_builder::ObjectBuilder;
-    /// ObjectBuilder::new()
+    /// ObjectBuilder::default()
     ///     .location(3, 2);
     /// ```
     pub fn location(&mut self, x: u32, y: u32) -> &mut Self {
@@ -104,7 +98,7 @@ impl ObjectBuilder {
     /// ```
     /// use myelin_environment::object_builder::ObjectBuilder;
     /// use myelin_environment::object::Kind;
-    /// ObjectBuilder::new()
+    /// ObjectBuilder::default()
     ///     .kind(Kind::Plant);
     /// ```
     pub fn kind(&mut self, kind: Kind) -> &mut Self {
@@ -116,7 +110,7 @@ impl ObjectBuilder {
     /// ```
     /// use myelin_environment::object_builder::ObjectBuilder;
     /// use myelin_environment::object::{Mobility, Velocity};
-    /// ObjectBuilder::new()
+    /// ObjectBuilder::default()
     ///     .mobility(Mobility::Movable(Velocity { x: -12, y: 4 }));
     /// ```
     pub fn mobility(&mut self, mobility: Mobility) -> &mut Self {
@@ -128,9 +122,9 @@ impl ObjectBuilder {
     /// ```
     /// use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
     /// use myelin_environment::object::{Sensor, Position};
-    /// ObjectBuilder::new()
+    /// ObjectBuilder::default()
     ///     .sensor( Sensor {
-    ///         shape: PolygonBuilder::new()
+    ///         shape: PolygonBuilder::default()
     ///             .vertex(-50, -50)
     ///             .vertex(50, -50)
     ///             .vertex(50, 50)
@@ -149,11 +143,22 @@ impl ObjectBuilder {
     /// ```
     /// use myelin_environment::object_builder::ObjectBuilder;
     /// use myelin_environment::object::Radians;
-    /// ObjectBuilder::new()
+    /// ObjectBuilder::default()
     ///     .rotation(Radians::try_new(4.5).unwrap());
     /// ```
     pub fn rotation(&mut self, rotation: Radians) -> &mut Self {
         self.rotation = Some(rotation);
+        self
+    }
+
+    /// # Examples
+    /// ```
+    /// use myelin_environment::object_builder::ObjectBuilder;
+    ///
+    /// let builder = ObjectBuilder::default();
+    /// ```
+    pub fn passable(&mut self, passable: bool) -> &mut Self {
+        self.passable = passable;
         self
     }
 
@@ -168,9 +173,9 @@ impl ObjectBuilder {
     /// use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
     /// use std::f64::consts::FRAC_PI_2;
     ///
-    /// let object = ObjectBuilder::new()
+    /// let object = ObjectBuilder::default()
     ///     .shape(
-    ///         PolygonBuilder::new()
+    ///         PolygonBuilder::default()
     ///             .vertex(-50, -50)
     ///             .vertex(50, -50)
     ///             .vertex(50, 50)
@@ -201,8 +206,9 @@ impl ObjectBuilder {
                 rotation: self.rotation.take().unwrap_or_else(Default::default),
             },
             kind: self.kind.take().ok_or_else(|| error.clone())?,
-            mobility: self.mobility.take().ok_or(error)?,
+            mobility: self.mobility.take().ok_or_else(|| error.clone())?,
             sensor: self.sensor.take(),
+            passable: self.passable,
         };
 
         Ok(object)
@@ -212,6 +218,11 @@ impl ObjectBuilder {
 /// [`Polygon`] factory, which can be used in order to configure
 /// the properties of a new polygon.
 /// Methods can be chained on it in order to configure it.
+/// # Examples
+/// ```
+/// use myelin_environment::object_builder::PolygonBuilder;
+/// let builder = PolygonBuilder::default();
+/// ```
 ///
 /// [`Polygon`]: ../object/struct.Polygon.html
 #[derive(Default, Debug)]
@@ -220,24 +231,11 @@ pub struct PolygonBuilder {
 }
 
 impl PolygonBuilder {
-    /// Generates the base configuration for creating a [`Polygon`],
-    /// from which configuration methods can be chained.
-    /// # Examples
-    /// ```
-    /// use myelin_environment::object_builder::PolygonBuilder;
-    /// let builder = PolygonBuilder::new();
-    /// ```
-    ///
-    /// [`Polygon`]: ../object/struct.Polygon.html
-    pub fn new() -> Self {
-        Default::default()
-    }
-
     /// Adds a vertex to the polygon
     /// # Examples
     /// ```
     /// use myelin_environment::object_builder::PolygonBuilder;
-    /// let unfinished_builder = PolygonBuilder::new()
+    /// let unfinished_builder = PolygonBuilder::default()
     ///     .vertex(-50, -50)
     ///     .vertex(50, -50)
     ///     .vertex(50, 50)
@@ -258,7 +256,7 @@ impl PolygonBuilder {
     /// ```
     /// use myelin_environment::object_builder::PolygonBuilder;
     ///
-    /// let square = PolygonBuilder::new()
+    /// let square = PolygonBuilder::default()
     ///     .vertex(-50, -50)
     ///     .vertex(50, -50)
     ///     .vertex(50, 50)
@@ -287,7 +285,7 @@ mod test {
 
     #[test]
     fn test_polygon_builder_works() {
-        let polygon = PolygonBuilder::new()
+        let polygon = PolygonBuilder::default()
             .vertex(0, 0)
             .vertex(0, 1)
             .vertex(1, 0)
@@ -309,25 +307,25 @@ mod test {
 
     #[test]
     fn test_polygon_builder_errors_for_no_vertices() {
-        assert_eq!(Err(()), PolygonBuilder::new().build());
+        assert_eq!(Err(()), PolygonBuilder::default().build());
     }
 
     #[test]
     fn test_polygon_builder_errors_for_one_vertex() {
-        assert_eq!(Err(()), PolygonBuilder::new().vertex(1, 1).build());
+        assert_eq!(Err(()), PolygonBuilder::default().vertex(1, 1).build());
     }
 
     #[test]
     fn test_polygon_builder_panicks_for_two_vertices() {
         assert_eq!(
             Err(()),
-            PolygonBuilder::new().vertex(0, 0).vertex(1, 1).build()
+            PolygonBuilder::default().vertex(0, 0).vertex(1, 1).build()
         );
     }
 
     #[test]
     fn test_object_builder_should_error_for_missing_shape() {
-        let result = ObjectBuilder::new()
+        let result = ObjectBuilder::default()
             .location(10, 10)
             .rotation(Radians::try_new(0.0).unwrap())
             .kind(Kind::Terrain)
@@ -345,9 +343,9 @@ mod test {
 
     #[test]
     fn test_object_builder_should_error_for_missing_kind() {
-        let result = ObjectBuilder::new()
+        let result = ObjectBuilder::default()
             .shape(
-                PolygonBuilder::new()
+                PolygonBuilder::default()
                     .vertex(0, 0)
                     .vertex(0, 1)
                     .vertex(1, 0)
@@ -359,6 +357,7 @@ mod test {
             .rotation(Radians::try_new(0.0).unwrap())
             .mobility(Mobility::Immovable)
             .build();
+
         assert_eq!(
             Err(ObjectBuilderError {
                 missing_kind: true,
@@ -370,9 +369,9 @@ mod test {
 
     #[test]
     fn test_object_builder_should_error_for_missing_location() {
-        let result = ObjectBuilder::new()
+        let result = ObjectBuilder::default()
             .shape(
-                PolygonBuilder::new()
+                PolygonBuilder::default()
                     .vertex(0, 0)
                     .vertex(0, 1)
                     .vertex(1, 0)
@@ -396,9 +395,9 @@ mod test {
 
     #[test]
     fn test_object_builder_should_error_for_missing_mobility() {
-        let result = ObjectBuilder::new()
+        let result = ObjectBuilder::default()
             .shape(
-                PolygonBuilder::new()
+                PolygonBuilder::default()
                     .vertex(0, 0)
                     .vertex(0, 1)
                     .vertex(1, 0)
@@ -422,9 +421,9 @@ mod test {
 
     #[test]
     fn test_object_builder_should_use_default_rotation() {
-        let result = ObjectBuilder::new()
+        let result = ObjectBuilder::default()
             .shape(
-                PolygonBuilder::new()
+                PolygonBuilder::default()
                     .vertex(0, 0)
                     .vertex(0, 1)
                     .vertex(1, 0)
@@ -453,6 +452,48 @@ mod test {
             kind: Kind::Terrain,
             mobility: Mobility::Immovable,
             sensor: None,
+            passable: false,
+        };
+
+        assert_eq!(Ok(expected), result);
+    }
+
+    #[test]
+    fn test_object_builder_uses_passable() {
+        let result = ObjectBuilder::default()
+            .shape(
+                PolygonBuilder::default()
+                    .vertex(0, 0)
+                    .vertex(0, 1)
+                    .vertex(1, 0)
+                    .vertex(1, 1)
+                    .build()
+                    .unwrap(),
+            )
+            .rotation(Radians::try_new(0.0).unwrap())
+            .location(30, 40)
+            .kind(Kind::Terrain)
+            .mobility(Mobility::Immovable)
+            .passable(true)
+            .build();
+
+        let expected = ObjectDescription {
+            shape: Polygon {
+                vertices: vec![
+                    Vertex { x: 0, y: 0 },
+                    Vertex { x: 0, y: 1 },
+                    Vertex { x: 1, y: 0 },
+                    Vertex { x: 1, y: 1 },
+                ],
+            },
+            position: Position {
+                rotation: Radians::try_new(0.0).unwrap(),
+                location: Location { x: 30, y: 40 },
+            },
+            kind: Kind::Terrain,
+            mobility: Mobility::Immovable,
+            sensor: None,
+            passable: true,
         };
 
         assert_eq!(Ok(expected), result);
@@ -460,14 +501,14 @@ mod test {
 
     #[test]
     fn test_object_builder_should_error_with_everything_missing() {
-        let result = ObjectBuilder::new().build();
+        let result = ObjectBuilder::default().build();
 
         assert_eq!(
             Err(ObjectBuilderError {
                 missing_shape: true,
                 missing_location: true,
                 missing_kind: true,
-                missing_mobility: true
+                missing_mobility: true,
             }),
             result
         );
@@ -475,9 +516,9 @@ mod test {
 
     #[test]
     fn test_object_builder_should_build_object() {
-        let result = ObjectBuilder::new()
+        let result = ObjectBuilder::default()
             .shape(
-                PolygonBuilder::new()
+                PolygonBuilder::default()
                     .vertex(0, 0)
                     .vertex(0, 1)
                     .vertex(1, 0)
@@ -490,7 +531,7 @@ mod test {
             .location(30, 40)
             .rotation(Radians::try_new(1.1).unwrap())
             .sensor(Sensor {
-                shape: PolygonBuilder::new()
+                shape: PolygonBuilder::default()
                     .vertex(2, 0)
                     .vertex(-2, 0)
                     .vertex(0, 1)
@@ -531,6 +572,7 @@ mod test {
                     rotation: Radians::try_new(1.2).unwrap(),
                 },
             }),
+            passable: false,
         };
 
         assert_eq!(Ok(expected), result);

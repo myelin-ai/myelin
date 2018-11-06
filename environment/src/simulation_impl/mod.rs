@@ -2,7 +2,8 @@
 //! behaviour into a separate `World` type
 
 use crate::object::*;
-use crate::Simulation;
+use crate::{Id, Simulation};
+use ncollide2d::world::CollisionObjectHandle;
 use std::collections::HashMap;
 use std::fmt;
 
@@ -34,10 +35,18 @@ impl SimulationImpl {
     ///     SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl
     /// };
     /// use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
+    /// use std::sync::{Arc, RwLock};
+    /// use myelin_environment::simulation_impl::world::collision_filter::IgnoringCollisionFilterImpl;
     ///
     /// let rotation_translator = NphysicsRotationTranslatorImpl::default();
     /// let force_applier = SingleTimeForceApplierImpl::default();
-    /// let world = Box::new(NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator), Box::new(force_applier)));
+    /// let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterImpl::default()));
+    /// let world = Box::new(NphysicsWorld::with_timestep(
+    ///     1.0,
+    ///     Box::new(rotation_translator),
+    ///     Box::new(force_applier),
+    ///     collision_filter,
+    /// ));
     /// let simulation = SimulationImpl::new(world);
     /// ```
     /// [`World`]: ./trait.World.html
@@ -57,6 +66,7 @@ impl SimulationImpl {
             mobility: physics_body.mobility,
             kind: non_physical_object_data.kind,
             sensor: sensor_without_handle(non_physical_object_data.sensor.clone()),
+            passable: self.world.is_body_passable(body_handle),
         })
     }
 
@@ -172,6 +182,7 @@ impl Simulation for SimulationImpl {
             shape: object_description.shape,
             position: object_description.position,
             mobility: object_description.mobility,
+            passable: object_description.passable,
         };
 
         let body_handle = self.world.add_body(physical_body);
@@ -186,12 +197,15 @@ impl Simulation for SimulationImpl {
             .insert(body_handle, non_physical_object_data);
     }
 
-    fn objects(&self) -> Vec<ObjectDescription> {
+    fn objects(&self) -> HashMap<Id, ObjectDescription> {
         self.non_physical_object_data
             .keys()
             .map(|&handle| {
-                self.convert_to_object_description(handle)
-                    .expect("Handle stored in simulation was not found in world")
+                (
+                    handle.0,
+                    self.convert_to_object_description(handle)
+                        .expect("Handle stored in simulation was not found in world"),
+                )
             })
             .collect()
     }
@@ -261,6 +275,11 @@ pub trait World: fmt::Debug {
     /// can run `set_simulated_timestep(1.0/60.0)`. Note that this method
     /// does not block the thread if called faster than expected.
     fn set_simulated_timestep(&mut self, timestep: f64);
+
+    /// Checks if the given [`BodyHandle`] is marked passable
+    ///
+    /// [`BodyHandle`]: ./struct.BodyHandle.html
+    fn is_body_passable(&self, body_handle: BodyHandle) -> bool;
 }
 
 /// The pure physical representation of an object
@@ -280,6 +299,8 @@ pub struct PhysicalBody {
     /// this is defined as a two dimensional vector relative to the
     /// objects center
     pub mobility: Mobility,
+    /// Whether this object is passable or not
+    pub passable: bool,
 }
 
 /// A unique identifier that can be used to retrieve a [`PhysicalBody`] from a
@@ -287,9 +308,6 @@ pub struct PhysicalBody {
 ///
 /// Don't construct any of these by yourself, only use the
 /// instances that [`World`] provides you
-///
-/// [`PhysicalBody`]: ./struct.PhysicalBody.html
-/// [`World`]: ./trait.World.html
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct BodyHandle(pub usize);
 
@@ -300,10 +318,33 @@ pub struct BodyHandle(pub usize);
 /// instances that [`World`] provides you
 ///
 /// [`PhysicalBodies`]: ./struct.PhysicalBody.html
-/// [`Sensor`]: ../object/struct.Sensor.html
-/// [`World`]: ./trait.World.html
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct SensorHandle(pub usize);
+
+/// A unique identifier that represents either a [`BodyHandle`]
+/// or a [`SensorHandle`]
+///
+/// You are allowed to construct this handle from either subhandles.
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct AnyHandle(pub usize);
+
+impl From<BodyHandle> for AnyHandle {
+    fn from(body_handle: BodyHandle) -> Self {
+        AnyHandle(body_handle.0)
+    }
+}
+
+impl From<SensorHandle> for AnyHandle {
+    fn from(sensor_handle: SensorHandle) -> Self {
+        AnyHandle(sensor_handle.0)
+    }
+}
+
+impl From<CollisionObjectHandle> for AnyHandle {
+    fn from(collision_object_handle: CollisionObjectHandle) -> Self {
+        AnyHandle(collision_object_handle.0)
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -314,7 +355,7 @@ mod tests {
 
     #[test]
     fn propagates_step() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         world.expect_step();
         let mut simulation = SimulationImpl::new(world);
         simulation.step();
@@ -322,7 +363,7 @@ mod tests {
 
     #[test]
     fn propagates_simulated_timestep() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         const EXPECTED_TIMESTEP: f64 = 1.0;
         world.expect_set_simulated_timestep(EXPECTED_TIMESTEP);
         let mut simulation = SimulationImpl::new(world);
@@ -332,7 +373,7 @@ mod tests {
     #[should_panic]
     #[test]
     fn panics_on_negative_timestep() {
-        let world = Box::new(WorldMock::new());
+        let world = box WorldMock::new();
         let mut simulation = SimulationImpl::new(world);
         const INVALID_TIMESTEP: f64 = -0.1;
         simulation.set_simulated_timestep(INVALID_TIMESTEP);
@@ -340,7 +381,7 @@ mod tests {
 
     #[test]
     fn propagates_zero_timestep() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         const EXPECTED_TIMESTEP: f64 = 0.0;
         world.expect_set_simulated_timestep(EXPECTED_TIMESTEP);
         let mut simulation = SimulationImpl::new(world);
@@ -349,7 +390,7 @@ mod tests {
 
     #[test]
     fn returns_no_objects_when_empty() {
-        let world = Box::new(WorldMock::new());
+        let world = box WorldMock::new();
         let simulation = SimulationImpl::new(world);
         let objects = simulation.objects();
         assert!(objects.is_empty())
@@ -357,30 +398,34 @@ mod tests {
 
     #[test]
     fn converts_to_physical_body() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
+
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
 
-        let object_description = ObjectBuilder::new()
+        let object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
             .kind(Kind::Organism)
             .mobility(expected_mobility)
+            .passable(expected_passable)
             .build()
             .unwrap();
         let object_behavior = ObjectBehaviorMock::new();
 
         let mut simulation = SimulationImpl::new(world);
-        simulation.add_object(object_description, Box::new(object_behavior));
+        simulation.add_object(object_description, box object_behavior);
     }
 
     #[test]
@@ -389,17 +434,19 @@ mod tests {
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
 
         let expected_sensor = Sensor {
-            shape: PolygonBuilder::new()
+            shape: PolygonBuilder::default()
                 .vertex(-5, -5)
                 .vertex(5, -5)
                 .vertex(5, 5)
@@ -418,7 +465,7 @@ mod tests {
             sensor_handle,
         );
 
-        let object_description = ObjectBuilder::new()
+        let object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
@@ -429,8 +476,8 @@ mod tests {
             .unwrap();
         let object_behavior = ObjectBehaviorMock::new();
 
-        let mut simulation = SimulationImpl::new(Box::new(world));
-        simulation.add_object(object_description, Box::new(object_behavior));
+        let mut simulation = SimulationImpl::new(box world);
+        simulation.add_object(object_description, box object_behavior);
     }
 
     #[should_panic]
@@ -440,17 +487,19 @@ mod tests {
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body, returned_handle);
 
         let sensor = Sensor {
-            shape: PolygonBuilder::new()
+            shape: PolygonBuilder::default()
                 .vertex(-5, -5)
                 .vertex(5, -5)
                 .vertex(5, 5)
@@ -464,7 +513,7 @@ mod tests {
         };
         world.expect_attach_sensor_and_return(returned_handle, sensor, None);
 
-        let object_description = ObjectBuilder::new()
+        let object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
@@ -474,8 +523,8 @@ mod tests {
             .unwrap();
         let object_behavior = ObjectBehaviorMock::new();
 
-        let mut simulation = SimulationImpl::new(Box::new(world));
-        simulation.add_object(object_description, Box::new(object_behavior));
+        let mut simulation = SimulationImpl::new(box world);
+        simulation.add_object(object_description, box object_behavior);
     }
 
     #[test]
@@ -485,22 +534,26 @@ mod tests {
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
         world.expect_body_and_return(returned_handle, Some(expected_physical_body));
+        world.expect_is_body_passable_and_return(returned_handle.into(), expected_passable);
 
-        let expected_object_description = ObjectBuilder::new()
+        let expected_object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
             .kind(Kind::Organism)
             .mobility(expected_mobility)
+            .passable(expected_passable)
             .build()
             .unwrap();
 
@@ -511,26 +564,29 @@ mod tests {
             None,
         );
 
-        let mut simulation = SimulationImpl::new(Box::new(world));
-        simulation.add_object(expected_object_description, Box::new(object_behavior));
+        let mut simulation = SimulationImpl::new(box world);
+        simulation.add_object(expected_object_description, box object_behavior);
         simulation.step();
     }
 
     #[test]
     fn propagates_objects_within_sensor() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         world.expect_step();
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1337);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
+        world.expect_is_body_passable_and_return(returned_handle, expected_passable);
 
         let mut object_behavior = ObjectBehaviorMock::new();
         let sensor_shape = shape();
@@ -549,7 +605,7 @@ mod tests {
             Some(vec![returned_handle]),
         );
 
-        let expected_object_description = ObjectBuilder::new()
+        let expected_object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
@@ -567,47 +623,48 @@ mod tests {
         world.expect_body_and_return(returned_handle, Some(expected_physical_body));
 
         let mut simulation = SimulationImpl::new(world);
-        simulation.add_object(expected_object_description, Box::new(object_behavior));
+        simulation.add_object(expected_object_description, box object_behavior);
         simulation.step();
     }
 
     #[test]
     fn returns_added_object() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
         world.expect_body_and_return(returned_handle, Some(expected_physical_body));
-        let mut simulation = SimulationImpl::new(world);
+        world.expect_is_body_passable_and_return(returned_handle, expected_passable);
 
+        let mut simulation = SimulationImpl::new(world);
         let object_behavior = ObjectBehaviorMock::new();
 
-        let expected_object_description = ObjectBuilder::new()
+        let expected_object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
             .kind(Kind::Organism)
             .mobility(expected_mobility)
+            .passable(expected_passable)
             .build()
             .unwrap();
 
-        simulation.add_object(
-            expected_object_description.clone(),
-            Box::new(object_behavior),
-        );
+        simulation.add_object(expected_object_description.clone(), box object_behavior);
 
         let objects = simulation.objects();
         assert_eq!(1, objects.len());
 
-        let object_description = &objects[0];
+        let object_description = objects.iter().next().unwrap().1;
         assert_eq!(expected_object_description, *object_description);
     }
 
@@ -621,15 +678,17 @@ mod tests {
     #[ignore]
     #[test]
     fn reproducing_spawns_object() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
@@ -640,7 +699,7 @@ mod tests {
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
-        let expected_object_description = ObjectBuilder::new()
+        let expected_object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
@@ -661,14 +720,11 @@ mod tests {
             Vec::new(),
             Some(Action::Reproduce(
                 expected_object_description.clone(),
-                Box::new(child_object_behavior),
+                box child_object_behavior,
             )),
         );
 
-        simulation.add_object(
-            expected_object_description.clone(),
-            Box::new(object_behavior),
-        );
+        simulation.add_object(expected_object_description.clone(), box object_behavior);
 
         simulation.step();
         simulation.step();
@@ -676,32 +732,36 @@ mod tests {
 
     #[test]
     fn dying_removes_object() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
         world.expect_body_and_return(returned_handle, Some(expected_physical_body.clone()));
         world.expect_step();
         world.expect_remove_body_and_return(returned_handle, Some(expected_physical_body));
+        world.expect_is_body_passable_and_return(returned_handle, expected_passable);
 
         let mut simulation = SimulationImpl::new(world);
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
-        let expected_object_description = ObjectBuilder::new()
+        let expected_object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
             .kind(Kind::Organism)
             .mobility(expected_mobility)
+            .passable(expected_passable)
             .build()
             .unwrap();
 
@@ -711,30 +771,30 @@ mod tests {
             Some(Action::Die),
         );
 
-        simulation.add_object(
-            expected_object_description.clone(),
-            Box::new(object_behavior),
-        );
+        simulation.add_object(expected_object_description.clone(), box object_behavior);
 
         simulation.step();
     }
 
     #[test]
     fn force_application_is_propagated() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
         world.expect_body_and_return(returned_handle, Some(expected_physical_body.clone()));
         world.expect_step();
+        world.expect_is_body_passable_and_return(returned_handle, expected_passable);
         let expected_force = Force {
             linear: LinearForce { x: 20, y: -5 },
             torque: Torque(-8.0),
@@ -745,12 +805,13 @@ mod tests {
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
-        let expected_object_description = ObjectBuilder::new()
+        let expected_object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
             .kind(Kind::Organism)
             .mobility(expected_mobility)
+            .passable(expected_passable)
             .build()
             .unwrap();
 
@@ -760,10 +821,7 @@ mod tests {
             Some(Action::ApplyForce(expected_force)),
         );
 
-        simulation.add_object(
-            expected_object_description.clone(),
-            Box::new(object_behavior),
-        );
+        simulation.add_object(expected_object_description.clone(), box object_behavior);
 
         simulation.step();
     }
@@ -771,22 +829,24 @@ mod tests {
     #[should_panic]
     #[test]
     fn panics_on_invalid_body() {
-        let mut world = Box::new(WorldMock::new());
+        let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
         let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
             position: expected_position.clone(),
             mobility: expected_mobility.clone(),
+            passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
         world.expect_body_and_return(returned_handle, None);
         let mut simulation = SimulationImpl::new(world);
 
-        let object_description = ObjectBuilder::new()
+        let object_description = ObjectBuilder::default()
             .location(expected_position.location.x, expected_position.location.y)
             .rotation(expected_position.rotation)
             .shape(expected_shape)
@@ -796,12 +856,12 @@ mod tests {
             .unwrap();
 
         let object_behavior = ObjectBehaviorMock::default();
-        simulation.add_object(object_description, Box::new(object_behavior));
+        simulation.add_object(object_description, box object_behavior);
         simulation.objects();
     }
 
     fn shape() -> Polygon {
-        PolygonBuilder::new()
+        PolygonBuilder::default()
             .vertex(-5, -5)
             .vertex(5, -5)
             .vertex(5, 5)
@@ -827,6 +887,7 @@ mod tests {
         expect_bodies_within_sensor_and_return: Option<(SensorHandle, Option<Vec<BodyHandle>>)>,
         expect_apply_force_and_return: Option<(BodyHandle, Force, Option<()>)>,
         expect_set_simulated_timestep: Option<f64>,
+        expect_is_body_passable_and_return: Option<(BodyHandle, bool)>,
 
         step_was_called: RefCell<bool>,
         add_body_was_called: RefCell<bool>,
@@ -836,6 +897,7 @@ mod tests {
         bodies_within_sensor_was_called: RefCell<bool>,
         apply_force_was_called: RefCell<bool>,
         set_simulated_timestep_was_called: RefCell<bool>,
+        is_body_passable: RefCell<bool>,
     }
     impl WorldMock {
         pub(crate) fn new() -> Self {
@@ -899,6 +961,14 @@ mod tests {
         pub(crate) fn expect_set_simulated_timestep(&mut self, timestep: f64) {
             self.expect_set_simulated_timestep = Some(timestep);
         }
+
+        pub(crate) fn expect_is_body_passable_and_return(
+            &mut self,
+            body_handle: BodyHandle,
+            return_value: bool,
+        ) {
+            self.expect_is_body_passable_and_return = Some((body_handle, return_value));
+        }
     }
 
     impl Drop for WorldMock {
@@ -960,6 +1030,13 @@ mod tests {
                     "remove_body() was not called, but was expected"
                 )
             }
+
+            if self.expect_is_body_passable_and_return.is_some() {
+                assert!(
+                    *self.is_body_passable.borrow(),
+                    "is_body_passable() was not called, but was expected"
+                )
+            }
         }
     }
 
@@ -970,6 +1047,7 @@ mod tests {
                 panic!("step() was called unexpectedly")
             }
         }
+
         fn add_body(&mut self, body: PhysicalBody) -> BodyHandle {
             *self.add_body_was_called.borrow_mut() = true;
             if let Some((ref expected_body, ref return_value)) = self.expect_add_body_and_return {
@@ -1088,6 +1166,24 @@ mod tests {
                 }
             } else {
                 panic!("set_simulated_timestep() was called unexpectedly")
+            }
+        }
+
+        fn is_body_passable(&self, body_handle: BodyHandle) -> bool {
+            *self.is_body_passable.borrow_mut() = true;
+            if let Some((expected_body_handle, return_value)) =
+                self.expect_is_body_passable_and_return
+            {
+                if expected_body_handle == body_handle {
+                    return_value
+                } else {
+                    panic!(
+                        "is_body_passable() was called with {:?}, expected {:?}",
+                        body_handle, expected_body_handle
+                    )
+                }
+            } else {
+                panic!("is_body_passable() was called unexpectedly")
             }
         }
     }
