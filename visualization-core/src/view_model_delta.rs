@@ -1,3 +1,6 @@
+//! The delta of the world's state, i.e. the properties
+//! that changed since the last snapshot
+
 use myelin_environment::object::*;
 use myelin_environment::Id;
 use std::collections::HashMap;
@@ -43,5 +46,6 @@ pub struct ObjectDescriptionDelta {
     pub kind: Option<Kind>,
 
     /// The object's sensor
+    #[allow(clippy::option_option)]
     pub sensor: Option<Option<Sensor>>,
 }

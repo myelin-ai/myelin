@@ -72,6 +72,7 @@ mod mock {
     use std::cell::RefCell;
     use std::thread::panicking;
 
+    /// Mock for [`Simulation`]
     #[derive(Debug, Default, Clone)]
     pub struct SimulationMock {
         expect_step: Option<()>,
@@ -86,18 +87,22 @@ mod mock {
     }
 
     impl SimulationMock {
+        /// Marks the method [`Simulation::step`] as expected.
         pub fn expect_step(&mut self) {
             self.expect_step = Some(());
         }
 
+        /// Marks the method [`Simulation::add_object`] as expected.
         pub fn expect_add_object(&mut self, object_description: ObjectDescription) {
             self.expect_add_object = Some(object_description)
         }
 
+        /// Marks the method [`Simulation::objects`] as expected.
         pub fn expect_objects_and_return(&mut self, return_value: HashMap<Id, ObjectDescription>) {
             self.expect_objects_and_return = Some(return_value)
         }
 
+        /// Marks the method [`Simulation::set_simulated_timestep`] as expected.
         pub fn expect_set_simulated_timestep(&mut self, timestep: f64) {
             self.expect_set_simulated_timestep = Some(timestep)
         }
@@ -186,6 +191,7 @@ mod mock {
         }
     }
 
+    /// Mock [`ObjectBehavior`]
     #[derive(Debug, Default, Clone)]
     pub struct ObjectBehaviorMock {
         expect_step_and_return: Option<(ObjectDescription, Vec<ObjectDescription>, Option<Action>)>,
@@ -194,6 +200,7 @@ mod mock {
     }
 
     impl ObjectBehaviorMock {
+        /// Marks the method [`ObjectBehavior::step`] as expected.
         pub fn expect_step_and_return(
             &mut self,
             own_description: ObjectDescription,

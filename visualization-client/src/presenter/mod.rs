@@ -261,9 +261,9 @@ mod tests {
     }
 
     fn object_description() -> ObjectDescription {
-        ObjectBuilder::new()
+        ObjectBuilder::default()
             .shape(
-                PolygonBuilder::new()
+                PolygonBuilder::default()
                     .vertex(-10, -10)
                     .vertex(10, -10)
                     .vertex(10, 10)
@@ -302,7 +302,7 @@ mod tests {
             box delta_applier_mock,
             box global_polygon_translator,
         );
-        presenter.present_delta(ViewModelDelta::new());
+        presenter.present_delta(ViewModelDelta::new()).unwrap();
     }
 
     #[test]
@@ -398,7 +398,7 @@ mod tests {
             box global_polygon_translator,
         );
 
-        presenter.present_delta(view_model_delta_1);
-        presenter.present_delta(view_model_delta_2);
+        presenter.present_delta(view_model_delta_1).unwrap();
+        presenter.present_delta(view_model_delta_2).unwrap();
     }
 }
