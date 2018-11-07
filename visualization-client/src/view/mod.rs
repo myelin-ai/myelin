@@ -2,7 +2,7 @@
 pub mod constant;
 
 use crate::presenter::View;
-use crate::view_model::{Kind, Object, ViewModel};
+use crate::view_model::*;
 use std::fmt;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement};

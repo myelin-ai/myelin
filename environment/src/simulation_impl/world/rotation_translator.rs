@@ -1,10 +1,10 @@
-//! Implementation for `NphysicsRotationTranslator`
+//! Implementation for [`NphysicsRotationTranslator`]
 
 use super::NphysicsRotationTranslator;
 use crate::object::{Radians, RadiansError};
 use std::f64::consts::PI;
 
-/// Translates the rotation from Radians to the range (-π; π] defined by nphysics
+/// Translates the rotation from [`Radians`] to the range (-π; π] defined by nphysics
 #[derive(Default, Debug)]
 pub struct NphysicsRotationTranslatorImpl {}
 

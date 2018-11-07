@@ -9,10 +9,10 @@
 **/node_modules/
 
 # WASM compiled bundle
-/visualization/out
+/visualization-client/out
 
 # Webpack generated
-/visualization/public/dist/
+/visualization-client/public/dist/
 
 # Yarn error logs
 **/yarn-error.log

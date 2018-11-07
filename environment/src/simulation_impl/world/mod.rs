@@ -176,11 +176,20 @@ impl NphysicsWorld {
 ///
 /// [`Radians`]: ../../object/struct.Radians.html
 pub trait NphysicsRotationTranslator: fmt::Debug {
+    /// Converts an `orientation` into a representation that is suitable for nphysics
     fn to_nphysics_rotation(&self, orientation: Radians) -> f64;
+    /// Converts a rotation that originates from nphysics into [`Radians`]
+    ///
+    /// [`Radians`]: ../../object/struct.Radians.html
     fn to_radians(&self, nphysics_rotation: f64) -> Option<Radians>;
 }
 
+/// A [`ForceGenerator`] that applies a given force exactly once
 pub trait SingleTimeForceApplier: fmt::Debug + ForceGenerator<PhysicsType> {
+    /// Registers a [`Force`] to be applied to the body identified by `handle`
+    /// in the next step
+    ///
+    /// [`Force`]: ../../object/struct.Force.html
     fn register_force(&mut self, handle: NphysicsBodyHandle, force: Force);
 }
 
@@ -449,7 +458,7 @@ mod tests {
         let rotation_translator = NphysicsRotationTranslatorMock::default();
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
-        let mut world = NphysicsWorld::with_timestep(
+        let world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
@@ -1036,7 +1045,7 @@ mod tests {
         let rotation_translator = NphysicsRotationTranslatorMock::default();
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
-        let mut world = NphysicsWorld::with_timestep(
+        let world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
@@ -1226,7 +1235,7 @@ mod tests {
 
     fn sensor() -> Sensor {
         Sensor {
-            shape: PolygonBuilder::new()
+            shape: PolygonBuilder::default()
                 .vertex(-10, -10)
                 .vertex(10, -10)
                 .vertex(10, 10)
@@ -1247,7 +1256,7 @@ mod tests {
                 rotation: orientation,
             },
             mobility: Mobility::Movable(Velocity { x: 1, y: 1 }),
-            shape: PolygonBuilder::new()
+            shape: PolygonBuilder::default()
                 .vertex(-5, -5)
                 .vertex(-5, 5)
                 .vertex(5, 5)
@@ -1260,7 +1269,7 @@ mod tests {
 
     fn immovable_body(orientation: Radians) -> PhysicalBody {
         PhysicalBody {
-            shape: PolygonBuilder::new()
+            shape: PolygonBuilder::default()
                 .vertex(-100, -100)
                 .vertex(100, -100)
                 .vertex(100, 100)
