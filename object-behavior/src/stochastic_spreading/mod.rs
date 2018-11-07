@@ -149,9 +149,9 @@ mod tests {
     }
 
     fn object_description() -> ObjectDescription {
-        ObjectBuilder::new()
+        ObjectBuilder::default()
             .shape(
-                PolygonBuilder::new()
+                PolygonBuilder::default()
                     .vertex(-5, -5)
                     .vertex(5, -5)
                     .vertex(5, 5)
@@ -168,7 +168,7 @@ mod tests {
 
     fn sensor() -> Sensor {
         Sensor {
-            shape: PolygonBuilder::new()
+            shape: PolygonBuilder::default()
                 .vertex(-20, -20)
                 .vertex(20, -20)
                 .vertex(20, 20)
