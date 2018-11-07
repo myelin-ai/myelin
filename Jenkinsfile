@@ -57,7 +57,7 @@ pipeline {
     }
     stage('Test') {
       steps {
-        sh 'cargo test'
+        sh 'cargo test --all-features'
       }
     }
     stage('Style checks') {
