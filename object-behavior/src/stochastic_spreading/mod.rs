@@ -3,7 +3,6 @@
 use myelin_environment::object::*;
 use myelin_environment::object_builder::ObjectBuilder;
 use std::fmt;
-use std::ops::RangeBounds;
 
 mod random_chance_checker_impl;
 pub use self::random_chance_checker_impl::RandomChanceCheckerImpl;
@@ -143,12 +142,17 @@ mod tests {
     fn spreads_when_chance_is_hit() {
         let mut random_chance_checker = RandomChanceCheckerMock::new();
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
+        random_chance_checker.expect_random_number_in_range_and_return(0, 8, 0);
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
         let own_description = object_description();
         let action = object.step(&own_description, &[]);
         match action {
-            Some(Action::Reproduce(_, _)) => {}
+            Some(Action::Reproduce(object_description, _)) => {
+                // To do: Adjust for padding
+                let expected_object_description = object_description_at_location(45, 45);
+                assert_eq!(expected_object_description, object_description);
+            }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
         }
     }
@@ -199,6 +203,34 @@ mod tests {
             Some(Action::Reproduce(object_description, _)) => {
                 // To do: Adjust for padding
                 let expected_object_description = object_description_at_location(55, 50);
+                assert_eq!(expected_object_description, object_description);
+            }
+            action => panic!("Expected Action::Reproduce, got {:#?}", action),
+        }
+    }
+
+    #[test]
+    fn spreads_on_available_space_treating_random_location_clockwise() {
+        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
+        random_chance_checker.expect_random_number_in_range_and_return(0, 3, 1);
+        let mut object =
+            StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
+        let own_description = object_description();
+
+        let collisions = vec![
+            object_description_at_location(45, 45),
+            object_description_at_location(55, 45),
+            object_description_at_location(55, 50),
+            object_description_at_location(50, 55),
+            object_description_at_location(45, 50),
+        ];
+
+        let action = object.step(&own_description, &collisions);
+        match action {
+            Some(Action::Reproduce(object_description, _)) => {
+                // To do: Adjust for padding
+                let expected_object_description = object_description_at_location(55, 55);
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),

@@ -100,4 +100,14 @@ mod tests {
         let number = random_chance_checker.random_number_in_range(MIN, MAX);
         assert!(number >= MIN && number < MAX);
     }
+
+    #[test]
+    fn returns_only_possibility() {
+        let mut random_chance_checker = RandomChanceCheckerImpl::default();
+        const MIN: i32 = 1;
+        const MAX: i32 = 2;
+
+        let number = random_chance_checker.random_number_in_range(MIN, MAX);
+        assert_eq!(1, number);
+    }
 }
