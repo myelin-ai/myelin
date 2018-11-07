@@ -5,7 +5,8 @@ use crate::constant::*;
 use crate::controller::{ConnectionAcceptor, Controller, ControllerImpl};
 use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
-use myelin_environment::object::{Kind, ObjectBehavior};
+use myelin_environment::object::{Kind, ObjectBehavior, Position, Sensor};
+use myelin_environment::object_builder::PolygonBuilder;
 use myelin_environment::simulation_impl::world::collision_filter::IgnoringCollisionFilterImpl;
 use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
 use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
@@ -46,12 +47,12 @@ where
         );
         box SimulationImpl::new(box world)
     };
-    let object_factory = box |_: Kind| -> Box<dyn ObjectBehavior> {
+    let object_factory = box |kind: Kind| -> Box<dyn ObjectBehavior> {
         match kind {
             Kind::Plant => box StochasticSpreading::new(
                 1.0 / 100.0,
                 Sensor {
-                    shape: PolygonBuilder::new()
+                    shape: PolygonBuilder::default()
                         .vertex(-20, -20)
                         .vertex(20, -20)
                         .vertex(20, 20)
@@ -60,9 +61,9 @@ where
                         .unwrap(),
                     position: Position::default(),
                 },
-                box AccumulativeDeterministicChanceChecker::new(),
+                box AccumulativeDeterministicChanceChecker::default(),
             ),
-            _ => box Static::new(),
+            _ => box Static::default(),
         }
     };
     let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
