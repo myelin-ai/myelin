@@ -12,9 +12,7 @@ use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceAp
 use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
 use myelin_environment::simulation_impl::world::NphysicsWorld;
 use myelin_environment::{simulation_impl::SimulationImpl, Simulation};
-use myelin_object_behavior::stochastic_spreading::{
-    AccumulativeDeterministicChanceChecker, StochasticSpreading,
-};
+use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
 use myelin_object_behavior::Static;
 use myelin_visualization_core::serialization::JsonSerializer;
 use myelin_worldgen::generator::HardcodedGenerator;
@@ -61,7 +59,7 @@ where
                         .unwrap(),
                     position: Position::default(),
                 },
-                box AccumulativeDeterministicChanceChecker::default(),
+                box RandomChanceCheckerImpl::new(),
             ),
             _ => box Static::default(),
         }
