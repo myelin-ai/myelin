@@ -1,3 +1,5 @@
+//! Types relating to a behavior that reproduces at random intervals
+
 use myelin_environment::object::*;
 use myelin_environment::object_builder::ObjectBuilder;
 use std::fmt;
@@ -7,7 +9,9 @@ pub use self::random_chance_checker_impl::RandomChanceCheckerImpl;
 mod accumulative_deterministic;
 pub use self::accumulative_deterministic::AccumulativeDeterministicChanceChecker;
 
-/// Plant that spreads in stochastic intervals
+/// An [`ObjectBehavior`] that spreads itself in random intervals.
+/// The spreading has a chance to occur in every step
+/// if there is space available in an area around it
 #[derive(Debug)]
 pub struct StochasticSpreading {
     random_chance_checker: Box<dyn RandomChanceChecker>,
@@ -27,12 +31,8 @@ impl Clone for StochasticSpreading {
 
 impl StochasticSpreading {
     /// Returns a plant that has a probability of `spreading_probability`
-    /// in every step to spawn a new plant, using the injected [`RandomChanceChecker`]
-    /// to check if the probability was met.
     /// `spreading_sensor` is the area around the plant, in which it will try to
-    /// find a vacant spot to spread
-    ///
-    /// [`RandomChanceChecker`]: ./trait.RandomChanceChecker.html
+    /// find a vacant spot to spread.
     pub fn new(
         spreading_probability: f64,
         spreading_sensor: Sensor,

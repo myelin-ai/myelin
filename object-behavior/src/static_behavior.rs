@@ -1,4 +1,4 @@
-//! Behaviours of various organisms
+//! Contains the [`Static`] behavior.
 
 use myelin_environment::object::*;
 
