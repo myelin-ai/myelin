@@ -1,9 +1,14 @@
+//! Implementation of [`ViewModelSerializer`] and [`ViewModelDeserializer`] using
+//! [`bincode`], a compact binary encoding format.
+
 use crate::serialization::{ViewModelDeserializer, ViewModelSerializer};
 use crate::view_model_delta::ViewModelDelta;
 use std::error::Error;
 use std::marker::PhantomData;
 
-/// Provides methods for bincode serialization.
+/// Provides methods for serialization using using
+/// [`bincode`], a compact binary encoding format.
+///
 /// # Examples
 /// ```
 /// use myelin_visualization_core::view_model_delta::ViewModelDelta;
@@ -13,6 +18,8 @@ use std::marker::PhantomData;
 /// let serializer = BincodeSerializer::default();
 /// let serialized = serializer.serialize_view_model_delta(&view_model_delta);
 /// ```
+///
+/// [`bincode`]: https://github.com/TyOverby/bincode
 #[derive(Debug, Default)]
 pub struct BincodeSerializer(PhantomData<()>);
 
@@ -25,7 +32,8 @@ impl ViewModelSerializer for BincodeSerializer {
     }
 }
 
-/// Provides methods for bincode deserialization
+/// Provides methods for deserialization using using
+/// [`bincode`], a compact binary encoding format.
 /// # Examples
 /// ```
 /// use myelin_visualization_core::view_model_delta::ViewModelDelta;
@@ -37,6 +45,8 @@ impl ViewModelSerializer for BincodeSerializer {
 /// let deserializer = BincodeDeserializer::default();
 /// let deserialized = deserializer.deserialize_view_model_delta(&source);
 /// ```
+///
+/// [`bincode`]: https://github.com/TyOverby/bincode
 #[derive(Debug, Default)]
 pub struct BincodeDeserializer(PhantomData<()>);
 
