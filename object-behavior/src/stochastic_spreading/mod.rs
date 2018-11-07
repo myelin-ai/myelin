@@ -148,6 +148,58 @@ mod tests {
         }
     }
 
+    #[test]
+    fn does_not_spread_when_surrounded() {
+        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
+        let mut object =
+            StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
+        let own_description = object_description();
+
+        let collisions = vec![
+            object_description_at_location(45, 45),
+            object_description_at_location(50, 45),
+            object_description_at_location(55, 45),
+            object_description_at_location(55, 50),
+            object_description_at_location(55, 55),
+            object_description_at_location(50, 55),
+            object_description_at_location(45, 55),
+            object_description_at_location(45, 50),
+        ];
+
+        let action = object.step(&own_description, &collisions);
+        assert!(action.is_none());
+    }
+
+    #[test]
+    fn spreads_on_only_available_space() {
+        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
+        let mut object =
+            StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
+        let own_description = object_description();
+
+        let collisions = vec![
+            object_description_at_location(45, 45),
+            object_description_at_location(50, 45),
+            object_description_at_location(55, 45),
+            object_description_at_location(55, 55),
+            object_description_at_location(50, 55),
+            object_description_at_location(45, 55),
+            object_description_at_location(45, 50),
+        ];
+
+        let action = object.step(&own_description, &collisions);
+        match action {
+            Some(Action::Reproduce(object_description, _)) => {
+                // To do: Adjust for padding
+                let expected_object_description = object_description_at_location(55, 50);
+                assert_eq!(expected_object_description, object_description);
+            }
+            action => panic!("Expected Action::Reproduce, got {:#?}", action),
+        }
+    }
+
     fn object_description() -> ObjectDescription {
         ObjectBuilder::default()
             .shape(
@@ -160,6 +212,24 @@ mod tests {
                     .unwrap(),
             )
             .location(50, 50)
+            .mobility(Mobility::Immovable)
+            .kind(Kind::Plant)
+            .build()
+            .unwrap()
+    }
+
+    fn object_description_at_location(x: u32, y: u32) -> ObjectDescription {
+        ObjectBuilder::default()
+            .shape(
+                PolygonBuilder::default()
+                    .vertex(-5, -5)
+                    .vertex(5, -5)
+                    .vertex(5, 5)
+                    .vertex(-5, 5)
+                    .build()
+                    .unwrap(),
+            )
+            .location(x, y)
             .mobility(Mobility::Immovable)
             .kind(Kind::Plant)
             .build()
