@@ -1,7 +1,9 @@
 [workspace]
 members = [
     "environment",
-    "visualization",
+    "visualization-core",
+    "visualization-client",
+    "visualization-server",
     "worldgen",
     "object-behavior",
 ]

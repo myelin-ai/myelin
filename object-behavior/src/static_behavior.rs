@@ -6,11 +6,6 @@ use myelin_environment::object::*;
 /// This type will never perform any actions.
 #[derive(Debug, Default, Clone)]
 pub struct Static;
-impl Static {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
 
 impl ObjectBehavior for Static {
     fn step(
@@ -31,9 +26,9 @@ mod tests {
 
     #[test]
     fn returns_no_actions() {
-        let own_description = ObjectBuilder::new()
+        let own_description = ObjectBuilder::default()
             .shape(
-                PolygonBuilder::new()
+                PolygonBuilder::default()
                     .vertex(-50, -50)
                     .vertex(50, -50)
                     .vertex(50, 50)
@@ -47,7 +42,7 @@ mod tests {
             .mobility(Mobility::Movable(Velocity { x: 3, y: 5 }))
             .build()
             .unwrap();
-        let mut object = Static::new();
+        let mut object = Static::default();
         let action = object.step(&own_description, &[]);
         assert!(action.is_none());
     }

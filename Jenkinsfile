@@ -17,7 +17,7 @@ pipeline {
       parallel {
         stage('yarn') {
           steps {
-            sh '(cd visualization && yarn)'
+            sh '(cd visualization-client && yarn)'
           }
         }
       }
@@ -47,7 +47,7 @@ pipeline {
         }
         stage('wasm') {
           steps {
-            sh 'bash visualization/scripts/build.sh'
+            sh 'bash visualization-client/scripts/build.sh'
           }
         }
       }
@@ -77,7 +77,7 @@ pipeline {
         }
         stage('tslint') {
           steps {
-            sh '(cd visualization && yarn lint)'
+            sh '(cd visualization-client && yarn lint)'
           }
         }
       }
