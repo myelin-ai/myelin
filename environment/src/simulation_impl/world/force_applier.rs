@@ -1,3 +1,6 @@
+//! Implementations of [`ForceGenerator`], which provide
+//! the interface used to apply a [`Force`] on a body
+
 use super::{PhysicsType, SingleTimeForceApplier};
 use crate::object::Force;
 use nphysics2d::force_generator::ForceGenerator;
@@ -7,15 +10,10 @@ use nphysics2d::solver::IntegrationParameters;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 
+/// A [`ForceGenerator`] that applies a given force exactly once
 #[derive(Default, Debug)]
 pub struct SingleTimeForceApplierImpl {
     forces_to_apply: HashMap<BodyHandle, Force>,
-}
-
-impl SingleTimeForceApplierImpl {
-    pub fn new() -> Self {
-        Self::default()
-    }
 }
 
 impl SingleTimeForceApplier for SingleTimeForceApplierImpl {
@@ -47,16 +45,20 @@ impl ForceGenerator<PhysicsType> for SingleTimeForceApplierImpl {
     }
 }
 
+/// A wrapper that is used to implement [`ForceGenerator`] on a box of [`SingleTimeForceApplier`].
+/// This is used to make [`SingleTimeForceApplier`] mockable.
 #[derive(Debug)]
 pub struct GenericSingleTimeForceApplierWrapper {
     force_applier: Box<dyn SingleTimeForceApplier>,
 }
 
 impl GenericSingleTimeForceApplierWrapper {
-    pub fn new(force_applier: Box<dyn SingleTimeForceApplier>) -> Self {
+    /// Constructs a new wrapper around a [`SingleTimeForceApplier`]
+    pub(crate) fn new(force_applier: Box<dyn SingleTimeForceApplier>) -> Self {
         Self { force_applier }
     }
 
+    /// Retrieves the wrapped [`SingleTimeForceApplier`]
     pub(crate) fn inner_mut(&mut self) -> &mut dyn SingleTimeForceApplier {
         self.force_applier.borrow_mut()
     }
@@ -88,7 +90,7 @@ mod tests {
     #[test]
     fn can_be_injected() {
         let rotation_translator = NphysicsRotationTranslatorImpl::default();
-        let force_applier = SingleTimeForceApplierImpl::new();
+        let force_applier = SingleTimeForceApplierImpl::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let _world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
@@ -258,7 +260,7 @@ mod tests {
                 rotation: Radians::default(),
             },
             mobility: Mobility::Movable(Velocity::default()),
-            shape: PolygonBuilder::new()
+            shape: PolygonBuilder::default()
                 .vertex(-5, -5)
                 .vertex(-5, 5)
                 .vertex(5, 5)
