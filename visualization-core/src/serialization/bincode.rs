@@ -31,8 +31,8 @@ impl ViewModelSerializer for BincodeSerializer {
 /// use myelin_visualization_core::view_model_delta::ViewModelDelta;
 /// use myelin_visualization_core::serialization::{ViewModelDeserializer, BincodeDeserializer};
 ///
-/// // Replace with a string that represents a ViewModelDelta
-/// let source: Vec<u8> = r#"{}"#.into();
+/// // Replace with a `Vec` that represents a ViewModelDelta
+/// let source: Vec<u8> = vec![];
 ///
 /// let deserializer = BincodeDeserializer::default();
 /// let deserialized = deserializer.deserialize_view_model_delta(&source);
