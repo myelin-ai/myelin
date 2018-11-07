@@ -211,6 +211,35 @@ mod tests {
         assert_eq!(snapshot(), current_snapshot);
     }
 
+    #[test]
+    fn nothing_is_sent_when_delta_is_empty() {
+        let interval = Duration::from_millis(INTERVAL);
+        let mut sleeper = FixedIntervalSleeperMock::default();
+        sleeper.expect_register_work_started_called();
+        sleeper.expect_sleep_until_interval_passed_and_return(interval, Ok(()));
+        let mut presenter = Box::new(PresenterMock::default());
+        presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), ViewModelDelta::default());
+        let serializer = Box::new(SerializerMock::default());
+        let socket = Box::new(SocketMock::default());
+        let connection = Connection {
+            id: Uuid::new_v4(),
+            socket,
+        };
+
+        let current_snapshot_fn = Arc::new(|| snapshot());
+        let mut client = ClientHandler::new(
+            interval,
+            Box::new(sleeper),
+            presenter,
+            serializer,
+            connection,
+            current_snapshot_fn,
+        );
+        let last_snapshot = Snapshot::new();
+        let current_snapshot = client.step_and_return_current_snapshot(&last_snapshot);
+        assert_eq!(snapshot(), current_snapshot);
+    }
+
     #[should_panic]
     #[test]
     fn panics_on_serialization_error() {
