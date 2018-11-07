@@ -101,6 +101,8 @@ mod test {
             .unwrap();
 
         assert!(!serialized.is_empty());
+        const MAX_SIZE: usize = 1024;
+        assert!(serialized.len() < MAX_SIZE);
     }
 
     #[test]
@@ -113,6 +115,8 @@ mod test {
             .unwrap();
 
         assert!(!serialized.is_empty());
+        const MAX_SIZE: usize = 1024;
+        assert!(serialized.len() < MAX_SIZE);
     }
 
     #[test]
