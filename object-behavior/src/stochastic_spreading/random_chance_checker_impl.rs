@@ -32,6 +32,10 @@ impl RandomChanceChecker for RandomChanceCheckerImpl {
         let num: f64 = self.rng.gen();
         num <= probability
     }
+
+    fn random_number_in_range(&mut self, min: i32, max: i32) -> i32 {
+        unimplemented!()
+    }
 }
 
 #[cfg(test)]

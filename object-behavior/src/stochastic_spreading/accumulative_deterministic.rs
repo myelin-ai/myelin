@@ -1,6 +1,7 @@
 use super::RandomChanceChecker;
 
-/// Random number generator implementation that uses the `rand` crate
+/// Random number generator that just counts its calls
+/// until a statistical probability has been met.
 #[derive(Debug, Clone, Default)]
 pub struct AccumulativeDeterministicChanceChecker {
     counter: f64,
@@ -21,6 +22,10 @@ impl RandomChanceChecker for AccumulativeDeterministicChanceChecker {
             self.counter = 0.0;
         }
         chance_has_been_hit
+    }
+
+    fn random_number_in_range(&mut self, min: i32, max: i32) -> i32 {
+        unimplemented!()
     }
 }
 

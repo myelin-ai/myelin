@@ -3,6 +3,7 @@
 use myelin_environment::object::*;
 use myelin_environment::object_builder::ObjectBuilder;
 use std::fmt;
+use std::ops::RangeBounds;
 
 mod random_chance_checker_impl;
 pub use self::random_chance_checker_impl::RandomChanceCheckerImpl;
@@ -93,6 +94,9 @@ pub trait RandomChanceChecker: fmt::Debug + RandomChanceCheckerClone {
     /// # Errors
     /// Is allowed to panic if `probability` is outside the range [0.0; 1.0]
     fn flip_coin_with_probability(&mut self, probability: f64) -> bool;
+
+    /// Returns a random element from the specified range [min; max)
+    fn random_number_in_range(&mut self, min: i32, max: i32) -> i32;
 }
 
 /// Supertrait used to make sure that all implementors
@@ -120,6 +124,7 @@ mod tests {
     use super::*;
     use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
     use std::cell::RefCell;
+    use std::thread::panicking;
 
     const SPREADING_CHANGE: f64 = 1.0 / (60.0 * 30.0);
 
@@ -252,7 +257,10 @@ mod tests {
     #[derive(Debug, Default, Clone)]
     struct RandomChanceCheckerMock {
         expect_flip_coin_with_probability_and_return: Option<(f64, bool)>,
+        expect_random_number_in_range_and_return: Option<(i32, i32, i32)>,
+
         flip_coin_with_probability_was_called: RefCell<bool>,
+        random_number_in_range_was_called: RefCell<bool>,
     }
 
     impl RandomChanceCheckerMock {
@@ -267,14 +275,34 @@ mod tests {
         ) {
             self.expect_flip_coin_with_probability_and_return = Some((probability, returned_value));
         }
+
+        pub(crate) fn expect_random_number_in_range_and_return(
+            &mut self,
+            min: i32,
+            max: i32,
+            returned_value: i32,
+        ) {
+            self.expect_random_number_in_range_and_return = Some((min, max, returned_value));
+        }
     }
 
     impl Drop for RandomChanceCheckerMock {
         fn drop(&mut self) {
+            if panicking() {
+                return;
+            }
+
             if self.expect_flip_coin_with_probability_and_return.is_some() {
                 assert!(
                     *self.flip_coin_with_probability_was_called.borrow(),
                     "flip_coin_with_probability() was not called, but was expected"
+                )
+            }
+
+            if self.expect_random_number_in_range_and_return.is_some() {
+                assert!(
+                    *self.random_number_in_range_was_called.borrow(),
+                    "random_number_in_range() was not called, but was expected"
                 )
             }
         }
@@ -296,6 +324,24 @@ mod tests {
                 }
             } else {
                 panic!("flip_coin_with_probability() was called unexpectedly")
+            }
+        }
+
+        fn random_number_in_range(&mut self, min: i32, max: i32) -> i32 {
+            *self.random_number_in_range_was_called.borrow_mut() = true;
+            if let Some((ref expected_min, ref expected_max, ref return_value)) =
+                self.expect_random_number_in_range_and_return
+            {
+                if min == *expected_min && max == *expected_max {
+                    return_value.clone()
+                } else {
+                    panic!(
+                        "random_number_in_range() was called with {:?} and {:?}, expected {:?} and {:?}",
+                        min, max, expected_min, expected_max
+                    )
+                }
+            } else {
+                panic!("random_number_in_range() was called unexpectedly")
             }
         }
     }
