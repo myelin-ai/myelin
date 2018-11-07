@@ -43,15 +43,17 @@ impl ClientHandler {
                 .presenter
                 .calculate_deltas(last_snapshot, &current_snapshot);
 
-            let serialized = self
-                .serializer
-                .serialize_view_model_delta(&deltas)
-                .expect("Failed to serialize delta");
+            if !deltas.is_empty() {
+                let serialized = self
+                    .serializer
+                    .serialize_view_model_delta(&deltas)
+                    .expect("Failed to serialize delta");
 
-            self.connection
-                .socket
-                .send_message(&serialized)
-                .expect("Failed to send message to client");
+                self.connection
+                    .socket
+                    .send_message(&serialized)
+                    .expect("Failed to send message to client");
+            }
 
             current_snapshot
         });
