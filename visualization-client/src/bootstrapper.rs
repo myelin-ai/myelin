@@ -5,7 +5,7 @@ use crate::controller::ControllerImpl;
 use crate::input_handler::InputHandler;
 use crate::presenter::{CanvasPresenter, DeltaApplierImpl, GlobalPolygonTranslatorImpl};
 use crate::view::CanvasView;
-use myelin_visualization_core::serialization::JsonDeserializer;
+use myelin_visualization_core::serialization::BincodeDeserializer;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
 
@@ -23,6 +23,6 @@ pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
             box DeltaApplierImpl::new(),
             box GlobalPolygonTranslatorImpl::new(),
         ),
-        box JsonDeserializer::new(),
+        box BincodeDeserializer::new(),
     ))
 }
