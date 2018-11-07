@@ -23,6 +23,6 @@ pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
             box DeltaApplierImpl::new(),
             box GlobalPolygonTranslatorImpl::new(),
         ),
-        box BincodeDeserializer::new(),
+        box BincodeDeserializer::default(),
     ))
 }

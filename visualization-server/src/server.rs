@@ -51,7 +51,7 @@ where
             let interval = Duration::from_float_secs(SIMULATED_TIMESTEP_IN_SI_UNITS);
             let fixed_interval_sleeper = FixedIntervalSleeperImpl::default();
             let presenter = DeltaPresenter::default();
-            let view_model_serializer = BincodeSerializer::new();
+            let view_model_serializer = BincodeSerializer::default();
 
             let connection = Connection {
                 id: Uuid::new_v4(),
