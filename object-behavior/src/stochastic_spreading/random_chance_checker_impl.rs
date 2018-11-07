@@ -34,7 +34,7 @@ impl RandomChanceChecker for RandomChanceCheckerImpl {
     }
 
     fn random_number_in_range(&mut self, min: i32, max: i32) -> i32 {
-        unimplemented!()
+        self.rng.gen_range(min, max)
     }
 }
 
@@ -74,5 +74,30 @@ mod tests {
     fn panics_too_high_probability() {
         let mut random_chance_checker = RandomChanceCheckerImpl::new();
         random_chance_checker.flip_coin_with_probability(1.1);
+    }
+
+    #[should_panic]
+    #[test]
+    fn panics_when_min_is_higher_than_max() {
+        let mut random_chance_checker = RandomChanceCheckerImpl::default();
+        random_chance_checker.random_number_in_range(1, 0);
+    }
+
+    #[should_panic]
+    #[test]
+    fn panics_when_min_is_max() {
+        let mut random_chance_checker = RandomChanceCheckerImpl::default();
+        const ONLY_BOUND: i32 = 1;
+        random_chance_checker.random_number_in_range(ONLY_BOUND, ONLY_BOUND);
+    }
+
+    #[test]
+    fn returned_number_is_in_range() {
+        let mut random_chance_checker = RandomChanceCheckerImpl::default();
+        const MIN: i32 = -1;
+        const MAX: i32 = 3;
+
+        let number = random_chance_checker.random_number_in_range(MIN, MAX);
+        assert!(number >= MIN && number < MAX);
     }
 }
