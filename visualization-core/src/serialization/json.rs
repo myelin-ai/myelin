@@ -31,20 +31,6 @@ pub struct JsonSerializer(PhantomData<()>);
 #[derive(Debug, Default)]
 pub struct JsonDeserializer(PhantomData<()>);
 
-impl JsonSerializer {
-    /// Creates a new [`JsonSerializer`].
-    pub fn new() -> Self {
-        JsonSerializer(PhantomData)
-    }
-}
-
-impl JsonDeserializer {
-    /// Creates a new [`JsonDeserializer`].
-    pub fn new() -> Self {
-        JsonDeserializer(PhantomData)
-    }
-}
-
 impl ViewModelSerializer for JsonSerializer {
     fn serialize_view_model_delta(
         &self,

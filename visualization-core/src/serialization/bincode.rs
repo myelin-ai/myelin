@@ -16,13 +16,6 @@ use std::marker::PhantomData;
 #[derive(Debug, Default)]
 pub struct BincodeSerializer(PhantomData<()>);
 
-impl BincodeSerializer {
-    /// Creates a new [`BincodeSerializer`].
-    pub fn new() -> Self {
-        BincodeSerializer(PhantomData)
-    }
-}
-
 impl ViewModelSerializer for BincodeSerializer {
     fn serialize_view_model_delta(
         &self,
@@ -46,13 +39,6 @@ impl ViewModelSerializer for BincodeSerializer {
 /// ```
 #[derive(Debug, Default)]
 pub struct BincodeDeserializer(PhantomData<()>);
-
-impl BincodeDeserializer {
-    /// Creates a new [`BincodeDeserializer`].
-    pub fn new() -> Self {
-        BincodeDeserializer(PhantomData)
-    }
-}
 
 impl ViewModelDeserializer for BincodeDeserializer {
     fn deserialize_view_model_delta(&self, buf: &[u8]) -> Result<ViewModelDelta, Box<dyn Error>> {
