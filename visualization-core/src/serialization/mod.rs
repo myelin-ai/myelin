@@ -1,12 +1,16 @@
 //! Types dealing with serialization and deserialization
 
+#[cfg(feature = "use-bincode")]
 pub use self::bincode::*;
+#[cfg(feature = "use-json")]
 pub use self::json::*;
 use crate::view_model_delta::ViewModelDelta;
 use std::error::Error;
 use std::fmt::Debug;
 
+#[cfg(feature = "use-bincode")]
 mod bincode;
+#[cfg(feature = "use-json")]
 mod json;
 
 /// A Serializer for [`ViewModelDelta`]s.
