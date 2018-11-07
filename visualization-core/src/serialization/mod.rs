@@ -1,10 +1,12 @@
 //! Types dealing with serialization and deserialization
 
+pub use self::bincode::*;
 pub use self::json::*;
 use crate::view_model_delta::ViewModelDelta;
 use std::error::Error;
 use std::fmt::Debug;
 
+mod bincode;
 mod json;
 
 /// A Serializer for [`ViewModelDelta`]s.
