@@ -14,7 +14,7 @@ use myelin_environment::simulation_impl::world::NphysicsWorld;
 use myelin_environment::{simulation_impl::SimulationImpl, Simulation};
 use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
 use myelin_object_behavior::Static;
-use myelin_visualization_core::serialization::JsonSerializer;
+use myelin_visualization_core::serialization::BincodeSerializer;
 use myelin_worldgen::generator::HardcodedGenerator;
 use myelin_worldgen::WorldGenerator;
 use std::net::SocketAddr;
@@ -71,7 +71,7 @@ where
             let interval = Duration::from_float_secs(SIMULATED_TIMESTEP_IN_SI_UNITS);
             let fixed_interval_sleeper = FixedIntervalSleeperImpl::default();
             let presenter = DeltaPresenter::default();
-            let view_model_serializer = JsonSerializer::new();
+            let view_model_serializer = BincodeSerializer::default();
 
             let connection = Connection {
                 id: Uuid::new_v4(),
