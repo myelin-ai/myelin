@@ -10,7 +10,7 @@ use std::marker::PhantomData;
 /// use myelin_visualization_core::serialization::{ViewModelSerializer, JsonSerializer};
 ///
 /// let view_model_delta = ViewModelDelta::default();
-/// let serializer = JsonSerializer::new();
+/// let serializer = JsonSerializer::default();
 /// let serialized = serializer.serialize_view_model_delta(&view_model_delta);
 /// ```
 #[derive(Debug, Default)]
@@ -25,7 +25,7 @@ pub struct JsonSerializer(PhantomData<()>);
 /// // Replace with a string that represents a ViewModelDelta
 /// let source: Vec<u8> = r#"{}"#.into();
 ///
-/// let deserializer = JsonDeserializer::new();
+/// let deserializer = JsonDeserializer::default();
 /// let deserialized = deserializer.deserialize_view_model_delta(&source);
 /// ```
 #[derive(Debug, Default)]
@@ -95,14 +95,14 @@ mod test {
         print!(
             "{}",
             String::from_utf8(
-                JsonSerializer::new()
+                JsonSerializer::default()
                     .serialize_view_model_delta(&view_model_delta)
                     .unwrap()
             )
             .unwrap()
         );
 
-        let serializer = JsonSerializer::new();
+        let serializer = JsonSerializer::default();
         let serialized = serializer
             .serialize_view_model_delta(&view_model_delta)
             .unwrap();
@@ -116,7 +116,7 @@ mod test {
 
         let view_model_delta = ViewModelDelta::default();
 
-        let serializer = JsonSerializer::new();
+        let serializer = JsonSerializer::default();
         let serialized = serializer
             .serialize_view_model_delta(&view_model_delta)
             .unwrap();
@@ -161,14 +161,14 @@ mod test {
         print!(
             "{}",
             String::from_utf8(
-                JsonSerializer::new()
+                JsonSerializer::default()
                     .serialize_view_model_delta(&expected)
                     .unwrap()
             )
             .unwrap()
         );
 
-        let deserializer = JsonDeserializer::new();
+        let deserializer = JsonDeserializer::default();
         let deserialized = deserializer.deserialize_view_model_delta(&source).unwrap();
 
         assert_eq!(expected, deserialized);
@@ -180,7 +180,7 @@ mod test {
 
         let source: Vec<u8> = r#"{}"#.into();
 
-        let deserializer = JsonDeserializer::new();
+        let deserializer = JsonDeserializer::default();
         let deserialized = deserializer.deserialize_view_model_delta(&source).unwrap();
 
         assert_eq!(expected, deserialized);
