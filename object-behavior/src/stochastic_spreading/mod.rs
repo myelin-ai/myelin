@@ -51,24 +51,61 @@ impl StochasticSpreading {
     }
 
     fn spread(
-        &self,
+        &mut self,
         own_description: &ObjectDescription,
-        _sensor_collisions: &[ObjectDescription],
+        sensor_collisions: &[ObjectDescription],
     ) -> Option<Action> {
-        let object_description = ObjectBuilder::default()
-            .location(
-                own_description.position.location.x + 10,
-                own_description.position.location.y + 10,
-            )
-            .rotation(own_description.position.rotation)
-            .shape(own_description.shape.clone())
-            .kind(own_description.kind)
-            .mobility(own_description.mobility.clone())
-            .build()
-            .unwrap();
-        let object_behavior = Box::new(self.clone());
-        Some(Action::Reproduce(object_description, object_behavior))
+        const POSSIBLE_SPREADING_LOCATIONS: [(i32, i32); 8] = [
+            (-5, -5),
+            (0, -5),
+            (5, -5),
+            (5, 0),
+            (5, 5),
+            (0, 5),
+            (-5, 5),
+            (-5, 0),
+        ];
+
+        let first_try_index = self
+            .random_chance_checker
+            .random_number_in_range(0, POSSIBLE_SPREADING_LOCATIONS.len() as i32)
+            as usize;
+
+        let spreading_location = POSSIBLE_SPREADING_LOCATIONS
+            .iter()
+            .skip(first_try_index as usize)
+            .chain(POSSIBLE_SPREADING_LOCATIONS.iter().take(first_try_index))
+            .map(|(relative_x, relative_y)| Location {
+                x: (own_description.position.location.x as i32 + relative_x) as u32,
+                y: (own_description.position.location.y as i32 + relative_y) as u32,
+            })
+            .find(|location| can_spread_at_location(&location, sensor_collisions));
+        if let Some(spreading_location) = spreading_location {
+            let object_description = ObjectBuilder::default()
+                .location(spreading_location.x, spreading_location.y)
+                .rotation(own_description.position.rotation)
+                .shape(own_description.shape.clone())
+                .kind(own_description.kind)
+                .mobility(own_description.mobility.clone())
+                .build()
+                .unwrap();
+            let object_behavior = Box::new(self.clone());
+            Some(Action::Reproduce(object_description, object_behavior))
+        } else {
+            None
+        }
     }
+}
+
+fn can_spread_at_location(location: &Location, sensor_collisions: &[ObjectDescription]) -> bool {
+    !sensor_collisions
+        .iter()
+        .any(|object_description| occupies_location(object_description, location))
+}
+
+fn occupies_location(object_description: &ObjectDescription, location: &Location) -> bool {
+    // https://stackoverflow.com/questions/1119627/how-to-test-if-a-point-is-inside-of-a-convex-polygon-in-2d-integer-coordinates
+    true
 }
 
 impl ObjectBehavior for StochasticSpreading {
