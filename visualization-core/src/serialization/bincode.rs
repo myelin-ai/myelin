@@ -1,53 +1,58 @@
+//! Implementation of [`ViewModelSerializer`] and [`ViewModelDeserializer`] using
+//! [`bincode`], a compact binary encoding format.
+
 use crate::serialization::{ViewModelDeserializer, ViewModelSerializer};
 use crate::view_model_delta::ViewModelDelta;
 use std::error::Error;
 use std::marker::PhantomData;
 
-/// Provides methods for JSON serialization.
+/// Provides methods for serialization using using
+/// [`bincode`], a compact binary encoding format.
+///
 /// # Examples
 /// ```
 /// use myelin_visualization_core::view_model_delta::ViewModelDelta;
-/// use myelin_visualization_core::serialization::{ViewModelSerializer, JsonSerializer};
+/// use myelin_visualization_core::serialization::{ViewModelSerializer, BincodeSerializer};
 ///
 /// let view_model_delta = ViewModelDelta::default();
-/// let serializer = JsonSerializer::default();
+/// let serializer = BincodeSerializer::default();
 /// let serialized = serializer.serialize_view_model_delta(&view_model_delta);
 /// ```
-#[derive(Debug, Default)]
-pub struct JsonSerializer(PhantomData<()>);
-
-/// Provides methods for JSON deserialization
-/// # Examples
-/// ```
-/// use myelin_visualization_core::view_model_delta::ViewModelDelta;
-/// use myelin_visualization_core::serialization::{ViewModelDeserializer, JsonDeserializer};
 ///
-/// // Replace with a string that represents a ViewModelDelta
-/// let source: Vec<u8> = r#"{}"#.into();
-///
-/// let deserializer = JsonDeserializer::default();
-/// let deserialized = deserializer.deserialize_view_model_delta(&source);
-/// ```
+/// [`bincode`]: https://github.com/TyOverby/bincode
 #[derive(Debug, Default)]
-pub struct JsonDeserializer(PhantomData<()>);
+pub struct BincodeSerializer(PhantomData<()>);
 
-impl ViewModelSerializer for JsonSerializer {
+impl ViewModelSerializer for BincodeSerializer {
     fn serialize_view_model_delta(
         &self,
         view_model_delta: &ViewModelDelta,
     ) -> Result<Vec<u8>, Box<dyn Error>> {
-        let serialized = serde_json::to_string(view_model_delta)?;
-
-        Ok(serialized.into())
+        Ok(bincode::serialize(view_model_delta)?)
     }
 }
 
-impl ViewModelDeserializer for JsonDeserializer {
-    fn deserialize_view_model_delta(&self, buf: &[u8]) -> Result<ViewModelDelta, Box<dyn Error>> {
-        let json_string = String::from_utf8(buf.to_vec())?;
-        let deserialized: ViewModelDelta = serde_json::from_str(&json_string)?;
+/// Provides methods for deserialization using using
+/// [`bincode`], a compact binary encoding format.
+/// # Examples
+/// ```
+/// use myelin_visualization_core::view_model_delta::ViewModelDelta;
+/// use myelin_visualization_core::serialization::{ViewModelDeserializer, BincodeDeserializer};
+///
+/// // Replace with a `Vec` that represents a ViewModelDelta
+/// let source: Vec<u8> = vec![];
+///
+/// let deserializer = BincodeDeserializer::default();
+/// let deserialized = deserializer.deserialize_view_model_delta(&source);
+/// ```
+///
+/// [`bincode`]: https://github.com/TyOverby/bincode
+#[derive(Debug, Default)]
+pub struct BincodeDeserializer(PhantomData<()>);
 
-        Ok(deserialized)
+impl ViewModelDeserializer for BincodeDeserializer {
+    fn deserialize_view_model_delta(&self, buf: &[u8]) -> Result<ViewModelDelta, Box<dyn Error>> {
+        Ok(bincode::deserialize(buf)?)
     }
 }
 
@@ -60,8 +65,6 @@ mod test {
 
     #[test]
     fn serializes_full_delta() {
-        let expected: Vec<u8> = r#"{"12":{"Updated":{"shape":{"vertices":[{"x":-5,"y":-5},{"x":1,"y":1},{"x":2,"y":3},{"x":5,"y":6}]},"location":{"x":3,"y":4},"rotation":{"value":1.0},"mobility":{"Movable":{"x":2,"y":3}},"kind":"Organism","sensor":{"shape":{"vertices":[{"x":-10,"y":-12},{"x":10,"y":6},{"x":16,"y":0}]},"position":{"location":{"x":2,"y":3},"rotation":{"value":1.0}}}}}}"#.into();
-
         let object_description_delta = ObjectDescriptionDelta {
             kind: Some(Kind::Organism),
             shape: Some(
@@ -92,36 +95,28 @@ mod test {
 
         let view_model_delta = hashmap! { 12 => ObjectDelta::Updated(object_description_delta) };
 
-        print!(
-            "{}",
-            String::from_utf8(
-                JsonSerializer::default()
-                    .serialize_view_model_delta(&view_model_delta)
-                    .unwrap()
-            )
-            .unwrap()
-        );
-
-        let serializer = JsonSerializer::default();
+        let serializer = BincodeSerializer::default();
         let serialized = serializer
             .serialize_view_model_delta(&view_model_delta)
             .unwrap();
 
-        assert_eq!(expected, serialized);
+        assert!(!serialized.is_empty());
+        const MAX_SIZE: usize = 1024;
+        assert!(serialized.len() < MAX_SIZE);
     }
 
     #[test]
     fn serialize_works_with_empty_view_model() {
-        let expected: Vec<u8> = r#"{}"#.into();
-
         let view_model_delta = ViewModelDelta::default();
 
-        let serializer = JsonSerializer::default();
+        let serializer = BincodeSerializer::default();
         let serialized = serializer
             .serialize_view_model_delta(&view_model_delta)
             .unwrap();
 
-        assert_eq!(expected, serialized);
+        assert!(!serialized.is_empty());
+        const MAX_SIZE: usize = 1024;
+        assert!(serialized.len() < MAX_SIZE);
     }
 
     #[test]
@@ -155,21 +150,14 @@ mod test {
         };
 
         let expected = hashmap! { 12 => ObjectDelta::Updated(object_description_delta) };
+        let serialized = BincodeSerializer::default()
+            .serialize_view_model_delta(&expected)
+            .unwrap();
 
-        let source: Vec<u8> = r#"{"12":{"Updated":{"shape":{"vertices":[{"x":-5,"y":-5},{"x":1,"y":1},{"x":2,"y":3},{"x":5,"y":6}]},"location":{"x":3,"y":4},"rotation":{"value":1.0},"mobility":{"Movable":{"x":2,"y":3}},"kind":"Organism","sensor":{"shape":{"vertices":[{"x":-10,"y":-12},{"x":10,"y":6},{"x":16,"y":0}]},"position":{"location":{"x":2,"y":3},"rotation":{"value":1.0}}}}}}"#.into();
-
-        print!(
-            "{}",
-            String::from_utf8(
-                JsonSerializer::default()
-                    .serialize_view_model_delta(&expected)
-                    .unwrap()
-            )
-            .unwrap()
-        );
-
-        let deserializer = JsonDeserializer::default();
-        let deserialized = deserializer.deserialize_view_model_delta(&source).unwrap();
+        let deserializer = BincodeDeserializer::default();
+        let deserialized = deserializer
+            .deserialize_view_model_delta(&serialized)
+            .unwrap();
 
         assert_eq!(expected, deserialized);
     }
@@ -177,11 +165,14 @@ mod test {
     #[test]
     fn deserialize_works_with_empty_view_model() {
         let expected = ViewModelDelta::default();
+        let serialized = BincodeSerializer::default()
+            .serialize_view_model_delta(&expected)
+            .unwrap();
 
-        let source: Vec<u8> = r#"{}"#.into();
-
-        let deserializer = JsonDeserializer::default();
-        let deserialized = deserializer.deserialize_view_model_delta(&source).unwrap();
+        let deserializer = BincodeDeserializer::default();
+        let deserialized = deserializer
+            .deserialize_view_model_delta(&serialized)
+            .unwrap();
 
         assert_eq!(expected, deserialized);
     }

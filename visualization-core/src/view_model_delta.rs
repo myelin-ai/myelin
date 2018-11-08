@@ -10,7 +10,6 @@ pub type ViewModelDelta = HashMap<Id, ObjectDelta>;
 
 /// Describes what happened to an individual object in this
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "snake_case")]
 pub enum ObjectDelta {
     /// The object has been added to the world
     Created(ObjectDescription),
