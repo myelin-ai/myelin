@@ -28,13 +28,14 @@ impl NphysicsRotationTranslator for NphysicsRotationTranslatorImpl {
             nphysics_rotation
         };
 
-        let rotation = if rounded_rotation >= 0.0 {
-            Radians::try_new(rounded_rotation)
+        let adjusted_rotation = if rounded_rotation >= 0.0 {
+            rounded_rotation
         } else {
-            Radians::try_new((2.0 * PI) + rounded_rotation)
+            (2.0 * PI) + rounded_rotation
         };
 
-        rotation.map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue)
+        Radians::try_new(adjusted_rotation)
+            .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue)
     }
 }
 
