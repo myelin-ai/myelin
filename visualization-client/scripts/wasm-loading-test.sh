@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-pipenv_dir=$(cd -- "$(dirname -- "$0")/smoke-test" && pwd)
+pipenv_dir=$(cd -- "$(dirname -- "$0")/wasm-loading-test" && pwd)
 
 cd -- "$pipenv_dir"
 

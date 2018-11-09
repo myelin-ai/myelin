@@ -62,9 +62,9 @@ pipeline {
             sh 'cargo test --all-features'
           }
         }
-        stage('wasm loading test') {
+        stage('wasm-loading-test') {
           steps {
-            sh 'bash visualization-client/scripts/smoke-test.sh'
+            sh 'bash visualization-client/scripts/wasm-loading-test.sh'
           }
         }
       }
