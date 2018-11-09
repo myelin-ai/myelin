@@ -6,7 +6,9 @@
 
 use crate::Id;
 use std::collections::HashMap;
+use std::error::Error;
 use std::f64::consts::PI;
+use std::fmt;
 use std::fmt::Debug;
 
 /// Behaviour of an object that can never be moved
@@ -149,7 +151,9 @@ pub struct Radians {
 
 impl Radians {
     /// Creates a new instance of [`Radians`].
-    /// Returns `None` if the given value is outside the range [0.0; 2π)
+    ///
+    /// ### Errors
+    /// Returns a [`RadiansError`] if the given value is outside the range [0.0; 2π)
     ///
     /// ### Examples
     /// ```
@@ -158,11 +162,11 @@ impl Radians {
     ///
     /// let rotation = Radians::try_new(PI).expect("Value was outside the range [0.0; 2π)");
     /// ```
-    pub fn try_new(value: f64) -> Option<Radians> {
+    pub fn try_new(value: f64) -> Result<Radians, RadiansError> {
         if value >= 0.0 && value < 2.0 * PI {
-            Some(Radians { value })
+            Ok(Radians { value })
         } else {
-            None
+            Err(RadiansError::OutOfRange)
         }
     }
 
@@ -171,6 +175,21 @@ impl Radians {
         self.value
     }
 }
+
+/// The reason why a [`Radians`] instance could not be created
+#[derive(Debug)]
+pub enum RadiansError {
+    /// The given value was not in the range [0.0; 2π)
+    OutOfRange,
+}
+
+impl fmt::Display for RadiansError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Given value is not in range [0.0; 2π)")
+    }
+}
+
+impl Error for RadiansError {}
 
 /// An absolute location within the world, where
 /// [0; 0] is defined as the upper left corner of
@@ -260,25 +279,25 @@ mod tests {
     #[test]
     fn radians_new_with_negative_0_point_1_is_none() {
         let radians = Radians::try_new(-0.1);
-        assert!(radians.is_none())
+        assert!(radians.is_err())
     }
 
     #[test]
     fn radians_new_with_0_is_some() {
         let radians = Radians::try_new(0.0);
-        assert!(radians.is_some())
+        assert!(radians.is_ok())
     }
 
     #[test]
     fn radians_new_with_1_point_9_pi_is_some() {
         let radians = Radians::try_new(1.9 * PI);
-        assert!(radians.is_some())
+        assert!(radians.is_ok())
     }
 
     #[test]
     fn radians_new_with_2_pi_is_none() {
         let radians = Radians::try_new(2.0 * PI);
-        assert!(radians.is_none())
+        assert!(radians.is_err())
     }
 
     #[test]

@@ -5,6 +5,7 @@ use crate::object::*;
 use crate::{Id, Simulation};
 use ncollide2d::world::CollisionObjectHandle;
 use std::collections::HashMap;
+use std::error::Error;
 use std::fmt;
 
 pub mod world;
@@ -26,6 +27,19 @@ struct NonPhysicalObjectData {
     pub(crate) kind: Kind,
     pub(crate) behavior: Box<dyn ObjectBehavior>,
 }
+
+#[derive(Debug)]
+enum ActionError {
+    InvalidHandle,
+}
+
+impl fmt::Display for ActionError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Invalid handle")
+    }
+}
+
+impl Error for ActionError {}
 
 impl SimulationImpl {
     /// Create a new SimulationImpl by injecting a [`World`]
@@ -113,23 +127,33 @@ impl SimulationImpl {
         }
     }
 
-    fn handle_action(&mut self, body_handle: BodyHandle, action: Action) -> Option<()> {
+    fn handle_action(
+        &mut self,
+        body_handle: BodyHandle,
+        action: Action,
+    ) -> Result<(), ActionError> {
         match action {
             Action::Reproduce(object_description, object_behavior) => {
                 self.add_object(object_description, object_behavior);
+                Ok(())
             }
-            Action::ApplyForce(force) => {
-                self.world.apply_force(body_handle, force)?;
-            }
-            Action::Destroy(object_id) => {
-                self.world.remove_body(BodyHandle(object_id))?;
-            }
-            Action::Die => {
-                self.world.remove_body(body_handle)?;
-                self.non_physical_object_data.remove(&body_handle)?;
-            }
-        };
-        Some(())
+            Action::ApplyForce(force) => self
+                .world
+                .apply_force(body_handle, force)
+                .map(|_| ())
+                .ok_or(ActionError::InvalidHandle),
+            Action::Destroy(object_id) => self
+                .world
+                .remove_body(BodyHandle(object_id))
+                .map(|_| ())
+                .ok_or(ActionError::InvalidHandle),
+            Action::Die => self
+                .world
+                .remove_body(body_handle)
+                .and(self.non_physical_object_data.remove(&body_handle))
+                .map(|_| ())
+                .ok_or(ActionError::InvalidHandle),
+        }
     }
 }
 
