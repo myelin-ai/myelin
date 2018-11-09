@@ -132,25 +132,17 @@ impl SimulationImpl {
                 self.add_object(object_description, object_behavior);
                 Ok(())
             }
-            Action::ApplyForce(force) => {
-                if self.world.apply_force(body_handle, force).is_some() {
-                    Ok(())
-                } else {
-                    Err(ActionError::InvalidHandle)
-                }
-            }
-            Action::Die => {
-                if self
-                    .world
-                    .remove_body(body_handle)
-                    .and(self.non_physical_object_data.remove(&body_handle))
-                    .is_some()
-                {
-                    Ok(())
-                } else {
-                    Err(ActionError::InvalidHandle)
-                }
-            }
+            Action::ApplyForce(force) => self
+                .world
+                .apply_force(body_handle, force)
+                .map(|_| ())
+                .ok_or(ActionError::InvalidHandle),
+            Action::Die => self
+                .world
+                .remove_body(body_handle)
+                .and(self.non_physical_object_data.remove(&body_handle))
+                .map(|_| ())
+                .ok_or(ActionError::InvalidHandle),
         }
     }
 }
