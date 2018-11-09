@@ -8,6 +8,7 @@ import time
 import sys
 
 HTTP_PORT = 8081
+SERVER_CRATE = 'myelin-visualization-server'
 
 WEB_DIR = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', 'public'))
@@ -23,7 +24,10 @@ def _start_http_server():
 
 
 def _start_websocket_server():
-    return subprocess.Popen(['cargo', 'run'], cwd=CARGO_ROOT)
+    # Ensures that `cargo run` doesn't take too long, especially on Jenkins when
+    # `cargo run` might wait for a lock file
+    subprocess.call(['cargo', 'build', '-p', SERVER_CRATE], cwd=CARGO_ROOT)
+    return subprocess.Popen(['cargo', 'run', '-p', SERVER_CRATE], cwd=CARGO_ROOT)
 
 
 def _start_webdriver():
