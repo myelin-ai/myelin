@@ -10,7 +10,7 @@ HTTP_PORT = 8081
 WEB_DIR = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', 'public'))
 CARGO_ROOT = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '..', '..', '..', 'visualization-server'))
+    os.path.dirname(__file__), '..', '..', '..'))
 
 
 def _start_http_server():
@@ -21,7 +21,6 @@ def _start_http_server():
 
 
 def _start_websocket_server():
-    subprocess.call(['cargo', 'build'], cwd=CARGO_ROOT)
     return subprocess.Popen(['cargo', 'run'], cwd=CARGO_ROOT)
 
 
