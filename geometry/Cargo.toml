@@ -1,0 +1,11 @@
+[package]
+name = "myelin-geometry"
+version = "0.1.0"
+authors = [
+    "Jan Nils Ferner <jan@myelin.ch>",
+    "Mathias Fischler <mathias@myelin.ch>",
+    "Ruben Schmidmeister <ruben@myelin.ch>",
+    "Jeremy Stucki <jeremy@myelin.ch>",
+]
+edition = "2018"
+serde_derive = "1.0"
