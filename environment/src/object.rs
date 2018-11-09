@@ -4,7 +4,6 @@
 //! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
 //! [`ObjectDescription`]: ./struct.ObjectDescription.html
 
-use crate::simulation_impl::BodyHandle;
 use crate::Id;
 use std::collections::HashMap;
 use std::f64::consts::PI;
@@ -32,7 +31,7 @@ pub enum Action {
     /// Create a new object at the specified location
     Reproduce(ObjectDescription, Box<dyn ObjectBehavior>),
     /// Destroys another object
-    Destroy(BodyHandle),
+    Destroy(Id),
     /// Destroy the object
     Die,
 }

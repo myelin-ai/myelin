@@ -121,8 +121,8 @@ impl SimulationImpl {
             Action::ApplyForce(force) => {
                 self.world.apply_force(body_handle, force)?;
             }
-            Action::Destroy(body_handle) => {
-                self.world.remove_body(body_handle)?;
+            Action::Destroy(object_id) => {
+                self.world.remove_body(BodyHandle(object_id))?;
             }
             Action::Die => {
                 self.world.remove_body(body_handle)?;
@@ -824,7 +824,7 @@ mod tests {
         object_behavior.expect_step_and_return(
             expected_object_description.clone(),
             HashMap::new(),
-            Some(Action::Destroy(handle_two)),
+            Some(Action::Destroy(handle_two.0)),
         );
 
         simulation.add_object(expected_object_description.clone(), box object_behavior);
