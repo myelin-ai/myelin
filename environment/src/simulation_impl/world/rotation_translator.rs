@@ -1,7 +1,7 @@
 //! Implementation for [`NphysicsRotationTranslator`]
 
-use super::NphysicsRotationTranslator;
-use crate::object::{Radians, RadiansError};
+use super::{NphysicsRotationTranslator, NphysicsRotationTranslatorError};
+use crate::object::Radians;
 use std::f64::consts::PI;
 
 /// Translates the rotation from [`Radians`] to the range (-π; π] defined by nphysics
@@ -17,7 +17,10 @@ impl NphysicsRotationTranslator for NphysicsRotationTranslatorImpl {
         }
     }
 
-    fn to_radians(&self, nphysics_rotation: f64) -> Option<Radians> {
+    fn to_radians(
+        &self,
+        nphysics_rotation: f64,
+    ) -> Result<Radians, NphysicsRotationTranslatorError> {
         const EPSILON: f64 = 1.0e-15;
         let rounded_rotation = if nphysics_rotation.abs() < EPSILON {
             0.0
@@ -31,10 +34,7 @@ impl NphysicsRotationTranslator for NphysicsRotationTranslatorImpl {
             Radians::try_new((2.0 * PI) + rounded_rotation)
         };
 
-        match rotation {
-            Ok(radians) => Some(radians),
-            Err(RadiansError::OutOfRange) => None,
-        }
+        rotation.map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue)
     }
 }
 
@@ -47,7 +47,8 @@ pub mod mock {
     #[derive(Debug, Default)]
     pub struct NphysicsRotationTranslatorMock {
         expect_to_nphysics_rotation_and_return: Option<(Radians, f64)>,
-        expect_to_radians_and_return: Option<(f64, Radians)>,
+        expect_to_radians_and_return:
+            Option<(f64, Result<Radians, NphysicsRotationTranslatorError>)>,
 
         to_nphysics_rotation_was_called: RefCell<bool>,
         to_radians_was_called: RefCell<bool>,
@@ -62,7 +63,11 @@ pub mod mock {
             self.expect_to_nphysics_rotation_and_return = Some((input_value, return_value))
         }
 
-        pub fn expect_to_radians_and_return(&mut self, input_value: f64, return_value: Radians) {
+        pub fn expect_to_radians_and_return(
+            &mut self,
+            input_value: f64,
+            return_value: Result<Radians, NphysicsRotationTranslatorError>,
+        ) {
             self.expect_to_radians_and_return = Some((input_value, return_value))
         }
     }
@@ -87,10 +92,15 @@ pub mod mock {
             }
         }
 
-        fn to_radians(&self, nphysics_rotation: f64) -> Option<Radians> {
+        fn to_radians(
+            &self,
+            nphysics_rotation: f64,
+        ) -> Result<Radians, NphysicsRotationTranslatorError> {
             *self.to_radians_was_called.borrow_mut() = true;
 
-            if let Some((expected_input, expected_output)) = self.expect_to_radians_and_return {
+            if let Some((expected_input, expected_output)) =
+                self.expect_to_radians_and_return.clone()
+            {
                 if nphysics_rotation != expected_input {
                     panic!(
                         "to_radians() was called with {:?}, expected {:?}",
@@ -98,7 +108,7 @@ pub mod mock {
                     )
                 }
 
-                Some(expected_output)
+                expected_output
             } else {
                 panic!("to_radians() was called unexpectedly")
             }
@@ -159,24 +169,36 @@ mod tests {
 
     #[test]
     fn to_radians_returns_0_when_passed_0() {
-        verify_to_radians_returns_expected_result(0.0, Radians::try_new(0.0).ok())
+        verify_to_radians_returns_expected_result(
+            0.0,
+            Radians::try_new(0.0)
+                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
+        )
     }
 
     #[test]
     fn to_radians_returns_half_pi_when_passed_half_pi() {
-        verify_to_radians_returns_expected_result(FRAC_PI_2, Radians::try_new(FRAC_PI_2).ok())
+        verify_to_radians_returns_expected_result(
+            FRAC_PI_2,
+            Radians::try_new(FRAC_PI_2)
+                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
+        )
     }
 
     #[test]
     fn to_radians_returns_returns_pi_when_passed_pi() {
-        verify_to_radians_returns_expected_result(PI, Radians::try_new(PI).ok())
+        verify_to_radians_returns_expected_result(
+            PI,
+            Radians::try_new(PI).map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
+        )
     }
 
     #[test]
     fn to_radians_returns_one_and_a_half_pi_when_passed_negative_half_pi() {
         verify_to_radians_returns_expected_result(
             -FRAC_PI_2,
-            Radians::try_new(3.0 * FRAC_PI_2).ok(),
+            Radians::try_new(3.0 * FRAC_PI_2)
+                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
         )
     }
 
@@ -184,7 +206,8 @@ mod tests {
     fn to_radians_works_with_almost_zero_value() {
         verify_to_radians_returns_expected_result(
             -0.000_000_000_000_000_275_574_467_583_596_6,
-            Radians::try_new(0.0).ok(),
+            Radians::try_new(0.0)
+                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
         )
     }
 
@@ -193,7 +216,7 @@ mod tests {
         let translator = NphysicsRotationTranslatorImpl::default();
         assert!(translator
             .to_radians(-0.000_000_000_000_002_755_744_675_835_966)
-            .is_some());
+            .is_ok());
     }
 
     fn verify_to_nphysics_rotation_returns_expected_result(input: Radians, expected: f64) {
@@ -201,7 +224,10 @@ mod tests {
         assert_eq!(expected, translator.to_nphysics_rotation(input));
     }
 
-    fn verify_to_radians_returns_expected_result(input: f64, expected: Option<Radians>) {
+    fn verify_to_radians_returns_expected_result(
+        input: f64,
+        expected: Result<Radians, NphysicsRotationTranslatorError>,
+    ) {
         let translator = NphysicsRotationTranslatorImpl::default();
         assert_eq!(expected, translator.to_radians(input));
     }
