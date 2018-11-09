@@ -170,7 +170,7 @@ impl Radians {
     }
 }
 
-/// The reason why a Radians instance could not be created
+/// The reason why a [`Radians`] instance could not be created
 #[derive(Debug)]
 pub enum RadiansError {
     /// The given value was not in the range [0.0; 2π)
