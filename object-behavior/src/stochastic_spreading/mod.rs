@@ -104,8 +104,29 @@ fn can_spread_at_location(location: &Location, sensor_collisions: &[ObjectDescri
 }
 
 fn occupies_location(object_description: &ObjectDescription, location: &Location) -> bool {
-    // https://stackoverflow.com/questions/1119627/how-to-test-if-a-point-is-inside-of-a-convex-polygon-in-2d-integer-coordinates
-    true
+    // https://stackoverflow.com/a/4243079/5903309
+    let vertices = &object_description.shape.vertices;
+    let coef: Vec<_> = vertices
+        .iter()
+        .skip(1)
+        .map(|vertex| /*To do: Convert to global*/ vertex)
+        .enumerate()
+        .map(|(i, p)| {
+            (location.y as i32 - vertices[i].y) * (p.x - vertices[i].x)
+                - (location.x as i32 - vertices[i].x) * (p.y - vertices[i].y)
+        })
+        .collect();
+
+    if coef.iter().any(|&p| p == 0) {
+        return true;
+    }
+
+    for i in 1..coef.len() {
+        if coef[i] * coef[i - 1] < 0 {
+            return false;
+        }
+    }
+    return true;
 }
 
 impl ObjectBehavior for StochasticSpreading {
@@ -272,6 +293,27 @@ mod tests {
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
         }
+    }
+
+    #[test]
+    fn validates_that_location_is_in_polygon() {
+        let object_description = object_description();
+        let location = Location { x: 47, y: 47 };
+        assert!(occupies_location(&object_description, &location))
+    }
+
+    #[test]
+    fn validates_that_location_is_not_in_polygon() {
+        let object_description = object_description();
+        let location = Location { x: 57, y: 57 };
+        assert!(!occupies_location(&object_description, &location))
+    }
+
+    #[test]
+    fn validates_that_location_is_in_polygon_when_on_a_side() {
+        let object_description = object_description();
+        let location = Location { x: 55, y: 45 };
+        assert!(occupies_location(&object_description, &location))
     }
 
     fn object_description() -> ObjectDescription {
