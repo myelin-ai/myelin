@@ -5,8 +5,11 @@
 //! [`ObjectDescription`]: ./struct.ObjectDescription.html
 
 use crate::simulation_impl::BodyHandle;
+use crate::Id;
+use std::collections::HashMap;
 use std::f64::consts::PI;
 use std::fmt::Debug;
+
 /// Behaviour of an object that can never be moved
 pub trait ObjectBehavior: Debug + ObjectBehaviorClone {
     /// Returns all actions performed by the object
@@ -14,7 +17,7 @@ pub trait ObjectBehavior: Debug + ObjectBehaviorClone {
     fn step(
         &mut self,
         own_description: &ObjectDescription,
-        sensor_collisions: &[ObjectDescription],
+        sensor_collisions: &HashMap<Id, ObjectDescription>,
     ) -> Option<Action>;
 }
 
