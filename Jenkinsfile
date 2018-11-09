@@ -56,8 +56,17 @@ pipeline {
       }
     }
     stage('Test') {
-      steps {
-        sh 'cargo test --all-features'
+      parallel {
+        stage('cargo test') {
+          steps {
+            sh 'cargo test --all-features'
+          }
+        }
+        stage('wasm loading test') {
+          steps {
+            sh 'bash visualization-client/scripts/smoke-test.sh'
+          }
+        }
       }
     }
     stage('Style checks') {
