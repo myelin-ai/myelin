@@ -189,8 +189,10 @@ pub trait NphysicsRotationTranslator: fmt::Debug {
     ) -> Result<Radians, NphysicsRotationTranslatorError>;
 }
 
+/// The reason why a rotation could not be translated
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NphysicsRotationTranslatorError {
+    /// The given nphysics value was not in the range (-π; π]
     InvalidNphysicsValue,
 }
 
