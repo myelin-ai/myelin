@@ -4,8 +4,11 @@
 //! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
 //! [`ObjectDescription`]: ./struct.ObjectDescription.html
 
+use crate::Id;
+use std::collections::HashMap;
 use std::f64::consts::PI;
 use std::fmt::Debug;
+
 /// Behaviour of an object that can never be moved
 pub trait ObjectBehavior: Debug + ObjectBehaviorClone {
     /// Returns all actions performed by the object
@@ -13,7 +16,7 @@ pub trait ObjectBehavior: Debug + ObjectBehaviorClone {
     fn step(
         &mut self,
         own_description: &ObjectDescription,
-        sensor_collisions: &[ObjectDescription],
+        sensor_collisions: &HashMap<Id, ObjectDescription>,
     ) -> Option<Action>;
 }
 
@@ -27,6 +30,8 @@ pub enum Action {
     ApplyForce(Force),
     /// Create a new object at the specified location
     Reproduce(ObjectDescription, Box<dyn ObjectBehavior>),
+    /// Destroys another object
+    Destroy(Id),
     /// Destroy the object
     Die,
 }
@@ -38,6 +43,7 @@ impl Clone for Action {
             Action::Reproduce(object_description, object_behavior) => {
                 Action::Reproduce(object_description.clone(), object_behavior.clone_box())
             }
+            Action::Destroy(body_handle) => Action::Destroy(body_handle.clone()),
             Action::Die => Action::Die,
         }
     }

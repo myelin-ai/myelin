@@ -70,25 +70,30 @@ impl SimulationImpl {
         })
     }
 
-    fn retrieve_objects_within_sensor(&self, body_handle: BodyHandle) -> Vec<ObjectDescription> {
+    fn retrieve_objects_within_sensor(
+        &self,
+        body_handle: BodyHandle,
+    ) -> HashMap<Id, ObjectDescription> {
         if let Some(non_physical_object_data) = self.non_physical_object_data.get(&body_handle) {
             if let Some((sensor_handle, _)) = non_physical_object_data.sensor {
-                let object_handles = self
-                    .world
+                self.world
                     .bodies_within_sensor(sensor_handle)
-                    .expect("Internal error: Stored invalid sensor handle");
-                object_handles
+                    .expect("Internal error: Stored invalid sensor handle")
                     .iter()
                     .map(|handle| {
-                        self.convert_to_object_description(*handle)
-                            .expect("Object handle returned by world was not found in simulation")
+                        (
+                            handle.0,
+                            self.convert_to_object_description(*handle).expect(
+                                "Object handle returned by world was not found in simulation",
+                            ),
+                        )
                     })
                     .collect()
             } else {
-                Vec::new()
+                HashMap::new()
             }
         } else {
-            Vec::new()
+            HashMap::new()
         }
     }
 
@@ -115,6 +120,9 @@ impl SimulationImpl {
             }
             Action::ApplyForce(force) => {
                 self.world.apply_force(body_handle, force)?;
+            }
+            Action::Destroy(object_id) => {
+                self.world.remove_body(BodyHandle(object_id))?;
             }
             Action::Die => {
                 self.world.remove_body(body_handle)?;
@@ -161,7 +169,7 @@ impl Simulation for SimulationImpl {
             let objects_within_sensor = &object_handle_to_objects_within_sensor[object_handle];
             let action = non_physical_object_data
                 .behavior
-                .step(&own_description, &objects_within_sensor);
+                .step(&own_description, objects_within_sensor);
             if let Some(action) = action {
                 actions.push((*object_handle, action));
             }
@@ -560,7 +568,7 @@ mod tests {
         let mut object_behavior = ObjectBehaviorMock::new();
         object_behavior.expect_step_and_return(
             expected_object_description.clone(),
-            Vec::new(),
+            HashMap::new(),
             None,
         );
 
@@ -617,7 +625,7 @@ mod tests {
 
         object_behavior.expect_step_and_return(
             expected_object_description.clone(),
-            vec![expected_object_description.clone()],
+            hashmap!{returned_handle.0 => expected_object_description.clone()},
             None,
         );
         world.expect_body_and_return(returned_handle, Some(expected_physical_body));
@@ -711,13 +719,13 @@ mod tests {
         let mut child_object_behavior = ObjectBehaviorMock::new();
         child_object_behavior.expect_step_and_return(
             expected_object_description.clone(),
-            Vec::new(),
+            HashMap::new(),
             None,
         );
 
         object_behavior.expect_step_and_return(
             expected_object_description.clone(),
-            Vec::new(),
+            HashMap::new(),
             Some(Action::Reproduce(
                 expected_object_description.clone(),
                 box child_object_behavior,
@@ -767,8 +775,56 @@ mod tests {
 
         object_behavior.expect_step_and_return(
             expected_object_description.clone(),
-            Vec::new(),
+            HashMap::new(),
             Some(Action::Die),
+        );
+
+        simulation.add_object(expected_object_description.clone(), box object_behavior);
+
+        simulation.step();
+    }
+
+    #[test]
+    fn destroy_removes_object() {
+        let mut world = box WorldMock::new();
+        let expected_shape = shape();
+        let expected_position = position();
+        let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_passable = false;
+
+        let expected_physical_body = PhysicalBody {
+            shape: expected_shape.clone(),
+            position: expected_position.clone(),
+            mobility: expected_mobility.clone(),
+            passable: expected_passable,
+        };
+
+        let handle_one = BodyHandle(1);
+        let handle_two = BodyHandle(2);
+        world.expect_add_body_and_return(expected_physical_body.clone(), handle_one);
+        world.expect_body_and_return(handle_one, Some(expected_physical_body.clone()));
+        world.expect_is_body_passable_and_return(handle_one, expected_passable);
+        world.expect_step();
+        world.expect_remove_body_and_return(handle_two, Some(expected_physical_body));
+
+        let mut simulation = SimulationImpl::new(world);
+
+        let mut object_behavior = ObjectBehaviorMock::new();
+
+        let expected_object_description = ObjectBuilder::default()
+            .location(expected_position.location.x, expected_position.location.y)
+            .rotation(expected_position.rotation)
+            .shape(expected_shape)
+            .kind(Kind::Organism)
+            .mobility(expected_mobility)
+            .passable(expected_passable)
+            .build()
+            .unwrap();
+
+        object_behavior.expect_step_and_return(
+            expected_object_description.clone(),
+            HashMap::new(),
+            Some(Action::Destroy(handle_two.0)),
         );
 
         simulation.add_object(expected_object_description.clone(), box object_behavior);
@@ -817,7 +873,7 @@ mod tests {
 
         object_behavior.expect_step_and_return(
             expected_object_description.clone(),
-            Vec::new(),
+            HashMap::new(),
             Some(Action::ApplyForce(expected_force)),
         );
 
@@ -1190,7 +1246,11 @@ mod tests {
 
     #[derive(Debug, Default, Clone)]
     struct ObjectBehaviorMock {
-        expect_step_and_return: Option<(ObjectDescription, Vec<ObjectDescription>, Option<Action>)>,
+        expect_step_and_return: Option<(
+            ObjectDescription,
+            HashMap<Id, ObjectDescription>,
+            Option<Action>,
+        )>,
 
         step_was_called: RefCell<bool>,
     }
@@ -1203,7 +1263,7 @@ mod tests {
         pub(crate) fn expect_step_and_return(
             &mut self,
             own_description: ObjectDescription,
-            sensor_collisions: Vec<ObjectDescription>,
+            sensor_collisions: HashMap<Id, ObjectDescription>,
             returned_value: Option<Action>,
         ) {
             self.expect_step_and_return =
@@ -1215,7 +1275,7 @@ mod tests {
         fn step(
             &mut self,
             own_description: &ObjectDescription,
-            sensor_collisions: &[ObjectDescription],
+            sensor_collisions: &HashMap<Id, ObjectDescription>,
         ) -> Option<Action> {
             *self.step_was_called.borrow_mut() = true;
             if let Some((
@@ -1224,7 +1284,7 @@ mod tests {
                 ref return_value,
             )) = self.expect_step_and_return
             {
-                if sensor_collisions.to_vec() == *expected_sensor_collisions
+                if sensor_collisions == expected_sensor_collisions
                     && expected_own_description == own_description
                 {
                     return_value.clone()
