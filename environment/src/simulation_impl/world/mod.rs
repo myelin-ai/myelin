@@ -198,7 +198,7 @@ pub enum NphysicsRotationTranslatorError {
 
 impl fmt::Display for NphysicsRotationTranslatorError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Given nphysics value is not in the range ]-pi; pi]")
+        write!(f, "Given nphysics value is not in the range (-pi; pi]")
     }
 }
 
