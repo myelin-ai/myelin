@@ -194,7 +194,11 @@ mod mock {
     /// Mock [`ObjectBehavior`]
     #[derive(Debug, Default, Clone)]
     pub struct ObjectBehaviorMock {
-        expect_step_and_return: Option<(ObjectDescription, Vec<ObjectDescription>, Option<Action>)>,
+        expect_step_and_return: Option<(
+            ObjectDescription,
+            HashMap<Id, ObjectDescription>,
+            Option<Action>,
+        )>,
 
         step_was_called: RefCell<bool>,
     }
@@ -204,7 +208,7 @@ mod mock {
         pub fn expect_step_and_return(
             &mut self,
             own_description: ObjectDescription,
-            sensor_collisions: Vec<ObjectDescription>,
+            sensor_collisions: HashMap<Id, ObjectDescription>,
             return_value: Option<Action>,
         ) {
             self.expect_step_and_return = Some((own_description, sensor_collisions, return_value))
@@ -215,7 +219,7 @@ mod mock {
         fn step(
             &mut self,
             own_description: &ObjectDescription,
-            sensor_collisions: &[ObjectDescription],
+            sensor_collisions: &HashMap<Id, ObjectDescription>,
         ) -> Option<Action> {
             *self.step_was_called.borrow_mut() = true;
 
@@ -226,7 +230,7 @@ mod mock {
             )) = self.expect_step_and_return
             {
                 if *own_description == *expected_own_description
-                    && sensor_collisions.to_vec() == *expected_sensor_collisions
+                    && sensor_collisions == expected_sensor_collisions
                 {
                     return_value.clone()
                 } else {
