@@ -1,4 +1,7 @@
 use crate::view_model;
+use geo::algorithm::rotate::Rotate;
+use geo::algorithm::translate::Translate;
+use geo_types::Polygon as GeoPolygon;
 use myelin_environment::object as business_object;
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -26,34 +29,28 @@ impl GlobalPolygonTranslator for GlobalPolygonTranslatorImpl {
         polygon: &business_object::Polygon,
         position: &business_object::Position,
     ) -> view_model::Polygon {
-        view_model::Polygon {
-            vertices: polygon
+        let geo_polygon = GeoPolygon::new(
+            polygon
                 .vertices
                 .iter()
-                .map(|vertex| to_global_rotated_vertex(vertex, position))
-                .collect(),
-        }
-    }
-}
-
-fn to_global_rotated_vertex(
-    vertex: &business_object::Vertex,
-    position: &business_object::Position,
-) -> view_model::Vertex {
-    // See https://en.wikipedia.org/wiki/Rotation_matrix
-    let center_x = f64::from(position.location.x);
-    let center_y = f64::from(position.location.y);
-    let rotation = position.rotation.value();
-    let global_x = center_x + f64::from(vertex.x);
-    let global_y = center_y + f64::from(vertex.y);
-    let rotated_global_x =
-        rotation.cos() * (global_x - center_x) + rotation.sin() * (global_y - center_y) + center_x;
-    let rotated_global_y =
-        -rotation.sin() * (global_x - center_x) + rotation.cos() * (global_y - center_y) + center_y;
-
-    view_model::Vertex {
-        x: rotated_global_x.round() as u32,
-        y: rotated_global_y.round() as u32,
+                .map(|vertex| (vertex.x as f64, vertex.y as f64))
+                .collect::<Vec<_>>()
+                .into(),
+            vec![],
+        );
+        let geo_polygon =
+            geo_polygon.translate(position.location.x as f64, position.location.y as f64);
+        let geo_polygon = geo_polygon.rotate(position.rotation.value());
+        let vertices = geo_polygon
+            .exterior
+            .into_points()
+            .iter()
+            .map(|point| view_model::Vertex {
+                x: point.x().round() as u32,
+                y: point.y().round() as u32,
+            })
+            .collect();
+        view_model::Polygon { vertices }
     }
 }
 
