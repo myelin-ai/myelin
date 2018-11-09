@@ -35,6 +35,7 @@ impl InputHandler {
     /// inputHandler.on_message(new Uint8Array(event.data))
     /// ```
     pub fn on_message(&mut self, message: &[u8]) {
+        panic!();
         if let Err(err) = self.controller.on_message(message) {
             wasm_bindgen::throw_str(&format!("{}", err));
         }
