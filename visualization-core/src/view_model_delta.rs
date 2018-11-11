@@ -3,6 +3,7 @@
 
 use myelin_environment::object::*;
 use myelin_environment::Id;
+use myelin_geometry::*;
 use std::collections::HashMap;
 
 /// This step's object deltas
