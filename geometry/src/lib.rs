@@ -14,7 +14,8 @@ extern crate serde_derive;
 mod radians;
 pub use self::radians::*;
 
-pub mod polygon;
+mod polygon;
+pub use self::polygon::*;
 
 /// A vector
 #[derive(Debug, PartialEq, Copy, Clone, Default, Serialize, Deserialize)]

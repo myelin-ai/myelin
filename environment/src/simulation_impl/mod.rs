@@ -3,6 +3,7 @@
 
 use crate::object::*;
 use crate::{Id, Simulation};
+use myelin_geometry::*;
 use ncollide2d::world::CollisionObjectHandle;
 use std::collections::HashMap;
 use std::fmt;
@@ -349,7 +350,8 @@ impl From<CollisionObjectHandle> for AnyHandle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::object_builder::{ObjectBuilder, PolygonBuilder};
+    use crate::object_builder::ObjectBuilder;
+    use myelin_geometry::PolygonBuilder;
     use std::cell::RefCell;
     use std::thread::panicking;
 
@@ -454,7 +456,7 @@ mod tests {
                 .build()
                 .unwrap(),
             position: Position {
-                location: Location::default(),
+                location: Point::default(),
                 rotation: Radians::default(),
             },
         };
@@ -507,7 +509,7 @@ mod tests {
                 .build()
                 .unwrap(),
             position: Position {
-                location: Location::default(),
+                location: Point::default(),
                 rotation: Radians::default(),
             },
         };
@@ -872,7 +874,7 @@ mod tests {
 
     fn position() -> Position {
         Position {
-            location: Location { x: 30.0, y: 40.0 },
+            location: Point { x: 30.0, y: 40.0 },
             rotation: Radians::try_new(3.4).unwrap(),
         }
     }

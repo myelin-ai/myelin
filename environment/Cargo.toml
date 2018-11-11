@@ -10,6 +10,7 @@ authors = [
 edition = "2018"
 
 [dependencies]
+myelin-geometry = { path = "../geometry" }
 nalgebra = "0.16"
 ncollide2d = "0.17"
 serde = "1.0"

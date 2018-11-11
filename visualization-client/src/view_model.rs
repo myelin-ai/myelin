@@ -11,11 +11,11 @@ pub struct Object {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Polygon {
-    pub vertices: Vec<Vertex>,
+    pub vertices: Vec<Point>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct Vertex {
+pub struct Point {
     pub x: f64,
     pub y: f64,
 }

@@ -31,7 +31,7 @@ pub struct ObjectDescriptionDelta {
     pub shape: Option<Polygon>,
 
     /// The current location of the object
-    pub location: Option<Location>,
+    pub location: Option<Point>,
 
     /// The current rotation of the object
     pub rotation: Option<Radians>,

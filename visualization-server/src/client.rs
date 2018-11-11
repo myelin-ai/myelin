@@ -345,7 +345,7 @@ mod tests {
     fn delta() -> ViewModelDelta {
         let updated_object = ObjectDescriptionDelta {
             shape: None,
-            location: Some(Location { x: 12.0, y: 32.0 }),
+            location: Some(Point { x: 12.0, y: 32.0 }),
             rotation: None,
             mobility: None,
             kind: None,

@@ -77,7 +77,7 @@ mod test {
                     .unwrap(),
             ),
             mobility: Some(Mobility::Movable(Velocity { x: 2.0, y: 3.0 })),
-            location: Some(Location { x: 3.0, y: 4.0 }),
+            location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
             sensor: Some(Some(Sensor {
                 shape: PolygonBuilder::default()
@@ -87,7 +87,7 @@ mod test {
                     .build()
                     .unwrap(),
                 position: Position {
-                    location: Location { x: 2.0, y: 3.0 },
+                    location: Point { x: 2.0, y: 3.0 },
                     rotation: Radians::try_new(1.0).unwrap(),
                 },
             })),
@@ -133,7 +133,7 @@ mod test {
                     .unwrap(),
             ),
             mobility: Some(Mobility::Movable(Velocity { x: 2.0, y: 3.0 })),
-            location: Some(Location { x: 3.0, y: 4.0 }),
+            location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
             sensor: Some(Some(Sensor {
                 shape: PolygonBuilder::default()
@@ -143,7 +143,7 @@ mod test {
                     .build()
                     .unwrap(),
                 position: Position {
-                    location: Location { x: 2.0, y: 3.0 },
+                    location: Point { x: 2.0, y: 3.0 },
                     rotation: Radians::try_new(1.0).unwrap(),
                 },
             })),

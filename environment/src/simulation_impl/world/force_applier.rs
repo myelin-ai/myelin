@@ -78,10 +78,10 @@ impl ForceGenerator<PhysicsType> for GenericSingleTimeForceApplierWrapper {
 mod tests {
     use super::*;
     use crate::object::*;
-    use crate::object_builder::PolygonBuilder;
     use crate::simulation_impl::world::collision_filter::IgnoringCollisionFilterMock;
     use crate::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
     use crate::simulation_impl::world::{NphysicsWorld, PhysicalBody, World};
+    use myelin_geometry::*;
     use std::collections::VecDeque;
     use std::sync::{Arc, RwLock};
 
@@ -192,7 +192,7 @@ mod tests {
         };
         let expected_body = PhysicalBody {
             position: Position {
-                location: Location { x: 15.0, y: 15.0 },
+                location: Point { x: 15.0, y: 15.0 },
                 ..body.position.clone()
             },
             mobility: Mobility::Movable(Velocity { x: 10.0, y: 10.0 }),
@@ -213,7 +213,7 @@ mod tests {
         };
         let expected_body = PhysicalBody {
             position: Position {
-                location: Location { x: 0.0, y: 0.0 },
+                location: Point { x: 0.0, y: 0.0 },
                 ..body.position.clone()
             },
             mobility: Mobility::Movable(Velocity { x: -5.0, y: -5.0 }),
@@ -234,7 +234,7 @@ mod tests {
         };
         let expected_body = PhysicalBody {
             position: Position {
-                location: Location { x: -5.0, y: -15.0 },
+                location: Point { x: -5.0, y: -15.0 },
                 ..body.position.clone()
             },
             mobility: Mobility::Movable(Velocity { x: -10.0, y: -20.0 }),
@@ -256,7 +256,7 @@ mod tests {
 
         let expected_body = PhysicalBody {
             position: Position {
-                location: Location { x: 10.0, y: 15.0 },
+                location: Point { x: 10.0, y: 15.0 },
                 rotation: Radians::try_new(0.009_000_000_000_000_001).unwrap(),
             },
             mobility: Mobility::Movable(Velocity { x: 5.0, y: 10.0 }),
@@ -268,7 +268,7 @@ mod tests {
     fn physical_body() -> PhysicalBody {
         PhysicalBody {
             position: Position {
-                location: Location { x: 5.0, y: 5.0 },
+                location: Point { x: 5.0, y: 5.0 },
                 rotation: Radians::default(),
             },
             mobility: Mobility::Movable(Velocity::default()),

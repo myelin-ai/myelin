@@ -309,7 +309,7 @@ mod tests {
     fn respects_previous_deltas() {
         let object_description_1 = object_description();
         let view_model_polygon_1 = view_model::Polygon {
-            vertices: vec![view_model::Vertex { x: 1.0, y: 1.0 }],
+            vertices: vec![view_model::Point { x: 1.0, y: 1.0 }],
         };
         let expected_view_model_1 = ViewModel {
             objects: vec![view_model::Object {
@@ -323,7 +323,7 @@ mod tests {
 
         let object_description_2 = object_description();
         let view_model_polygon_2 = view_model::Polygon {
-            vertices: vec![view_model::Vertex { x: 5.0, y: 5.0 }],
+            vertices: vec![view_model::Point { x: 5.0, y: 5.0 }],
         };
         let expected_view_model_2 = ViewModel {
             objects: vec![

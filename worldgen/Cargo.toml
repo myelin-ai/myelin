@@ -11,6 +11,7 @@ edition = "2018"
 
 [dependencies]
 myelin-environment = { path = "../environment" }
+myelin-geometry = { path = "../geometry" }
 
 [dev-dependencies]
 myelin-object-behavior = { path = "../object-behavior" }

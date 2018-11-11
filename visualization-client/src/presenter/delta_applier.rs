@@ -194,7 +194,7 @@ mod test {
                 &mut snapshot,
                 hashmap! {
                     200 => ObjectDelta::Updated(ObjectDescriptionDelta {
-                        location: Some(Location { x: 5.0, y: 5.0 }),
+                        location: Some(Point { x: 5.0, y: 5.0 }),
                         ..Default::default()
                     }),
                 },
@@ -248,12 +248,12 @@ mod test {
     fn apply_delta_handles_location_update() {
         test_apply_delta_handles_update(
             ObjectDescriptionDelta {
-                location: Some(Location { x: 100.0, y: 100.0 }),
+                location: Some(Point { x: 100.0, y: 100.0 }),
                 ..Default::default()
             },
             {
                 let mut object_description = object_description();
-                object_description.position.location = Location { x: 100.0, y: 100.0 };
+                object_description.position.location = Point { x: 100.0, y: 100.0 };
                 object_description
             },
         );
@@ -309,7 +309,7 @@ mod test {
         let sensor = Sensor {
             shape: polygon(),
             position: Position {
-                location: Location { x: 4.0, y: 2.0 },
+                location: Point { x: 4.0, y: 2.0 },
                 rotation: Radians::default(),
             },
         };

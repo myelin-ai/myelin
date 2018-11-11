@@ -28,7 +28,7 @@ $releaseFlag = if ($release) {
 $crateDir = "$PSScriptRoot/../"
 $targetDir = "$crateDir/out"
 
-Set-Location -Path "$crateDir"
+Set-Point -Path "$crateDir"
 
 $applicationName = "myelin_visualization_client"
 
