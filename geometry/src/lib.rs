@@ -11,19 +11,32 @@
 #[macro_use]
 extern crate serde_derive;
 
+use geo::algorithm::{rotate::RotatePoint, translate::Translate};
+use geo_types::{Point as GeoPoint, Polygon as GeoPolygon};
+use std::f64::consts::PI;
+
 /// A vector
+#[derive(Debug, PartialEq, Copy, Clone, Default, Serialize, Deserialize)]
 pub struct Vector {
+    /// The x component of the Vector
     pub x: f64,
+    /// The y component of the Vector
     pub y: f64,
 }
 
 /// A point in space
+#[derive(Debug, PartialEq, Copy, Clone, Default, Serialize, Deserialize)]
 pub struct Point {
+    /// The x coordinate of the Point
     pub x: f64,
+    /// The y coordinate of the Point
     pub y: f64,
 }
 
-pub struct ConvexPolygon {
+/// A convex polygon
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
+pub struct Polygon {
+    /// The vertices of the polygon
     pub vertices: Vec<Point>,
 }
 
@@ -39,7 +52,7 @@ impl Radians {
     ///
     /// ### Examples
     /// ```
-    /// use myelin_environment::object::Radians;
+    /// use myelin_geometry::Radians;
     /// use std::f64::consts::PI;
     ///
     /// let rotation = Radians::try_new(PI).expect("Value was outside the range [0.0; 2π)");
@@ -68,23 +81,65 @@ pub struct Position {
     pub rotation: Radians,
 }
 
-fn to_global_rotated_vertex(
-    vertex: &business_object::Vertex,
-    position: &business_object::Position,
-) -> view_model::Vertex {
-    // See https://en.wikipedia.org/wiki/Rotation_matrix
-    let center_x = f64::from(position.location.x);
-    let center_y = f64::from(position.location.y);
-    let rotation = position.rotation.value();
-    let global_x = center_x + f64::from(vertex.x);
-    let global_y = center_y + f64::from(vertex.y);
-    let rotated_global_x =
-        rotation.cos() * (global_x - center_x) + rotation.sin() * (global_y - center_y) + center_x;
-    let rotated_global_y =
-        -rotation.sin() * (global_x - center_x) + rotation.cos() * (global_y - center_y) + center_y;
+fn to_global_polygon(polygon: &Polygon, position: &Position) -> Polygon {
+    let geo_polygon = GeoPolygon::new(
+        polygon
+            .vertices
+            .iter()
+            .map(|vertex| (vertex.x, vertex.y))
+            .collect::<Vec<_>>()
+            .into(),
+        vec![],
+    );
+    let center = GeoPoint::new(position.location.x, position.location.y);
+    let geo_polygon = geo_polygon.translate(center.x(), center.y());
+    let rotation_angle_in_degrees = position.rotation.value().to_degrees();
+    let geo_polygon = geo_polygon.rotate_around_point(rotation_angle_in_degrees, center);
+    let vertices = geo_polygon
+        .exterior
+        .into_points()
+        .iter()
+        .map(|point| Point {
+            x: point.x(),
+            y: point.y(),
+        })
+        .collect();
+    Polygon { vertices }
+}
 
-    view_model::Vertex {
-        x: rotated_global_x.round() as u32,
-        y: rotated_global_y.round() as u32,
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn radians_new_with_negative_0_point_1_is_none() {
+        let radians = Radians::try_new(-0.1);
+        assert!(radians.is_none())
     }
+
+    #[test]
+    fn radians_new_with_0_is_some() {
+        let radians = Radians::try_new(0.0);
+        assert!(radians.is_some())
+    }
+
+    #[test]
+    fn radians_new_with_1_point_9_pi_is_some() {
+        let radians = Radians::try_new(1.9 * PI);
+        assert!(radians.is_some())
+    }
+
+    #[test]
+    fn radians_new_with_2_pi_is_none() {
+        let radians = Radians::try_new(2.0 * PI);
+        assert!(radians.is_none())
+    }
+
+    #[test]
+    fn radians_value_returns_1_when_given_1() {
+        let value = 1.0;
+        let radians = Radians::try_new(value).unwrap();
+        assert_eq!(value, radians.value())
+    }
+
 }
