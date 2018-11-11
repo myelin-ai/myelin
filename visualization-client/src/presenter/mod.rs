@@ -264,15 +264,15 @@ mod tests {
         ObjectBuilder::default()
             .shape(
                 PolygonBuilder::default()
-                    .vertex(-10, -10)
-                    .vertex(10, -10)
-                    .vertex(10, 10)
-                    .vertex(-10, 10)
+                    .vertex(-10.0, -10.0)
+                    .vertex(10.0, -10.0)
+                    .vertex(10.0, 10.0)
+                    .vertex(-10.0, 10.0)
                     .build()
                     .unwrap(),
             )
             .mobility(Mobility::Immovable)
-            .location(30, 40)
+            .location(30.0, 40.0)
             .rotation(Radians::default())
             .kind(Kind::Plant)
             .build()
@@ -309,7 +309,7 @@ mod tests {
     fn respects_previous_deltas() {
         let object_description_1 = object_description();
         let view_model_polygon_1 = view_model::Polygon {
-            vertices: vec![view_model::Vertex { x: 1, y: 1 }],
+            vertices: vec![view_model::Vertex { x: 1.0, y: 1.0 }],
         };
         let expected_view_model_1 = ViewModel {
             objects: vec![view_model::Object {
@@ -323,7 +323,7 @@ mod tests {
 
         let object_description_2 = object_description();
         let view_model_polygon_2 = view_model::Polygon {
-            vertices: vec![view_model::Vertex { x: 5, y: 5 }],
+            vertices: vec![view_model::Vertex { x: 5.0, y: 5.0 }],
         };
         let expected_view_model_2 = ViewModel {
             objects: vec![

@@ -121,7 +121,10 @@ mod tests {
             .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         let force = Force {
-            linear: LinearForce { x: 1000, y: 2000 },
+            linear: LinearForce {
+                x: 1000.0,
+                y: 2000.0,
+            },
             torque: Torque(9.0),
         };
         world
@@ -181,15 +184,15 @@ mod tests {
     fn linear_force_with_no_torque_changes_location_and_speed() {
         let body = physical_body();
         let force = Force {
-            linear: LinearForce { x: 100, y: 100 },
+            linear: LinearForce { x: 100.0, y: 100.0 },
             torque: Torque::default(),
         };
         let expected_body = PhysicalBody {
             position: Position {
-                location: Location { x: 14, y: 14 },
+                location: Location { x: 14.0, y: 14.0 },
                 ..body.position.clone()
             },
-            mobility: Mobility::Movable(Velocity { x: 9, y: 9 }),
+            mobility: Mobility::Movable(Velocity { x: 9.0, y: 9.0 }),
             ..body
         };
         test_force(&physical_body(), &expected_body, force);
@@ -199,15 +202,15 @@ mod tests {
     fn negative_linear_force_results_in_lower_location() {
         let body = physical_body();
         let force = Force {
-            linear: LinearForce { x: -50, y: -50 },
+            linear: LinearForce { x: -50.0, y: -50.0 },
             torque: Torque::default(),
         };
         let expected_body = PhysicalBody {
             position: Position {
-                location: Location { x: 0, y: 0 },
+                location: Location { x: 0.0, y: 0.0 },
                 ..body.position.clone()
             },
-            mobility: Mobility::Movable(Velocity { x: -4, y: -4 }),
+            mobility: Mobility::Movable(Velocity { x: -4.0, y: -4.0 }),
             ..body
         };
         test_force(&physical_body(), &expected_body, force);
@@ -217,18 +220,21 @@ mod tests {
     fn location_can_underflow() {
         let body = physical_body();
         let force = Force {
-            linear: LinearForce { x: -100, y: -200 },
+            linear: LinearForce {
+                x: -100.0,
+                y: -200.0,
+            },
             torque: Torque::default(),
         };
         let expected_body = PhysicalBody {
             position: Position {
                 location: Location {
-                    x: 4_294_967_292,
-                    y: 4_294_967_282,
+                    x: 4.0_294_967_292,
+                    y: 4.0_294_967_282,
                 },
                 ..body.position.clone()
             },
-            mobility: Mobility::Movable(Velocity { x: -9, y: -19 }),
+            mobility: Mobility::Movable(Velocity { x: -9.0, y: -19.0 }),
             ..body
         };
         test_force(&physical_body(), &expected_body, force);
@@ -238,16 +244,16 @@ mod tests {
     fn linear_force_and_torque_can_be_combined() {
         let body = physical_body();
         let force = Force {
-            linear: LinearForce { x: 50, y: 100 },
+            linear: LinearForce { x: 50.0, y: 100.0 },
             torque: Torque(1.5),
         };
 
         let expected_body = PhysicalBody {
             position: Position {
-                location: Location { x: 10, y: 15 },
+                location: Location { x: 10.0, y: 15.0 },
                 rotation: Radians::try_new(0.009_000_000_000_000_001).unwrap(),
             },
-            mobility: Mobility::Movable(Velocity { x: 4, y: 9 }),
+            mobility: Mobility::Movable(Velocity { x: 4.0, y: 9.0 }),
             ..body
         };
         test_force(&physical_body(), &expected_body, force);
@@ -256,15 +262,15 @@ mod tests {
     fn physical_body() -> PhysicalBody {
         PhysicalBody {
             position: Position {
-                location: Location { x: 5, y: 5 },
+                location: Location { x: 5.0, y: 5.0 },
                 rotation: Radians::default(),
             },
             mobility: Mobility::Movable(Velocity::default()),
             shape: PolygonBuilder::default()
-                .vertex(-5, -5)
-                .vertex(-5, 5)
-                .vertex(5, 5)
-                .vertex(5, -5)
+                .vertex(-5.0, -5.0)
+                .vertex(-5.0, 5.0)
+                .vertex(5.0, 5.0)
+                .vertex(5.0, -5.0)
                 .build()
                 .unwrap(),
             passable: false,

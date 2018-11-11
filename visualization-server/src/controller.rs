@@ -222,13 +222,13 @@ mod tests {
         ObjectBuilder::default()
             .kind(Kind::Organism)
             .mobility(Mobility::Immovable)
-            .location(10, 20)
+            .location(10.0, 20.0)
             .shape(
                 PolygonBuilder::default()
-                    .vertex(-50, -50)
-                    .vertex(50, -50)
-                    .vertex(50, 50)
-                    .vertex(-50, 50)
+                    .vertex(-50.0, -50.0)
+                    .vertex(50.0, -50.0)
+                    .vertex(50.0, 50.0)
+                    .vertex(-50.0, 50.0)
                     .build()
                     .unwrap(),
             )

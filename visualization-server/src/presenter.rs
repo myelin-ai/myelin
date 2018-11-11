@@ -182,15 +182,15 @@ mod tests {
         ObjectBuilder::default()
             .shape(
                 PolygonBuilder::default()
-                    .vertex(-10, -10)
-                    .vertex(10, -10)
-                    .vertex(10, 10)
-                    .vertex(-10, 10)
+                    .vertex(-10.0, -10.0)
+                    .vertex(10.0, -10.0)
+                    .vertex(10.0, 10.0)
+                    .vertex(-10.0, 10.0)
                     .build()
                     .unwrap(),
             )
             .mobility(Mobility::Immovable)
-            .location(30, 40)
+            .location(30.0, 40.0)
             .rotation(Radians::default())
             .kind(Kind::Plant)
             .build()
@@ -250,7 +250,7 @@ mod tests {
         let mut first_snapshot = Snapshot::new();
         first_snapshot.insert(42, object.clone());
 
-        object.position.location.x += 10;
+        object.position.location.x += 10.0;
 
         let mut second_snapshot = Snapshot::new();
         second_snapshot.insert(42, object.clone());

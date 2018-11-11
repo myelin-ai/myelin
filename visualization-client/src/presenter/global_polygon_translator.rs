@@ -46,8 +46,8 @@ impl GlobalPolygonTranslator for GlobalPolygonTranslatorImpl {
             .into_points()
             .iter()
             .map(|point| view_model::Vertex {
-                x: point.x().round() as u32,
-                y: point.y().round() as u32,
+                x: point.x(),
+                y: point.y(),
             })
             .collect();
         view_model::Polygon { vertices }
@@ -63,17 +63,17 @@ mod test {
 
     fn polygon() -> Polygon {
         PolygonBuilder::default()
-            .vertex(-10, -10)
-            .vertex(10, -10)
-            .vertex(10, 10)
-            .vertex(-10, 10)
+            .vertex(-10.0, -10.0)
+            .vertex(10.0, -10.0)
+            .vertex(10.0, 10.0)
+            .vertex(-10.0, 10.0)
             .build()
             .unwrap()
     }
 
     fn position(rotation: Radians) -> Position {
         Position {
-            location: Location { x: 30, y: 40 },
+            location: Location { x: 30.0, y: 40.0 },
             rotation,
         }
     }
@@ -85,10 +85,10 @@ mod test {
         assert_eq!(
             view_model::Polygon {
                 vertices: vec![
-                    view_model::Vertex { x: 20, y: 30 },
-                    view_model::Vertex { x: 40, y: 30 },
-                    view_model::Vertex { x: 40, y: 50 },
-                    view_model::Vertex { x: 20, y: 50 },
+                    view_model::Vertex { x: 20.0, y: 30.0 },
+                    view_model::Vertex { x: 40.0, y: 30.0 },
+                    view_model::Vertex { x: 40.0, y: 50.0 },
+                    view_model::Vertex { x: 20.0, y: 50.0 },
                 ],
             },
             translator.to_global_polygon(&polygon(), &position(Radians::default()))
@@ -102,10 +102,10 @@ mod test {
         assert_eq!(
             view_model::Polygon {
                 vertices: vec![
-                    view_model::Vertex { x: 40, y: 50 },
-                    view_model::Vertex { x: 20, y: 50 },
-                    view_model::Vertex { x: 20, y: 30 },
-                    view_model::Vertex { x: 40, y: 30 },
+                    view_model::Vertex { x: 40.0, y: 50.0 },
+                    view_model::Vertex { x: 20.0, y: 50.0 },
+                    view_model::Vertex { x: 20.0, y: 30.0 },
+                    view_model::Vertex { x: 40.0, y: 30.0 },
                 ],
             },
             translator.to_global_polygon(&polygon(), &position(Radians::try_new(PI).unwrap()))
@@ -120,20 +120,20 @@ mod test {
             view_model::Polygon {
                 vertices: vec![
                     view_model::Vertex {
-                        x: 40 - 2,
-                        y: 50 + 1,
+                        x: 40.0 - 2.0,
+                        y: 50.0 + 1.0,
                     },
                     view_model::Vertex {
-                        x: 20 - 1,
-                        y: 50 - 2,
+                        x: 20.0 - 1.0,
+                        y: 50.0 - 2.0,
                     },
                     view_model::Vertex {
-                        x: 20 + 2,
-                        y: 30 - 1,
+                        x: 20.0 + 2.0,
+                        y: 30.0 - 1.0,
                     },
                     view_model::Vertex {
-                        x: 40 + 1,
-                        y: 30 + 2,
+                        x: 40.0 + 1.0,
+                        y: 30.0 + 2.0,
                     },
                 ],
             },

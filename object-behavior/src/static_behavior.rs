@@ -29,17 +29,17 @@ mod tests {
         let own_description = ObjectBuilder::default()
             .shape(
                 PolygonBuilder::default()
-                    .vertex(-50, -50)
-                    .vertex(50, -50)
-                    .vertex(50, 50)
-                    .vertex(-50, 50)
+                    .vertex(-50.0, -50.0)
+                    .vertex(50.0, -50.0)
+                    .vertex(50.0, 50.0)
+                    .vertex(-50.0, 50.0)
                     .build()
                     .unwrap(),
             )
-            .location(300, 450)
+            .location(300.0, 450.0)
             .rotation(Radians::try_new(FRAC_PI_2).unwrap())
             .kind(Kind::Organism)
-            .mobility(Mobility::Movable(Velocity { x: 3, y: 5 }))
+            .mobility(Mobility::Movable(Velocity { x: 3.0, y: 5.0 }))
             .build()
             .unwrap();
         let mut object = Static::default();

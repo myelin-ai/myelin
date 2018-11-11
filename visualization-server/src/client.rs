@@ -315,26 +315,26 @@ mod tests {
             ObjectBuilder::default()
                 .shape(
                     PolygonBuilder::default()
-                        .vertex(-5, -5)
-                        .vertex(5, -5)
-                        .vertex(5, 5)
-                        .vertex(-5, 5)
+                        .vertex(-5.0, -5.0)
+                        .vertex(5.0, -5.0)
+                        .vertex(5.0, 5.0)
+                        .vertex(-5.0, 5.0)
                         .build()
                         .unwrap(),
                 )
-                .location(50, 50)
+                .location(50.0, 50.0)
                 .rotation(Radians::try_new(1.0).unwrap())
                 .sensor(Sensor {
                     shape: PolygonBuilder::default()
-                        .vertex(-2, -2)
-                        .vertex(2, -2)
-                        .vertex(2, 2)
-                        .vertex(-2, 2)
+                        .vertex(-2.0, -2.0)
+                        .vertex(2.0, -2.0)
+                        .vertex(2.0, 2.0)
+                        .vertex(-2.0, 2.0)
                         .build()
                         .unwrap(),
                     position: Position::default(),
                 })
-                .mobility(Mobility::Movable(Velocity { x: 3, y: -4 }))
+                .mobility(Mobility::Movable(Velocity { x: 3.0, y: -4.0 }))
                 .kind(Kind::Plant)
                 .build()
                 .unwrap(),
@@ -345,7 +345,7 @@ mod tests {
     fn delta() -> ViewModelDelta {
         let updated_object = ObjectDescriptionDelta {
             shape: None,
-            location: Some(Location { x: 12, y: 32 }),
+            location: Some(Location { x: 12.0, y: 32.0 }),
             rotation: None,
             mobility: None,
             kind: None,

@@ -125,14 +125,14 @@ mod tests {
         ObjectDescriptionDelta {
             shape: Some(
                 PolygonBuilder::default()
-                    .vertex(-5, -5)
-                    .vertex(5, -5)
-                    .vertex(5, 5)
-                    .vertex(-5, 5)
+                    .vertex(-5.0, -5.0)
+                    .vertex(5.0, -5.0)
+                    .vertex(5.0, 5.0)
+                    .vertex(-5.0, 5.0)
                     .build()
                     .expect("Created invalid vertex"),
             ),
-            location: Some(Location { x: 20, y: 40 }),
+            location: Some(Location { x: 20.0, y: 40.0 }),
             rotation: Some(Radians::try_new(6.0).unwrap()),
             mobility: None,
             kind: None,

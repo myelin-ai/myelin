@@ -116,13 +116,13 @@ mod test {
         ObjectBuilder::default()
             .kind(Kind::Organism)
             .mobility(Mobility::Immovable)
-            .location(10, 20)
+            .location(10.0, 20.0)
             .shape(
                 PolygonBuilder::default()
-                    .vertex(-50, -50)
-                    .vertex(50, -50)
-                    .vertex(50, 50)
-                    .vertex(-50, 50)
+                    .vertex(-50.0, -50.0)
+                    .vertex(50.0, -50.0)
+                    .vertex(50.0, 50.0)
+                    .vertex(-50.0, 50.0)
                     .build()
                     .unwrap(),
             )
@@ -132,10 +132,10 @@ mod test {
 
     fn polygon() -> Polygon {
         PolygonBuilder::default()
-            .vertex(-20, -20)
-            .vertex(20, -20)
-            .vertex(20, 20)
-            .vertex(-20, 20)
+            .vertex(-20.0, -20.0)
+            .vertex(20.0, -20.0)
+            .vertex(20.0, 20.0)
+            .vertex(-20.0, 20.0)
             .build()
             .unwrap()
     }
@@ -194,7 +194,7 @@ mod test {
                 &mut snapshot,
                 hashmap! {
                     200 => ObjectDelta::Updated(ObjectDescriptionDelta {
-                        location: Some(Location { x: 5, y: 5 }),
+                        location: Some(Location { x: 5.0, y: 5.0 }),
                         ..Default::default()
                     }),
                 },
@@ -248,12 +248,12 @@ mod test {
     fn apply_delta_handles_location_update() {
         test_apply_delta_handles_update(
             ObjectDescriptionDelta {
-                location: Some(Location { x: 100, y: 100 }),
+                location: Some(Location { x: 100.0, y: 100.0 }),
                 ..Default::default()
             },
             {
                 let mut object_description = object_description();
-                object_description.position.location = Location { x: 100, y: 100 };
+                object_description.position.location = Location { x: 100.0, y: 100.0 };
                 object_description
             },
         );
@@ -278,12 +278,12 @@ mod test {
     fn apply_delta_handles_mobility_update() {
         test_apply_delta_handles_update(
             ObjectDescriptionDelta {
-                mobility: Some(Mobility::Movable(Velocity { x: 10, y: 20 })),
+                mobility: Some(Mobility::Movable(Velocity { x: 10.0, y: 20.0 })),
                 ..Default::default()
             },
             {
                 let mut object_description = object_description();
-                object_description.mobility = Mobility::Movable(Velocity { x: 10, y: 20 });
+                object_description.mobility = Mobility::Movable(Velocity { x: 10.0, y: 20.0 });
                 object_description
             },
         );
@@ -309,7 +309,7 @@ mod test {
         let sensor = Sensor {
             shape: polygon(),
             position: Position {
-                location: Location { x: 4, y: 2 },
+                location: Location { x: 4.0, y: 2.0 },
                 rotation: Radians::default(),
             },
         };

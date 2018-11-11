@@ -447,10 +447,10 @@ mod tests {
 
         let expected_sensor = Sensor {
             shape: PolygonBuilder::default()
-                .vertex(-5, -5)
-                .vertex(5, -5)
-                .vertex(5, 5)
-                .vertex(-5, 5)
+                .vertex(-5.0, -5.0)
+                .vertex(5.0, -5.0)
+                .vertex(5.0, 5.0)
+                .vertex(-5.0, 5.0)
                 .build()
                 .unwrap(),
             position: Position {
@@ -500,10 +500,10 @@ mod tests {
 
         let sensor = Sensor {
             shape: PolygonBuilder::default()
-                .vertex(-5, -5)
-                .vertex(5, -5)
-                .vertex(5, 5)
-                .vertex(-5, 5)
+                .vertex(-5.0, -5.0)
+                .vertex(5.0, -5.0)
+                .vertex(5.0, 5.0)
+                .vertex(-5.0, 5.0)
                 .build()
                 .unwrap(),
             position: Position {
@@ -796,7 +796,7 @@ mod tests {
         world.expect_step();
         world.expect_is_body_passable_and_return(returned_handle, expected_passable);
         let expected_force = Force {
-            linear: LinearForce { x: 20, y: -5 },
+            linear: LinearForce { x: 20.0, y: -5.0 },
             torque: Torque(-8.0),
         };
         world.expect_apply_force_and_return(returned_handle, expected_force.clone(), Some(()));
@@ -862,17 +862,17 @@ mod tests {
 
     fn shape() -> Polygon {
         PolygonBuilder::default()
-            .vertex(-5, -5)
-            .vertex(5, -5)
-            .vertex(5, 5)
-            .vertex(-5, 5)
+            .vertex(-5.0, -5.0)
+            .vertex(5.0, -5.0)
+            .vertex(5.0, 5.0)
+            .vertex(-5.0, 5.0)
             .build()
             .unwrap()
     }
 
     fn position() -> Position {
         Position {
-            location: Location { x: 30, y: 40 },
+            location: Location { x: 30.0, y: 40.0 },
             rotation: Radians::try_new(3.4).unwrap(),
         }
     }

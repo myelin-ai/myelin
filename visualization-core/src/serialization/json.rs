@@ -66,25 +66,25 @@ mod test {
             kind: Some(Kind::Organism),
             shape: Some(
                 PolygonBuilder::default()
-                    .vertex(-5, -5)
-                    .vertex(1, 1)
-                    .vertex(2, 3)
-                    .vertex(5, 6)
+                    .vertex(-5.0, -5.0)
+                    .vertex(1.0, 1.0)
+                    .vertex(2.0, 3.0)
+                    .vertex(5.0, 6.0)
                     .build()
                     .unwrap(),
             ),
-            mobility: Some(Mobility::Movable(Velocity { x: 2, y: 3 })),
-            location: Some(Location { x: 3, y: 4 }),
+            mobility: Some(Mobility::Movable(Velocity { x: 2.0, y: 3.0 })),
+            location: Some(Location { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
             sensor: Some(Some(Sensor {
                 shape: PolygonBuilder::default()
-                    .vertex(-10, -12)
-                    .vertex(10, 6)
-                    .vertex(16, 0)
+                    .vertex(-10.0, -12.0)
+                    .vertex(10.0, 6.0)
+                    .vertex(16.0, 0.0)
                     .build()
                     .unwrap(),
                 position: Position {
-                    location: Location { x: 2, y: 3 },
+                    location: Location { x: 2.0, y: 3.0 },
                     rotation: Radians::try_new(1.0).unwrap(),
                 },
             })),
@@ -130,25 +130,25 @@ mod test {
             kind: Some(Kind::Organism),
             shape: Some(
                 PolygonBuilder::default()
-                    .vertex(-5, -5)
-                    .vertex(1, 1)
-                    .vertex(2, 3)
-                    .vertex(5, 6)
+                    .vertex(-5.0, -5.0)
+                    .vertex(1.0, 1.0)
+                    .vertex(2.0, 3.0)
+                    .vertex(5.0, 6.0)
                     .build()
                     .unwrap(),
             ),
-            mobility: Some(Mobility::Movable(Velocity { x: 2, y: 3 })),
-            location: Some(Location { x: 3, y: 4 }),
+            mobility: Some(Mobility::Movable(Velocity { x: 2.0, y: 3.0 })),
+            location: Some(Location { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
             sensor: Some(Some(Sensor {
                 shape: PolygonBuilder::default()
-                    .vertex(-10, -12)
-                    .vertex(10, 6)
-                    .vertex(16, 0)
+                    .vertex(-10.0, -12.0)
+                    .vertex(10.0, 6.0)
+                    .vertex(16.0, 0.0)
                     .build()
                     .unwrap(),
                 position: Position {
-                    location: Location { x: 2, y: 3 },
+                    location: Location { x: 2.0, y: 3.0 },
                     rotation: Radians::try_new(1.0).unwrap(),
                 },
             })),
