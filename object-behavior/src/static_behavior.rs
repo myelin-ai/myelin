@@ -1,7 +1,6 @@
 //! Behaviours of various organisms
 
 use myelin_environment::object::*;
-use myelin_geometry::*;
 
 /// A purely static and non-interactive behavior.
 /// This type will never perform any actions.
@@ -22,6 +21,7 @@ impl ObjectBehavior for Static {
 mod tests {
     use super::*;
     use myelin_environment::object_builder::ObjectBuilder;
+    use myelin_geometry::*;
     use std::f64::consts::FRAC_PI_2;
 
     #[test]

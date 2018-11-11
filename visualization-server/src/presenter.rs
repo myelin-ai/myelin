@@ -64,14 +64,8 @@ fn get_object_description_delta(
 ) -> ObjectDescriptionDelta {
     ObjectDescriptionDelta {
         shape: get_delta(first.map(|o| &o.shape), second.shape),
-        location: get_delta(
-            first.map(|o| &o.position.location),
-            second.position.location,
-        ),
-        rotation: get_delta(
-            first.map(|o| &o.position.rotation),
-            second.position.rotation,
-        ),
+        location: get_delta(first.map(|o| &o.location), second.location),
+        rotation: get_delta(first.map(|o| &o.rotation), second.rotation),
         mobility: get_delta(first.map(|o| &o.mobility), second.mobility),
         kind: get_delta(first.map(|o| &o.kind), second.kind),
         sensor: get_delta(first.map(|o| &o.sensor), second.sensor),
@@ -175,8 +169,9 @@ mod mock {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::{Kind, Mobility, ObjectDescription, Radians};
-    use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+    use myelin_environment::object::{Kind, Mobility, ObjectDescription};
+    use myelin_environment::object_builder::ObjectBuilder;
+    use myelin_geometry::*;
 
     fn object_description() -> ObjectDescription {
         ObjectBuilder::default()
@@ -250,7 +245,7 @@ mod tests {
         let mut first_snapshot = Snapshot::new();
         first_snapshot.insert(42, object.clone());
 
-        object.position.location.x += 10.0;
+        object.location.x += 10.0;
 
         let mut second_snapshot = Snapshot::new();
         second_snapshot.insert(42, object.clone());
@@ -260,7 +255,7 @@ mod tests {
 
         let expected_delta = ObjectDescriptionDelta {
             shape: None,
-            location: Some(object.position.location),
+            location: Some(object.location),
             rotation: None,
             mobility: None,
             kind: None,
@@ -289,8 +284,8 @@ mod tests {
 
         let expected_object_description = ObjectBuilder::default()
             .shape(object.shape)
-            .location(object.position.location.x, object.position.location.y)
-            .rotation(object.position.rotation)
+            .location(object.location.x, object.location.y)
+            .rotation(object.rotation)
             .mobility(object.mobility)
             .kind(object.kind)
             .build()

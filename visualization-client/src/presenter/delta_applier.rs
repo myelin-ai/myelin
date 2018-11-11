@@ -97,8 +97,8 @@ fn apply_object_description_delta(
 
     apply_delta!(
         shape => shape,
-        location => position.location,
-        rotation => position.rotation,
+        location => location,
+        rotation => rotation,
         mobility => mobility,
         kind => kind,
         sensor => sensor,
@@ -253,7 +253,7 @@ mod test {
             },
             {
                 let mut object_description = object_description();
-                object_description.position.location = Point { x: 100.0, y: 100.0 };
+                object_description.location = Point { x: 100.0, y: 100.0 };
                 object_description
             },
         );
@@ -268,7 +268,7 @@ mod test {
             },
             {
                 let mut object_description = object_description();
-                object_description.position.rotation = Radians::try_new(PI).unwrap();
+                object_description.rotation = Radians::try_new(PI).unwrap();
                 object_description
             },
         );

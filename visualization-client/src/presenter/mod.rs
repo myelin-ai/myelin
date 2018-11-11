@@ -346,17 +346,17 @@ mod tests {
             vec![
                 (
                     object_description_1.shape.clone(),
-                    object_description_1.position.clone(),
+                    object_description_1.clone(),
                     view_model_polygon_1.clone(),
                 ),
                 (
                     object_description_1.shape.clone(),
-                    object_description_1.position.clone(),
+                    object_description_1.clone(),
                     view_model_polygon_1.clone(),
                 ),
                 (
                     object_description_2.shape.clone(),
-                    object_description_2.position.clone(),
+                    object_description_2.clone(),
                     view_model_polygon_2.clone(),
                 ),
             ]

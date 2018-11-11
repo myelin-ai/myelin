@@ -28,8 +28,8 @@ impl GlobalPolygonTranslator for GlobalPolygonTranslatorImpl {
         position: &myelin_geometry::Position,
     ) -> view_model::Polygon {
         let global_polygon = polygon
-            .translate(position.location)
-            .rotate_around_point(position.rotation, position.location);
+            .translate(location)
+            .rotate_around_point(rotation, location);
         let view_model_vertices = global_polygon
             .vertices
             .iter()
