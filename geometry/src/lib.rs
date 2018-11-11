@@ -17,6 +17,8 @@ use geo_types::{Point as GeoPoint, Polygon as GeoPolygon};
 mod radians;
 pub use self::radians::*;
 
+pub mod polygon;
+
 /// A vector
 #[derive(Debug, PartialEq, Copy, Clone, Default, Serialize, Deserialize)]
 pub struct Vector {
@@ -35,13 +37,6 @@ pub struct Point {
     pub y: f64,
 }
 
-/// A convex polygon
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Polygon {
-    /// The vertices of the polygon
-    pub vertices: Vec<Point>,
-}
-
 /// A position within the world, defined as a combination
 /// of location and rotation
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -50,30 +45,4 @@ pub struct Position {
     pub location: Point,
     /// A rotation defined in radians
     pub rotation: Radians,
-}
-
-fn to_global_polygon(polygon: &Polygon, position: &Position) -> Polygon {
-    let geo_polygon = GeoPolygon::new(
-        polygon
-            .vertices
-            .iter()
-            .map(|vertex| (vertex.x, vertex.y))
-            .collect::<Vec<_>>()
-            .into(),
-        vec![],
-    );
-    let center = GeoPoint::new(position.location.x, position.location.y);
-    let geo_polygon = geo_polygon.translate(center.x(), center.y());
-    let rotation_angle_in_degrees = position.rotation.value().to_degrees();
-    let geo_polygon = geo_polygon.rotate_around_point(rotation_angle_in_degrees, center);
-    let vertices = geo_polygon
-        .exterior
-        .into_points()
-        .iter()
-        .map(|point| Point {
-            x: point.x(),
-            y: point.y(),
-        })
-        .collect();
-    Polygon { vertices }
 }
