@@ -557,6 +557,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "myelin-geometry"
+version = "0.1.0"
+
+[[package]]
 name = "myelin-object-behavior"
 version = "0.1.0"
 dependencies = [
