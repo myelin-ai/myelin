@@ -33,13 +33,12 @@ impl GlobalPolygonTranslator for GlobalPolygonTranslatorImpl {
             polygon
                 .vertices
                 .iter()
-                .map(|vertex| (vertex.x as f64, vertex.y as f64))
+                .map(|vertex| (vertex.x, vertex.y))
                 .collect::<Vec<_>>()
                 .into(),
             vec![],
         );
-        let geo_polygon =
-            geo_polygon.translate(position.location.x as f64, position.location.y as f64);
+        let geo_polygon = geo_polygon.translate(position.location.x, position.location.y);
         let geo_polygon = geo_polygon.rotate(position.rotation.value());
         let vertices = geo_polygon
             .exterior
