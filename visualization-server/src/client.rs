@@ -334,7 +334,7 @@ mod tests {
                         .unwrap(),
                     position: Position::default(),
                 })
-                .mobility(Mobility::Movable(Velocity { x: 3.0, y: -4.0 }))
+                .mobility(Mobility::Movable(Vector { x: 3.0, y: -4.0 }))
                 .kind(Kind::Plant)
                 .build()
                 .unwrap(),

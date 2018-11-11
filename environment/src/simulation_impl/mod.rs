@@ -403,7 +403,7 @@ mod tests {
         let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
-        let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_mobility = Mobility::Movable(Vector::default());
         let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
@@ -435,7 +435,7 @@ mod tests {
         let mut world = WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
-        let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_mobility = Mobility::Movable(Vector::default());
         let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
@@ -488,7 +488,7 @@ mod tests {
         let mut world = WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
-        let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_mobility = Mobility::Movable(Vector::default());
         let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
@@ -535,7 +535,7 @@ mod tests {
         world.expect_step();
         let expected_shape = shape();
         let expected_position = position();
-        let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_mobility = Mobility::Movable(Vector::default());
         let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
@@ -577,7 +577,7 @@ mod tests {
         world.expect_step();
         let expected_shape = shape();
         let expected_position = position();
-        let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_mobility = Mobility::Movable(Vector::default());
         let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
@@ -634,7 +634,7 @@ mod tests {
         let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
-        let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_mobility = Mobility::Movable(Vector::default());
         let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
@@ -683,7 +683,7 @@ mod tests {
         let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
-        let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_mobility = Mobility::Movable(Vector::default());
         let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
@@ -737,7 +737,7 @@ mod tests {
         let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
-        let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_mobility = Mobility::Movable(Vector::default());
         let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
@@ -783,7 +783,7 @@ mod tests {
         let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
-        let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_mobility = Mobility::Movable(Vector::default());
         let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {
@@ -798,7 +798,7 @@ mod tests {
         world.expect_step();
         world.expect_is_body_passable_and_return(returned_handle, expected_passable);
         let expected_force = Force {
-            linear: LinearForce { x: 20.0, y: -5.0 },
+            linear: Vector { x: 20.0, y: -5.0 },
             torque: Torque(-8.0),
         };
         world.expect_apply_force_and_return(returned_handle, expected_force.clone(), Some(()));
@@ -834,7 +834,7 @@ mod tests {
         let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_position = position();
-        let expected_mobility = Mobility::Movable(Velocity::default());
+        let expected_mobility = Mobility::Movable(Vector::default());
         let expected_passable = false;
 
         let expected_physical_body = PhysicalBody {

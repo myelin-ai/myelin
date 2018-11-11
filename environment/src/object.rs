@@ -91,9 +91,7 @@ pub struct ObjectDescription {
 }
 
 /// An object's mobility and, if present, its
-/// current [`Velocity`]
-///
-/// [`Velocity`]: ./struct.Velocity.html
+/// current Vector
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum Mobility {
     /// The object cannot have any velocity as
@@ -104,17 +102,7 @@ pub enum Mobility {
     /// A movable object's current velocity. Corresponds to [`MovableObject`]
     ///
     /// [`MovableObject`]: ./trait.MovableObject.html
-    Movable(Velocity),
-}
-
-/// The velocity of an object, measured as
-/// a two dimensional vector
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Velocity {
-    /// The x component of the [`Velocity`]
-    pub x: f64,
-    /// The y component of the [`Velocity`]
-    pub y: f64,
+    Movable(Vector),
 }
 
 /// The part of an object that is responsible for custom
@@ -136,18 +124,9 @@ pub enum Kind {
 #[derive(Debug, PartialEq, Clone, Default)]
 pub struct Force {
     /// The linear component of the [`Force`]
-    pub linear: LinearForce,
+    pub linear: Vector,
     /// The torque (rotation) component of the [`Force`]
     pub torque: Torque,
-}
-
-/// Vector describing linear force
-#[derive(Debug, PartialEq, Clone, Default)]
-pub struct LinearForce {
-    /// The x component of the [`LinearForce`]
-    pub x: f64,
-    /// The y component of the [`LinearForce`]
-    pub y: f64,
 }
 
 /// Force of rotation
@@ -172,42 +151,4 @@ where
     default fn clone_box(&self) -> Box<dyn ObjectBehavior> {
         box self.clone()
     }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::f64::consts::PI;
-
-    #[test]
-    fn radians_new_with_negative_0_point_1_is_none() {
-        let radians = Radians::try_new(-0.1);
-        assert!(radians.is_none())
-    }
-
-    #[test]
-    fn radians_new_with_0_is_some() {
-        let radians = Radians::try_new(0.0);
-        assert!(radians.is_some())
-    }
-
-    #[test]
-    fn radians_new_with_1_point_9_pi_is_some() {
-        let radians = Radians::try_new(1.9 * PI);
-        assert!(radians.is_some())
-    }
-
-    #[test]
-    fn radians_new_with_2_pi_is_none() {
-        let radians = Radians::try_new(2.0 * PI);
-        assert!(radians.is_none())
-    }
-
-    #[test]
-    fn radians_value_returns_1_when_given_1() {
-        let value = 1.0;
-        let radians = Radians::try_new(value).unwrap();
-        assert_eq!(value, radians.value())
-    }
-
 }

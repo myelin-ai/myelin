@@ -73,7 +73,7 @@ mod test {
                     .build()
                     .unwrap(),
             ),
-            mobility: Some(Mobility::Movable(Velocity { x: 2.0, y: 3.0 })),
+            mobility: Some(Mobility::Movable(Vector { x: 2.0, y: 3.0 })),
             location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
             sensor: Some(Some(Sensor {
@@ -137,7 +137,7 @@ mod test {
                     .build()
                     .unwrap(),
             ),
-            mobility: Some(Mobility::Movable(Velocity { x: 2.0, y: 3.0 })),
+            mobility: Some(Mobility::Movable(Vector { x: 2.0, y: 3.0 })),
             location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
             sensor: Some(Some(Sensor {

@@ -278,12 +278,12 @@ mod test {
     fn apply_delta_handles_mobility_update() {
         test_apply_delta_handles_update(
             ObjectDescriptionDelta {
-                mobility: Some(Mobility::Movable(Velocity { x: 10.0, y: 20.0 })),
+                mobility: Some(Mobility::Movable(Vector { x: 10.0, y: 20.0 })),
                 ..Default::default()
             },
             {
                 let mut object_description = object_description();
-                object_description.mobility = Mobility::Movable(Velocity { x: 10.0, y: 20.0 });
+                object_description.mobility = Mobility::Movable(Vector { x: 10.0, y: 20.0 });
                 object_description
             },
         );

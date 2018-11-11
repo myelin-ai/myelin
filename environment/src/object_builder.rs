@@ -18,7 +18,7 @@
 //!     ).location(300.0, 450.0)
 //!     .rotation(Radians::try_new(FRAC_PI_2).unwrap())
 //!     .kind(Kind::Organism)
-//!     .mobility(Mobility::Movable(Velocity{x: 3.0, y: 5.0}))
+//!     .mobility(Mobility::Movable(Vector{x: 3.0, y: 5.0}))
 //!     .build()
 //!     .unwrap();
 //! ```
@@ -112,9 +112,10 @@ impl ObjectBuilder {
     /// # Examples
     /// ```
     /// use myelin_environment::object_builder::ObjectBuilder;
-    /// use myelin_environment::object::{Mobility, Velocity};
+    /// use myelin_environment::object::Mobility;
+    /// use myelin_geometry::Vector;
     /// ObjectBuilder::default()
-    ///     .mobility(Mobility::Movable(Velocity { x: -12.0, y: 4.0 }));
+    ///     .mobility(Mobility::Movable(Vector { x: -12.0, y: 4.0 }));
     /// ```
     pub fn mobility(&mut self, mobility: Mobility) -> &mut Self {
         self.mobility = Some(mobility);
@@ -190,7 +191,7 @@ impl ObjectBuilder {
     ///     ).location(300.0, 450.0)
     ///     .rotation(Radians::try_new(FRAC_PI_2).unwrap())
     ///     .kind(Kind::Organism)
-    ///     .mobility(Mobility::Movable(Velocity{x: 3.0, y: 5.0}))
+    ///     .mobility(Mobility::Movable(Vector{x: 3.0, y: 5.0}))
     ///     .build()
     ///     .unwrap();
     /// ```
@@ -427,7 +428,7 @@ mod test {
                     .build()
                     .unwrap(),
             )
-            .mobility(Mobility::Movable(Velocity { x: -12.0, y: 5.0 }))
+            .mobility(Mobility::Movable(Vector { x: -12.0, y: 5.0 }))
             .kind(Kind::Organism)
             .location(30.0, 40.0)
             .rotation(Radians::try_new(1.1).unwrap())
@@ -450,7 +451,7 @@ mod test {
                 location: Point { x: 30.0, y: 40.0 },
                 rotation: Radians::try_new(1.1).unwrap(),
             },
-            mobility: Mobility::Movable(Velocity { x: -12.0, y: 5.0 }),
+            mobility: Mobility::Movable(Vector { x: -12.0, y: 5.0 }),
             kind: Kind::Organism,
             shape: Polygon {
                 vertices: vec![

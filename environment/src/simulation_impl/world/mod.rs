@@ -15,7 +15,7 @@ use ncollide2d::query::Proximity;
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
 use ncollide2d::world::CollisionObjectHandle;
 use nphysics2d::force_generator::{ForceGenerator, ForceGeneratorHandle};
-use nphysics2d::math::{Isometry, Point as NPhysicsPoint, Vector};
+use nphysics2d::math::{Isometry, Point as NPhysicsPoint, Vector as NPhysicsVector};
 use nphysics2d::object::{
     BodyHandle as NphysicsBodyHandle, Collider, ColliderHandle, Material, RigidBody,
     SensorHandle as NphysicsSensorHandle,
@@ -140,7 +140,7 @@ impl NphysicsWorld {
 
             let linear_velocity = rigid_body.velocity().linear;
             let (x, y) = elements(&linear_velocity);
-            Mobility::Movable(Velocity { x, y })
+            Mobility::Movable(Vector { x, y })
         }
     }
 
@@ -202,7 +202,7 @@ fn translate_position(
     rotation_translator: &dyn NphysicsRotationTranslator,
 ) -> Isometry<PhysicsType> {
     Isometry::new(
-        Vector::new(
+        NPhysicsVector::new(
             PhysicsType::from(position.location.x),
             PhysicsType::from(position.location.y),
         ),
@@ -387,7 +387,7 @@ impl NphysicsWorld {
     }
 }
 
-fn set_velocity(rigid_body: &mut RigidBody<PhysicsType>, velocity: &Velocity) {
+fn set_velocity(rigid_body: &mut RigidBody<PhysicsType>, velocity: &Vector) {
     let nphysics_velocity = nphysics2d::algebra::Velocity2::linear(
         PhysicsType::from(velocity.x),
         PhysicsType::from(velocity.y),
@@ -1184,7 +1184,7 @@ mod tests {
         );
         let body = immovable_body(Radians::try_new(FRAC_PI_2).unwrap());
         let still_body = PhysicalBody {
-            mobility: Mobility::Movable(Velocity { x: 0.0, y: 0.0 }),
+            mobility: Mobility::Movable(Vector { x: 0.0, y: 0.0 }),
             ..body
         };
         let handle = world.add_body(still_body.clone());
@@ -1210,7 +1210,7 @@ mod tests {
         );
         let mut force_applier = SingleTimeForceApplierMock::default();
         let expected_force = Force {
-            linear: LinearForce { x: 4.0, y: 10.0 },
+            linear: Vector { x: 4.0, y: 10.0 },
             torque: Torque(2.0),
         };
         force_applier.expect_register_force(expected_force.clone());
@@ -1250,7 +1250,7 @@ mod tests {
                 location: Point { x: 5.0, y: 5.0 },
                 rotation: orientation,
             },
-            mobility: Mobility::Movable(Velocity { x: 1.0, y: 1.0 }),
+            mobility: Mobility::Movable(Vector { x: 1.0, y: 1.0 }),
             shape: PolygonBuilder::default()
                 .vertex(-5.0, -5.0)
                 .vertex(-5.0, 5.0)

@@ -206,7 +206,7 @@ fn build_organism(x: f64, y: f64) -> ObjectDescription {
         )
         .location(x, y)
         .rotation(Radians::try_new(FRAC_PI_2).unwrap())
-        .mobility(Mobility::Movable(Velocity::default()))
+        .mobility(Mobility::Movable(Vector::default()))
         .kind(Kind::Organism)
         .sensor(Sensor {
             shape: PolygonBuilder::default()
