@@ -570,6 +570,7 @@ name = "myelin-object-behavior"
 version = "0.1.0"
 dependencies = [
  "myelin-environment 0.1.0",
+ "myelin-geometry 0.1.0",
 ]
 
 [[package]]
