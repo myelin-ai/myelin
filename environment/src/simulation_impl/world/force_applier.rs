@@ -154,10 +154,7 @@ mod tests {
             torque: Torque(101.55),
         };
         let expected_body = PhysicalBody {
-            position: Position {
-                rotation: Radians::try_new(0.6093).unwrap(),
-                ..body.position.clone()
-            },
+            rotation: Radians::try_new(0.6093).unwrap(),
             ..body
         };
         test_force(&physical_body(), &expected_body, force);
@@ -171,10 +168,7 @@ mod tests {
             torque: Torque(-202.0),
         };
         let expected_body = PhysicalBody {
-            position: Position {
-                rotation: Radians::try_new(5.071_185_307_179_586_5).unwrap(),
-                ..body.position.clone()
-            },
+            rotation: Radians::try_new(5.071_185_307_179_586_5).unwrap(),
             ..body
         };
         test_force(&physical_body(), &expected_body, force);
@@ -191,10 +185,7 @@ mod tests {
             torque: Torque::default(),
         };
         let expected_body = PhysicalBody {
-            position: Position {
-                location: Point { x: 15.0, y: 15.0 },
-                ..body.position.clone()
-            },
+            location: Point { x: 15.0, y: 15.0 },
             mobility: Mobility::Movable(Vector { x: 10.0, y: 10.0 }),
             ..body
         };
@@ -212,10 +203,7 @@ mod tests {
             torque: Torque::default(),
         };
         let expected_body = PhysicalBody {
-            position: Position {
-                location: Point { x: 0.0, y: 0.0 },
-                ..body.position.clone()
-            },
+            location: Point { x: 0.0, y: 0.0 },
             mobility: Mobility::Movable(Vector { x: -5.0, y: -5.0 }),
             ..body
         };
@@ -233,10 +221,7 @@ mod tests {
             torque: Torque::default(),
         };
         let expected_body = PhysicalBody {
-            position: Position {
-                location: Point { x: -5.0, y: -15.0 },
-                ..body.position.clone()
-            },
+            location: Point { x: -5.0, y: -15.0 },
             mobility: Mobility::Movable(Vector { x: -10.0, y: -20.0 }),
             ..body
         };
@@ -255,10 +240,8 @@ mod tests {
         };
 
         let expected_body = PhysicalBody {
-            position: Position {
-                location: Point { x: 10.0, y: 15.0 },
-                rotation: Radians::try_new(0.009_000_000_000_000_001).unwrap(),
-            },
+            location: Point { x: 10.0, y: 15.0 },
+            rotation: Radians::try_new(0.009_000_000_000_000_001).unwrap(),
             mobility: Mobility::Movable(Vector { x: 5.0, y: 10.0 }),
             ..body
         };
@@ -267,10 +250,8 @@ mod tests {
 
     fn physical_body() -> PhysicalBody {
         PhysicalBody {
-            position: Position {
-                location: Point { x: 5.0, y: 5.0 },
-                rotation: Radians::default(),
-            },
+            location: Point { x: 5.0, y: 5.0 },
+            rotation: Radians::default(),
             mobility: Mobility::Movable(Vector::default()),
             shape: PolygonBuilder::default()
                 .vertex(-5.0, -5.0)

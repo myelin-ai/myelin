@@ -136,7 +136,8 @@ impl ObjectBuilder {
     ///             .vertex(-50.0, 50.0)
     ///             .build()
     ///             .unwrap(),
-    ///         position: Position::default()
+    ///         location: Point::default(),
+    ///         rotation: Radians::default(),
     ///     });
     /// ```
     pub fn sensor(&mut self, sensor: Sensor) -> &mut Self {
@@ -207,10 +208,8 @@ impl ObjectBuilder {
 
         let object = ObjectDescription {
             shape: self.shape.take().ok_or_else(|| error.clone())?,
-            position: Position {
-                location: self.location.take().ok_or_else(|| error.clone())?,
-                rotation: self.rotation.take().unwrap_or_else(Default::default),
-            },
+            rotation: self.rotation.take().unwrap_or_else(Default::default),
+            location: self.location.take().ok_or_else(|| error.clone())?,
             kind: self.kind.take().ok_or_else(|| error.clone())?,
             mobility: self.mobility.take().ok_or_else(|| error.clone())?,
             sensor: self.sensor.take(),
@@ -347,10 +346,8 @@ mod test {
                     Point { x: 1.0, y: 1.0 },
                 ],
             },
-            position: Position {
-                rotation: Radians::try_new(0.0).unwrap(),
-                location: Point { x: 30.0, y: 40.0 },
-            },
+            location: Point { x: 30.0, y: 40.0 },
+            rotation: Radians::try_new(0.0).unwrap(),
             kind: Kind::Terrain,
             mobility: Mobility::Immovable,
             sensor: None,
@@ -388,10 +385,8 @@ mod test {
                     Point { x: 1.0, y: 1.0 },
                 ],
             },
-            position: Position {
-                rotation: Radians::try_new(0.0).unwrap(),
-                location: Point { x: 30.0, y: 40.0 },
-            },
+            location: Point { x: 30.0, y: 40.0 },
+            rotation: Radians::try_new(0.0).unwrap(),
             kind: Kind::Terrain,
             mobility: Mobility::Immovable,
             sensor: None,
@@ -439,18 +434,14 @@ mod test {
                     .vertex(0.0, 1.0)
                     .build()
                     .unwrap(),
-                position: Position {
-                    location: Point { x: 12.0, y: 42.0 },
-                    rotation: Radians::try_new(1.2).unwrap(),
-                },
+                location: Point { x: 12.0, y: 42.0 },
+                rotation: Radians::try_new(1.2).unwrap(),
             })
             .build();
 
         let expected = ObjectDescription {
-            position: Position {
-                location: Point { x: 30.0, y: 40.0 },
-                rotation: Radians::try_new(1.1).unwrap(),
-            },
+            location: Point { x: 30.0, y: 40.0 },
+            rotation: Radians::try_new(1.1).unwrap(),
             mobility: Mobility::Movable(Vector { x: -12.0, y: 5.0 }),
             kind: Kind::Organism,
             shape: Polygon {
@@ -469,10 +460,8 @@ mod test {
                         Point { x: 0.0, y: 1.0 },
                     ],
                 },
-                position: Position {
-                    location: Point { x: 12.0, y: 42.0 },
-                    rotation: Radians::try_new(1.2).unwrap(),
-                },
+                location: Point { x: 12.0, y: 42.0 },
+                rotation: Radians::try_new(1.2).unwrap(),
             }),
             passable: false,
         };

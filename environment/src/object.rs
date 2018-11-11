@@ -52,11 +52,14 @@ impl Clone for Action {
 pub struct Sensor {
     /// The shape of the sensor
     pub shape: Polygon,
-    /// The shape's position in relation to its
+    /// The sensor's location in relation to its
     /// parent [`Object`]
     ///
     /// [`Object`]: ./enum.Object.html
-    pub position: Position,
+    pub location: Point,
+
+    /// the sensor's rotation
+    pub rotation: Radians,
 }
 
 /// The behaviourless description of an object that has
@@ -72,8 +75,11 @@ pub struct ObjectDescription {
     /// [`position`]: ./struct.ObjectDescription.html#structfield.location
     pub shape: Polygon,
 
-    /// The current position of the object
-    pub position: Position,
+    /// The global location of the center of the object
+    pub location: Point,
+
+    /// The object's rotation
+    pub rotation: Radians,
 
     /// The current velocity of the object, defined
     /// as a two dimensional vector relative to the

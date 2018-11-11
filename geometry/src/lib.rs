@@ -34,13 +34,3 @@ pub struct Point {
     /// The y coordinate of the Point
     pub y: f64,
 }
-
-/// A position within the world, defined as a combination
-/// of location and rotation
-#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
-pub struct Position {
-    /// An absolute location
-    pub location: Point,
-    /// A rotation defined in radians
-    pub rotation: Radians,
-}

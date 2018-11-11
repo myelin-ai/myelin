@@ -100,13 +100,15 @@ impl NphysicsWorld {
         let collider = self.physics_world.collider(collider_handle)?;
 
         let shape = self.get_shape(&collider);
-        let position = self.get_position(&collider);
+        let location = self.get_location(&collider);
+        let rotation = self.get_rotation(&collider);
         let mobility = self.get_mobility(&collider);
         let passable = self.passable(&collider);
 
         Some(PhysicalBody {
             shape,
-            position,
+            location,
+            rotation,
             mobility,
             passable,
         })
@@ -144,18 +146,19 @@ impl NphysicsWorld {
         }
     }
 
-    fn get_position(&self, collider: &Collider<PhysicsType>) -> Position {
+    fn get_location(&self, collider: &Collider<PhysicsType>) -> Point {
         let position = collider.position();
         let (x, y) = elements(&position.translation.vector);
+        Point { x, y }
+    }
+
+    fn get_rotation(&self, collider: &Collider<PhysicsType>) -> Radians {
+        let position = collider.position();
         let rotation = position.rotation.angle();
 
-        Position {
-            location: Point { x, y },
-            rotation: self
-                .rotation_translator
-                .to_radians(rotation)
-                .expect("Rotation of a collider could not be translated into Radians"),
-        }
+        self.rotation_translator
+            .to_radians(rotation)
+            .expect("Rotation of a collider could not be translated into Radians")
     }
 
     fn passable(&self, collider: &Collider<PhysicsType>) -> bool {
@@ -197,16 +200,14 @@ where
     (*iter.next().unwrap(), *iter.next().unwrap())
 }
 
-fn translate_position(
-    position: &Position,
+fn to_nphysics_isometry(
+    location: Point,
+    rotation: Radians,
     rotation_translator: &dyn NphysicsRotationTranslator,
 ) -> Isometry<PhysicsType> {
     Isometry::new(
-        NPhysicsVector::new(
-            PhysicsType::from(position.location.x),
-            PhysicsType::from(position.location.y),
-        ),
-        rotation_translator.to_nphysics_rotation(position.rotation),
+        NPhysicsVector::new(PhysicsType::from(location.x), PhysicsType::from(location.y)),
+        rotation_translator.to_nphysics_rotation(rotation),
     )
 }
 
@@ -259,7 +260,8 @@ impl World for NphysicsWorld {
         let local_inertia = shape.inertia(0.1);
         let local_center_of_mass = shape.center_of_mass();
 
-        let isometry = translate_position(&body.position, &*self.rotation_translator);
+        let isometry =
+            to_nphysics_isometry(body.location, body.rotation, &*self.rotation_translator);
         let material = Material::default();
 
         let handle = match body.mobility {
@@ -327,7 +329,8 @@ impl World for NphysicsWorld {
         let parent_handle = self.physics_world.collider_body_handle(collider_handle)?;
 
         let shape = translate_shape(&sensor.shape);
-        let position = translate_position(&sensor.position, &*self.rotation_translator);
+        let position =
+            to_nphysics_isometry(sensor.location, sensor.rotation, &*self.rotation_translator);
         let sensor_handle = self
             .physics_world
             .add_sensor(shape, parent_handle, position);
@@ -739,10 +742,8 @@ mod tests {
             .expect("body handle was invalid");
 
         let close_body = PhysicalBody {
-            position: Position {
-                location: Point { x: 6.0, y: 6.0 },
-                rotation: Radians::default(),
-            },
+            location: Point { x: 6.0, y: 6.0 },
+            rotation: Radians::default(),
             ..movable_body(Radians::default())
         };
         world.add_body(close_body);
@@ -775,10 +776,8 @@ mod tests {
             .expect("body handle was invalid");
 
         let close_body = PhysicalBody {
-            position: Position {
-                location: Point { x: 6.0, y: 6.0 },
-                rotation: Radians::default(),
-            },
+            location: Point { x: 6.0, y: 6.0 },
+            rotation: Radians::default(),
             ..movable_body(Radians::default())
         };
         let expected_handle = world.add_body(close_body);
@@ -825,10 +824,8 @@ mod tests {
             .expect("body handle was invalid");
 
         let close_body = PhysicalBody {
-            position: Position {
-                location: Point { x: 12.0, y: 12.0 },
-                rotation: Radians::default(),
-            },
+            location: Point { x: 12.0, y: 12.0 },
+            rotation: Radians::default(),
             ..movable_body(Radians::default())
         };
         let expected_handle = world.add_body(close_body);
@@ -875,10 +872,8 @@ mod tests {
             .expect("body handle was invalid");
 
         let close_body = PhysicalBody {
-            position: Position {
-                location: Point { x: 60.0, y: 60.0 },
-                rotation: Radians::default(),
-            },
+            location: Point { x: 60.0, y: 60.0 },
+            rotation: Radians::default(),
             ..movable_body(Radians::default())
         };
         let handle_two = world.add_body(close_body);
@@ -926,10 +921,8 @@ mod tests {
             .expect("body handle was invalid");
 
         let close_body = PhysicalBody {
-            position: Position {
-                location: close_body_location,
-                rotation: Radians::default(),
-            },
+            location: close_body_location,
+            rotation: Radians::default(),
             ..movable_body(Radians::default())
         };
         let close_body_handle = world.add_body(close_body);
@@ -986,10 +979,8 @@ mod tests {
             .expect("body handle was invalid");
 
         let close_body = PhysicalBody {
-            position: Position {
-                location: close_body_location,
-                rotation: Radians::default(),
-            },
+            location: close_body_location,
+            rotation: Radians::default(),
             ..movable_body(Radians::default())
         };
         let close_body_handle = world.add_body(close_body);
@@ -1084,10 +1075,8 @@ mod tests {
         let actual_body = world.body(handle);
 
         let expected_body = PhysicalBody {
-            position: Position {
-                location: Point { x: 6.0, y: 6.0 },
-                rotation: Radians::default(),
-            },
+            location: Point { x: 6.0, y: 6.0 },
+            rotation: Radians::default(),
             ..local_object
         };
         assert_eq!(Some(expected_body), actual_body);
@@ -1124,10 +1113,8 @@ mod tests {
         let actual_body = world.body(handle);
 
         let expected_body = PhysicalBody {
-            position: Position {
-                location: Point { x: 7.0, y: 7.0 },
-                rotation: Radians::default(),
-            },
+            location: Point { x: 7.0, y: 7.0 },
+            rotation: Radians::default(),
             ..local_object
         };
         assert_eq!(Some(expected_body), actual_body);
@@ -1237,19 +1224,15 @@ mod tests {
                 .vertex(-10.0, 10.0)
                 .build()
                 .unwrap(),
-            position: Position {
-                location: Point { x: 0.0, y: 0.0 },
-                rotation: Radians::default(),
-            },
+            location: Point { x: 0.0, y: 0.0 },
+            rotation: Radians::default(),
         }
     }
 
     fn movable_body(orientation: Radians) -> PhysicalBody {
         PhysicalBody {
-            position: Position {
-                location: Point { x: 5.0, y: 5.0 },
-                rotation: orientation,
-            },
+            location: Point { x: 5.0, y: 5.0 },
+            rotation: orientation,
             mobility: Mobility::Movable(Vector { x: 1.0, y: 1.0 }),
             shape: PolygonBuilder::default()
                 .vertex(-5.0, -5.0)
@@ -1272,10 +1255,8 @@ mod tests {
                 .build()
                 .unwrap(),
             mobility: Mobility::Immovable,
-            position: Position {
-                location: Point { x: 300.0, y: 200.0 },
-                rotation: orientation,
-            },
+            location: Point { x: 300.0, y: 200.0 },
+            rotation: orientation,
             passable: false,
         }
     }
