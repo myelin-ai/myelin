@@ -93,7 +93,7 @@ pub struct ObjectDescription {
 /// current [`Velocity`]
 ///
 /// [`Velocity`]: ./struct.Velocity.html
-#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum Mobility {
     /// The object cannot have any velocity as
     /// it cannot be moved. Corresponds to [`ImmovableObject`]
@@ -109,7 +109,7 @@ pub enum Mobility {
 /// This type holds the vertices of an object
 /// in relation to its center, i.e. [0; 0] means
 /// the exact center of the object.
-#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct Polygon {
     /// The vertices defining the shape of the object
     pub vertices: Vec<Vertex>,
@@ -117,12 +117,12 @@ pub struct Polygon {
 
 /// The coordinates representing a corner
 /// of a polygon in relation to its center
-#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct Vertex {
     /// The x component of the [`Vertex`]
-    pub x: i32,
+    pub x: f64,
     /// The y component of the [`Vertex`]
-    pub y: i32,
+    pub y: f64,
 }
 
 /// A position within the world, defined as a combination
@@ -171,22 +171,22 @@ impl Radians {
 /// the [`Simulation`]
 ///
 /// [`Simulation`]: ../simulation/trait.Simulation.html
-#[derive(Debug, Eq, PartialEq, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Location {
     /// The x component of the [`Location`]
-    pub x: u32,
+    pub x: f64,
     /// The y component of the [`Location`]
-    pub y: u32,
+    pub y: f64,
 }
 
 /// The velocity of an object, measured as
 /// a two dimensional vector
-#[derive(Debug, Eq, PartialEq, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Velocity {
     /// The x component of the [`Velocity`]
-    pub x: i32,
+    pub x: f64,
     /// The y component of the [`Velocity`]
-    pub y: i32,
+    pub y: f64,
 }
 
 /// The part of an object that is responsible for custom
@@ -214,12 +214,12 @@ pub struct Force {
 }
 
 /// Vector describing linear force
-#[derive(Debug, Eq, PartialEq, Clone, Default)]
+#[derive(Debug, PartialEq, Clone, Default)]
 pub struct LinearForce {
     /// The x component of the [`LinearForce`]
-    pub x: i32,
+    pub x: f64,
     /// The y component of the [`LinearForce`]
-    pub y: i32,
+    pub y: f64,
 }
 
 /// Force of rotation

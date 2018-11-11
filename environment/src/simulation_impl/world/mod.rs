@@ -119,9 +119,9 @@ impl NphysicsWorld {
         let vertices: Vec<_> = convex_polygon
             .points()
             .iter()
-            .map(|vertex| Vertex {
-                x: vertex.x.round() as i32,
-                y: vertex.y.round() as i32,
+            .map(|point| Vertex {
+                x: point.x,
+                y: point.y,
             })
             .collect();
         Polygon { vertices }
@@ -139,10 +139,7 @@ impl NphysicsWorld {
 
             let linear_velocity = rigid_body.velocity().linear;
             let (x, y) = elements(&linear_velocity);
-            Mobility::Movable(Velocity {
-                x: x as i32,
-                y: y as i32,
-            })
+            Mobility::Movable(Velocity { x, y })
         }
     }
 
@@ -152,10 +149,7 @@ impl NphysicsWorld {
         let rotation = position.rotation.angle();
 
         Position {
-            location: Location {
-                x: x as u32,
-                y: y as u32,
-            },
+            location: Location { x, y },
             rotation: self
                 .rotation_translator
                 .to_radians(rotation)

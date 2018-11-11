@@ -89,7 +89,7 @@ impl ObjectBuilder {
     /// ObjectBuilder::default()
     ///     .location(3, 2);
     /// ```
-    pub fn location(&mut self, x: u32, y: u32) -> &mut Self {
+    pub fn location(&mut self, x: f64, y: f64) -> &mut Self {
         self.location = Some(Location { x, y });
         self
     }
@@ -241,7 +241,7 @@ impl PolygonBuilder {
     ///     .vertex(50, 50)
     ///     .vertex(-50, 50);
     /// ```
-    pub fn vertex(mut self, x: i32, y: i32) -> Self {
+    pub fn vertex(mut self, x: f64, y: f64) -> Self {
         self.vertices.push(Vertex { x, y });
         self
     }
