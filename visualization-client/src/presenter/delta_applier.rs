@@ -109,7 +109,8 @@ fn apply_object_description_delta(
 mod test {
     use super::*;
     use myelin_environment::object::*;
-    use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+    use myelin_environment::object_builder::ObjectBuilder;
+    use myelin_geometry::*;
     use std::f64::consts::PI;
 
     fn object_description() -> ObjectDescription {
@@ -308,10 +309,8 @@ mod test {
     fn apply_delta_handles_sensor_update() {
         let sensor = Sensor {
             shape: polygon(),
-            position: Position {
-                location: Point { x: 4.0, y: 2.0 },
-                rotation: Radians::default(),
-            },
+            location: Point { x: 4.0, y: 2.0 },
+            rotation: Radians::default(),
         };
 
         test_apply_delta_handles_update(

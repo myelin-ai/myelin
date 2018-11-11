@@ -41,8 +41,7 @@ impl ControllerImpl {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::*;
-    use myelin_environment::object_builder::PolygonBuilder;
+    use myelin_geometry::*;
     use myelin_visualization_core::view_model_delta::{ObjectDelta, ObjectDescriptionDelta};
     use std::cell::RefCell;
     use std::error::Error;

@@ -1,14 +1,14 @@
 use crate::view_model;
-use myelin_geometry;
-use myelin_geometry::polygon::{Polygon, PolygonBuilder};
+use myelin_geometry::*;
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
 pub(crate) trait GlobalPolygonTranslator: Debug {
     fn to_global_polygon(
         &self,
-        polygon: &myelin_geometry::polygon::Polygon,
-        position: &myelin_geometry::Position,
+        polygon: &Polygon,
+        location: Point,
+        rotation: Radians,
     ) -> view_model::Polygon;
 }
 
@@ -24,8 +24,9 @@ impl GlobalPolygonTranslatorImpl {
 impl GlobalPolygonTranslator for GlobalPolygonTranslatorImpl {
     fn to_global_polygon(
         &self,
-        polygon: &myelin_geometry::polygon::Polygon,
-        position: &myelin_geometry::Position,
+        polygon: &Polygon,
+        location: Point,
+        rotation: Radians,
     ) -> view_model::Polygon {
         let global_polygon = polygon
             .translate(location)
@@ -48,8 +49,6 @@ impl GlobalPolygonTranslator for GlobalPolygonTranslatorImpl {
 #[cfg(test)]
 mod test {
     use super::*;
-    use myelin_geometry::polygon::*;
-    use myelin_geometry::*;
     use std::f64::consts::PI;
 
     fn polygon() -> Polygon {
@@ -62,11 +61,8 @@ mod test {
             .unwrap()
     }
 
-    fn position(rotation: Radians) -> Position {
-        Position {
-            location: Point { x: 30.0, y: 40.0 },
-            rotation,
-        }
+    fn location() -> Point {
+        Point { x: 30.0, y: 40.0 }
     }
 
     #[test]
@@ -82,7 +78,7 @@ mod test {
                     view_model::Point { x: 20.0, y: 50.0 },
                 ],
             },
-            translator.to_global_polygon(&polygon(), &position(Radians::default()))
+            translator.to_global_polygon(&polygon(), location(), Radians::default())
         );
     }
 
@@ -99,7 +95,7 @@ mod test {
                     view_model::Point { x: 40.0, y: 30.0 },
                 ],
             },
-            translator.to_global_polygon(&polygon(), &position(Radians::try_new(PI).unwrap()))
+            translator.to_global_polygon(&polygon(), location(), Radians::try_new(PI).unwrap())
         );
     }
 
@@ -128,7 +124,7 @@ mod test {
                     },
                 ],
             },
-            translator.to_global_polygon(&polygon(), &position(Radians::try_new(3.0).unwrap()))
+            translator.to_global_polygon(&polygon(), location(), Radians::try_new(3.0).unwrap())
         );
     }
 }
