@@ -332,7 +332,8 @@ mod tests {
                         .vertex(-2.0, 2.0)
                         .build()
                         .unwrap(),
-                    position: Position::default(),
+                    location: Point::default(),
+                    rotation: Radians::default(),
                 })
                 .mobility(Mobility::Movable(Vector { x: 3.0, y: -4.0 }))
                 .kind(Kind::Plant)

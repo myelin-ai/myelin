@@ -2,8 +2,9 @@
 
 use crate::WorldGenerator;
 use myelin_environment::object::*;
-use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+use myelin_environment::object_builder::ObjectBuilder;
 use myelin_environment::Simulation;
+use myelin_geometry::*;
 use std::f64::consts::FRAC_PI_2;
 use std::fmt;
 
@@ -186,7 +187,8 @@ fn build_plant(x: f64, y: f64) -> ObjectDescription {
                 .vertex(-25.0, 25.0)
                 .build()
                 .expect("Generated an invalid vertex"),
-            position: Position::default(),
+            location: Point::default(),
+            rotation: Radians::default(),
         })
         .passable(true)
         .build()
@@ -216,7 +218,8 @@ fn build_organism(x: f64, y: f64) -> ObjectDescription {
                 .vertex(-25.0, 25.0)
                 .build()
                 .expect("Generated an invalid vertex"),
-            position: Position::default(),
+            location: Point::default(),
+            rotation: Radians::default(),
         })
         .build()
         .expect("Failed to build organism")
