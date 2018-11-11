@@ -184,15 +184,18 @@ mod tests {
     fn linear_force_with_no_torque_changes_location_and_speed() {
         let body = physical_body();
         let force = Force {
-            linear: LinearForce { x: 100.0, y: 100.0 },
+            linear: LinearForce {
+                x: 100.00000000000001,
+                y: 100.00000000000001,
+            },
             torque: Torque::default(),
         };
         let expected_body = PhysicalBody {
             position: Position {
-                location: Location { x: 14.0, y: 14.0 },
+                location: Location { x: 15.0, y: 15.0 },
                 ..body.position.clone()
             },
-            mobility: Mobility::Movable(Velocity { x: 9.0, y: 9.0 }),
+            mobility: Mobility::Movable(Velocity { x: 10.0, y: 10.0 }),
             ..body
         };
         test_force(&physical_body(), &expected_body, force);
@@ -202,7 +205,10 @@ mod tests {
     fn negative_linear_force_results_in_lower_location() {
         let body = physical_body();
         let force = Force {
-            linear: LinearForce { x: -50.0, y: -50.0 },
+            linear: LinearForce {
+                x: -50.00000000000001,
+                y: -50.00000000000001,
+            },
             torque: Torque::default(),
         };
         let expected_body = PhysicalBody {
@@ -210,7 +216,7 @@ mod tests {
                 location: Location { x: 0.0, y: 0.0 },
                 ..body.position.clone()
             },
-            mobility: Mobility::Movable(Velocity { x: -4.0, y: -4.0 }),
+            mobility: Mobility::Movable(Velocity { x: -5.0, y: -5.0 }),
             ..body
         };
         test_force(&physical_body(), &expected_body, force);
@@ -221,20 +227,17 @@ mod tests {
         let body = physical_body();
         let force = Force {
             linear: LinearForce {
-                x: -100.0,
-                y: -200.0,
+                x: -100.00000000000001,
+                y: -200.00000000000002,
             },
             torque: Torque::default(),
         };
         let expected_body = PhysicalBody {
             position: Position {
-                location: Location {
-                    x: 4.0_294_967_292,
-                    y: 4.0_294_967_282,
-                },
+                location: Location { x: -5.0, y: -15.0 },
                 ..body.position.clone()
             },
-            mobility: Mobility::Movable(Velocity { x: -9.0, y: -19.0 }),
+            mobility: Mobility::Movable(Velocity { x: -10.0, y: -20.0 }),
             ..body
         };
         test_force(&physical_body(), &expected_body, force);
@@ -244,7 +247,10 @@ mod tests {
     fn linear_force_and_torque_can_be_combined() {
         let body = physical_body();
         let force = Force {
-            linear: LinearForce { x: 50.0, y: 100.0 },
+            linear: LinearForce {
+                x: 50.00000000000001,
+                y: 100.00000000000001,
+            },
             torque: Torque(1.5),
         };
 
@@ -253,7 +259,7 @@ mod tests {
                 location: Location { x: 10.0, y: 15.0 },
                 rotation: Radians::try_new(0.009_000_000_000_000_001).unwrap(),
             },
-            mobility: Mobility::Movable(Velocity { x: 4.0, y: 9.0 }),
+            mobility: Mobility::Movable(Velocity { x: 5.0, y: 10.0 }),
             ..body
         };
         test_force(&physical_body(), &expected_body, force);
