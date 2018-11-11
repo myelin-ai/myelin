@@ -11,9 +11,6 @@
 #[macro_use]
 extern crate serde_derive;
 
-use geo::algorithm::{rotate::RotatePoint, translate::Translate};
-use geo_types::{Point as GeoPoint, Polygon as GeoPolygon};
-
 mod radians;
 pub use self::radians::*;
 
