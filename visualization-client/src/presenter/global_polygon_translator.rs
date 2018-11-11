@@ -1,7 +1,8 @@
 use crate::view_model;
 use geo::algorithm::rotate::Rotate;
+use geo::algorithm::rotate::RotatePoint;
 use geo::algorithm::translate::Translate;
-use geo_types::Polygon as GeoPolygon;
+use geo_types::{Point, Polygon as GeoPolygon};
 use myelin_environment::object as business_object;
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -39,7 +40,9 @@ impl GlobalPolygonTranslator for GlobalPolygonTranslatorImpl {
             vec![],
         );
         let geo_polygon = geo_polygon.translate(position.location.x, position.location.y);
-        let geo_polygon = geo_polygon.rotate(position.rotation.value());
+        let rotation_angle_in_degrees = position.rotation.value().to_degrees();
+        let center = Point::new(position.location.x, position.location.y);
+        let geo_polygon = geo_polygon.rotate_around_point(rotation_angle_in_degrees, center);
         let vertices = geo_polygon
             .exterior
             .into_points()
@@ -119,20 +122,20 @@ mod test {
             view_model::Polygon {
                 vertices: vec![
                     view_model::Vertex {
-                        x: 40.0 - 2.0,
-                        y: 50.0 + 1.0,
+                        x: 41.311125046603124,
+                        y: 48.48872488540578
                     },
                     view_model::Vertex {
-                        x: 20.0 - 1.0,
-                        y: 50.0 - 2.0,
+                        x: 21.51127511459422,
+                        y: 51.311125046603124
                     },
                     view_model::Vertex {
-                        x: 20.0 + 2.0,
-                        y: 30.0 - 1.0,
+                        x: 18.688874953396876,
+                        y: 31.51127511459422
                     },
                     view_model::Vertex {
-                        x: 40.0 + 1.0,
-                        y: 30.0 + 2.0,
+                        x: 38.48872488540578,
+                        y: 28.688874953396876
                     },
                 ],
             },
