@@ -28,7 +28,7 @@ struct NonPhysicalObjectData {
     pub(crate) behavior: Box<dyn ObjectBehavior>,
 }
 
-/// An error that can occure whenever an action is performed
+/// An error that can occur whenever an action is performed
 #[derive(Debug, Clone)]
 pub enum ActionError {
     /// The given handle was invalid
