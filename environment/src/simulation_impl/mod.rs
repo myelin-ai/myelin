@@ -28,8 +28,10 @@ struct NonPhysicalObjectData {
     pub(crate) behavior: Box<dyn ObjectBehavior>,
 }
 
+/// An error that can occure whenever an action is performed
 #[derive(Debug)]
-enum ActionError {
+pub enum ActionError {
+    /// The given handle was invalid
     InvalidHandle,
 }
 
@@ -293,7 +295,10 @@ pub trait World: fmt::Debug {
     /// a sensor, excluding the parent body it is attached to.
     /// # Errors
     /// Returns `None` if `sensor_handle` did not match any sensors.
-    fn bodies_within_sensor(&self, sensor_handle: SensorHandle) -> Option<Vec<BodyHandle>>;
+    fn bodies_within_sensor(
+        &self,
+        sensor_handle: SensorHandle,
+    ) -> Result<Vec<BodyHandle>, ActionError>;
 
     /// Register a force that will be applied to a body on the next
     /// step.

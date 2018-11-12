@@ -4,7 +4,7 @@
 //!
 //! [`World`]: ./trait.World.html
 //! [`Objects`]: ../object/struct.Body.html
-use super::{BodyHandle, PhysicalBody, SensorHandle, World};
+use super::{ActionError, BodyHandle, PhysicalBody, SensorHandle, World};
 use crate::object::*;
 use crate::simulation_impl::world::collision_filter::{
     IgnoringCollisionFilter, IgnoringCollisionFilterWrapper,
@@ -370,14 +370,22 @@ impl World for NphysicsWorld {
     }
 
     #[must_use]
-    fn bodies_within_sensor(&self, sensor_handle: SensorHandle) -> Option<Vec<BodyHandle>> {
-        let collisions = self.sensor_collisions.get(&sensor_handle)?;
+    fn bodies_within_sensor(
+        &self,
+        sensor_handle: SensorHandle,
+    ) -> Result<Vec<BodyHandle>, ActionError> {
+        let collisions = self
+            .sensor_collisions
+            .get(&sensor_handle)
+            .ok_or(ActionError::InvalidHandle)?;
+
         let bodies_within_sensor = collisions
             .iter()
             .filter(|&&collider_handle| !self.is_sensor_handle(collider_handle))
             .map(|&collider_handle| to_body_handle(collider_handle))
             .collect();
-        Some(bodies_within_sensor)
+
+        Ok(bodies_within_sensor)
     }
 
     #[must_use]
