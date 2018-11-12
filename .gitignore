@@ -16,3 +16,6 @@
 
 # Yarn error logs
 **/yarn-error.log
+
+# Python cache
+__pycache__
