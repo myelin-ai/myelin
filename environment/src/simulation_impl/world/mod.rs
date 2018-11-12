@@ -4,7 +4,7 @@
 //!
 //! [`World`]: ./trait.World.html
 //! [`Objects`]: ../object/struct.Body.html
-use super::{BodyHandle, PhysicalBody, SensorHandle, World};
+use super::{ActionError, BodyHandle, PhysicalBody, SensorHandle, World};
 use crate::object::*;
 use crate::simulation_impl::world::collision_filter::{
     IgnoringCollisionFilter, IgnoringCollisionFilterWrapper,
@@ -370,14 +370,22 @@ impl World for NphysicsWorld {
     }
 
     #[must_use]
-    fn bodies_within_sensor(&self, sensor_handle: SensorHandle) -> Option<Vec<BodyHandle>> {
-        let collisions = self.sensor_collisions.get(&sensor_handle)?;
+    fn bodies_within_sensor(
+        &self,
+        sensor_handle: SensorHandle,
+    ) -> Result<Vec<BodyHandle>, ActionError> {
+        let collisions = self
+            .sensor_collisions
+            .get(&sensor_handle)
+            .ok_or(ActionError::InvalidHandle)?;
+
         let bodies_within_sensor = collisions
             .iter()
             .filter(|&&collider_handle| !self.is_sensor_handle(collider_handle))
             .map(|&collider_handle| to_body_handle(collider_handle))
             .collect();
-        Some(bodies_within_sensor)
+
+        Ok(bodies_within_sensor)
     }
 
     #[must_use]
@@ -1089,7 +1097,7 @@ mod tests {
     }
 
     #[test]
-    fn returns_none_when_calling_bodies_within_sensor_with_invalid_handle() {
+    fn returns_err_when_calling_bodies_within_sensor_with_invalid_handle() {
         let rotation_translator = NphysicsRotationTranslatorMock::default();
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
@@ -1102,7 +1110,7 @@ mod tests {
         let invalid_handle = SensorHandle(112_358);
         let body_handles = world.bodies_within_sensor(invalid_handle);
 
-        assert!(body_handles.is_none())
+        assert!(body_handles.is_err())
     }
 
     #[test]
