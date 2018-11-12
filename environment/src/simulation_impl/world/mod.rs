@@ -1097,7 +1097,7 @@ mod tests {
     }
 
     #[test]
-    fn returns_none_when_calling_bodies_within_sensor_with_invalid_handle() {
+    fn returns_err_when_calling_bodies_within_sensor_with_invalid_handle() {
         let rotation_translator = NphysicsRotationTranslatorMock::default();
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
@@ -1110,7 +1110,7 @@ mod tests {
         let invalid_handle = SensorHandle(112_358);
         let body_handles = world.bodies_within_sensor(invalid_handle);
 
-        assert!(body_handles.is_none())
+        assert!(body_handles.is_err())
     }
 
     #[test]
