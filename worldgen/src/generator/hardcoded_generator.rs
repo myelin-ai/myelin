@@ -283,7 +283,7 @@ mod tests {
         fn step(
             &mut self,
             _own_description: &ObjectDescription,
-            _sensor_collisions: &[ObjectDescription],
+            _sensor_collisions: &HashMap<Id, ObjectDescription>,
         ) -> Option<Action> {
             panic!("step() was called unexpectedly")
         }

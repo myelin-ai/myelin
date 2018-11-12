@@ -23,6 +23,7 @@ use nphysics2d::object::{
 use nphysics2d::volumetric::Volumetric;
 use nphysics2d::world::World as PhysicsWorld;
 use std::collections::{HashMap, HashSet};
+use std::error::Error;
 use std::fmt;
 use std::sync::{Arc, RwLock};
 
@@ -176,11 +177,30 @@ impl NphysicsWorld {
 pub trait NphysicsRotationTranslator: fmt::Debug {
     /// Converts an `orientation` into a representation that is suitable for nphysics
     fn to_nphysics_rotation(&self, orientation: Radians) -> f64;
+
     /// Converts a rotation that originates from nphysics into [`Radians`]
     ///
     /// [`Radians`]: ../../object/struct.Radians.html
-    fn to_radians(&self, nphysics_rotation: f64) -> Option<Radians>;
+    fn to_radians(
+        &self,
+        nphysics_rotation: f64,
+    ) -> Result<Radians, NphysicsRotationTranslatorError>;
 }
+
+/// The reason why a rotation could not be translated
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum NphysicsRotationTranslatorError {
+    /// The given nphysics value was not in the range (-π; π]
+    InvalidNphysicsValue,
+}
+
+impl fmt::Display for NphysicsRotationTranslatorError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Given nphysics value is not in the range (-pi; pi]")
+    }
+}
+
+impl Error for NphysicsRotationTranslatorError {}
 
 /// A [`ForceGenerator`] that applies a given force exactly once
 pub trait SingleTimeForceApplier: fmt::Debug + ForceGenerator<PhysicsType> {
@@ -439,9 +459,9 @@ impl<'a> fmt::Debug for DebugPhysicsWorld<'a> {
 mod tests {
     use super::*;
     use crate::simulation_impl::world::collision_filter::IgnoringCollisionFilterMock;
+    use crate::simulation_impl::world::rotation_translator::mock::NphysicsRotationTranslatorMock;
     use nphysics2d::object::BodySet;
     use nphysics2d::solver::IntegrationParameters;
-    use std::cell::RefCell;
     use std::collections::VecDeque;
     use std::f64::consts::FRAC_PI_2;
     use std::sync::RwLock;
@@ -487,7 +507,11 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator
             .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0));
+        rotation_translator.expect_to_radians_and_return(
+            3.0,
+            Radians::try_new(3.0)
+                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
+        );
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -513,7 +537,11 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator
             .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0));
+        rotation_translator.expect_to_radians_and_return(
+            3.0,
+            Radians::try_new(3.0)
+                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
+        );
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -539,7 +567,11 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator
             .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0));
+        rotation_translator.expect_to_radians_and_return(
+            3.0,
+            Radians::try_new(3.0)
+                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
+        );
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -565,7 +597,7 @@ mod tests {
     fn can_remove_object_with_sensor() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
-        rotation_translator.expect_to_radians_and_return(0.0, Some(Radians::default()));
+        rotation_translator.expect_to_radians_and_return(0.0, Ok(Radians::default()));
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -595,7 +627,11 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator
             .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0));
+        rotation_translator.expect_to_radians_and_return(
+            3.0,
+            Radians::try_new(3.0)
+                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
+        );
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -623,7 +659,11 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator
             .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0));
+        rotation_translator.expect_to_radians_and_return(
+            3.0,
+            Radians::try_new(3.0)
+                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
+        );
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -655,7 +695,11 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator
             .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0));
+        rotation_translator.expect_to_radians_and_return(
+            3.0,
+            Radians::try_new(3.0)
+                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
+        );
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -682,7 +726,11 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator
             .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(3.0, Radians::try_new(3.0));
+        rotation_translator.expect_to_radians_and_return(
+            3.0,
+            Radians::try_new(3.0)
+                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
+        );
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -1050,7 +1098,11 @@ mod tests {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator
             .expect_to_nphysics_rotation_and_return(Radians::try_new(0.0).unwrap(), 0.0);
-        rotation_translator.expect_to_radians_and_return(0.0, Radians::try_new(0.0));
+        rotation_translator.expect_to_radians_and_return(
+            0.0,
+            Radians::try_new(0.0)
+                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
+        );
         let mut force_applier = SingleTimeForceApplierMock::default();
         force_applier.expect_apply_and_return(true);
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
@@ -1085,7 +1137,11 @@ mod tests {
     #[test]
     fn timestep_can_be_changed() {
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_radians_and_return(0.0, Radians::try_new(0.0));
+        rotation_translator.expect_to_radians_and_return(
+            0.0,
+            Radians::try_new(0.0)
+                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
+        );
         rotation_translator
             .expect_to_nphysics_rotation_and_return(Radians::try_new(0.0).unwrap(), 0.0);
         let mut force_applier = SingleTimeForceApplierMock::default();
@@ -1127,7 +1183,11 @@ mod tests {
             Radians::try_new(FRAC_PI_2).unwrap(),
             FRAC_PI_2,
         );
-        rotation_translator.expect_to_radians_and_return(FRAC_PI_2, Radians::try_new(FRAC_PI_2));
+        rotation_translator.expect_to_radians_and_return(
+            FRAC_PI_2,
+            Radians::try_new(FRAC_PI_2)
+                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
+        );
         let mut force_applier = SingleTimeForceApplierMock::default();
         force_applier.expect_apply_and_return(true);
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
@@ -1159,7 +1219,11 @@ mod tests {
             Radians::try_new(FRAC_PI_2).unwrap(),
             FRAC_PI_2,
         );
-        rotation_translator.expect_to_radians_and_return(FRAC_PI_2, Radians::try_new(FRAC_PI_2));
+        rotation_translator.expect_to_radians_and_return(
+            FRAC_PI_2,
+            Radians::try_new(FRAC_PI_2)
+                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
+        );
         let mut force_applier = SingleTimeForceApplierMock::default();
         force_applier.expect_apply_and_return(true);
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
@@ -1258,90 +1322,6 @@ mod tests {
             location: Point { x: 300.0, y: 200.0 },
             rotation: orientation,
             passable: false,
-        }
-    }
-    #[derive(Debug, Default)]
-    struct NphysicsRotationTranslatorMock {
-        expect_to_nphysics_rotation_and_return: Option<(Radians, f64)>,
-        expect_to_radians_and_return: Option<(f64, Option<Radians>)>,
-
-        to_nphysics_rotation_was_called: RefCell<bool>,
-        to_radians_was_called: RefCell<bool>,
-    }
-
-    impl NphysicsRotationTranslatorMock {
-        fn expect_to_nphysics_rotation_and_return(
-            &mut self,
-            input_value: Radians,
-            return_value: f64,
-        ) {
-            self.expect_to_nphysics_rotation_and_return = Some((input_value, return_value))
-        }
-
-        fn expect_to_radians_and_return(
-            &mut self,
-            input_value: f64,
-            return_value: Option<Radians>,
-        ) {
-            self.expect_to_radians_and_return = Some((input_value, return_value))
-        }
-    }
-
-    impl NphysicsRotationTranslator for NphysicsRotationTranslatorMock {
-        fn to_nphysics_rotation(&self, orientation: Radians) -> f64 {
-            *self.to_nphysics_rotation_was_called.borrow_mut() = true;
-
-            if let Some((expected_input, expected_output)) =
-                self.expect_to_nphysics_rotation_and_return
-            {
-                if orientation != expected_input {
-                    panic!(
-                        "to_nphysics_rotation() was called with an unexpected input value: {:?}",
-                        orientation
-                    )
-                }
-
-                expected_output
-            } else {
-                panic!("to_nphysics_rotation() was called unexpectedly")
-            }
-        }
-
-        fn to_radians(&self, nphysics_rotation: f64) -> Option<Radians> {
-            *self.to_radians_was_called.borrow_mut() = true;
-
-            if let Some((expected_input, expected_output)) = self.expect_to_radians_and_return {
-                if nphysics_rotation != expected_input {
-                    panic!(
-                        "to_radians() was called with an unexpected input value: {:?}",
-                        nphysics_rotation
-                    )
-                }
-
-                expected_output
-            } else {
-                panic!("to_radians() was called unexpectedly")
-            }
-        }
-    }
-
-    impl Drop for NphysicsRotationTranslatorMock {
-        fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            if self.expect_to_nphysics_rotation_and_return.is_some() {
-                assert!(
-                    *self.to_nphysics_rotation_was_called.borrow(),
-                    "to_nphysics_rotation() was not called, but was expected"
-                )
-            }
-            if self.expect_to_radians_and_return.is_some() {
-                assert!(
-                    *self.to_radians_was_called.borrow(),
-                    "to_radians() was not called, but was expected"
-                )
-            }
         }
     }
 
