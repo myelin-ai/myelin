@@ -1,6 +1,8 @@
 //! Contains the [`Static`] behavior.
 
 use myelin_environment::object::*;
+use myelin_environment::Id;
+use std::collections::HashMap;
 
 /// A purely static and non-interactive behavior.
 /// This type will never perform any actions.
@@ -11,7 +13,7 @@ impl ObjectBehavior for Static {
     fn step(
         &mut self,
         _own_description: &ObjectDescription,
-        _sensor_collisions: &[ObjectDescription],
+        _sensor_collisions: &HashMap<Id, ObjectDescription>,
     ) -> Option<Action> {
         None
     }
@@ -43,7 +45,7 @@ mod tests {
             .build()
             .unwrap();
         let mut object = Static::default();
-        let action = object.step(&own_description, &[]);
+        let action = object.step(&own_description, &HashMap::new());
         assert!(action.is_none());
     }
 
