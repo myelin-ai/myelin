@@ -96,7 +96,6 @@ mod tests {
     use crate::fixed_interval_sleeper::FixedIntervalSleeperError;
     use crate::presenter::PresenterMock;
     use myelin_environment::object::*;
-    use myelin_environment::object_builder::ObjectBuilder;
     use myelin_geometry::*;
     use myelin_visualization_core::view_model_delta::{
         ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
