@@ -8,7 +8,7 @@ use crate::Point;
 /// Methods can be chained on it in order to configure it.
 /// # Examples
 /// ```
-/// use myelin_geometry::polygon::PolygonBuilder;
+/// use myelin_geometry::PolygonBuilder;
 /// let builder = PolygonBuilder::default();
 /// ```
 ///
@@ -22,7 +22,7 @@ impl PolygonBuilder {
     /// Adds a vertex to the polygon
     /// # Examples
     /// ```
-    /// use myelin_geometry::polygon::PolygonBuilder;
+    /// use myelin_geometry::PolygonBuilder;
     /// let unfinished_builder = PolygonBuilder::default()
     ///     .vertex(-50.0, -50.0)
     ///     .vertex(50.0, -50.0)
@@ -42,7 +42,7 @@ impl PolygonBuilder {
     /// would not be two-dimensional.
     /// # Examples
     /// ```
-    /// use myelin_geometry::polygon::PolygonBuilder;
+    /// use myelin_geometry::PolygonBuilder;
     ///
     /// let square = PolygonBuilder::default()
     ///     .vertex(-50.0, -50.0)

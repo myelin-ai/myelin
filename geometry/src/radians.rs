@@ -15,7 +15,7 @@ impl Radians {
     ///
     /// ### Examples
     /// ```
-    /// use myelin_environment::object::Radians;
+    /// use myelin_geometry::Radians;
     /// use std::f64::consts::PI;
     ///
     /// let rotation = Radians::try_new(PI).expect("Value was outside the range [0.0; 2π)");
