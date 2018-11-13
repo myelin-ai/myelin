@@ -4,7 +4,7 @@ pub(crate) use self::global_polygon_translator::{
 };
 use crate::controller::Presenter;
 use crate::view_model::{self, ViewModel};
-use myelin_environment::object as business_object;
+use myelin_environment::object::*;
 use myelin_environment::Id;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
 use std::borrow::Borrow;
@@ -15,7 +15,7 @@ use std::fmt;
 mod delta_applier;
 mod global_polygon_translator;
 
-pub(crate) type Snapshot = HashMap<Id, business_object::ObjectDescription>;
+pub(crate) type Snapshot = HashMap<Id, ObjectDescription>;
 
 pub(crate) trait View: fmt::Debug {
     fn draw_objects(&self, view_model: &ViewModel);
@@ -54,8 +54,11 @@ fn map_objects(
     snapshot
         .values()
         .map(|business_object| {
-            let shape = global_polygon_translator
-                .to_global_polygon(&business_object.shape, &business_object.position);
+            let shape = global_polygon_translator.to_global_polygon(
+                &business_object.shape,
+                business_object.location,
+                business_object.rotation,
+            );
 
             let kind = map_kind(business_object.kind);
 
@@ -64,12 +67,12 @@ fn map_objects(
         .collect()
 }
 
-fn map_kind(kind: business_object::Kind) -> view_model::Kind {
+fn map_kind(kind: Kind) -> view_model::Kind {
     match kind {
-        business_object::Kind::Organism => view_model::Kind::Organism,
-        business_object::Kind::Plant => view_model::Kind::Plant,
-        business_object::Kind::Water => view_model::Kind::Water,
-        business_object::Kind::Terrain => view_model::Kind::Terrain,
+        Kind::Organism => view_model::Kind::Organism,
+        Kind::Plant => view_model::Kind::Plant,
+        Kind::Water => view_model::Kind::Water,
+        Kind::Terrain => view_model::Kind::Terrain,
     }
 }
 
@@ -93,8 +96,8 @@ mod tests {
     use super::delta_applier::DeltaApplierError;
     use super::*;
     use crate::view_model::{self, ViewModel};
-    use myelin_environment::object::*;
-    use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+    use myelin_environment::object_builder::ObjectBuilder;
+    use myelin_geometry::*;
     use myelin_visualization_core::view_model_delta::ObjectDelta;
     use std::cell::RefCell;
     use std::collections::VecDeque;
@@ -208,23 +211,11 @@ mod tests {
 
     #[derive(Debug)]
     struct GlobalPolygonTranslatorMock {
-        expected_calls: RefCell<
-            VecDeque<(
-                business_object::Polygon,
-                business_object::Position,
-                view_model::Polygon,
-            )>,
-        >,
+        expected_calls: RefCell<VecDeque<(Polygon, Point, Radians, view_model::Polygon)>>,
     }
 
     impl GlobalPolygonTranslatorMock {
-        fn new(
-            expected_calls: VecDeque<(
-                business_object::Polygon,
-                business_object::Position,
-                view_model::Polygon,
-            )>,
-        ) -> Self {
+        fn new(expected_calls: VecDeque<(Polygon, Point, Radians, view_model::Polygon)>) -> Self {
             Self {
                 expected_calls: RefCell::new(expected_calls),
             }
@@ -234,17 +225,19 @@ mod tests {
     impl GlobalPolygonTranslator for GlobalPolygonTranslatorMock {
         fn to_global_polygon(
             &self,
-            polygon: &business_object::Polygon,
-            position: &business_object::Position,
+            polygon: &Polygon,
+            location: Point,
+            rotation: Radians,
         ) -> view_model::Polygon {
-            let (expected_polygon, expected_position, return_value) = self
+            let (expected_polygon, expected_location, expected_rotation, return_value) = self
                 .expected_calls
                 .borrow_mut()
                 .pop_front()
                 .expect("Unexpected call to to_global_polygon()");
 
             assert_eq!(expected_polygon, *polygon);
-            assert_eq!(expected_position, *position);
+            assert_eq!(expected_location, location);
+            assert_eq!(expected_rotation, rotation);
 
             return_value
         }
@@ -264,15 +257,15 @@ mod tests {
         ObjectBuilder::default()
             .shape(
                 PolygonBuilder::default()
-                    .vertex(-10, -10)
-                    .vertex(10, -10)
-                    .vertex(10, 10)
-                    .vertex(-10, 10)
+                    .vertex(-10.0, -10.0)
+                    .vertex(10.0, -10.0)
+                    .vertex(10.0, 10.0)
+                    .vertex(-10.0, 10.0)
                     .build()
                     .unwrap(),
             )
             .mobility(Mobility::Immovable)
-            .location(30, 40)
+            .location(30.0, 40.0)
             .rotation(Radians::default())
             .kind(Kind::Plant)
             .build()
@@ -309,7 +302,7 @@ mod tests {
     fn respects_previous_deltas() {
         let object_description_1 = object_description();
         let view_model_polygon_1 = view_model::Polygon {
-            vertices: vec![view_model::Vertex { x: 1, y: 1 }],
+            vertices: vec![view_model::Point { x: 1.0, y: 1.0 }],
         };
         let expected_view_model_1 = ViewModel {
             objects: vec![view_model::Object {
@@ -323,7 +316,7 @@ mod tests {
 
         let object_description_2 = object_description();
         let view_model_polygon_2 = view_model::Polygon {
-            vertices: vec![view_model::Vertex { x: 5, y: 5 }],
+            vertices: vec![view_model::Point { x: 5.0, y: 5.0 }],
         };
         let expected_view_model_2 = ViewModel {
             objects: vec![
@@ -346,17 +339,20 @@ mod tests {
             vec![
                 (
                     object_description_1.shape.clone(),
-                    object_description_1.position.clone(),
+                    object_description_1.location,
+                    object_description_1.rotation,
                     view_model_polygon_1.clone(),
                 ),
                 (
                     object_description_1.shape.clone(),
-                    object_description_1.position.clone(),
+                    object_description_1.location,
+                    object_description_1.rotation,
                     view_model_polygon_1.clone(),
                 ),
                 (
                     object_description_2.shape.clone(),
-                    object_description_2.position.clone(),
+                    object_description_2.location,
+                    object_description_2.rotation,
                     view_model_polygon_2.clone(),
                 ),
             ]

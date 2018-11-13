@@ -1,31 +1,33 @@
 //! Convenient builders for [`ObjectDescription`] and [`Polygon`]
 //! # Examples
 //! ```
-//! use myelin_environment::object::{Kind, Radians, Velocity, Mobility};
-//! use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+//! use myelin_environment::object::*;
+//! use myelin_geometry::*;
+//! use myelin_environment::object_builder::{ObjectBuilder};
 //! use std::f64::consts::FRAC_PI_2;
 //!
 //! let object = ObjectBuilder::default()
 //!     .shape(
 //!         PolygonBuilder::default()
-//!             .vertex(-50, -50)
-//!             .vertex(50, -50)
-//!             .vertex(50, 50)
-//!             .vertex(-50, 50)
+//!             .vertex(-50.0, -50.0)
+//!             .vertex(50.0, -50.0)
+//!             .vertex(50.0, 50.0)
+//!             .vertex(-50.0, 50.0)
 //!             .build()
 //!             .unwrap(),
-//!     ).location(300, 450)
+//!     ).location(300.0, 450.0)
 //!     .rotation(Radians::try_new(FRAC_PI_2).unwrap())
 //!     .kind(Kind::Organism)
-//!     .mobility(Mobility::Movable(Velocity{x: 3, y: 5}))
+//!     .mobility(Mobility::Movable(Vector{x: 3.0, y: 5.0}))
 //!     .build()
 //!     .unwrap();
 //! ```
 //!
 //! [`ObjectDescription`]: ../object/struct.ObjectDescription.html
 //! [`Polygon`]: ../object/struct.Polygon.html
-
+//!
 use crate::object::*;
+use myelin_geometry::*;
 
 /// An error representing the values that have
 /// wrongly been ommited when building finished
@@ -55,7 +57,7 @@ pub struct ObjectBuilderError {
 #[derive(Default, Debug)]
 pub struct ObjectBuilder {
     shape: Option<Polygon>,
-    location: Option<Location>,
+    location: Option<Point>,
     rotation: Option<Radians>,
     mobility: Option<Mobility>,
     kind: Option<Kind>,
@@ -66,14 +68,15 @@ pub struct ObjectBuilder {
 impl ObjectBuilder {
     /// # Examples
     /// ```
-    /// use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+    /// use myelin_geometry::PolygonBuilder;
+    /// use myelin_environment::object_builder::ObjectBuilder;
     /// ObjectBuilder::default()
     ///     .shape(
     ///         PolygonBuilder::default()
-    ///             .vertex(-50, -50)
-    ///             .vertex(50, -50)
-    ///             .vertex(50, 50)
-    ///             .vertex(-50, 50)
+    ///             .vertex(-50.0, -50.0)
+    ///             .vertex(50.0, -50.0)
+    ///             .vertex(50.0, 50.0)
+    ///             .vertex(-50.0, 50.0)
     ///             .build()
     ///             .unwrap(),
     ///     );
@@ -87,10 +90,10 @@ impl ObjectBuilder {
     /// ```
     /// use myelin_environment::object_builder::ObjectBuilder;
     /// ObjectBuilder::default()
-    ///     .location(3, 2);
+    ///     .location(3.0, 2.0);
     /// ```
-    pub fn location(&mut self, x: u32, y: u32) -> &mut Self {
-        self.location = Some(Location { x, y });
+    pub fn location(&mut self, x: f64, y: f64) -> &mut Self {
+        self.location = Some(Point { x, y });
         self
     }
 
@@ -109,9 +112,10 @@ impl ObjectBuilder {
     /// # Examples
     /// ```
     /// use myelin_environment::object_builder::ObjectBuilder;
-    /// use myelin_environment::object::{Mobility, Velocity};
+    /// use myelin_environment::object::Mobility;
+    /// use myelin_geometry::Vector;
     /// ObjectBuilder::default()
-    ///     .mobility(Mobility::Movable(Velocity { x: -12, y: 4 }));
+    ///     .mobility(Mobility::Movable(Vector { x: -12.0, y: 4.0 }));
     /// ```
     pub fn mobility(&mut self, mobility: Mobility) -> &mut Self {
         self.mobility = Some(mobility);
@@ -120,18 +124,20 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
-    /// use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
-    /// use myelin_environment::object::{Sensor, Position};
+    /// use myelin_environment::object_builder::ObjectBuilder;
+    /// use myelin_environment::object::*;
+    /// use myelin_geometry::*;
     /// ObjectBuilder::default()
     ///     .sensor( Sensor {
     ///         shape: PolygonBuilder::default()
-    ///             .vertex(-50, -50)
-    ///             .vertex(50, -50)
-    ///             .vertex(50, 50)
-    ///             .vertex(-50, 50)
+    ///             .vertex(-50.0, -50.0)
+    ///             .vertex(50.0, -50.0)
+    ///             .vertex(50.0, 50.0)
+    ///             .vertex(-50.0, 50.0)
     ///             .build()
     ///             .unwrap(),
-    ///         position: Position::default()
+    ///         location: Point::default(),
+    ///         rotation: Radians::default(),
     ///     });
     /// ```
     pub fn sensor(&mut self, sensor: Sensor) -> &mut Self {
@@ -142,7 +148,7 @@ impl ObjectBuilder {
     /// # Examples
     /// ```
     /// use myelin_environment::object_builder::ObjectBuilder;
-    /// use myelin_environment::object::Radians;
+    /// use myelin_geometry::Radians;
     /// ObjectBuilder::default()
     ///     .rotation(Radians::try_new(4.5).unwrap());
     /// ```
@@ -169,23 +175,24 @@ impl ObjectBuilder {
     /// setting has been omitted
     /// # Examples
     /// ```
-    /// use myelin_environment::object::{Kind, Radians, Mobility, Velocity};
-    /// use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+    /// use myelin_environment::object::*;
+    /// use myelin_geometry::*;
+    /// use myelin_environment::object_builder::ObjectBuilder;
     /// use std::f64::consts::FRAC_PI_2;
     ///
     /// let object = ObjectBuilder::default()
     ///     .shape(
     ///         PolygonBuilder::default()
-    ///             .vertex(-50, -50)
-    ///             .vertex(50, -50)
-    ///             .vertex(50, 50)
-    ///             .vertex(-50, 50)
+    ///             .vertex(-50.0, -50.0)
+    ///             .vertex(50.0, -50.0)
+    ///             .vertex(50.0, 50.0)
+    ///             .vertex(-50.0, 50.0)
     ///             .build()
     ///             .unwrap(),
-    ///     ).location(300, 450)
+    ///     ).location(300.0, 450.0)
     ///     .rotation(Radians::try_new(FRAC_PI_2).unwrap())
     ///     .kind(Kind::Organism)
-    ///     .mobility(Mobility::Movable(Velocity{x: 3, y: 5}))
+    ///     .mobility(Mobility::Movable(Vector{x: 3.0, y: 5.0}))
     ///     .build()
     ///     .unwrap();
     /// ```
@@ -201,10 +208,8 @@ impl ObjectBuilder {
 
         let object = ObjectDescription {
             shape: self.shape.take().ok_or_else(|| error.clone())?,
-            position: Position {
-                location: self.location.take().ok_or_else(|| error.clone())?,
-                rotation: self.rotation.take().unwrap_or_else(Default::default),
-            },
+            rotation: self.rotation.take().unwrap_or_else(Default::default),
+            location: self.location.take().ok_or_else(|| error.clone())?,
             kind: self.kind.take().ok_or_else(|| error.clone())?,
             mobility: self.mobility.take().ok_or_else(|| error.clone())?,
             sensor: self.sensor.take(),
@@ -215,118 +220,14 @@ impl ObjectBuilder {
     }
 }
 
-/// [`Polygon`] factory, which can be used in order to configure
-/// the properties of a new polygon.
-/// Methods can be chained on it in order to configure it.
-/// # Examples
-/// ```
-/// use myelin_environment::object_builder::PolygonBuilder;
-/// let builder = PolygonBuilder::default();
-/// ```
-///
-/// [`Polygon`]: ../object/struct.Polygon.html
-#[derive(Default, Debug)]
-pub struct PolygonBuilder {
-    vertices: Vec<Vertex>,
-}
-
-impl PolygonBuilder {
-    /// Adds a vertex to the polygon
-    /// # Examples
-    /// ```
-    /// use myelin_environment::object_builder::PolygonBuilder;
-    /// let unfinished_builder = PolygonBuilder::default()
-    ///     .vertex(-50, -50)
-    ///     .vertex(50, -50)
-    ///     .vertex(50, 50)
-    ///     .vertex(-50, 50);
-    /// ```
-    pub fn vertex(mut self, x: i32, y: i32) -> Self {
-        self.vertices.push(Vertex { x, y });
-        self
-    }
-
-    /// Finishes building the [`Polygon`] with all
-    /// vertices that have been configured up to this point
-    /// # Errors
-    /// This method will return an error if the number of configured
-    /// vertices is less than three, as the resulting [`Polygon`]
-    /// would not be two-dimensional.
-    /// # Examples
-    /// ```
-    /// use myelin_environment::object_builder::PolygonBuilder;
-    ///
-    /// let square = PolygonBuilder::default()
-    ///     .vertex(-50, -50)
-    ///     .vertex(50, -50)
-    ///     .vertex(50, 50)
-    ///     .vertex(-50, 50)
-    ///     .build()
-    ///     .unwrap();
-    /// ```
-    ///
-    /// [`Polygon`]: ../object/struct.Polygon.html
-    pub fn build(self) -> Result<Polygon, ()> {
-        const MINIMUM_VERTICES_IN_A_POLYGON: usize = 3;
-
-        if self.vertices.len() < MINIMUM_VERTICES_IN_A_POLYGON {
-            return Err(());
-        }
-
-        Ok(Polygon {
-            vertices: self.vertices,
-        })
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
 
     #[test]
-    fn test_polygon_builder_works() {
-        let polygon = PolygonBuilder::default()
-            .vertex(0, 0)
-            .vertex(0, 1)
-            .vertex(1, 0)
-            .vertex(1, 1)
-            .build()
-            .unwrap();
-
-        let expected = Polygon {
-            vertices: vec![
-                Vertex { x: 0, y: 0 },
-                Vertex { x: 0, y: 1 },
-                Vertex { x: 1, y: 0 },
-                Vertex { x: 1, y: 1 },
-            ],
-        };
-
-        assert_eq!(expected, polygon);
-    }
-
-    #[test]
-    fn test_polygon_builder_errors_for_no_vertices() {
-        assert_eq!(Err(()), PolygonBuilder::default().build());
-    }
-
-    #[test]
-    fn test_polygon_builder_errors_for_one_vertex() {
-        assert_eq!(Err(()), PolygonBuilder::default().vertex(1, 1).build());
-    }
-
-    #[test]
-    fn test_polygon_builder_panicks_for_two_vertices() {
-        assert_eq!(
-            Err(()),
-            PolygonBuilder::default().vertex(0, 0).vertex(1, 1).build()
-        );
-    }
-
-    #[test]
     fn test_object_builder_should_error_for_missing_shape() {
         let result = ObjectBuilder::default()
-            .location(10, 10)
+            .location(10.0, 10.0)
             .rotation(Radians::try_new(0.0).unwrap())
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
@@ -346,14 +247,14 @@ mod test {
         let result = ObjectBuilder::default()
             .shape(
                 PolygonBuilder::default()
-                    .vertex(0, 0)
-                    .vertex(0, 1)
-                    .vertex(1, 0)
-                    .vertex(1, 1)
+                    .vertex(0.0, 0.0)
+                    .vertex(0.0, 1.0)
+                    .vertex(1.0, 0.0)
+                    .vertex(1.0, 1.0)
                     .build()
                     .unwrap(),
             )
-            .location(10, 10)
+            .location(10.0, 10.0)
             .rotation(Radians::try_new(0.0).unwrap())
             .mobility(Mobility::Immovable)
             .build();
@@ -372,10 +273,10 @@ mod test {
         let result = ObjectBuilder::default()
             .shape(
                 PolygonBuilder::default()
-                    .vertex(0, 0)
-                    .vertex(0, 1)
-                    .vertex(1, 0)
-                    .vertex(1, 1)
+                    .vertex(0.0, 0.0)
+                    .vertex(0.0, 1.0)
+                    .vertex(1.0, 0.0)
+                    .vertex(1.0, 1.0)
                     .build()
                     .unwrap(),
             )
@@ -398,15 +299,15 @@ mod test {
         let result = ObjectBuilder::default()
             .shape(
                 PolygonBuilder::default()
-                    .vertex(0, 0)
-                    .vertex(0, 1)
-                    .vertex(1, 0)
-                    .vertex(1, 1)
+                    .vertex(0.0, 0.0)
+                    .vertex(0.0, 1.0)
+                    .vertex(1.0, 0.0)
+                    .vertex(1.0, 1.0)
                     .build()
                     .unwrap(),
             )
             .rotation(Radians::try_new(0.0).unwrap())
-            .location(30, 40)
+            .location(30.0, 40.0)
             .kind(Kind::Plant)
             .build();
 
@@ -424,14 +325,14 @@ mod test {
         let result = ObjectBuilder::default()
             .shape(
                 PolygonBuilder::default()
-                    .vertex(0, 0)
-                    .vertex(0, 1)
-                    .vertex(1, 0)
-                    .vertex(1, 1)
+                    .vertex(0.0, 0.0)
+                    .vertex(0.0, 1.0)
+                    .vertex(1.0, 0.0)
+                    .vertex(1.0, 1.0)
                     .build()
                     .unwrap(),
             )
-            .location(30, 40)
+            .location(30.0, 40.0)
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
             .build();
@@ -439,16 +340,14 @@ mod test {
         let expected = ObjectDescription {
             shape: Polygon {
                 vertices: vec![
-                    Vertex { x: 0, y: 0 },
-                    Vertex { x: 0, y: 1 },
-                    Vertex { x: 1, y: 0 },
-                    Vertex { x: 1, y: 1 },
+                    Point { x: 0.0, y: 0.0 },
+                    Point { x: 0.0, y: 1.0 },
+                    Point { x: 1.0, y: 0.0 },
+                    Point { x: 1.0, y: 1.0 },
                 ],
             },
-            position: Position {
-                rotation: Radians::try_new(0.0).unwrap(),
-                location: Location { x: 30, y: 40 },
-            },
+            location: Point { x: 30.0, y: 40.0 },
+            rotation: Radians::try_new(0.0).unwrap(),
             kind: Kind::Terrain,
             mobility: Mobility::Immovable,
             sensor: None,
@@ -463,15 +362,15 @@ mod test {
         let result = ObjectBuilder::default()
             .shape(
                 PolygonBuilder::default()
-                    .vertex(0, 0)
-                    .vertex(0, 1)
-                    .vertex(1, 0)
-                    .vertex(1, 1)
+                    .vertex(0.0, 0.0)
+                    .vertex(0.0, 1.0)
+                    .vertex(1.0, 0.0)
+                    .vertex(1.0, 1.0)
                     .build()
                     .unwrap(),
             )
             .rotation(Radians::try_new(0.0).unwrap())
-            .location(30, 40)
+            .location(30.0, 40.0)
             .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
             .passable(true)
@@ -480,16 +379,14 @@ mod test {
         let expected = ObjectDescription {
             shape: Polygon {
                 vertices: vec![
-                    Vertex { x: 0, y: 0 },
-                    Vertex { x: 0, y: 1 },
-                    Vertex { x: 1, y: 0 },
-                    Vertex { x: 1, y: 1 },
+                    Point { x: 0.0, y: 0.0 },
+                    Point { x: 0.0, y: 1.0 },
+                    Point { x: 1.0, y: 0.0 },
+                    Point { x: 1.0, y: 1.0 },
                 ],
             },
-            position: Position {
-                rotation: Radians::try_new(0.0).unwrap(),
-                location: Location { x: 30, y: 40 },
-            },
+            location: Point { x: 30.0, y: 40.0 },
+            rotation: Radians::try_new(0.0).unwrap(),
             kind: Kind::Terrain,
             mobility: Mobility::Immovable,
             sensor: None,
@@ -519,58 +416,52 @@ mod test {
         let result = ObjectBuilder::default()
             .shape(
                 PolygonBuilder::default()
-                    .vertex(0, 0)
-                    .vertex(0, 1)
-                    .vertex(1, 0)
-                    .vertex(1, 1)
+                    .vertex(0.0, 0.0)
+                    .vertex(0.0, 1.0)
+                    .vertex(1.0, 0.0)
+                    .vertex(1.0, 1.0)
                     .build()
                     .unwrap(),
             )
-            .mobility(Mobility::Movable(Velocity { x: -12, y: 5 }))
+            .mobility(Mobility::Movable(Vector { x: -12.0, y: 5.0 }))
             .kind(Kind::Organism)
-            .location(30, 40)
+            .location(30.0, 40.0)
             .rotation(Radians::try_new(1.1).unwrap())
             .sensor(Sensor {
                 shape: PolygonBuilder::default()
-                    .vertex(2, 0)
-                    .vertex(-2, 0)
-                    .vertex(0, 1)
+                    .vertex(2.0, 0.0)
+                    .vertex(-2.0, 0.0)
+                    .vertex(0.0, 1.0)
                     .build()
                     .unwrap(),
-                position: Position {
-                    location: Location { x: 12, y: 42 },
-                    rotation: Radians::try_new(1.2).unwrap(),
-                },
+                location: Point { x: 12.0, y: 42.0 },
+                rotation: Radians::try_new(1.2).unwrap(),
             })
             .build();
 
         let expected = ObjectDescription {
-            position: Position {
-                location: Location { x: 30, y: 40 },
-                rotation: Radians::try_new(1.1).unwrap(),
-            },
-            mobility: Mobility::Movable(Velocity { x: -12, y: 5 }),
+            location: Point { x: 30.0, y: 40.0 },
+            rotation: Radians::try_new(1.1).unwrap(),
+            mobility: Mobility::Movable(Vector { x: -12.0, y: 5.0 }),
             kind: Kind::Organism,
             shape: Polygon {
                 vertices: vec![
-                    Vertex { x: 0, y: 0 },
-                    Vertex { x: 0, y: 1 },
-                    Vertex { x: 1, y: 0 },
-                    Vertex { x: 1, y: 1 },
+                    Point { x: 0.0, y: 0.0 },
+                    Point { x: 0.0, y: 1.0 },
+                    Point { x: 1.0, y: 0.0 },
+                    Point { x: 1.0, y: 1.0 },
                 ],
             },
             sensor: Some(Sensor {
                 shape: Polygon {
                     vertices: vec![
-                        Vertex { x: 2, y: 0 },
-                        Vertex { x: -2, y: 0 },
-                        Vertex { x: 0, y: 1 },
+                        Point { x: 2.0, y: 0.0 },
+                        Point { x: -2.0, y: 0.0 },
+                        Point { x: 0.0, y: 1.0 },
                     ],
                 },
-                position: Position {
-                    location: Location { x: 12, y: 42 },
-                    rotation: Radians::try_new(1.2).unwrap(),
-                },
+                location: Point { x: 12.0, y: 42.0 },
+                rotation: Radians::try_new(1.2).unwrap(),
             }),
             passable: false,
         };

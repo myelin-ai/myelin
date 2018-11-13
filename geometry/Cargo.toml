@@ -1,5 +1,5 @@
 [package]
-name = "myelin-worldgen"
+name = "myelin-geometry"
 version = "0.1.0"
 authors = [
     "Jan Nils Ferner <jan@myelin.ch>",
@@ -10,8 +10,5 @@ authors = [
 edition = "2018"
 
 [dependencies]
-myelin-environment = { path = "../environment" }
-myelin-geometry = { path = "../geometry" }
-
-[dev-dependencies]
-myelin-object-behavior = { path = "../object-behavior" }
+serde = "1.0"
+serde_derive = "1.0"
