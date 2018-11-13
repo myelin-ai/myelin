@@ -21,8 +21,6 @@ pub struct ObjectBuilderError {
 ///
 /// # Examples
 /// ```
-/// use myelin_environment::object::ObjectBuilder;
-///
 /// use myelin_environment::object::*;
 /// use myelin_geometry::*;
 /// use std::f64::consts::FRAC_PI_2;
