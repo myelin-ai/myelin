@@ -97,7 +97,6 @@ fn apply_object_description_delta(
 mod test {
     use super::*;
     use myelin_environment::object::*;
-    use myelin_environment::object_builder::ObjectBuilder;
     use myelin_geometry::*;
     use std::f64::consts::PI;
 

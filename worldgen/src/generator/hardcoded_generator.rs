@@ -2,7 +2,6 @@
 
 use crate::WorldGenerator;
 use myelin_environment::object::*;
-use myelin_environment::object_builder::ObjectBuilder;
 use myelin_environment::Simulation;
 use myelin_geometry::*;
 use std::f64::consts::FRAC_PI_2;

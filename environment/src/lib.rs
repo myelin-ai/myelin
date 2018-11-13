@@ -24,7 +24,7 @@ extern crate nameof;
 extern crate maplit;
 
 pub mod object;
-pub mod object_builder;
+mod object_builder;
 pub mod simulation_impl;
 
 use crate::object::{ObjectBehavior, ObjectDescription};
