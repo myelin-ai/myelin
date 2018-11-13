@@ -530,11 +530,8 @@ name = "myelin-object-behavior"
 version = "0.1.0"
 dependencies = [
  "myelin-environment 0.1.0",
-<<<<<<< HEAD
- "rand 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
-=======
  "myelin-geometry 0.1.0",
->>>>>>> master
+ "rand 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
