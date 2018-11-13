@@ -5,13 +5,13 @@ use crate::constant::*;
 use crate::controller::{ConnectionAcceptor, Controller, ControllerImpl};
 use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
-use myelin_environment::object::{Kind, ObjectBehavior, Position, Sensor};
-use myelin_environment::object_builder::PolygonBuilder;
+use myelin_environment::object::{Kind, ObjectBehavior, Sensor};
 use myelin_environment::simulation_impl::world::collision_filter::IgnoringCollisionFilterImpl;
 use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
 use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
 use myelin_environment::simulation_impl::world::NphysicsWorld;
 use myelin_environment::{simulation_impl::SimulationImpl, Simulation};
+use myelin_geometry::{Point, PolygonBuilder, Radians};
 use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
 use myelin_object_behavior::Static;
 use myelin_visualization_core::serialization::BincodeSerializer;
@@ -51,13 +51,14 @@ where
                 1.0 / 100.0,
                 Sensor {
                     shape: PolygonBuilder::default()
-                        .vertex(-20, -20)
-                        .vertex(20, -20)
-                        .vertex(20, 20)
-                        .vertex(-20, 20)
+                        .vertex(-20.0, -20.0)
+                        .vertex(20.0, -20.0)
+                        .vertex(20.0, 20.0)
+                        .vertex(-20.0, 20.0)
                         .build()
                         .unwrap(),
-                    position: Position::default(),
+                    location: Point::default(),
+                    rotation: Radians::default(),
                 },
                 box RandomChanceCheckerImpl::new(),
             ),

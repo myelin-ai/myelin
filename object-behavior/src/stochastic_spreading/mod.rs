@@ -2,6 +2,9 @@
 
 use myelin_environment::object::*;
 use myelin_environment::object_builder::ObjectBuilder;
+use myelin_environment::Id;
+use myelin_geometry::*;
+use std::collections::HashMap;
 use std::fmt;
 
 mod random_chance_checker_impl;
@@ -53,17 +56,17 @@ impl StochasticSpreading {
     fn spread(
         &mut self,
         own_description: &ObjectDescription,
-        sensor_collisions: &[ObjectDescription],
+        sensor_collisions: &HashMap<Id, ObjectDescription>,
     ) -> Option<Action> {
-        const POSSIBLE_SPREADING_LOCATIONS: [(i32, i32); 8] = [
-            (-5, -5),
-            (0, -5),
-            (5, -5),
-            (5, 0),
-            (5, 5),
-            (0, 5),
-            (-5, 5),
-            (-5, 0),
+        const POSSIBLE_SPREADING_LOCATIONS: [Point; 8] = [
+            Point { x: -5.0, y: -5.0 },
+            Point { x: 0.0, y: -5.0 },
+            Point { x: 5.0, y: -5.0 },
+            Point { x: 5.0, y: 0.0 },
+            Point { x: 5.0, y: 5.0 },
+            Point { x: 0.0, y: 5.0 },
+            Point { x: -5.0, y: 5.0 },
+            Point { x: -5.0, y: 0.0 },
         ];
 
         let first_try_index = self
@@ -75,15 +78,12 @@ impl StochasticSpreading {
             .iter()
             .skip(first_try_index as usize)
             .chain(POSSIBLE_SPREADING_LOCATIONS.iter().take(first_try_index))
-            .map(|(relative_x, relative_y)| Location {
-                x: (own_description.position.location.x as i32 + relative_x) as u32,
-                y: (own_description.position.location.y as i32 + relative_y) as u32,
-            })
+            .map(|&point| own_description.location + point)
             .find(|location| can_spread_at_location(&location, sensor_collisions));
         if let Some(spreading_location) = spreading_location {
             let object_description = ObjectBuilder::default()
                 .location(spreading_location.x, spreading_location.y)
-                .rotation(own_description.position.rotation)
+                .rotation(own_description.rotation)
                 .shape(own_description.shape.clone())
                 .kind(own_description.kind)
                 .mobility(own_description.mobility.clone())
@@ -97,32 +97,39 @@ impl StochasticSpreading {
     }
 }
 
-fn can_spread_at_location(location: &Location, sensor_collisions: &[ObjectDescription]) -> bool {
+fn can_spread_at_location(
+    location: &Point,
+    sensor_collisions: &HashMap<Id, ObjectDescription>,
+) -> bool {
     !sensor_collisions
-        .iter()
+        .values()
         .any(|object_description| occupies_location(object_description, location))
 }
 
-fn occupies_location(object_description: &ObjectDescription, location: &Location) -> bool {
+fn occupies_location(object_description: &ObjectDescription, location: &Point) -> bool {
     // https://stackoverflow.com/a/4243079/5903309
     let vertices = &object_description.shape.vertices;
-    let coef: Vec<_> = vertices
+    let global_polygon = object_description
+        .shape
+        .translate(object_description.location)
+        .rotate_around_point(object_description.rotation, object_description.location);
+    let coef: Vec<_> = global_polygon
+        .vertices
         .iter()
         .skip(1)
-        .map(|vertex| /*To do: Convert to global*/ vertex)
         .enumerate()
         .map(|(i, p)| {
-            (location.y as i32 - vertices[i].y) * (p.x - vertices[i].x)
-                - (location.x as i32 - vertices[i].x) * (p.y - vertices[i].y)
+            (location.y - vertices[i].y) * (p.x - vertices[i].x)
+                - (location.x - vertices[i].x) * (p.y - vertices[i].y)
         })
         .collect();
 
-    if coef.iter().any(|&p| p == 0) {
+    if coef.iter().any(|&p| p == 0.0) {
         return true;
     }
 
     for i in 1..coef.len() {
-        if coef[i] * coef[i - 1] < 0 {
+        if coef[i] * coef[i - 1] < 0.0 {
             return false;
         }
     }
@@ -133,7 +140,7 @@ impl ObjectBehavior for StochasticSpreading {
     fn step(
         &mut self,
         own_description: &ObjectDescription,
-        sensor_collisions: &[ObjectDescription],
+        sensor_collisions: &HashMap<Id, ObjectDescription>,
     ) -> Option<Action> {
         if self.should_spread() {
             self.spread(own_description, sensor_collisions)
@@ -179,7 +186,6 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
     use std::cell::RefCell;
     use std::thread::panicking;
 
@@ -192,7 +198,7 @@ mod tests {
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
         let own_description = object_description();
-        let action = object.step(&own_description, &[]);
+        let action = object.step(&own_description, &HashMap::new());
         assert!(action.is_none());
     }
 
@@ -204,11 +210,11 @@ mod tests {
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
         let own_description = object_description();
-        let action = object.step(&own_description, &[]);
+        let action = object.step(&own_description, &HashMap::new());
         match action {
             Some(Action::Reproduce(object_description, _)) => {
                 // To do: Adjust for padding
-                let expected_object_description = object_description_at_location(45, 45);
+                let expected_object_description = object_description_at_location(45.0, 45.0);
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
@@ -223,15 +229,15 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
         let own_description = object_description();
 
-        let collisions = vec![
-            object_description_at_location(45, 45),
-            object_description_at_location(50, 45),
-            object_description_at_location(55, 45),
-            object_description_at_location(55, 50),
-            object_description_at_location(55, 55),
-            object_description_at_location(50, 55),
-            object_description_at_location(45, 55),
-            object_description_at_location(45, 50),
+        let collisions = hashmap![
+            0 => object_description_at_location(45.0, 45.0),
+            1 => object_description_at_location(50.0, 45.0),
+            2 => object_description_at_location(55.0, 45.0),
+            3 => object_description_at_location(55.0, 50.0),
+            4 => object_description_at_location(55.0, 55.0),
+            5 => object_description_at_location(50.0, 55.0),
+            6 => object_description_at_location(45.0, 55.0),
+            7 => object_description_at_location(45.0, 50.0),
         ];
 
         let action = object.step(&own_description, &collisions);
@@ -246,21 +252,21 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
         let own_description = object_description();
 
-        let collisions = vec![
-            object_description_at_location(45, 45),
-            object_description_at_location(50, 45),
-            object_description_at_location(55, 45),
-            object_description_at_location(55, 55),
-            object_description_at_location(50, 55),
-            object_description_at_location(45, 55),
-            object_description_at_location(45, 50),
+        let collisions = hashmap![
+            0 => object_description_at_location(45.0, 45.0),
+            1 => object_description_at_location(50.0, 45.0),
+            2 => object_description_at_location(55.0, 45.0),
+            3 => object_description_at_location(55.0, 55.0),
+            4 => object_description_at_location(50.0, 55.0),
+            5 => object_description_at_location(45.0, 55.0),
+            6 => object_description_at_location(45.0, 50.0),
         ];
 
         let action = object.step(&own_description, &collisions);
         match action {
             Some(Action::Reproduce(object_description, _)) => {
                 // To do: Adjust for padding
-                let expected_object_description = object_description_at_location(55, 50);
+                let expected_object_description = object_description_at_location(55.0, 50.0);
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
@@ -276,19 +282,19 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
         let own_description = object_description();
 
-        let collisions = vec![
-            object_description_at_location(45, 45),
-            object_description_at_location(55, 45),
-            object_description_at_location(55, 50),
-            object_description_at_location(50, 55),
-            object_description_at_location(45, 50),
+        let collisions = hashmap![
+            0 => object_description_at_location(45.0, 45.0),
+            1 => object_description_at_location(55.0, 45.0),
+            2 => object_description_at_location(55.0, 50.0),
+            3 => object_description_at_location(50.0, 55.0),
+            4 => object_description_at_location(45.0, 50.0),
         ];
 
         let action = object.step(&own_description, &collisions);
         match action {
             Some(Action::Reproduce(object_description, _)) => {
                 // To do: Adjust for padding
-                let expected_object_description = object_description_at_location(55, 55);
+                let expected_object_description = object_description_at_location(55.0, 55.0);
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
@@ -298,21 +304,21 @@ mod tests {
     #[test]
     fn validates_that_location_is_in_polygon() {
         let object_description = object_description();
-        let location = Location { x: 47, y: 47 };
+        let location = Point { x: 47.0, y: 47.0 };
         assert!(occupies_location(&object_description, &location))
     }
 
     #[test]
     fn validates_that_location_is_not_in_polygon() {
         let object_description = object_description();
-        let location = Location { x: 57, y: 57 };
+        let location = Point { x: 57.0, y: 57.0 };
         assert!(!occupies_location(&object_description, &location))
     }
 
     #[test]
     fn validates_that_location_is_in_polygon_when_on_a_side() {
         let object_description = object_description();
-        let location = Location { x: 55, y: 45 };
+        let location = Point { x: 55.0, y: 45.0 };
         assert!(occupies_location(&object_description, &location))
     }
 
@@ -320,28 +326,28 @@ mod tests {
         ObjectBuilder::default()
             .shape(
                 PolygonBuilder::default()
-                    .vertex(-5, -5)
-                    .vertex(5, -5)
-                    .vertex(5, 5)
-                    .vertex(-5, 5)
+                    .vertex(-5.0, -5.0)
+                    .vertex(5.0, -5.0)
+                    .vertex(5.0, 5.0)
+                    .vertex(-5.0, 5.0)
                     .build()
                     .unwrap(),
             )
-            .location(50, 50)
+            .location(50.0, 50.0)
             .mobility(Mobility::Immovable)
             .kind(Kind::Plant)
             .build()
             .unwrap()
     }
 
-    fn object_description_at_location(x: u32, y: u32) -> ObjectDescription {
+    fn object_description_at_location(x: f64, y: f64) -> ObjectDescription {
         ObjectBuilder::default()
             .shape(
                 PolygonBuilder::default()
-                    .vertex(-5, -5)
-                    .vertex(5, -5)
-                    .vertex(5, 5)
-                    .vertex(-5, 5)
+                    .vertex(-5.0, -5.0)
+                    .vertex(5.0, -5.0)
+                    .vertex(5.0, 5.0)
+                    .vertex(-5.0, 5.0)
                     .build()
                     .unwrap(),
             )
@@ -355,13 +361,14 @@ mod tests {
     fn sensor() -> Sensor {
         Sensor {
             shape: PolygonBuilder::default()
-                .vertex(-20, -20)
-                .vertex(20, -20)
-                .vertex(20, 20)
-                .vertex(-20, 20)
+                .vertex(-20.0, -20.0)
+                .vertex(20.0, -20.0)
+                .vertex(20.0, 20.0)
+                .vertex(-20.0, 20.0)
                 .build()
                 .unwrap(),
-            position: Position::default(),
+            location: Point::default(),
+            rotation: Radians::default(),
         }
     }
 
