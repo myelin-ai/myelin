@@ -102,7 +102,7 @@ pub struct ObjectDescription {
 }
 
 /// An object's mobility and, if present, its
-/// current Vector
+/// current velocity as a vector
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum Mobility {
     /// The object cannot have any velocity as
