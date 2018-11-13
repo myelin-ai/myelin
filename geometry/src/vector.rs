@@ -35,6 +35,7 @@ impl Vector {
     /// Calculates the dot product of itself and another vector
     /// # Examples
     /// ```
+    /// use myelin_geometry::Vector;
     /// // a · b = c
     /// let a = Vector { x: 2.0, y: 3.0 };
     /// let b = Vector { x: -4.0, y: 10.0 };
@@ -43,6 +44,20 @@ impl Vector {
     /// ```
     pub fn dot_product(self, other: Self) -> f64 {
         self.x * other.x + self.y * other.y
+    }
+
+    /// Calculates the cross product of itself and another vector
+    /// # Examples
+    /// ```
+    /// use myelin_geometry::Vector;
+    /// // a × b = c
+    /// let a = Vector { x: 2.0, y: 3.0 };
+    /// let b = Vector { x: -4.0, y: 10.0 };
+    /// let c = a.cross_product(b);
+    /// assert_eq!(32.0, c);
+    /// ```
+    pub fn cross_product(self, other: Self) -> f64 {
+        self.x * other.y - self.y * other.x
     }
 }
 
@@ -193,5 +208,41 @@ mod tests {
         let expected_dot_product = 0.0;
         let dot_product = a.dot_product(b);
         assert_eq!(expected_dot_product, dot_product);
+    }
+
+    #[test]
+    fn calculates_cross_product() {
+        let a = Vector { x: 2.0, y: 3.0 };
+        let b = Vector { x: -4.0, y: 10.0 };
+        let expected_cross_product = 32.0;
+        let cross_product = a.cross_product(b);
+        assert_eq!(expected_cross_product, cross_product);
+    }
+
+    #[test]
+    fn calculates_negative_cross_product() {
+        let a = Vector { x: 2.0, y: 3.0 };
+        let b = Vector { x: 40.0, y: 10.0 };
+        let expected_cross_product = -100.0;
+        let cross_product = a.cross_product(b);
+        assert_eq!(expected_cross_product, cross_product);
+    }
+
+    #[test]
+    fn cross_product_is_zero_when_one_side_is_zero() {
+        let a = Vector { x: 2.0, y: 3.0 };
+        let b = Vector { x: 0.0, y: 0.0 };
+        let expected_cross_product = 0.0;
+        let cross_product = a.cross_product(b);
+        assert_eq!(expected_cross_product, cross_product);
+    }
+
+    #[test]
+    fn cross_product_is_zero_when_both_sides_are_zero() {
+        let a = Vector { x: 0.0, y: 0.0 };
+        let b = Vector { x: 0.0, y: 0.0 };
+        let expected_cross_product = 0.0;
+        let cross_product = a.cross_product(b);
+        assert_eq!(expected_cross_product, cross_product);
     }
 }
