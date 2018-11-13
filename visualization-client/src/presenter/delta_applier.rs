@@ -76,33 +76,21 @@ fn apply_object_description_delta(
     object_description: &mut ObjectDescription,
     object_description_delta: ObjectDescriptionDelta,
 ) {
-    let ObjectDescriptionDelta {
-        shape,
-        location,
-        rotation,
-        mobility,
-        kind,
-        sensor,
-    } = object_description_delta;
-
     macro_rules! apply_delta {
-        ($($source:ident => $($target:ident).+),+,) => {
+        ($name:ident,+) => {
+            let ObjectDescriptionDelta {
+                $($name),+
+            } = object_description_delta;
+
             $(
-                if let Some(value) = $source {
-                    object_description.$($target).+ = value;
+                if let Some(value) = $name {
+                    object_description.$name = value;
                 }
             )+
         };
     }
 
-    apply_delta!(
-        shape => shape,
-        location => location,
-        rotation => rotation,
-        mobility => mobility,
-        kind => kind,
-        sensor => sensor,
-    );
+    apply_delta!(shape, location, rotation, mobility, kind, sensor);
 }
 
 #[cfg(test)]
