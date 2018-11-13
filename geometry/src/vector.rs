@@ -31,6 +31,21 @@ impl Sub for Vector {
     }
 }
 
+impl Vector {
+    /// Calculates the dot product of itself and another vector
+    /// # Examples
+    /// ```
+    /// // a · b = c
+    /// let a = Vector { x: 2.0, y: 3.0 };
+    /// let b = Vector { x: -4.0, y: 10.0 };
+    /// let c = a.dot_product(b);
+    /// assert_eq!(22.0, c);
+    /// ```
+    pub fn dot_product(self, other: Self) -> f64 {
+        self.x * other.x + self.y * other.y
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -142,5 +157,41 @@ mod tests {
         let expected_vector = Vector { x: -8.0, y: -41.0 };
         let substracted_vector = original_vector - vector_to_subtract;
         assert_eq!(expected_vector, substracted_vector);
+    }
+
+    #[test]
+    fn calculates_dot_product() {
+        let a = Vector { x: 2.0, y: 3.0 };
+        let b = Vector { x: -4.0, y: 10.0 };
+        let expected_dot_product = 22.0;
+        let dot_product = a.dot_product(b);
+        assert_eq!(expected_dot_product, dot_product);
+    }
+
+    #[test]
+    fn calculates_negative_dot_product() {
+        let a = Vector { x: 2.0, y: 3.0 };
+        let b = Vector { x: -40.0, y: 10.0 };
+        let expected_dot_product = -50.0;
+        let dot_product = a.dot_product(b);
+        assert_eq!(expected_dot_product, dot_product);
+    }
+
+    #[test]
+    fn dot_product_is_zero_when_one_side_is_zero() {
+        let a = Vector { x: 2.0, y: 3.0 };
+        let b = Vector { x: 0.0, y: 0.0 };
+        let expected_dot_product = 0.0;
+        let dot_product = a.dot_product(b);
+        assert_eq!(expected_dot_product, dot_product);
+    }
+
+    #[test]
+    fn dot_product_is_zero_when_both_sides_are_zero() {
+        let a = Vector { x: 0.0, y: 0.0 };
+        let b = Vector { x: 0.0, y: 0.0 };
+        let expected_dot_product = 0.0;
+        let dot_product = a.dot_product(b);
+        assert_eq!(expected_dot_product, dot_product);
     }
 }
