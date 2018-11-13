@@ -51,7 +51,51 @@ impl Polygon {
 
     /// Checks if a given point rests inside the polygon
     pub fn contains_point(&self, point: Point) -> bool {
-        true
+        if self.vertices.is_empty() {
+            return false;
+        }
+
+        #[derive(Eq, PartialEq, Debug)]
+        enum Side {
+            Right,
+            Left,
+            None,
+        };
+
+        fn calculate_facing_side(a: Vector, b: Vector) -> Side {
+            let cross_product = a.cross_product(b);
+            println!("a: {:?}\nb: {:?}\ncross_product:{}\n", a, b, cross_product);
+            const EPSILON: f64 = 0.001;
+            if cross_product < -EPSILON {
+                Side::Left
+            } else if cross_product > EPSILON {
+                Side::Right
+            } else {
+                Side::None
+            }
+        };
+
+        let first_vertex = self.vertices[0];
+        let vector_to_first_vertex = Vector {
+            x: first_vertex.x,
+            y: first_vertex.y,
+        };
+        let vector_to_point = Vector {
+            x: point.x,
+            y: point.y,
+        };
+        let first_side = calculate_facing_side(vector_to_first_vertex, vector_to_point);
+        if first_side == Side::None {
+            return false;
+        }
+        self.vertices
+            .iter()
+            .skip(1)
+            .map(|point| Vector {
+                x: point.x,
+                y: point.y,
+            })
+            .all(|vector| calculate_facing_side(vector, vector_to_point) == first_side)
     }
 }
 
