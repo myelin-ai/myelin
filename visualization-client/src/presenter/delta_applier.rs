@@ -77,7 +77,7 @@ fn apply_object_description_delta(
     object_description_delta: ObjectDescriptionDelta,
 ) {
     macro_rules! apply_delta {
-        ($name:ident,+) => {
+        ($($name:ident),+) => {
             let ObjectDescriptionDelta {
                 $($name),+
             } = object_description_delta;
