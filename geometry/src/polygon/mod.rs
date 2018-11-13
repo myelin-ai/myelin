@@ -33,6 +33,7 @@ impl Polygon {
             .vertices
             .iter()
             .map(|&vertex| {
+                // See https://en.wikipedia.org/wiki/Rotation_matrix
                 let delta = vertex - point;
                 let (rotation_sin, rotation_cos) = rotation.sin_cos();
                 let rotated_x = rotation_cos * delta.x + rotation_sin * delta.y + point.x;
