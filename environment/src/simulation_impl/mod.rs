@@ -29,8 +29,10 @@ struct NonPhysicalObjectData {
     pub(crate) behavior: Box<dyn ObjectBehavior>,
 }
 
-#[derive(Debug)]
-enum ActionError {
+/// An error that can occur whenever an action is performed
+#[derive(Debug, Clone)]
+pub enum ActionError {
+    /// The given handle was invalid
     InvalidHandle,
 }
 
@@ -296,7 +298,10 @@ pub trait World: fmt::Debug {
     /// a sensor, excluding the parent body it is attached to.
     /// # Errors
     /// Returns `None` if `sensor_handle` did not match any sensors.
-    fn bodies_within_sensor(&self, sensor_handle: SensorHandle) -> Option<Vec<BodyHandle>>;
+    fn bodies_within_sensor(
+        &self,
+        sensor_handle: SensorHandle,
+    ) -> Result<Vec<BodyHandle>, ActionError>;
 
     /// Register a force that will be applied to a body on the next
     /// step.
@@ -647,7 +652,7 @@ mod tests {
         );
         world.expect_bodies_within_sensor_and_return(
             expected_sensor_handle,
-            Some(vec![returned_handle]),
+            Ok(vec![returned_handle]),
         );
 
         let expected_object_description = ObjectBuilder::default()
@@ -990,7 +995,8 @@ mod tests {
         expect_remove_body_and_return: Option<(BodyHandle, Option<PhysicalBody>)>,
         expect_body_and_return: Option<(BodyHandle, Option<PhysicalBody>)>,
         expect_attach_sensor_and_return: Option<(BodyHandle, Sensor, Option<SensorHandle>)>,
-        expect_bodies_within_sensor_and_return: Option<(SensorHandle, Option<Vec<BodyHandle>>)>,
+        expect_bodies_within_sensor_and_return:
+            Option<(SensorHandle, Result<Vec<BodyHandle>, ActionError>)>,
         expect_apply_force_and_return: Option<(BodyHandle, Force, Option<()>)>,
         expect_set_simulated_timestep: Option<f64>,
         expect_is_body_passable_and_return: Option<(BodyHandle, bool)>,
@@ -1050,7 +1056,7 @@ mod tests {
         pub(crate) fn expect_bodies_within_sensor_and_return(
             &mut self,
             sensor_handle: SensorHandle,
-            returned_value: Option<Vec<BodyHandle>>,
+            returned_value: Result<Vec<BodyHandle>, ActionError>,
         ) {
             self.expect_bodies_within_sensor_and_return = Some((sensor_handle, returned_value));
         }
@@ -1225,7 +1231,10 @@ mod tests {
             }
         }
 
-        fn bodies_within_sensor(&self, sensor_handle: SensorHandle) -> Option<Vec<BodyHandle>> {
+        fn bodies_within_sensor(
+            &self,
+            sensor_handle: SensorHandle,
+        ) -> Result<Vec<BodyHandle>, ActionError> {
             *self.bodies_within_sensor_was_called.borrow_mut() = true;
             if let Some((ref expected_handle, ref return_value)) =
                 self.expect_bodies_within_sensor_and_return
