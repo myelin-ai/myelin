@@ -169,8 +169,7 @@ mod mock {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::{Kind, Mobility, ObjectDescription};
-    use myelin_environment::object_builder::ObjectBuilder;
+    use myelin_environment::object::{Kind, Mobility, ObjectBuilder, ObjectDescription};
     use myelin_geometry::*;
 
     fn object_description() -> ObjectDescription {

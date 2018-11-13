@@ -96,7 +96,6 @@ mod tests {
     use super::delta_applier::DeltaApplierError;
     use super::*;
     use crate::view_model::{self, ViewModel};
-    use myelin_environment::object_builder::ObjectBuilder;
     use myelin_geometry::*;
     use myelin_visualization_core::view_model_delta::ObjectDelta;
     use std::cell::RefCell;

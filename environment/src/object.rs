@@ -1,9 +1,9 @@
 //! Objects that can be placed in a world and their components.
 //! You can construct a [`ObjectDescription`] by using an [`ObjectBuilder`].
 //!
-//! [`ObjectBuilder`]: ../object_builder/struct.ObjectBuilder.html
-//! [`ObjectDescription`]: ./struct.ObjectDescription.html
+//! [`ObjectBuilder`]: crate::object_builder::ObjectBuilder
 
+pub use crate::object_builder::*;
 use crate::Id;
 use myelin_geometry::*;
 use std::collections::HashMap;

@@ -1,31 +1,3 @@
-//! Convenient builders for [`ObjectDescription`] and [`Polygon`]
-//! # Examples
-//! ```
-//! use myelin_environment::object::*;
-//! use myelin_geometry::*;
-//! use myelin_environment::object_builder::{ObjectBuilder};
-//! use std::f64::consts::FRAC_PI_2;
-//!
-//! let object = ObjectBuilder::default()
-//!     .shape(
-//!         PolygonBuilder::default()
-//!             .vertex(-50.0, -50.0)
-//!             .vertex(50.0, -50.0)
-//!             .vertex(50.0, 50.0)
-//!             .vertex(-50.0, 50.0)
-//!             .build()
-//!             .unwrap(),
-//!     ).location(300.0, 450.0)
-//!     .rotation(Radians::try_new(FRAC_PI_2).unwrap())
-//!     .kind(Kind::Organism)
-//!     .mobility(Mobility::Movable(Vector{x: 3.0, y: 5.0}))
-//!     .build()
-//!     .unwrap();
-//! ```
-//!
-//! [`ObjectDescription`]: ../object/struct.ObjectDescription.html
-//! [`Polygon`]: ../object/struct.Polygon.html
-//!
 use crate::object::*;
 use myelin_geometry::*;
 
@@ -49,11 +21,10 @@ pub struct ObjectBuilderError {
 ///
 /// # Examples
 /// ```
-/// use myelin_environment::object_builder::ObjectBuilder;
+/// use myelin_environment::object::ObjectBuilder;
+///
 /// let builder = ObjectBuilder::default();
 /// ```
-///
-/// [`ObjectDescription`]: ../object/struct.ObjectDescription.html
 #[derive(Default, Debug)]
 pub struct ObjectBuilder {
     shape: Option<Polygon>,
@@ -69,7 +40,8 @@ impl ObjectBuilder {
     /// # Examples
     /// ```
     /// use myelin_geometry::PolygonBuilder;
-    /// use myelin_environment::object_builder::ObjectBuilder;
+    /// use myelin_environment::object::ObjectBuilder;
+    ///
     /// ObjectBuilder::default()
     ///     .shape(
     ///         PolygonBuilder::default()
@@ -88,7 +60,8 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
-    /// use myelin_environment::object_builder::ObjectBuilder;
+    /// use myelin_environment::object::ObjectBuilder;
+    ///
     /// ObjectBuilder::default()
     ///     .location(3.0, 2.0);
     /// ```
@@ -99,8 +72,8 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
-    /// use myelin_environment::object_builder::ObjectBuilder;
-    /// use myelin_environment::object::Kind;
+    /// use myelin_environment::object::{Kind, ObjectBuilder};
+    ///
     /// ObjectBuilder::default()
     ///     .kind(Kind::Plant);
     /// ```
@@ -111,9 +84,9 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
-    /// use myelin_environment::object_builder::ObjectBuilder;
-    /// use myelin_environment::object::Mobility;
+    /// use myelin_environment::object::{Mobility, ObjectBuilder};
     /// use myelin_geometry::Vector;
+    ///
     /// ObjectBuilder::default()
     ///     .mobility(Mobility::Movable(Vector { x: -12.0, y: 4.0 }));
     /// ```
@@ -124,9 +97,9 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
-    /// use myelin_environment::object_builder::ObjectBuilder;
     /// use myelin_environment::object::*;
     /// use myelin_geometry::*;
+    ///
     /// ObjectBuilder::default()
     ///     .sensor( Sensor {
     ///         shape: PolygonBuilder::default()
@@ -147,8 +120,9 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
-    /// use myelin_environment::object_builder::ObjectBuilder;
+    /// use myelin_environment::object::ObjectBuilder;
     /// use myelin_geometry::Radians;
+    ///
     /// ObjectBuilder::default()
     ///     .rotation(Radians::try_new(4.5).unwrap());
     /// ```
@@ -159,7 +133,7 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
-    /// use myelin_environment::object_builder::ObjectBuilder;
+    /// use myelin_environment::object::ObjectBuilder;
     ///
     /// let builder = ObjectBuilder::default();
     /// ```
@@ -177,7 +151,6 @@ impl ObjectBuilder {
     /// ```
     /// use myelin_environment::object::*;
     /// use myelin_geometry::*;
-    /// use myelin_environment::object_builder::ObjectBuilder;
     /// use std::f64::consts::FRAC_PI_2;
     ///
     /// let object = ObjectBuilder::default()
@@ -196,8 +169,6 @@ impl ObjectBuilder {
     ///     .build()
     ///     .unwrap();
     /// ```
-    ///
-    /// [`ObjectDescription`]: ../object/struct.ObjectDescription.html
     pub fn build(&mut self) -> Result<ObjectDescription, ObjectBuilderError> {
         let error = ObjectBuilderError {
             missing_shape: self.shape.is_none(),
