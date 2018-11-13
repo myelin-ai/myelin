@@ -48,6 +48,11 @@ impl Polygon {
             vertices: rotated_vertices,
         }
     }
+
+    /// Checks if a given point rests inside the polygon
+    pub fn contains_point(&self, point: Point) -> bool {
+        true
+    }
 }
 
 #[cfg(test)]
@@ -56,17 +61,14 @@ mod test {
     use super::*;
     use std::f64::consts::PI;
 
-    fn polygon_and_center() -> (Polygon, Point) {
-        (
-            PolygonBuilder::default()
-                .vertex(-10.0, -10.0)
-                .vertex(10.0, -10.0)
-                .vertex(10.0, 10.0)
-                .vertex(-10.0, 10.0)
-                .build()
-                .unwrap(),
-            Point { x: 0.0, y: 0.0 },
-        )
+    fn polygon() -> Polygon {
+        PolygonBuilder::default()
+            .vertex(-10.0, -10.0)
+            .vertex(10.0, -10.0)
+            .vertex(10.0, 10.0)
+            .vertex(-10.0, 10.0)
+            .build()
+            .unwrap()
     }
 
     fn translation() -> Point {
@@ -75,7 +77,7 @@ mod test {
 
     #[test]
     fn translates() {
-        let (polygon, _) = polygon_and_center();
+        let polygon = polygon();
         assert_eq!(
             Polygon {
                 vertices: vec![
@@ -91,7 +93,7 @@ mod test {
 
     #[test]
     fn rotates_by_pi() {
-        let (polygon, center) = polygon_and_center();
+        let polygon = polygon();
 
         const FLOATING_POINT_INACCURACY: f64 = 0.000000000000002;
         assert_eq!(
@@ -115,13 +117,13 @@ mod test {
                     },
                 ],
             },
-            polygon.rotate_around_point(Radians::try_new(PI).unwrap(), center)
+            polygon.rotate_around_point(Radians::try_new(PI).unwrap(), Point::default())
         );
     }
 
     #[test]
     fn rotates_by_arbitrary_orientation() {
-        let (polygon, center) = polygon_and_center();
+        let polygon = polygon();
 
         const ROTATION_A: f64 = 8.488724885405782;
         const ROTATION_B: f64 = 11.311125046603125;
@@ -147,13 +149,13 @@ mod test {
                     },
                 ],
             },
-            polygon.rotate_around_point(Radians::try_new(3.0).unwrap(), center)
+            polygon.rotate_around_point(Radians::try_new(3.0).unwrap(), Point::default())
         );
     }
 
     #[test]
     fn translates_and_rotates() {
-        let (polygon, _) = polygon_and_center();
+        let polygon = polygon();
         let translation = translation();
         let translated_polygon = polygon.translate(translation);
 
@@ -180,5 +182,60 @@ mod test {
             },
             translated_polygon.rotate_around_point(Radians::try_new(3.0).unwrap(), translation)
         );
+    }
+
+    #[test]
+    fn contains_point_when_point_is_positive() {
+        let translation = Point { x: 10.43, y: 20.1 };
+        let polygon = polygon().translate(translation);
+        let point = Point { x: 12.0, y: 18.0 };
+        assert!(polygon.contains_point(point));
+    }
+
+    #[test]
+    fn contains_point_when_point_is_negative() {
+        let translation = Point { x: -20.0, y: -5.0 };
+        let polygon = polygon().translate(translation);
+        let point = Point { x: -21.70, y: -2.3 };
+        assert!(polygon.contains_point(point));
+    }
+
+    #[test]
+    fn contains_point_when_point_is_at_zero() {
+        let polygon = polygon();
+        let point = Point::default();
+        assert!(polygon.contains_point(point));
+    }
+
+    #[test]
+    fn contains_point_at_border() {
+        let polygon = polygon();
+        let point = Point { x: 10.0, y: -10.0 };
+        assert!(polygon.contains_point(point));
+    }
+
+    #[test]
+    fn does_not_contain_point_barely_outside_polygon() {
+        let polygon = polygon();
+        let point = Point { x: 10.1, y: -10.1 };
+        assert!(!polygon.contains_point(point));
+    }
+
+    #[test]
+    fn does_not_contain_point_way_outside_polygon() {
+        let polygon = polygon();
+        let point = Point {
+            x: -9000.0,
+            y: -9000.0,
+        };
+        assert!(!polygon.contains_point(point));
+    }
+
+    #[test]
+    fn does_not_contain_point_when_point_is_at_zero() {
+        let translation = Point { x: 11.0, y: 11.0 };
+        let polygon = polygon().translate(translation);
+        let point = Point::default();
+        assert!(!polygon.contains_point(point));
     }
 }
