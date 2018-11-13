@@ -40,7 +40,7 @@ impl Polygon {
                 let delta_y = vertex.y - point.y;
                 let (rotation_sin, rotation_cos) = rotation.sin_cos();
                 let rotated_x = rotation_cos * delta_x + rotation_sin * delta_y + point.x;
-                let rotated_y = -rotation_sin * delta_x + rotation_cos * delta_y + point.x;
+                let rotated_y = -rotation_sin * delta_x + rotation_cos * delta_y + point.y;
                 Point {
                     x: rotated_x,
                     y: rotated_y,
