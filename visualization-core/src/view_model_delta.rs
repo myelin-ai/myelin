@@ -3,6 +3,7 @@
 
 use myelin_environment::object::*;
 use myelin_environment::Id;
+use myelin_geometry::*;
 use std::collections::HashMap;
 
 /// This step's object deltas
@@ -31,7 +32,7 @@ pub struct ObjectDescriptionDelta {
     pub shape: Option<Polygon>,
 
     /// The current location of the object
-    pub location: Option<Location>,
+    pub location: Option<Point>,
 
     /// The current rotation of the object
     pub rotation: Option<Radians>,

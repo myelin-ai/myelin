@@ -1,13 +1,14 @@
 use crate::view_model;
-use myelin_environment::object as business_object;
+use myelin_geometry::*;
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
 pub(crate) trait GlobalPolygonTranslator: Debug {
     fn to_global_polygon(
         &self,
-        polygon: &business_object::Polygon,
-        position: &business_object::Position,
+        polygon: &Polygon,
+        location: Point,
+        rotation: Radians,
     ) -> view_model::Polygon;
 }
 
@@ -23,62 +24,45 @@ impl GlobalPolygonTranslatorImpl {
 impl GlobalPolygonTranslator for GlobalPolygonTranslatorImpl {
     fn to_global_polygon(
         &self,
-        polygon: &business_object::Polygon,
-        position: &business_object::Position,
+        polygon: &Polygon,
+        location: Point,
+        rotation: Radians,
     ) -> view_model::Polygon {
+        let global_polygon = polygon
+            .translate(location)
+            .rotate_around_point(rotation, location);
+        let view_model_vertices = global_polygon
+            .vertices
+            .iter()
+            .map(|vertex| view_model::Point {
+                x: vertex.x,
+                y: vertex.y,
+            })
+            .collect();
+
         view_model::Polygon {
-            vertices: polygon
-                .vertices
-                .iter()
-                .map(|vertex| to_global_rotated_vertex(vertex, position))
-                .collect(),
+            vertices: view_model_vertices,
         }
-    }
-}
-
-fn to_global_rotated_vertex(
-    vertex: &business_object::Vertex,
-    position: &business_object::Position,
-) -> view_model::Vertex {
-    // See https://en.wikipedia.org/wiki/Rotation_matrix
-    let center_x = f64::from(position.location.x);
-    let center_y = f64::from(position.location.y);
-    let rotation = position.rotation.value();
-    let global_x = center_x + f64::from(vertex.x);
-    let global_y = center_y + f64::from(vertex.y);
-    let rotated_global_x =
-        rotation.cos() * (global_x - center_x) + rotation.sin() * (global_y - center_y) + center_x;
-    let rotated_global_y =
-        -rotation.sin() * (global_x - center_x) + rotation.cos() * (global_y - center_y) + center_y;
-
-    view_model::Vertex {
-        x: rotated_global_x.round() as u32,
-        y: rotated_global_y.round() as u32,
     }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-    use myelin_environment::object::*;
-    use myelin_environment::object_builder::PolygonBuilder;
     use std::f64::consts::PI;
 
     fn polygon() -> Polygon {
         PolygonBuilder::default()
-            .vertex(-10, -10)
-            .vertex(10, -10)
-            .vertex(10, 10)
-            .vertex(-10, 10)
+            .vertex(-10.0, -10.0)
+            .vertex(10.0, -10.0)
+            .vertex(10.0, 10.0)
+            .vertex(-10.0, 10.0)
             .build()
             .unwrap()
     }
 
-    fn position(rotation: Radians) -> Position {
-        Position {
-            location: Location { x: 30, y: 40 },
-            rotation,
-        }
+    fn location() -> Point {
+        Point { x: 30.0, y: 40.0 }
     }
 
     #[test]
@@ -88,13 +72,13 @@ mod test {
         assert_eq!(
             view_model::Polygon {
                 vertices: vec![
-                    view_model::Vertex { x: 20, y: 30 },
-                    view_model::Vertex { x: 40, y: 30 },
-                    view_model::Vertex { x: 40, y: 50 },
-                    view_model::Vertex { x: 20, y: 50 },
+                    view_model::Point { x: 20.0, y: 30.0 },
+                    view_model::Point { x: 40.0, y: 30.0 },
+                    view_model::Point { x: 40.0, y: 50.0 },
+                    view_model::Point { x: 20.0, y: 50.0 },
                 ],
             },
-            translator.to_global_polygon(&polygon(), &position(Radians::default()))
+            translator.to_global_polygon(&polygon(), location(), Radians::default())
         );
     }
 
@@ -105,13 +89,13 @@ mod test {
         assert_eq!(
             view_model::Polygon {
                 vertices: vec![
-                    view_model::Vertex { x: 40, y: 50 },
-                    view_model::Vertex { x: 20, y: 50 },
-                    view_model::Vertex { x: 20, y: 30 },
-                    view_model::Vertex { x: 40, y: 30 },
+                    view_model::Point { x: 40.0, y: 50.0 },
+                    view_model::Point { x: 20.0, y: 50.0 },
+                    view_model::Point { x: 20.0, y: 30.0 },
+                    view_model::Point { x: 40.0, y: 30.0 },
                 ],
             },
-            translator.to_global_polygon(&polygon(), &position(Radians::try_new(PI).unwrap()))
+            translator.to_global_polygon(&polygon(), location(), Radians::try_new(PI).unwrap())
         );
     }
 
@@ -122,25 +106,25 @@ mod test {
         assert_eq!(
             view_model::Polygon {
                 vertices: vec![
-                    view_model::Vertex {
-                        x: 40 - 2,
-                        y: 50 + 1,
+                    view_model::Point {
+                        x: 38.48872488540578,
+                        y: 51.311125046603124
                     },
-                    view_model::Vertex {
-                        x: 20 - 1,
-                        y: 50 - 2,
+                    view_model::Point {
+                        x: 18.688874953396876,
+                        y: 48.48872488540578
                     },
-                    view_model::Vertex {
-                        x: 20 + 2,
-                        y: 30 - 1,
+                    view_model::Point {
+                        x: 21.51127511459422,
+                        y: 28.688874953396876
                     },
-                    view_model::Vertex {
-                        x: 40 + 1,
-                        y: 30 + 2,
+                    view_model::Point {
+                        x: 41.311125046603124,
+                        y: 31.51127511459422
                     },
                 ],
             },
-            translator.to_global_polygon(&polygon(), &position(Radians::try_new(3.0).unwrap()))
+            translator.to_global_polygon(&polygon(), location(), Radians::try_new(3.0).unwrap())
         );
     }
 }

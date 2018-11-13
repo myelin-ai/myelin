@@ -56,50 +56,51 @@ mod test {
     use super::*;
     use crate::view_model_delta::*;
     use myelin_environment::object::*;
-    use myelin_environment::object_builder::PolygonBuilder;
+    use myelin_geometry::*;
+
+    const EXPECTED_JSON: &str = r#"{"12":{"Updated":{"shape":{"vertices":[{"x":-5.0,"y":-5.0},{"x":1.0,"y":1.0},{"x":2.0,"y":3.0},{"x":5.0,"y":6.0}]},"location":{"x":3.0,"y":4.0},"rotation":{"value":1.0},"mobility":{"Movable":{"x":2.0,"y":3.0}},"kind":"Organism","sensor":{"shape":{"vertices":[{"x":-10.0,"y":-12.0},{"x":10.0,"y":6.0},{"x":16.0,"y":0.0}]},"location":{"x":2.0,"y":3.0},"rotation":{"value":1.0}}}}}"#;
 
     #[test]
     fn serializes_full_delta() {
-        let expected: Vec<u8> = r#"{"12":{"Updated":{"shape":{"vertices":[{"x":-5,"y":-5},{"x":1,"y":1},{"x":2,"y":3},{"x":5,"y":6}]},"location":{"x":3,"y":4},"rotation":{"value":1.0},"mobility":{"Movable":{"x":2,"y":3}},"kind":"Organism","sensor":{"shape":{"vertices":[{"x":-10,"y":-12},{"x":10,"y":6},{"x":16,"y":0}]},"position":{"location":{"x":2,"y":3},"rotation":{"value":1.0}}}}}}"#.into();
+        let expected: Vec<u8> = EXPECTED_JSON.into();
 
         let object_description_delta = ObjectDescriptionDelta {
             kind: Some(Kind::Organism),
             shape: Some(
                 PolygonBuilder::default()
-                    .vertex(-5, -5)
-                    .vertex(1, 1)
-                    .vertex(2, 3)
-                    .vertex(5, 6)
+                    .vertex(-5.0, -5.0)
+                    .vertex(1.0, 1.0)
+                    .vertex(2.0, 3.0)
+                    .vertex(5.0, 6.0)
                     .build()
                     .unwrap(),
             ),
-            mobility: Some(Mobility::Movable(Velocity { x: 2, y: 3 })),
-            location: Some(Location { x: 3, y: 4 }),
+            mobility: Some(Mobility::Movable(Vector { x: 2.0, y: 3.0 })),
+            location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
             sensor: Some(Some(Sensor {
                 shape: PolygonBuilder::default()
-                    .vertex(-10, -12)
-                    .vertex(10, 6)
-                    .vertex(16, 0)
+                    .vertex(-10.0, -12.0)
+                    .vertex(10.0, 6.0)
+                    .vertex(16.0, 0.0)
                     .build()
                     .unwrap(),
-                position: Position {
-                    location: Location { x: 2, y: 3 },
-                    rotation: Radians::try_new(1.0).unwrap(),
-                },
+                location: Point { x: 2.0, y: 3.0 },
+                rotation: Radians::try_new(1.0).unwrap(),
             })),
         };
 
         let view_model_delta = hashmap! { 12 => ObjectDelta::Updated(object_description_delta) };
 
-        print!(
-            "{}",
+        println!(
+            "got {}\n expected {}",
             String::from_utf8(
                 JsonSerializer::default()
                     .serialize_view_model_delta(&view_model_delta)
                     .unwrap()
             )
-            .unwrap()
+            .unwrap(),
+            EXPECTED_JSON
         );
 
         let serializer = JsonSerializer::default();
@@ -130,42 +131,41 @@ mod test {
             kind: Some(Kind::Organism),
             shape: Some(
                 PolygonBuilder::default()
-                    .vertex(-5, -5)
-                    .vertex(1, 1)
-                    .vertex(2, 3)
-                    .vertex(5, 6)
+                    .vertex(-5.0, -5.0)
+                    .vertex(1.0, 1.0)
+                    .vertex(2.0, 3.0)
+                    .vertex(5.0, 6.0)
                     .build()
                     .unwrap(),
             ),
-            mobility: Some(Mobility::Movable(Velocity { x: 2, y: 3 })),
-            location: Some(Location { x: 3, y: 4 }),
+            mobility: Some(Mobility::Movable(Vector { x: 2.0, y: 3.0 })),
+            location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
             sensor: Some(Some(Sensor {
                 shape: PolygonBuilder::default()
-                    .vertex(-10, -12)
-                    .vertex(10, 6)
-                    .vertex(16, 0)
+                    .vertex(-10.0, -12.0)
+                    .vertex(10.0, 6.0)
+                    .vertex(16.0, 0.0)
                     .build()
                     .unwrap(),
-                position: Position {
-                    location: Location { x: 2, y: 3 },
-                    rotation: Radians::try_new(1.0).unwrap(),
-                },
+                location: Point { x: 2.0, y: 3.0 },
+                rotation: Radians::try_new(1.0).unwrap(),
             })),
         };
 
         let expected = hashmap! { 12 => ObjectDelta::Updated(object_description_delta) };
 
-        let source: Vec<u8> = r#"{"12":{"Updated":{"shape":{"vertices":[{"x":-5,"y":-5},{"x":1,"y":1},{"x":2,"y":3},{"x":5,"y":6}]},"location":{"x":3,"y":4},"rotation":{"value":1.0},"mobility":{"Movable":{"x":2,"y":3}},"kind":"Organism","sensor":{"shape":{"vertices":[{"x":-10,"y":-12},{"x":10,"y":6},{"x":16,"y":0}]},"position":{"location":{"x":2,"y":3},"rotation":{"value":1.0}}}}}}"#.into();
+        let source: Vec<u8> = EXPECTED_JSON.into();
 
-        print!(
-            "{}",
+        println!(
+            "got {}\n expected {}",
             String::from_utf8(
                 JsonSerializer::default()
                     .serialize_view_model_delta(&expected)
                     .unwrap()
             )
-            .unwrap()
+            .unwrap(),
+            EXPECTED_JSON
         );
 
         let deserializer = JsonDeserializer::default();

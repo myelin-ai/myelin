@@ -4,7 +4,7 @@ Param (
     [Switch]$noWebpack = $false,
     [Switch]$release = $false,
     [Switch]$help = $false
- )
+)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -21,7 +21,8 @@ if ($help) {
 
 $releaseFlag = if ($release) {
     "--release"
-} else {
+}
+else {
     ""
 }
 
@@ -40,7 +41,7 @@ if (Test-Path -Path "$targetDir") {
 
 New-Item -ItemType directory -Path "$targetDir"
 wasm-bindgen ../target/wasm32-unknown-unknown/debug/$applicationName.wasm `
-             --out-dir "$targetDir"
+    --out-dir "$targetDir"
 
 if (!($noWebpack)) {
     yarn

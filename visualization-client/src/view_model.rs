@@ -1,23 +1,23 @@
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ViewModel {
     pub objects: Vec<Object>,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Object {
     pub shape: Polygon,
     pub kind: Kind,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Polygon {
-    pub vertices: Vec<Vertex>,
+    pub vertices: Vec<Point>,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub struct Vertex {
-    pub x: u32,
-    pub y: u32,
+#[derive(Debug, PartialEq, Clone)]
+pub struct Point {
+    pub x: f64,
+    pub y: f64,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]

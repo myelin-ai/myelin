@@ -78,10 +78,10 @@ impl ForceGenerator<PhysicsType> for GenericSingleTimeForceApplierWrapper {
 mod tests {
     use super::*;
     use crate::object::*;
-    use crate::object_builder::PolygonBuilder;
     use crate::simulation_impl::world::collision_filter::IgnoringCollisionFilterMock;
     use crate::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
     use crate::simulation_impl::world::{NphysicsWorld, PhysicalBody, World};
+    use myelin_geometry::*;
     use std::collections::VecDeque;
     use std::sync::{Arc, RwLock};
 
@@ -121,7 +121,10 @@ mod tests {
             .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         let force = Force {
-            linear: LinearForce { x: 1000, y: 2000 },
+            linear: Vector {
+                x: 1000.0,
+                y: 2000.0,
+            },
             torque: Torque(9.0),
         };
         world
@@ -136,7 +139,7 @@ mod tests {
     fn zero_force_is_ignored() {
         let body = physical_body();
         let force = Force {
-            linear: LinearForce::default(),
+            linear: Vector::default(),
             torque: Torque::default(),
         };
         let expected_body = body.clone();
@@ -147,14 +150,11 @@ mod tests {
     fn torque_with_no_linear_force_changes_rotation() {
         let body = physical_body();
         let force = Force {
-            linear: LinearForce::default(),
+            linear: Vector::default(),
             torque: Torque(101.55),
         };
         let expected_body = PhysicalBody {
-            position: Position {
-                rotation: Radians::try_new(0.6093).unwrap(),
-                ..body.position.clone()
-            },
+            rotation: Radians::try_new(0.6093).unwrap(),
             ..body
         };
         test_force(&physical_body(), &expected_body, force);
@@ -164,14 +164,11 @@ mod tests {
     fn negative_torque_results_in_negative_rotation() {
         let body = physical_body();
         let force = Force {
-            linear: LinearForce::default(),
+            linear: Vector::default(),
             torque: Torque(-202.0),
         };
         let expected_body = PhysicalBody {
-            position: Position {
-                rotation: Radians::try_new(5.071_185_307_179_586_5).unwrap(),
-                ..body.position.clone()
-            },
+            rotation: Radians::try_new(5.071_185_307_179_586_5).unwrap(),
             ..body
         };
         test_force(&physical_body(), &expected_body, force);
@@ -181,15 +178,15 @@ mod tests {
     fn linear_force_with_no_torque_changes_location_and_speed() {
         let body = physical_body();
         let force = Force {
-            linear: LinearForce { x: 100, y: 100 },
+            linear: Vector {
+                x: 100.00000000000001,
+                y: 100.00000000000001,
+            },
             torque: Torque::default(),
         };
         let expected_body = PhysicalBody {
-            position: Position {
-                location: Location { x: 14, y: 14 },
-                ..body.position.clone()
-            },
-            mobility: Mobility::Movable(Velocity { x: 9, y: 9 }),
+            location: Point { x: 15.0, y: 15.0 },
+            mobility: Mobility::Movable(Vector { x: 10.0, y: 10.0 }),
             ..body
         };
         test_force(&physical_body(), &expected_body, force);
@@ -199,15 +196,15 @@ mod tests {
     fn negative_linear_force_results_in_lower_location() {
         let body = physical_body();
         let force = Force {
-            linear: LinearForce { x: -50, y: -50 },
+            linear: Vector {
+                x: -50.00000000000001,
+                y: -50.00000000000001,
+            },
             torque: Torque::default(),
         };
         let expected_body = PhysicalBody {
-            position: Position {
-                location: Location { x: 0, y: 0 },
-                ..body.position.clone()
-            },
-            mobility: Mobility::Movable(Velocity { x: -4, y: -4 }),
+            location: Point { x: 0.0, y: 0.0 },
+            mobility: Mobility::Movable(Vector { x: -5.0, y: -5.0 }),
             ..body
         };
         test_force(&physical_body(), &expected_body, force);
@@ -217,18 +214,15 @@ mod tests {
     fn location_can_underflow() {
         let body = physical_body();
         let force = Force {
-            linear: LinearForce { x: -100, y: -200 },
+            linear: Vector {
+                x: -100.00000000000001,
+                y: -200.00000000000002,
+            },
             torque: Torque::default(),
         };
         let expected_body = PhysicalBody {
-            position: Position {
-                location: Location {
-                    x: 4_294_967_292,
-                    y: 4_294_967_282,
-                },
-                ..body.position.clone()
-            },
-            mobility: Mobility::Movable(Velocity { x: -9, y: -19 }),
+            location: Point { x: -5.0, y: -15.0 },
+            mobility: Mobility::Movable(Vector { x: -10.0, y: -20.0 }),
             ..body
         };
         test_force(&physical_body(), &expected_body, force);
@@ -238,16 +232,17 @@ mod tests {
     fn linear_force_and_torque_can_be_combined() {
         let body = physical_body();
         let force = Force {
-            linear: LinearForce { x: 50, y: 100 },
+            linear: Vector {
+                x: 50.00000000000001,
+                y: 100.00000000000001,
+            },
             torque: Torque(1.5),
         };
 
         let expected_body = PhysicalBody {
-            position: Position {
-                location: Location { x: 10, y: 15 },
-                rotation: Radians::try_new(0.009_000_000_000_000_001).unwrap(),
-            },
-            mobility: Mobility::Movable(Velocity { x: 4, y: 9 }),
+            location: Point { x: 10.0, y: 15.0 },
+            rotation: Radians::try_new(0.009_000_000_000_000_001).unwrap(),
+            mobility: Mobility::Movable(Vector { x: 5.0, y: 10.0 }),
             ..body
         };
         test_force(&physical_body(), &expected_body, force);
@@ -255,16 +250,14 @@ mod tests {
 
     fn physical_body() -> PhysicalBody {
         PhysicalBody {
-            position: Position {
-                location: Location { x: 5, y: 5 },
-                rotation: Radians::default(),
-            },
-            mobility: Mobility::Movable(Velocity::default()),
+            location: Point { x: 5.0, y: 5.0 },
+            rotation: Radians::default(),
+            mobility: Mobility::Movable(Vector::default()),
             shape: PolygonBuilder::default()
-                .vertex(-5, -5)
-                .vertex(-5, 5)
-                .vertex(5, 5)
-                .vertex(5, -5)
+                .vertex(-5.0, -5.0)
+                .vertex(-5.0, 5.0)
+                .vertex(5.0, 5.0)
+                .vertex(5.0, -5.0)
                 .build()
                 .unwrap(),
             passable: false,
