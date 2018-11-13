@@ -18,10 +18,7 @@ impl Polygon {
         let translated_vertices = self
             .vertices
             .iter()
-            .map(|vertex| Point {
-                x: vertex.x + translation.x,
-                y: vertex.y + translation.y,
-            })
+            .map(|&vertex| vertex + translation)
             .collect();
 
         Polygon {
@@ -35,12 +32,11 @@ impl Polygon {
         let rotated_vertices = self
             .vertices
             .iter()
-            .map(|vertex| {
-                let delta_x = vertex.x - point.x;
-                let delta_y = vertex.y - point.y;
+            .map(|&vertex| {
+                let delta = vertex - point;
                 let (rotation_sin, rotation_cos) = rotation.sin_cos();
-                let rotated_x = rotation_cos * delta_x + rotation_sin * delta_y + point.x;
-                let rotated_y = -rotation_sin * delta_x + rotation_cos * delta_y + point.y;
+                let rotated_x = rotation_cos * delta.x + rotation_sin * delta.y + point.x;
+                let rotated_y = -rotation_sin * delta.x + rotation_cos * delta.y + point.y;
                 Point {
                     x: rotated_x,
                     y: rotated_y,
