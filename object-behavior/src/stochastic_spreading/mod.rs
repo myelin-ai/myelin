@@ -1,7 +1,6 @@
 //! Types relating to a behavior that reproduces at random intervals
 
 use myelin_environment::object::*;
-use myelin_environment::object_builder::ObjectBuilder;
 use myelin_environment::Id;
 use myelin_geometry::*;
 use std::collections::HashMap;
