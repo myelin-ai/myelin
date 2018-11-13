@@ -96,7 +96,6 @@ mod tests {
     use super::*;
     use crate::connection_acceptor::ConnectionAcceptorMock;
     use myelin_environment::object::*;
-    use myelin_environment::object_builder::ObjectBuilder;
     use myelin_environment::SimulationMock;
     use myelin_geometry::PolygonBuilder;
     use std::sync::Mutex;
