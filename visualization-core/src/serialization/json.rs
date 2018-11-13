@@ -56,7 +56,7 @@ mod test {
     use super::*;
     use crate::view_model_delta::*;
     use myelin_environment::object::*;
-    use myelin_environment::object_builder::PolygonBuilder;
+    use myelin_geometry::*;
 
     #[test]
     fn serializes_full_delta() {
@@ -83,10 +83,8 @@ mod test {
                     .vertex(16.0, 0.0)
                     .build()
                     .unwrap(),
-                position: Position {
-                    location: Point { x: 2.0, y: 3.0 },
-                    rotation: Radians::try_new(1.0).unwrap(),
-                },
+                location: Point { x: 2.0, y: 3.0 },
+                rotation: Radians::try_new(1.0).unwrap(),
             })),
         };
 
@@ -147,10 +145,8 @@ mod test {
                     .vertex(16.0, 0.0)
                     .build()
                     .unwrap(),
-                position: Position {
-                    location: Point { x: 2.0, y: 3.0 },
-                    rotation: Radians::try_new(1.0).unwrap(),
-                },
+                location: Point { x: 2.0, y: 3.0 },
+                rotation: Radians::try_new(1.0).unwrap(),
             })),
         };
 
