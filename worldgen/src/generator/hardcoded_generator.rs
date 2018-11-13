@@ -2,8 +2,9 @@
 
 use crate::WorldGenerator;
 use myelin_environment::object::*;
-use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+use myelin_environment::object_builder::ObjectBuilder;
 use myelin_environment::Simulation;
+use myelin_geometry::*;
 use std::f64::consts::FRAC_PI_2;
 use std::fmt;
 
@@ -64,19 +65,19 @@ impl HardcodedGenerator {
 
     fn populate_with_terrain(&self, simulation: &mut dyn Simulation) {
         simulation.add_object(
-            build_terrain((25, 500), 50, 1000),
+            build_terrain((25.0, 500.0), 50.0, 1000.0),
             (self.object_factory)(Kind::Terrain),
         );
         simulation.add_object(
-            build_terrain((500, 25), 1000, 50),
+            build_terrain((500.0, 25.0), 1000.0, 50.0),
             (self.object_factory)(Kind::Terrain),
         );
         simulation.add_object(
-            build_terrain((975, 500), 50, 1000),
+            build_terrain((975.0, 500.0), 50.0, 1000.0),
             (self.object_factory)(Kind::Terrain),
         );
         simulation.add_object(
-            build_terrain((500, 975), 1000, 50),
+            build_terrain((500.0, 975.0), 1000.0, 50.0),
             (self.object_factory)(Kind::Terrain),
         );
     }
@@ -85,15 +86,15 @@ impl HardcodedGenerator {
         let object_description = ObjectBuilder::default()
             .shape(
                 PolygonBuilder::default()
-                    .vertex(-180, 60)
-                    .vertex(0, 200)
-                    .vertex(180, 60)
-                    .vertex(100, -150)
-                    .vertex(-100, -150)
+                    .vertex(-180.0, 60.0)
+                    .vertex(0.0, 200.0)
+                    .vertex(180.0, 60.0)
+                    .vertex(100.0, -150.0)
+                    .vertex(-100.0, -150.0)
                     .build()
                     .expect("Generated an invalid vertex"),
             )
-            .location(500, 500)
+            .location(500.0, 500.0)
             .mobility(Mobility::Immovable)
             .kind(Kind::Water)
             .build()
@@ -106,7 +107,7 @@ impl HardcodedGenerator {
         for i in 0..=10 {
             for j in 0..=7 {
                 simulation.add_object(
-                    build_plant(100 + i * 30, 100 + j * 30),
+                    build_plant(100.0 + f64::from(i) * 30.0, 100.0 + f64::from(j) * 30.0),
                     (self.object_factory)(Kind::Plant),
                 );
             }
@@ -114,7 +115,7 @@ impl HardcodedGenerator {
         for i in 0..=10 {
             for j in 0..=7 {
                 simulation.add_object(
-                    build_plant(600 + i * 30, 100 + j * 30),
+                    build_plant(600.0 + f64::from(i) * 30.0, 100.0 + f64::from(j) * 30.0),
                     (self.object_factory)(Kind::Plant),
                 );
             }
@@ -123,30 +124,30 @@ impl HardcodedGenerator {
 
     fn populate_with_organisms(&self, simulation: &mut dyn Simulation) {
         simulation.add_object(
-            build_organism(300, 800),
+            build_organism(300.0, 800.0),
             (self.object_factory)(Kind::Organism),
         );
         simulation.add_object(
-            build_organism(400, 800),
+            build_organism(400.0, 800.0),
             (self.object_factory)(Kind::Organism),
         );
         simulation.add_object(
-            build_organism(500, 800),
+            build_organism(500.0, 800.0),
             (self.object_factory)(Kind::Organism),
         );
         simulation.add_object(
-            build_organism(600, 800),
+            build_organism(600.0, 800.0),
             (self.object_factory)(Kind::Organism),
         );
         simulation.add_object(
-            build_organism(700, 800),
+            build_organism(700.0, 800.0),
             (self.object_factory)(Kind::Organism),
         );
     }
 }
-fn build_terrain(location: (u32, u32), width: i32, length: i32) -> ObjectDescription {
-    let x_offset = width / 2;
-    let y_offset = length / 2;
+fn build_terrain(location: (f64, f64), width: f64, length: f64) -> ObjectDescription {
+    let x_offset = width / 2.0;
+    let y_offset = length / 2.0;
     ObjectBuilder::default()
         .shape(
             PolygonBuilder::default()
@@ -164,14 +165,14 @@ fn build_terrain(location: (u32, u32), width: i32, length: i32) -> ObjectDescrip
         .expect("Failed to build terrain")
 }
 
-fn build_plant(x: u32, y: u32) -> ObjectDescription {
+fn build_plant(x: f64, y: f64) -> ObjectDescription {
     ObjectBuilder::default()
         .shape(
             PolygonBuilder::default()
-                .vertex(-10, -10)
-                .vertex(10, -10)
-                .vertex(10, 10)
-                .vertex(-10, 10)
+                .vertex(-10.0, -10.0)
+                .vertex(10.0, -10.0)
+                .vertex(10.0, 10.0)
+                .vertex(-10.0, 10.0)
                 .build()
                 .expect("Generated an invalid vertex"),
         )
@@ -180,43 +181,45 @@ fn build_plant(x: u32, y: u32) -> ObjectDescription {
         .kind(Kind::Plant)
         .sensor(Sensor {
             shape: PolygonBuilder::default()
-                .vertex(-25, -25)
-                .vertex(25, -25)
-                .vertex(25, 25)
-                .vertex(-25, 25)
+                .vertex(-25.0, -25.0)
+                .vertex(25.0, -25.0)
+                .vertex(25.0, 25.0)
+                .vertex(-25.0, 25.0)
                 .build()
                 .expect("Generated an invalid vertex"),
-            position: Position::default(),
+            location: Point::default(),
+            rotation: Radians::default(),
         })
         .passable(true)
         .build()
         .expect("Failed to build plant")
 }
 
-fn build_organism(x: u32, y: u32) -> ObjectDescription {
+fn build_organism(x: f64, y: f64) -> ObjectDescription {
     ObjectBuilder::default()
         .shape(
             PolygonBuilder::default()
-                .vertex(25, 0)
-                .vertex(-25, 20)
-                .vertex(-5, 0)
-                .vertex(-25, -20)
+                .vertex(25.0, 0.0)
+                .vertex(-25.0, 20.0)
+                .vertex(-5.0, 0.0)
+                .vertex(-25.0, -20.0)
                 .build()
                 .expect("Generated an invalid vertex"),
         )
         .location(x, y)
         .rotation(Radians::try_new(FRAC_PI_2).unwrap())
-        .mobility(Mobility::Movable(Velocity::default()))
+        .mobility(Mobility::Movable(Vector::default()))
         .kind(Kind::Organism)
         .sensor(Sensor {
             shape: PolygonBuilder::default()
-                .vertex(-25, -25)
-                .vertex(25, -25)
-                .vertex(25, 25)
-                .vertex(-25, 25)
+                .vertex(-25.0, -25.0)
+                .vertex(25.0, -25.0)
+                .vertex(25.0, 25.0)
+                .vertex(-25.0, 25.0)
                 .build()
                 .expect("Generated an invalid vertex"),
-            position: Position::default(),
+            location: Point::default(),
+            rotation: Radians::default(),
         })
         .build()
         .expect("Failed to build organism")

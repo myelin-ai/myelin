@@ -96,8 +96,9 @@ mod tests {
     use super::*;
     use crate::connection_acceptor::ConnectionAcceptorMock;
     use myelin_environment::object::*;
-    use myelin_environment::object_builder::{ObjectBuilder, PolygonBuilder};
+    use myelin_environment::object_builder::ObjectBuilder;
     use myelin_environment::SimulationMock;
+    use myelin_geometry::PolygonBuilder;
     use std::sync::Mutex;
 
     const EXPECTED_DELTA: Duration = Duration::from_millis((1.0f64 / 60.0f64) as u64);
@@ -222,13 +223,13 @@ mod tests {
         ObjectBuilder::default()
             .kind(Kind::Organism)
             .mobility(Mobility::Immovable)
-            .location(10, 20)
+            .location(10.0, 20.0)
             .shape(
                 PolygonBuilder::default()
-                    .vertex(-50, -50)
-                    .vertex(50, -50)
-                    .vertex(50, 50)
-                    .vertex(-50, 50)
+                    .vertex(-50.0, -50.0)
+                    .vertex(50.0, -50.0)
+                    .vertex(50.0, 50.0)
+                    .vertex(-50.0, 50.0)
                     .build()
                     .unwrap(),
             )

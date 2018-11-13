@@ -9,12 +9,13 @@ use crate::object::*;
 use crate::simulation_impl::world::collision_filter::{
     IgnoringCollisionFilter, IgnoringCollisionFilterWrapper,
 };
+use myelin_geometry::*;
 use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::query::Proximity;
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
 use ncollide2d::world::CollisionObjectHandle;
 use nphysics2d::force_generator::{ForceGenerator, ForceGeneratorHandle};
-use nphysics2d::math::{Isometry, Point, Vector};
+use nphysics2d::math::{Isometry, Point as NPhysicsPoint, Vector as NPhysicsVector};
 use nphysics2d::object::{
     BodyHandle as NphysicsBodyHandle, Collider, ColliderHandle, Material, RigidBody,
     SensorHandle as NphysicsSensorHandle,
@@ -100,13 +101,15 @@ impl NphysicsWorld {
         let collider = self.physics_world.collider(collider_handle)?;
 
         let shape = self.get_shape(&collider);
-        let position = self.get_position(&collider);
+        let location = self.get_location(&collider);
+        let rotation = self.get_rotation(&collider);
         let mobility = self.get_mobility(&collider);
         let passable = self.passable(&collider);
 
         Some(PhysicalBody {
             shape,
-            position,
+            location,
+            rotation,
             mobility,
             passable,
         })
@@ -120,9 +123,9 @@ impl NphysicsWorld {
         let vertices: Vec<_> = convex_polygon
             .points()
             .iter()
-            .map(|vertex| Vertex {
-                x: vertex.x.round() as i32,
-                y: vertex.y.round() as i32,
+            .map(|point| Point {
+                x: point.x,
+                y: point.y,
             })
             .collect();
         Polygon { vertices }
@@ -140,28 +143,23 @@ impl NphysicsWorld {
 
             let linear_velocity = rigid_body.velocity().linear;
             let (x, y) = elements(&linear_velocity);
-            Mobility::Movable(Velocity {
-                x: x as i32,
-                y: y as i32,
-            })
+            Mobility::Movable(Vector { x, y })
         }
     }
 
-    fn get_position(&self, collider: &Collider<PhysicsType>) -> Position {
+    fn get_location(&self, collider: &Collider<PhysicsType>) -> Point {
         let position = collider.position();
         let (x, y) = elements(&position.translation.vector);
+        Point { x, y }
+    }
+
+    fn get_rotation(&self, collider: &Collider<PhysicsType>) -> Radians {
+        let position = collider.position();
         let rotation = position.rotation.angle();
 
-        Position {
-            location: Location {
-                x: x as u32,
-                y: y as u32,
-            },
-            rotation: self
-                .rotation_translator
-                .to_radians(rotation)
-                .expect("Rotation of a collider could not be translated into Radians"),
-        }
+        self.rotation_translator
+            .to_radians(rotation)
+            .expect("Rotation of a collider could not be translated into Radians")
     }
 
     fn passable(&self, collider: &Collider<PhysicsType>) -> bool {
@@ -222,16 +220,14 @@ where
     (*iter.next().unwrap(), *iter.next().unwrap())
 }
 
-fn translate_position(
-    position: &Position,
+fn to_nphysics_isometry(
+    location: Point,
+    rotation: Radians,
     rotation_translator: &dyn NphysicsRotationTranslator,
 ) -> Isometry<PhysicsType> {
     Isometry::new(
-        Vector::new(
-            PhysicsType::from(position.location.x),
-            PhysicsType::from(position.location.y),
-        ),
-        rotation_translator.to_nphysics_rotation(position.rotation),
+        NPhysicsVector::new(PhysicsType::from(location.x), PhysicsType::from(location.y)),
+        rotation_translator.to_nphysics_rotation(rotation),
     )
 }
 
@@ -239,7 +235,7 @@ fn translate_shape(shape: &Polygon) -> ShapeHandle<PhysicsType> {
     let points: Vec<_> = shape
         .vertices
         .iter()
-        .map(|vertex| Point::new(PhysicsType::from(vertex.x), PhysicsType::from(vertex.y)))
+        .map(|vertex| NPhysicsPoint::new(PhysicsType::from(vertex.x), PhysicsType::from(vertex.y)))
         .collect();
 
     ShapeHandle::new(ConvexPolygon::try_new(points).expect("Polygon was not convex"))
@@ -284,7 +280,8 @@ impl World for NphysicsWorld {
         let local_inertia = shape.inertia(0.1);
         let local_center_of_mass = shape.center_of_mass();
 
-        let isometry = translate_position(&body.position, &*self.rotation_translator);
+        let isometry =
+            to_nphysics_isometry(body.location, body.rotation, &*self.rotation_translator);
         let material = Material::default();
 
         let handle = match body.mobility {
@@ -352,7 +349,8 @@ impl World for NphysicsWorld {
         let parent_handle = self.physics_world.collider_body_handle(collider_handle)?;
 
         let shape = translate_shape(&sensor.shape);
-        let position = translate_position(&sensor.position, &*self.rotation_translator);
+        let position =
+            to_nphysics_isometry(sensor.location, sensor.rotation, &*self.rotation_translator);
         let sensor_handle = self
             .physics_world
             .add_sensor(shape, parent_handle, position);
@@ -420,7 +418,7 @@ impl NphysicsWorld {
     }
 }
 
-fn set_velocity(rigid_body: &mut RigidBody<PhysicsType>, velocity: &Velocity) {
+fn set_velocity(rigid_body: &mut RigidBody<PhysicsType>, velocity: &Vector) {
     let nphysics_velocity = nphysics2d::algebra::Velocity2::linear(
         PhysicsType::from(velocity.x),
         PhysicsType::from(velocity.y),
@@ -468,7 +466,6 @@ impl<'a> fmt::Debug for DebugPhysicsWorld<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::object_builder::PolygonBuilder;
     use crate::simulation_impl::world::collision_filter::IgnoringCollisionFilterMock;
     use crate::simulation_impl::world::rotation_translator::mock::NphysicsRotationTranslatorMock;
     use nphysics2d::object::BodySet;
@@ -801,10 +798,8 @@ mod tests {
             .expect("body handle was invalid");
 
         let close_body = PhysicalBody {
-            position: Position {
-                location: Location { x: 6, y: 6 },
-                rotation: Radians::default(),
-            },
+            location: Point { x: 6.0, y: 6.0 },
+            rotation: Radians::default(),
             ..movable_body(Radians::default())
         };
         world.add_body(close_body);
@@ -837,10 +832,8 @@ mod tests {
             .expect("body handle was invalid");
 
         let close_body = PhysicalBody {
-            position: Position {
-                location: Location { x: 6, y: 6 },
-                rotation: Radians::default(),
-            },
+            location: Point { x: 6.0, y: 6.0 },
+            rotation: Radians::default(),
             ..movable_body(Radians::default())
         };
         let expected_handle = world.add_body(close_body);
@@ -887,10 +880,8 @@ mod tests {
             .expect("body handle was invalid");
 
         let close_body = PhysicalBody {
-            position: Position {
-                location: Location { x: 12, y: 12 },
-                rotation: Radians::default(),
-            },
+            location: Point { x: 12.0, y: 12.0 },
+            rotation: Radians::default(),
             ..movable_body(Radians::default())
         };
         let expected_handle = world.add_body(close_body);
@@ -937,10 +928,8 @@ mod tests {
             .expect("body handle was invalid");
 
         let close_body = PhysicalBody {
-            position: Position {
-                location: Location { x: 60, y: 60 },
-                rotation: Radians::default(),
-            },
+            location: Point { x: 60.0, y: 60.0 },
+            rotation: Radians::default(),
             ..movable_body(Radians::default())
         };
         let handle_two = world.add_body(close_body);
@@ -967,7 +956,7 @@ mod tests {
 
     #[test]
     fn sensor_does_not_detect_touching_sensors() {
-        let close_body_location = Location { x: 25, y: 0 };
+        let close_body_location = Point { x: 25.0, y: 0.0 };
 
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
@@ -988,10 +977,8 @@ mod tests {
             .expect("body handle was invalid");
 
         let close_body = PhysicalBody {
-            position: Position {
-                location: close_body_location,
-                rotation: Radians::default(),
-            },
+            location: close_body_location,
+            rotation: Radians::default(),
             ..movable_body(Radians::default())
         };
         let close_body_handle = world.add_body(close_body);
@@ -1024,7 +1011,10 @@ mod tests {
 
     #[test]
     fn sensor_does_not_detect_overlapping_sensors() {
-        let close_body_location = Location { x: 25 - 2, y: 0 };
+        let close_body_location = Point {
+            x: 25.0 - 2.0,
+            y: 0.0,
+        };
 
         let mut rotation_translator = NphysicsRotationTranslatorMock::default();
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
@@ -1045,10 +1035,8 @@ mod tests {
             .expect("body handle was invalid");
 
         let close_body = PhysicalBody {
-            position: Position {
-                location: close_body_location,
-                rotation: Radians::default(),
-            },
+            location: close_body_location,
+            rotation: Radians::default(),
             ..movable_body(Radians::default())
         };
         let close_body_handle = world.add_body(close_body);
@@ -1147,10 +1135,8 @@ mod tests {
         let actual_body = world.body(handle);
 
         let expected_body = PhysicalBody {
-            position: Position {
-                location: Location { x: 6, y: 6 },
-                rotation: Radians::default(),
-            },
+            location: Point { x: 6.0, y: 6.0 },
+            rotation: Radians::default(),
             ..local_object
         };
         assert_eq!(Some(expected_body), actual_body);
@@ -1191,10 +1177,8 @@ mod tests {
         let actual_body = world.body(handle);
 
         let expected_body = PhysicalBody {
-            position: Position {
-                location: Location { x: 7, y: 7 },
-                rotation: Radians::default(),
-            },
+            location: Point { x: 7.0, y: 7.0 },
+            rotation: Radians::default(),
             ..local_object
         };
         assert_eq!(Some(expected_body), actual_body);
@@ -1259,7 +1243,7 @@ mod tests {
         );
         let body = immovable_body(Radians::try_new(FRAC_PI_2).unwrap());
         let still_body = PhysicalBody {
-            mobility: Mobility::Movable(Velocity { x: 0, y: 0 }),
+            mobility: Mobility::Movable(Vector { x: 0.0, y: 0.0 }),
             ..body
         };
         let handle = world.add_body(still_body.clone());
@@ -1285,7 +1269,7 @@ mod tests {
         );
         let mut force_applier = SingleTimeForceApplierMock::default();
         let expected_force = Force {
-            linear: LinearForce { x: 4, y: 10 },
+            linear: Vector { x: 4.0, y: 10.0 },
             torque: Torque(2.0),
         };
         force_applier.expect_register_force(expected_force.clone());
@@ -1306,31 +1290,27 @@ mod tests {
     fn sensor() -> Sensor {
         Sensor {
             shape: PolygonBuilder::default()
-                .vertex(-10, -10)
-                .vertex(10, -10)
-                .vertex(10, 10)
-                .vertex(-10, 10)
+                .vertex(-10.0, -10.0)
+                .vertex(10.0, -10.0)
+                .vertex(10.0, 10.0)
+                .vertex(-10.0, 10.0)
                 .build()
                 .unwrap(),
-            position: Position {
-                location: Location { x: 0, y: 0 },
-                rotation: Radians::default(),
-            },
+            location: Point { x: 0.0, y: 0.0 },
+            rotation: Radians::default(),
         }
     }
 
     fn movable_body(orientation: Radians) -> PhysicalBody {
         PhysicalBody {
-            position: Position {
-                location: Location { x: 5, y: 5 },
-                rotation: orientation,
-            },
-            mobility: Mobility::Movable(Velocity { x: 1, y: 1 }),
+            location: Point { x: 5.0, y: 5.0 },
+            rotation: orientation,
+            mobility: Mobility::Movable(Vector { x: 1.0, y: 1.0 }),
             shape: PolygonBuilder::default()
-                .vertex(-5, -5)
-                .vertex(-5, 5)
-                .vertex(5, 5)
-                .vertex(5, -5)
+                .vertex(-5.0, -5.0)
+                .vertex(-5.0, 5.0)
+                .vertex(5.0, 5.0)
+                .vertex(5.0, -5.0)
                 .build()
                 .unwrap(),
             passable: false,
@@ -1340,17 +1320,15 @@ mod tests {
     fn immovable_body(orientation: Radians) -> PhysicalBody {
         PhysicalBody {
             shape: PolygonBuilder::default()
-                .vertex(-100, -100)
-                .vertex(100, -100)
-                .vertex(100, 100)
-                .vertex(-100, 100)
+                .vertex(-100.0, -100.0)
+                .vertex(100.0, -100.0)
+                .vertex(100.0, 100.0)
+                .vertex(-100.0, 100.0)
                 .build()
                 .unwrap(),
             mobility: Mobility::Immovable,
-            position: Position {
-                location: Location { x: 300, y: 200 },
-                rotation: orientation,
-            },
+            location: Point { x: 300.0, y: 200.0 },
+            rotation: orientation,
             passable: false,
         }
     }
