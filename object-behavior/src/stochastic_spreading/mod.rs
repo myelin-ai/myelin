@@ -273,7 +273,7 @@ mod tests {
         match action {
             Some(Action::Reproduce(object_description, _)) => {
                 // To do: Adjust for padding
-                let expected_object_description = object_description_at_location(60.0, 60.0);
+                let expected_object_description = object_description_at_location(50.0, 40.0);
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
