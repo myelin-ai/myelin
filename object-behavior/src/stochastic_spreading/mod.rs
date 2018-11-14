@@ -200,6 +200,8 @@ mod tests {
     fn does_not_spread_when_surrounded() {
         let mut random_chance_checker = RandomChanceCheckerMock::new();
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
+        random_chance_checker.expect_random_number_in_range_and_return(0, 8, 0);
+
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
         let own_description = object_description();
@@ -223,6 +225,8 @@ mod tests {
     fn spreads_on_only_available_space() {
         let mut random_chance_checker = RandomChanceCheckerMock::new();
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
+        random_chance_checker.expect_random_number_in_range_and_return(0, 8, 0);
+
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
         let own_description = object_description();
@@ -252,7 +256,7 @@ mod tests {
     fn spreads_on_available_space_treating_random_location_clockwise() {
         let mut random_chance_checker = RandomChanceCheckerMock::new();
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
-        random_chance_checker.expect_random_number_in_range_and_return(0, 3, 1);
+        random_chance_checker.expect_random_number_in_range_and_return(0, 8, 1);
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
         let own_description = object_description();
