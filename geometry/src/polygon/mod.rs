@@ -51,7 +51,7 @@ impl Polygon {
 
     /// Checks if a given point rests inside the polygon
     pub fn contains_point(&self, point: Point) -> bool {
-        if self.vertices.is_empty() {
+        if self.vertices.len() < 2 {
             return false;
         }
 
@@ -62,10 +62,12 @@ impl Polygon {
             None,
         };
 
-        fn calculate_facing_side(a: Vector, b: Vector) -> Side {
-            let cross_product = a.cross_product(b);
-            println!("a: {:?}\nb: {:?}\ncross_product:{}\n", a, b, cross_product);
-            const EPSILON: f64 = 0.001;
+        fn calculate_facing_side(a: Vector, b: Vector, point: Vector) -> Side {
+            let side_vector = b - a;
+            let vector_from_a_to_point = point - a;
+            let cross_product = side_vector.cross_product(vector_from_a_to_point);
+
+            const EPSILON: f64 = 0.000001;
             if cross_product < -EPSILON {
                 Side::Left
             } else if cross_product > EPSILON {
@@ -75,27 +77,21 @@ impl Polygon {
             }
         };
 
-        let first_vertex = self.vertices[0];
-        let vector_to_first_vertex = Vector {
-            x: first_vertex.x,
-            y: first_vertex.y,
-        };
-        let vector_to_point = Vector {
-            x: point.x,
-            y: point.y,
-        };
-        let first_side = calculate_facing_side(vector_to_first_vertex, vector_to_point);
-        if first_side == Side::None {
-            return false;
+        let vector_to_point: Vector = point.into();
+        let vector_to_last_point: Vector = (*self.vertices.last().unwrap()).into();
+        let vector_to_first_point: Vector = (*self.vertices.first().unwrap()).into();
+        let reference_side =
+            calculate_facing_side(vector_to_last_point, vector_to_first_point, vector_to_point);
+
+        for i in 0..self.vertices.len() - 1 {
+            let vector_to_point_a: Vector = self.vertices[i].into();
+            let vector_to_point_b: Vector = self.vertices[i + 1].into();
+            let side = calculate_facing_side(vector_to_point_a, vector_to_point_b, vector_to_point);
+            if side != reference_side && side != Side::None {
+                return false;
+            }
         }
-        self.vertices
-            .iter()
-            .skip(1)
-            .map(|point| Vector {
-                x: point.x,
-                y: point.y,
-            })
-            .all(|vector| calculate_facing_side(vector, vector_to_point) == first_side)
+        true
     }
 }
 
