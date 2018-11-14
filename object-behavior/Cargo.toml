@@ -13,6 +13,7 @@ edition = "2018"
 myelin-environment = { path = "../environment" }
 myelin-geometry = { path = "../geometry" }
 rand = "0.5.5"
+log = "0.4"
 
 [dev-dependencies]
 maplit = "1.0"

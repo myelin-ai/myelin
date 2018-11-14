@@ -57,26 +57,28 @@ impl StochasticSpreading {
         own_description: &ObjectDescription,
         sensor_collisions: &HashMap<Id, ObjectDescription>,
     ) -> Option<Action> {
-        const POSSIBLE_SPREADING_LOCATIONS: [Point; 8] = [
-            Point { x: -10.0, y: -10.0 },
-            Point { x: 0.0, y: -10.0 },
-            Point { x: 10.0, y: -10.0 },
-            Point { x: 10.0, y: 0.0 },
-            Point { x: 10.0, y: 10.0 },
-            Point { x: 0.0, y: 10.0 },
-            Point { x: -10.0, y: 10.0 },
-            Point { x: -10.0, y: 0.0 },
-        ];
+        // Highly illegal state, as polygons should be built by
+        // PolygonBuilder, which does not allow empty polygons
+        if own_description.shape.vertices.is_empty() {
+            error!(
+                "own_description.shape.vertices was empty: {:#?}",
+                own_description
+            );
+            return None;
+        }
+
+        let possible_spreading_locations =
+            calculate_possible_spreading_locations(&own_description.shape.vertices);
 
         let first_try_index = self
             .random_chance_checker
-            .random_number_in_range(0, POSSIBLE_SPREADING_LOCATIONS.len() as i32)
+            .random_number_in_range(0, possible_spreading_locations.len() as i32)
             as usize;
 
-        let spreading_location = POSSIBLE_SPREADING_LOCATIONS
+        let spreading_location = possible_spreading_locations
             .iter()
             .skip(first_try_index as usize)
-            .chain(POSSIBLE_SPREADING_LOCATIONS.iter().take(first_try_index))
+            .chain(possible_spreading_locations.iter().take(first_try_index))
             .map(|&point| own_description.location + point)
             .find(|&location| can_spread_at_location(location, sensor_collisions));
         if let Some(spreading_location) = spreading_location {
@@ -94,6 +96,46 @@ impl StochasticSpreading {
             None
         }
     }
+}
+
+fn calculate_possible_spreading_locations(vertices: &[Point]) -> Vec<Point> {
+    let mut vertices = vertices.to_vec();
+
+    // Safe unwrap: A polygon's vertex should not be baloney like NaN
+    vertices.sort_unstable_by(|a, b| a.x.partial_cmp(&b.x).unwrap());
+    // Safe unwraps: We do an early return if vertices is empty
+    let min_x = vertices.first().unwrap().x;
+    let max_x = vertices.last().unwrap().x;
+
+    vertices.sort_unstable_by(|a, b| a.y.partial_cmp(&b.y).unwrap());
+    let min_y = vertices.first().unwrap().y;
+    let max_y = vertices.last().unwrap().y;
+
+    let width = max_x - min_x;
+    let height = max_y - min_y;
+
+    vec![
+        Point {
+            x: -width,
+            y: -height,
+        },
+        Point { x: 0.0, y: -height },
+        Point {
+            x: width,
+            y: -height,
+        },
+        Point { x: width, y: 0.0 },
+        Point {
+            x: width,
+            y: height,
+        },
+        Point { x: 0.0, y: height },
+        Point {
+            x: -width,
+            y: height,
+        },
+        Point { x: -width, y: 0.0 },
+    ]
 }
 
 fn can_spread_at_location(

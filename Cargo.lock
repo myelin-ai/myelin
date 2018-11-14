@@ -529,6 +529,7 @@ dependencies = [
 name = "myelin-object-behavior"
 version = "0.1.0"
 dependencies = [
+ "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "maplit 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "myelin-environment 0.1.0",
  "myelin-geometry 0.1.0",
