@@ -78,7 +78,7 @@ impl StochasticSpreading {
             .skip(first_try_index as usize)
             .chain(POSSIBLE_SPREADING_LOCATIONS.iter().take(first_try_index))
             .map(|&point| own_description.location + point)
-            .find(|location| can_spread_at_location(&location, sensor_collisions));
+            .find(|&location| can_spread_at_location(location, sensor_collisions));
         if let Some(spreading_location) = spreading_location {
             let object_description = ObjectBuilder::default()
                 .location(spreading_location.x, spreading_location.y)
@@ -97,42 +97,18 @@ impl StochasticSpreading {
 }
 
 fn can_spread_at_location(
-    location: &Point,
+    location: Point,
     sensor_collisions: &HashMap<Id, ObjectDescription>,
 ) -> bool {
     !sensor_collisions
         .values()
-        .any(|object_description| occupies_location(object_description, location))
-}
-
-fn occupies_location(object_description: &ObjectDescription, location: &Point) -> bool {
-    // https://stackoverflow.com/a/4243079/5903309
-    let vertices = &object_description.shape.vertices;
-    let global_polygon = object_description
-        .shape
-        .translate(object_description.location)
-        .rotate_around_point(object_description.rotation, object_description.location);
-    let coef: Vec<_> = global_polygon
-        .vertices
-        .iter()
-        .skip(1)
-        .enumerate()
-        .map(|(i, p)| {
-            (location.y - vertices[i].y) * (p.x - vertices[i].x)
-                - (location.x - vertices[i].x) * (p.y - vertices[i].y)
+        .map(|object_description| {
+            object_description
+                .shape
+                .translate(object_description.location)
+                .rotate_around_point(object_description.rotation, object_description.location)
         })
-        .collect();
-
-    if coef.iter().any(|&p| p == 0.0) {
-        return true;
-    }
-
-    for i in 1..coef.len() {
-        if coef[i] * coef[i - 1] < 0.0 {
-            return false;
-        }
-    }
-    return true;
+        .any(|polygon| polygon.contains_point(location))
 }
 
 impl ObjectBehavior for StochasticSpreading {
@@ -298,27 +274,6 @@ mod tests {
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
         }
-    }
-
-    #[test]
-    fn validates_that_location_is_in_polygon() {
-        let object_description = object_description();
-        let location = Point { x: 47.0, y: 47.0 };
-        assert!(occupies_location(&object_description, &location))
-    }
-
-    #[test]
-    fn validates_that_location_is_not_in_polygon() {
-        let object_description = object_description();
-        let location = Point { x: 57.0, y: 57.0 };
-        assert!(!occupies_location(&object_description, &location))
-    }
-
-    #[test]
-    fn validates_that_location_is_in_polygon_when_on_a_side() {
-        let object_description = object_description();
-        let location = Point { x: 55.0, y: 45.0 };
-        assert!(occupies_location(&object_description, &location))
     }
 
     fn object_description() -> ObjectDescription {
