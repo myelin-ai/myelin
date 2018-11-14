@@ -46,15 +46,28 @@ where
         box SimulationImpl::new(box world)
     };
     let object_factory = box |kind: Kind| -> Box<dyn ObjectBehavior> {
+        const HALF_OF_SENSOR_WIDTH_AND_HEIGHT: f64 = 30.0;
         match kind {
             Kind::Plant => box StochasticSpreading::new(
                 1.0 / 100.0,
                 Sensor {
                     shape: PolygonBuilder::default()
-                        .vertex(-20.0, -20.0)
-                        .vertex(20.0, -20.0)
-                        .vertex(20.0, 20.0)
-                        .vertex(-20.0, 20.0)
+                        .vertex(
+                            -HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
+                            -HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
+                        )
+                        .vertex(
+                            HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
+                            -HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
+                        )
+                        .vertex(
+                            HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
+                            HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
+                        )
+                        .vertex(
+                            -HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
+                            HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
+                        )
                         .build()
                         .unwrap(),
                     location: Point::default(),
