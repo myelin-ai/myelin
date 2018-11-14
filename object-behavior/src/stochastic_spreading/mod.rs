@@ -111,30 +111,44 @@ fn calculate_possible_spreading_locations(vertices: &[Point]) -> Vec<Point> {
     let min_y = vertices.first().unwrap().y;
     let max_y = vertices.last().unwrap().y;
 
-    let width = max_x - min_x;
-    let height = max_y - min_y;
+    const PADDING: f64 = 1.0;
+
+    let width = max_x - min_x + PADDING;
+    let height = max_y - min_y + PADDING;
 
     vec![
         Point {
             x: -width,
             y: -height,
         },
-        Point { x: 0.0, y: -height },
+        Point {
+            x: -PADDING,
+            y: -height,
+        },
         Point {
             x: width,
             y: -height,
         },
-        Point { x: width, y: 0.0 },
+        Point {
+            x: width,
+            y: PADDING,
+        },
         Point {
             x: width,
             y: height,
         },
-        Point { x: 0.0, y: height },
+        Point {
+            x: PADDING,
+            y: height,
+        },
         Point {
             x: -width,
             y: height,
         },
-        Point { x: -width, y: 0.0 },
+        Point {
+            x: -width,
+            y: -PADDING,
+        },
     ]
 }
 
@@ -207,6 +221,7 @@ mod tests {
     use std::thread::panicking;
 
     const SPREADING_CHANGE: f64 = 1.0 / (60.0 * 30.0);
+    const EXPECTED_PADDING: f64 = 1.0;
 
     #[test]
     fn does_nothing_when_chance_is_not_hit() {
@@ -230,8 +245,10 @@ mod tests {
         let action = object.step(&own_description, &HashMap::new());
         match action {
             Some(Action::Reproduce(object_description, _)) => {
-                // To do: Adjust for padding
-                let expected_object_description = object_description_at_location(40.0, 40.0);
+                let expected_object_description = object_description_at_location(
+                    40.0 - EXPECTED_PADDING,
+                    40.0 - EXPECTED_PADDING,
+                );
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
@@ -286,8 +303,10 @@ mod tests {
         let action = object.step(&own_description, &collisions);
         match action {
             Some(Action::Reproduce(object_description, _)) => {
-                // To do: Adjust for padding
-                let expected_object_description = object_description_at_location(60.0, 50.0);
+                let expected_object_description = object_description_at_location(
+                    60.0 + EXPECTED_PADDING,
+                    50.0 + EXPECTED_PADDING,
+                );
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
@@ -314,8 +333,10 @@ mod tests {
         let action = object.step(&own_description, &collisions);
         match action {
             Some(Action::Reproduce(object_description, _)) => {
-                // To do: Adjust for padding
-                let expected_object_description = object_description_at_location(50.0, 40.0);
+                let expected_object_description = object_description_at_location(
+                    50.0 - EXPECTED_PADDING,
+                    40.0 - EXPECTED_PADDING,
+                );
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
