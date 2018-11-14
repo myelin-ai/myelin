@@ -58,14 +58,14 @@ impl StochasticSpreading {
         sensor_collisions: &HashMap<Id, ObjectDescription>,
     ) -> Option<Action> {
         const POSSIBLE_SPREADING_LOCATIONS: [Point; 8] = [
-            Point { x: -5.0, y: -5.0 },
-            Point { x: 0.0, y: -5.0 },
-            Point { x: 5.0, y: -5.0 },
-            Point { x: 5.0, y: 0.0 },
-            Point { x: 5.0, y: 5.0 },
-            Point { x: 0.0, y: 5.0 },
-            Point { x: -5.0, y: 5.0 },
-            Point { x: -5.0, y: 0.0 },
+            Point { x: -10.0, y: -10.0 },
+            Point { x: 0.0, y: -10.0 },
+            Point { x: 10.0, y: -10.0 },
+            Point { x: 10.0, y: 0.0 },
+            Point { x: 10.0, y: 10.0 },
+            Point { x: 0.0, y: 10.0 },
+            Point { x: -10.0, y: 10.0 },
+            Point { x: -10.0, y: 0.0 },
         ];
 
         let first_try_index = self
@@ -189,7 +189,7 @@ mod tests {
         match action {
             Some(Action::Reproduce(object_description, _)) => {
                 // To do: Adjust for padding
-                let expected_object_description = object_description_at_location(45.0, 45.0);
+                let expected_object_description = object_description_at_location(40.0, 40.0);
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
@@ -207,14 +207,14 @@ mod tests {
         let own_description = object_description();
 
         let collisions = hashmap![
-            0 => object_description_at_location(45.0, 45.0),
-            1 => object_description_at_location(50.0, 45.0),
-            2 => object_description_at_location(55.0, 45.0),
-            3 => object_description_at_location(55.0, 50.0),
-            4 => object_description_at_location(55.0, 55.0),
-            5 => object_description_at_location(50.0, 55.0),
-            6 => object_description_at_location(45.0, 55.0),
-            7 => object_description_at_location(45.0, 50.0),
+            0 => object_description_at_location(40.0, 40.0),
+            1 => object_description_at_location(50.0, 40.0),
+            2 => object_description_at_location(60.0, 40.0),
+            3 => object_description_at_location(60.0, 50.0),
+            4 => object_description_at_location(60.0, 60.0),
+            5 => object_description_at_location(50.0, 60.0),
+            6 => object_description_at_location(40.0, 60.0),
+            7 => object_description_at_location(40.0, 50.0),
         ];
 
         let action = object.step(&own_description, &collisions);
@@ -232,20 +232,20 @@ mod tests {
         let own_description = object_description();
 
         let collisions = hashmap![
-            0 => object_description_at_location(45.0, 45.0),
-            1 => object_description_at_location(50.0, 45.0),
-            2 => object_description_at_location(55.0, 45.0),
-            3 => object_description_at_location(55.0, 55.0),
-            4 => object_description_at_location(50.0, 55.0),
-            5 => object_description_at_location(45.0, 55.0),
-            6 => object_description_at_location(45.0, 50.0),
+            0 => object_description_at_location(40.0, 40.0),
+            1 => object_description_at_location(50.0, 40.0),
+            2 => object_description_at_location(60.0, 40.0),
+            3 => object_description_at_location(60.0, 60.0),
+            4 => object_description_at_location(50.0, 60.0),
+            5 => object_description_at_location(40.0, 60.0),
+            6 => object_description_at_location(40.0, 50.0),
         ];
 
         let action = object.step(&own_description, &collisions);
         match action {
             Some(Action::Reproduce(object_description, _)) => {
                 // To do: Adjust for padding
-                let expected_object_description = object_description_at_location(55.0, 50.0);
+                let expected_object_description = object_description_at_location(60.0, 50.0);
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
@@ -262,18 +262,18 @@ mod tests {
         let own_description = object_description();
 
         let collisions = hashmap![
-            0 => object_description_at_location(45.0, 45.0),
-            1 => object_description_at_location(55.0, 45.0),
-            2 => object_description_at_location(55.0, 50.0),
-            3 => object_description_at_location(50.0, 55.0),
-            4 => object_description_at_location(45.0, 50.0),
+            0 => object_description_at_location(40.0, 40.0),
+            1 => object_description_at_location(60.0, 40.0),
+            2 => object_description_at_location(60.0, 50.0),
+            3 => object_description_at_location(50.0, 60.0),
+            4 => object_description_at_location(40.0, 50.0),
         ];
 
         let action = object.step(&own_description, &collisions);
         match action {
             Some(Action::Reproduce(object_description, _)) => {
                 // To do: Adjust for padding
-                let expected_object_description = object_description_at_location(55.0, 55.0);
+                let expected_object_description = object_description_at_location(60.0, 60.0);
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
