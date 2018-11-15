@@ -233,7 +233,7 @@ mod tests {
 
     #[test]
     fn does_nothing_when_chance_is_not_hit() {
-        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        let mut random_chance_checker = RandomChanceCheckerMock::default();
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, false);
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
@@ -244,7 +244,7 @@ mod tests {
 
     #[test]
     fn spreads_when_chance_is_hit() {
-        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        let mut random_chance_checker = RandomChanceCheckerMock::default();
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
         random_chance_checker.expect_random_number_in_range_and_return(0, 8, 0);
         let mut object =
@@ -265,7 +265,7 @@ mod tests {
 
     #[test]
     fn does_not_spread_when_surrounded() {
-        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        let mut random_chance_checker = RandomChanceCheckerMock::default();
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
         random_chance_checker.expect_random_number_in_range_and_return(0, 8, 0);
 
@@ -290,7 +290,7 @@ mod tests {
 
     #[test]
     fn spreads_on_only_available_space() {
-        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        let mut random_chance_checker = RandomChanceCheckerMock::default();
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
         random_chance_checker.expect_random_number_in_range_and_return(0, 8, 0);
 
@@ -323,7 +323,7 @@ mod tests {
 
     #[test]
     fn spreads_on_available_space_treating_random_location_clockwise() {
-        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        let mut random_chance_checker = RandomChanceCheckerMock::default();
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
         random_chance_checker.expect_random_number_in_range_and_return(0, 8, 1);
         let mut object =
@@ -393,10 +393,6 @@ mod tests {
     }
 
     impl RandomChanceCheckerMock {
-        pub(crate) fn new() -> Self {
-            Default::default()
-        }
-
         pub(crate) fn expect_flip_coin_with_probability_and_return(
             &mut self,
             probability: f64,
