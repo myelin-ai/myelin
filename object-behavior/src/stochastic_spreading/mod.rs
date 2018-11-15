@@ -73,10 +73,12 @@ impl StochasticSpreading {
             .random_number_in_range(0, possible_spreading_locations.len() as i32)
             as usize;
 
+        // Take an iterator over the possible locations, starting at a random index
         let spreading_location = possible_spreading_locations
             .iter()
-            .skip(first_try_index as usize)
-            .chain(possible_spreading_locations.iter().take(first_try_index))
+            .cycle()
+            .skip(first_try_index)
+            .take(possible_spreading_locations.len())
             .map(|&point| own_description.location + point)
             .find(|&location| can_spread_at_location(location, sensor_collisions));
         if let Some(spreading_location) = spreading_location {
