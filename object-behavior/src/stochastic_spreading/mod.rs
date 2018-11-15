@@ -31,7 +31,7 @@ impl Clone for StochasticSpreading {
 
 impl StochasticSpreading {
     /// Returns a plant that has a probability of `spreading_probability`
-    /// `spreading_sensor` is the area around the plant, in which it will try to
+    /// `spreading_sensor` is the area around the object, in which it will try to
     /// find a vacant spot to spread.
     pub fn new(
         spreading_probability: f64,
