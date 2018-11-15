@@ -56,13 +56,11 @@ impl StochasticSpreading {
     ) -> Option<Action> {
         // Highly illegal state, as polygons should be built by
         // PolygonBuilder, which does not allow empty polygons
-        if own_description.shape.vertices.is_empty() {
-            error!(
-                "own_description.shape.vertices was empty: {:#?}",
-                own_description
-            );
-            return None;
-        }
+        assert!(
+            !own_description.shape.vertices.is_empty(),
+            "own_description.shape.vertices was empty while calling spread(): {:#?}",
+            own_description
+        );
 
         let possible_spreading_locations =
             calculate_possible_spreading_locations(&own_description.shape.vertices);
