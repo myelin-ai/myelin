@@ -23,7 +23,7 @@ impl Clone for StochasticSpreading {
         Self {
             random_chance_checker: self.random_chance_checker.clone_box(),
             spreading_sensor: self.spreading_sensor.clone(),
-            spreading_probability: self.spreading_probability.clone(),
+            spreading_probability: self.spreading_probability,
         }
     }
 }

@@ -42,7 +42,7 @@ impl Clone for Action {
             Action::Reproduce(object_description, object_behavior) => {
                 Action::Reproduce(object_description.clone(), object_behavior.clone_box())
             }
-            Action::Destroy(body_handle) => Action::Destroy(body_handle.clone()),
+            Action::Destroy(body_handle) => Action::Destroy(*body_handle),
             Action::Die => Action::Die,
         }
     }

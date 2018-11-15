@@ -90,7 +90,7 @@ fn calculate_facing_side(a: Vector, b: Vector, point: Vector) -> Side {
 
     /// Minimal distance from `point` to the line to be considered
     /// exactly *on* the line
-    const EPSILON: f64 = 0.000001;
+    const EPSILON: f64 = 0.000_001;
     if cross_product < -EPSILON {
         Side::Left
     } else if cross_product > EPSILON {
