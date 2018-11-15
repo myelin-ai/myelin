@@ -100,11 +100,12 @@ impl StochasticSpreading {
 
 /// Draws a bounding box around the polygon and returns the 8 adjacend positions
 /// to the box, factoring in some padding:
-///  Upper Left | Upper Middle | Upper Right
-/// ----------------------------------------
+///
+/// Upper Left  | Upper Middle | Upper Right
+///
 /// Middle Left |    Polygon   | Middle Right
-/// ----------------------------------------
-///  Lower Left | Lower Middle | Lower Right
+///
+/// Lower Left  | Lower Middle | Lower Right
 fn calculate_possible_spreading_locations(vertices: &[Point]) -> Vec<Point> {
     let mut vertices = vertices.to_vec();
 
