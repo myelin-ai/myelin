@@ -273,7 +273,7 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
         let own_description = object_description();
 
-        let collisions = hashmap![
+        let collisions = hashmap!{
             0 => object_description_at_location(40.0, 40.0),
             1 => object_description_at_location(50.0, 40.0),
             2 => object_description_at_location(60.0, 40.0),
@@ -282,7 +282,7 @@ mod tests {
             5 => object_description_at_location(50.0, 60.0),
             6 => object_description_at_location(40.0, 60.0),
             7 => object_description_at_location(40.0, 50.0),
-        ];
+        };
 
         let action = object.step(&own_description, &collisions);
         assert!(action.is_none());
@@ -298,7 +298,7 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
         let own_description = object_description();
 
-        let collisions = hashmap![
+        let collisions = hashmap!{
             0 => object_description_at_location(40.0, 40.0),
             1 => object_description_at_location(50.0, 40.0),
             2 => object_description_at_location(60.0, 40.0),
@@ -306,7 +306,7 @@ mod tests {
             4 => object_description_at_location(50.0, 60.0),
             5 => object_description_at_location(40.0, 60.0),
             6 => object_description_at_location(40.0, 50.0),
-        ];
+        };
 
         let action = object.step(&own_description, &collisions);
         match action {
@@ -330,13 +330,13 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
         let own_description = object_description();
 
-        let collisions = hashmap![
+        let collisions = hashmap!{
             0 => object_description_at_location(40.0, 40.0),
             1 => object_description_at_location(60.0, 40.0),
             2 => object_description_at_location(60.0, 50.0),
             3 => object_description_at_location(50.0, 60.0),
             4 => object_description_at_location(40.0, 50.0),
-        ];
+        };
 
         let action = object.step(&own_description, &collisions);
         match action {
