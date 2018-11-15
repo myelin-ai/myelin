@@ -8,8 +8,6 @@ use std::fmt;
 
 mod random_chance_checker_impl;
 pub use self::random_chance_checker_impl::RandomChanceCheckerImpl;
-mod accumulative_deterministic;
-pub use self::accumulative_deterministic::AccumulativeDeterministicChanceChecker;
 
 /// An [`ObjectBehavior`] that spreads itself in random intervals.
 /// The spreading has a chance to occur in every step
