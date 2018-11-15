@@ -120,6 +120,8 @@ fn calculate_possible_spreading_locations(vertices: &[Point]) -> Vec<Point> {
     let min_y = vertices.first().unwrap().y;
     let max_y = vertices.last().unwrap().y;
 
+    /// Arbitrary number in meters representing the space
+    /// between the spread objects
     const PADDING: f64 = 1.0;
 
     let width = max_x - min_x + PADDING;
