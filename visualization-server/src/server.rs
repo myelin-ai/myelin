@@ -23,10 +23,8 @@ use std::thread;
 use std::time::Duration;
 use uuid::Uuid;
 
-///
 /// Starts the simulation and a websocket server, that broadcasts
 /// `ViewModel`s on each step to all clients.
-///
 pub fn start_server<A>(addr: A)
 where
     A: Into<SocketAddr> + Send,
