@@ -237,7 +237,7 @@ mod tests {
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, false);
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
-        let own_description = object_description();
+        let own_description = object_description_at_location(50.0, 50.0);
         let action = object.step(&own_description, &HashMap::new());
         assert!(action.is_none());
     }
@@ -249,7 +249,7 @@ mod tests {
         random_chance_checker.expect_random_number_in_range_and_return(0, 8, 0);
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
-        let own_description = object_description();
+        let own_description = object_description_at_location(50.0, 50.0);
         let action = object.step(&own_description, &HashMap::new());
         match action {
             Some(Action::Reproduce(object_description, _)) => {
@@ -271,7 +271,7 @@ mod tests {
 
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
-        let own_description = object_description();
+        let own_description = object_description_at_location(50.0, 50.0);
 
         let collisions = hashmap!{
             0 => object_description_at_location(40.0, 40.0),
@@ -296,7 +296,7 @@ mod tests {
 
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
-        let own_description = object_description();
+        let own_description = object_description_at_location(50.0, 50.0);
 
         let collisions = hashmap!{
             0 => object_description_at_location(40.0, 40.0),
@@ -328,7 +328,7 @@ mod tests {
         random_chance_checker.expect_random_number_in_range_and_return(0, 8, 1);
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
-        let own_description = object_description();
+        let own_description = object_description_at_location(50.0, 50.0);
 
         let collisions = hashmap!{
             0 => object_description_at_location(40.0, 40.0),
@@ -349,24 +349,6 @@ mod tests {
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
         }
-    }
-
-    fn object_description() -> ObjectDescription {
-        ObjectBuilder::default()
-            .shape(
-                PolygonBuilder::default()
-                    .vertex(-5.0, -5.0)
-                    .vertex(5.0, -5.0)
-                    .vertex(5.0, 5.0)
-                    .vertex(-5.0, 5.0)
-                    .build()
-                    .unwrap(),
-            )
-            .location(50.0, 50.0)
-            .mobility(Mobility::Immovable)
-            .kind(Kind::Plant)
-            .build()
-            .unwrap()
     }
 
     fn object_description_at_location(x: f64, y: f64) -> ObjectDescription {
