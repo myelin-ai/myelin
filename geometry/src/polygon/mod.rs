@@ -3,6 +3,7 @@
 use super::*;
 mod builder;
 pub use self::builder::*;
+use itertools::Itertools;
 
 /// A convex polygon
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
@@ -66,16 +67,17 @@ impl Polygon {
 
         // If the point lies on the same side of all lines of the polygon,
         // the point is contained in the polygon.
-        // We iterate until len() - 1 because inside the loop, we access i + 1.
-        for i in 0..self.vertices.len() - 1 {
-            let vector_to_point_a: Vector = self.vertices[i].into();
-            let vector_to_point_b: Vector = self.vertices[i + 1].into();
-            let side = calculate_facing_side(vector_to_point_a, vector_to_point_b, vector_to_point);
-            if side != reference_side && side != Side::OnTheLine {
-                return false;
-            }
-        }
-        true
+        self.vertices
+            .iter()
+            .tuple_windows()
+            .map(|(&vector_to_point_a, &vector_to_point_b)| {
+                calculate_facing_side(
+                    vector_to_point_a.into(),
+                    vector_to_point_b.into(),
+                    vector_to_point,
+                )
+            })
+            .all(|side| side == reference_side || side == Side::OnTheLine)
     }
 }
 
