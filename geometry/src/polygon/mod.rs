@@ -56,37 +56,6 @@ impl Polygon {
             return false;
         }
 
-        /// The side that a [`Point`] lies on, from the
-        /// point of view of a line
-        #[derive(Eq, PartialEq, Debug)]
-        enum Side {
-            /// The point lies to the right of the line
-            Right,
-            /// The point lies to the left of the line
-            Left,
-            /// The point is exactly on the line
-            OnTheLine,
-        };
-
-        /// Calculate which on which side of a line from `a` to `b` a
-        /// given `point` is
-        fn calculate_facing_side(a: Vector, b: Vector, point: Vector) -> Side {
-            let side_vector = b - a;
-            let vector_from_a_to_point = point - a;
-            let cross_product = side_vector.cross_product(vector_from_a_to_point);
-
-            /// Minimal distance from `point` to the line to be considered
-            /// exactly *on* the line
-            const EPSILON: f64 = 0.000001;
-            if cross_product < -EPSILON {
-                Side::Left
-            } else if cross_product > EPSILON {
-                Side::Right
-            } else {
-                Side::OnTheLine
-            }
-        };
-
         let vector_to_point: Vector = point.into();
         // The following unwraps are safe, as we do an
         // early return if we don't contain at least 2 vertices
@@ -108,6 +77,37 @@ impl Polygon {
         }
         true
     }
+}
+
+/// Calculate which on which side of a line from `a` to `b` a
+/// given `point` is
+fn calculate_facing_side(a: Vector, b: Vector, point: Vector) -> Side {
+    let side_vector = b - a;
+    let vector_from_a_to_point = point - a;
+    let cross_product = side_vector.cross_product(vector_from_a_to_point);
+
+    /// Minimal distance from `point` to the line to be considered
+    /// exactly *on* the line
+    const EPSILON: f64 = 0.000001;
+    if cross_product < -EPSILON {
+        Side::Left
+    } else if cross_product > EPSILON {
+        Side::Right
+    } else {
+        Side::OnTheLine
+    }
+}
+
+/// The side that a [`Point`] lies on, from the
+/// point of view of a line
+#[derive(Eq, PartialEq, Debug)]
+enum Side {
+    /// The point lies to the right of the line
+    Right,
+    /// The point lies to the left of the line
+    Left,
+    /// The point is exactly on the line
+    OnTheLine,
 }
 
 #[cfg(test)]
