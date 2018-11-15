@@ -1,9 +1,8 @@
 //! Types relating to a behavior that reproduces at random intervals
 
 use myelin_environment::object::*;
-use myelin_environment::Id;
+use myelin_environment::Snapshot;
 use myelin_geometry::*;
-use std::collections::HashMap;
 use std::fmt;
 
 mod random_chance_checker_impl;
@@ -53,7 +52,7 @@ impl StochasticSpreading {
     fn spread(
         &mut self,
         own_description: &ObjectDescription,
-        sensor_collisions: &HashMap<Id, ObjectDescription>,
+        sensor_collisions: &Snapshot,
     ) -> Option<Action> {
         // Highly illegal state, as polygons should be built by
         // PolygonBuilder, which does not allow empty polygons
@@ -163,10 +162,7 @@ fn calculate_possible_spreading_locations(vertices: &[Point]) -> Vec<Point> {
     ]
 }
 
-fn can_spread_at_location(
-    location: Point,
-    sensor_collisions: &HashMap<Id, ObjectDescription>,
-) -> bool {
+fn can_spread_at_location(location: Point, sensor_collisions: &Snapshot) -> bool {
     !sensor_collisions
         .values()
         .map(|object_description| {
@@ -182,7 +178,7 @@ impl ObjectBehavior for StochasticSpreading {
     fn step(
         &mut self,
         own_description: &ObjectDescription,
-        sensor_collisions: &HashMap<Id, ObjectDescription>,
+        sensor_collisions: &Snapshot,
     ) -> Option<Action> {
         if self.should_spread() {
             self.spread(own_description, sensor_collisions)
@@ -229,6 +225,7 @@ where
 mod tests {
     use super::*;
     use std::cell::RefCell;
+    use std::collections::HashMap;
     use std::thread::panicking;
 
     const SPREADING_CHANGE: f64 = 1.0 / (60.0 * 30.0);

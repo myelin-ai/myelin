@@ -1,6 +1,6 @@
-use crate::controller::{Presenter, Snapshot};
+use crate::controller::Presenter;
 use myelin_environment::object::ObjectDescription;
-use myelin_environment::Id;
+use myelin_environment::{Id, Snapshot};
 use myelin_visualization_core::view_model_delta::{
     ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
 };
@@ -96,8 +96,8 @@ pub(crate) use self::mock::*;
 
 #[cfg(test)]
 mod mock {
-    use crate::controller::Snapshot;
     use crate::presenter::Presenter;
+    use myelin_environment::Snapshot;
     use myelin_visualization_core::view_model_delta::ViewModelDelta;
     use std::cell::RefCell;
     use std::thread::panicking;

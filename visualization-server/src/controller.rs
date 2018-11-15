@@ -1,15 +1,12 @@
-use myelin_environment::object::ObjectDescription;
-use myelin_environment::Id;
 use myelin_environment::Simulation;
+use myelin_environment::Snapshot;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
 use std::boxed::FnBox;
-use std::collections::HashMap;
 use std::fmt::{self, Debug};
 use std::net::SocketAddr;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
-pub(crate) type Snapshot = HashMap<Id, ObjectDescription>;
 pub(crate) type ConnectionAcceptorFactoryFn =
     dyn Fn(Arc<CurrentSnapshotFn>) -> Box<dyn ConnectionAcceptor> + Send + Sync;
 pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send + Sync;
@@ -98,6 +95,7 @@ mod tests {
     use myelin_environment::object::*;
     use myelin_environment::SimulationMock;
     use myelin_geometry::PolygonBuilder;
+    use std::collections::HashMap;
     use std::sync::Mutex;
 
     const EXPECTED_DELTA: Duration = Duration::from_millis((1.0f64 / 60.0f64) as u64);

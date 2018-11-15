@@ -4,9 +4,8 @@
 //! [`ObjectBuilder`]: crate::object_builder::ObjectBuilder
 
 pub use crate::object_builder::*;
-use crate::Id;
+use crate::{Id, Snapshot};
 use myelin_geometry::*;
-use std::collections::HashMap;
 use std::fmt::Debug;
 
 /// Behaviour of an object that can never be moved
@@ -16,7 +15,7 @@ pub trait ObjectBehavior: Debug + ObjectBehaviorClone {
     fn step(
         &mut self,
         own_description: &ObjectDescription,
-        sensor_collisions: &HashMap<Id, ObjectDescription>,
+        sensor_collisions: &Snapshot,
     ) -> Option<Action>;
 }
 

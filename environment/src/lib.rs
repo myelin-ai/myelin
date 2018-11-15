@@ -49,7 +49,7 @@ pub trait Simulation: fmt::Debug {
         object_behavior: Box<dyn ObjectBehavior>,
     );
     /// Returns a read-only description of all objects currently inhabiting the simulation.
-    fn objects(&self) -> HashMap<Id, ObjectDescription>;
+    fn objects(&self) -> Snapshot;
     /// Sets how much time in seconds is simulated for each step.
     /// # Examples
     /// If you want to run a simulation with 60 steps per second, you
@@ -60,6 +60,9 @@ pub trait Simulation: fmt::Debug {
 
 /// Unique identifier of an Object
 pub type Id = usize;
+
+/// A representation of the current state of the simulation
+pub type Snapshot = HashMap<Id, ObjectDescription>;
 
 #[cfg(feature = "use-mocks")]
 pub use self::mock::*;
@@ -77,7 +80,7 @@ mod mock {
     pub struct SimulationMock {
         expect_step: Option<()>,
         expect_add_object: Option<ObjectDescription>,
-        expect_objects_and_return: Option<HashMap<Id, ObjectDescription>>,
+        expect_objects_and_return: Option<Snapshot>,
         expect_set_simulated_timestep: Option<f64>,
 
         step_was_called: RefCell<bool>,
@@ -98,7 +101,7 @@ mod mock {
         }
 
         /// Marks the method [`Simulation::objects`] as expected.
-        pub fn expect_objects_and_return(&mut self, return_value: HashMap<Id, ObjectDescription>) {
+        pub fn expect_objects_and_return(&mut self, return_value: Snapshot) {
             self.expect_objects_and_return = Some(return_value)
         }
 
@@ -134,7 +137,7 @@ mod mock {
                 panic!("add_object() was called unexpectedly")
             }
         }
-        fn objects(&self) -> HashMap<Id, ObjectDescription> {
+        fn objects(&self) -> Snapshot {
             *self.objects_was_called.borrow_mut() = true;
 
             if let Some(ref return_value) = self.expect_objects_and_return {
@@ -194,11 +197,7 @@ mod mock {
     /// Mock [`ObjectBehavior`]
     #[derive(Debug, Default, Clone)]
     pub struct ObjectBehaviorMock {
-        expect_step_and_return: Option<(
-            ObjectDescription,
-            HashMap<Id, ObjectDescription>,
-            Option<Action>,
-        )>,
+        expect_step_and_return: Option<(ObjectDescription, Snapshot, Option<Action>)>,
 
         step_was_called: RefCell<bool>,
     }
@@ -208,7 +207,7 @@ mod mock {
         pub fn expect_step_and_return(
             &mut self,
             own_description: ObjectDescription,
-            sensor_collisions: HashMap<Id, ObjectDescription>,
+            sensor_collisions: Snapshot,
             return_value: Option<Action>,
         ) {
             self.expect_step_and_return = Some((own_description, sensor_collisions, return_value))
@@ -219,7 +218,7 @@ mod mock {
         fn step(
             &mut self,
             own_description: &ObjectDescription,
-            sensor_collisions: &HashMap<Id, ObjectDescription>,
+            sensor_collisions: &Snapshot,
         ) -> Option<Action> {
             *self.step_was_called.borrow_mut() = true;
 
