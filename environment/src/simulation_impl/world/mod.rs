@@ -1389,23 +1389,22 @@ mod tests {
 
     impl Drop for SingleTimeForceApplierMock {
         fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            if self.expect_register_force.is_some() {
-                assert!(
-                    *self
-                        .register_force_was_called
-                        .read()
-                        .expect("RwLock was poisoned"),
-                    "expect_register_force() was not called, but was expected"
-                )
-            }
-            if self.expect_apply_and_return.is_some() {
-                assert!(
-                    *self.apply_was_called.read().expect("RwLock was poisoned"),
-                    "expect_apply_and_return() was not called, but was expected"
-                )
+            if !panicking() {
+                if self.expect_register_force.is_some() {
+                    assert!(
+                        *self
+                            .register_force_was_called
+                            .read()
+                            .expect("RwLock was poisoned"),
+                        "expect_register_force() was not called, but was expected"
+                    )
+                }
+                if self.expect_apply_and_return.is_some() {
+                    assert!(
+                        *self.apply_was_called.read().expect("RwLock was poisoned"),
+                        "expect_apply_and_return() was not called, but was expected"
+                    )
+                }
             }
         }
     }

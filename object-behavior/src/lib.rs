@@ -14,9 +14,6 @@
 #[cfg(test)]
 extern crate maplit;
 
-#[macro_use]
-extern crate log;
-
 // Not named "static" because that would be a keyword
 mod static_behavior;
 pub use self::static_behavior::Static;

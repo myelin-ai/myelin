@@ -1082,69 +1082,68 @@ mod tests {
 
     impl Drop for WorldMock {
         fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            if self.expect_step.is_some() {
-                assert!(
-                    *self.step_was_called.borrow(),
-                    "step() was not called, but was expected"
-                )
-            }
-            if self.expect_add_body_and_return.is_some() {
-                assert!(
-                    *self.add_body_was_called.borrow(),
-                    "add_body() was not called, but was expected"
-                )
-            }
+            if !panicking() {
+                if self.expect_step.is_some() {
+                    assert!(
+                        *self.step_was_called.borrow(),
+                        "step() was not called, but was expected"
+                    )
+                }
+                if self.expect_add_body_and_return.is_some() {
+                    assert!(
+                        *self.add_body_was_called.borrow(),
+                        "add_body() was not called, but was expected"
+                    )
+                }
 
-            if self.expect_attach_sensor_and_return.is_some() {
-                assert!(
-                    *self.attach_sensor_was_called.borrow(),
-                    "attach_sensor() was not called, but was expected"
-                )
-            }
+                if self.expect_attach_sensor_and_return.is_some() {
+                    assert!(
+                        *self.attach_sensor_was_called.borrow(),
+                        "attach_sensor() was not called, but was expected"
+                    )
+                }
 
-            if self.expect_body_and_return.is_some() {
-                assert!(
-                    *self.body_was_called.borrow(),
-                    "body() was not called, but was expected"
-                )
-            }
+                if self.expect_body_and_return.is_some() {
+                    assert!(
+                        *self.body_was_called.borrow(),
+                        "body() was not called, but was expected"
+                    )
+                }
 
-            if self.expect_bodies_within_sensor_and_return.is_some() {
-                assert!(
-                    *self.bodies_within_sensor_was_called.borrow(),
-                    "bodies_within_sensor() was not called, but was expected"
-                )
-            }
+                if self.expect_bodies_within_sensor_and_return.is_some() {
+                    assert!(
+                        *self.bodies_within_sensor_was_called.borrow(),
+                        "bodies_within_sensor() was not called, but was expected"
+                    )
+                }
 
-            if self.expect_apply_force_and_return.is_some() {
-                assert!(
-                    *self.apply_force_was_called.borrow(),
-                    "apply_force() was not called, but was expected"
-                )
-            }
+                if self.expect_apply_force_and_return.is_some() {
+                    assert!(
+                        *self.apply_force_was_called.borrow(),
+                        "apply_force() was not called, but was expected"
+                    )
+                }
 
-            if self.expect_set_simulated_timestep.is_some() {
-                assert!(
-                    *self.set_simulated_timestep_was_called.borrow(),
-                    "set_simulated_timestep() was not called, but was expected"
-                )
-            }
+                if self.expect_set_simulated_timestep.is_some() {
+                    assert!(
+                        *self.set_simulated_timestep_was_called.borrow(),
+                        "set_simulated_timestep() was not called, but was expected"
+                    )
+                }
 
-            if self.expect_remove_body_and_return.is_some() {
-                assert!(
-                    *self.remove_body_was_called.borrow(),
-                    "remove_body() was not called, but was expected"
-                )
-            }
+                if self.expect_remove_body_and_return.is_some() {
+                    assert!(
+                        *self.remove_body_was_called.borrow(),
+                        "remove_body() was not called, but was expected"
+                    )
+                }
 
-            if self.expect_is_body_passable_and_return.is_some() {
-                assert!(
-                    *self.is_body_passable.borrow(),
-                    "is_body_passable() was not called, but was expected"
-                )
+                if self.expect_is_body_passable_and_return.is_some() {
+                    assert!(
+                        *self.is_body_passable.borrow(),
+                        "is_body_passable() was not called, but was expected"
+                    )
+                }
             }
         }
     }
@@ -1356,14 +1355,13 @@ mod tests {
     }
     impl Drop for ObjectBehaviorMock {
         fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            if self.expect_step_and_return.is_some() {
-                assert!(
-                    *self.step_was_called.borrow(),
-                    "step() was not called, but was expected"
-                )
+            if !panicking() {
+                if self.expect_step_and_return.is_some() {
+                    assert!(
+                        *self.step_was_called.borrow(),
+                        "step() was not called, but was expected"
+                    )
+                }
             }
         }
     }

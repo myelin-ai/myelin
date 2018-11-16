@@ -244,7 +244,8 @@ impl fmt::Debug for HardcodedGenerator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::Snapshot;
+    use myelin_environment::{Snapshot};
+    use std::thread::panicking;
 
     #[derive(Debug, Default)]
     struct SimulationMock {
@@ -271,7 +272,9 @@ mod tests {
     }
     impl Drop for SimulationMock {
         fn drop(&mut self) {
-            assert!(!self.objects.is_empty());
+            if !panicking() {
+                assert!(!self.objects.is_empty());
+            }
         }
     }
 
