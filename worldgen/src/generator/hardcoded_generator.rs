@@ -135,8 +135,8 @@ impl HardcodedGenerator {
             for j in 0..=7 {
                 let plant = build_plant(
                     HALF_OF_PLANT_WIDTH_AND_HEIGHT,
-                    102.0 + f64::from(i) * DISPLACEMENT,
-                    102.0 + f64::from(j) * DISPLACEMENT,
+                    103.0 + f64::from(i) * DISPLACEMENT,
+                    103.0 + f64::from(j) * DISPLACEMENT,
                 );
                 let sensor = plant.sensor.clone().unwrap();
                 simulation.add_object(plant, (self.plant_factory)(sensor));
@@ -146,8 +146,8 @@ impl HardcodedGenerator {
             for j in 0..=7 {
                 let plant = build_plant(
                     HALF_OF_PLANT_WIDTH_AND_HEIGHT,
-                    688.0 + f64::from(i) * DISPLACEMENT,
-                    102.0 + f64::from(j) * DISPLACEMENT,
+                    687.0 + f64::from(i) * DISPLACEMENT,
+                    103.0 + f64::from(j) * DISPLACEMENT,
                 );
                 let sensor = plant.sensor.clone().unwrap();
                 simulation.add_object(plant, (self.plant_factory)(sensor));
