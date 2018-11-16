@@ -53,7 +53,6 @@ wasm_file = os.path.join(crate_dir, '..', 'target',
 cargo_command = ['cargo', 'build', '--target', WASM_TARGET]
 if release:
     cargo_command.append('--release')
-
 subprocess.check_call(cargo_command, cwd=crate_dir)
 
 shutil.rmtree(out_dir, ignore_errors=True)
