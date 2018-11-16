@@ -128,46 +128,28 @@ impl HardcodedGenerator {
     }
 
     fn populate_with_plants(&self, simulation: &mut dyn Simulation) {
-        /// Arbi
-        const HALF_OF_SENSOR_WIDTH_AND_HEIGHT: f64 = 30.0;
+        const HALF_OF_PLANT_WIDTH_AND_HEIGHT: f64 = 10.0;
 
-        let sensor = Sensor {
-            shape: PolygonBuilder::default()
-                .vertex(
-                    -HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
-                    -HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
-                )
-                .vertex(
-                    HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
-                    -HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
-                )
-                .vertex(
-                    HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
-                    HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
-                )
-                .vertex(
-                    -HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
-                    HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
-                )
-                .build()
-                .unwrap(),
-            location: Point::default(),
-            rotation: Radians::default(),
-        };
         for i in 0..=10 {
             for j in 0..=7 {
-                simulation.add_object(
-                    build_plant(100.0 + f64::from(i) * 30.0, 100.0 + f64::from(j) * 30.0),
-                    (self.plant_factory)(sensor.clone()),
+                let plant = build_plant(
+                    HALF_OF_PLANT_WIDTH_AND_HEIGHT,
+                    100.0 + f64::from(i) * 30.0,
+                    100.0 + f64::from(j) * 30.0,
                 );
+                let sensor = plant.sensor.clone().unwrap();
+                simulation.add_object(plant, (self.plant_factory)(sensor));
             }
         }
         for i in 0..=10 {
             for j in 0..=7 {
-                simulation.add_object(
-                    build_plant(600.0 + f64::from(i) * 30.0, 100.0 + f64::from(j) * 30.0),
-                    (self.plant_factory)(sensor.clone()),
+                let plant = build_plant(
+                    HALF_OF_PLANT_WIDTH_AND_HEIGHT,
+                    600.0 + f64::from(i) * 30.0,
+                    100.0 + f64::from(j) * 30.0,
                 );
+                let sensor = plant.sensor.clone().unwrap();
+                simulation.add_object(plant, (self.plant_factory)(sensor));
             }
         }
     }
@@ -200,14 +182,15 @@ fn build_terrain(location: (f64, f64), width: f64, length: f64) -> ObjectDescrip
         .expect("Failed to build terrain")
 }
 
-fn build_plant(x: f64, y: f64) -> ObjectDescription {
+fn build_plant(half_of_width_and_height: f64, x: f64, y: f64) -> ObjectDescription {
+    let half_of_sensor_width_and_height = half_of_width_and_height * 3.0;
     ObjectBuilder::default()
         .shape(
             PolygonBuilder::default()
-                .vertex(-10.0, -10.0)
-                .vertex(10.0, -10.0)
-                .vertex(10.0, 10.0)
-                .vertex(-10.0, 10.0)
+                .vertex(-half_of_width_and_height, -half_of_width_and_height)
+                .vertex(half_of_width_and_height, -half_of_width_and_height)
+                .vertex(half_of_width_and_height, half_of_width_and_height)
+                .vertex(-half_of_width_and_height, half_of_width_and_height)
                 .build()
                 .expect("Generated an invalid vertex"),
         )
@@ -216,10 +199,22 @@ fn build_plant(x: f64, y: f64) -> ObjectDescription {
         .kind(Kind::Plant)
         .sensor(Sensor {
             shape: PolygonBuilder::default()
-                .vertex(-25.0, -25.0)
-                .vertex(25.0, -25.0)
-                .vertex(25.0, 25.0)
-                .vertex(-25.0, 25.0)
+                .vertex(
+                    -half_of_sensor_width_and_height,
+                    -half_of_sensor_width_and_height,
+                )
+                .vertex(
+                    half_of_sensor_width_and_height,
+                    -half_of_sensor_width_and_height,
+                )
+                .vertex(
+                    half_of_sensor_width_and_height,
+                    half_of_sensor_width_and_height,
+                )
+                .vertex(
+                    -half_of_sensor_width_and_height,
+                    half_of_sensor_width_and_height,
+                )
                 .build()
                 .expect("Generated an invalid vertex"),
             location: Point::default(),
