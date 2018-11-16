@@ -1,6 +1,5 @@
-use super::Snapshot;
 use myelin_environment::object::ObjectDescription;
-use myelin_environment::Id;
+use myelin_environment::{Id, Snapshot};
 use myelin_visualization_core::view_model_delta::{
     ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
 };
