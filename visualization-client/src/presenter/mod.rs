@@ -101,6 +101,7 @@ mod tests {
     use std::cell::RefCell;
     use std::collections::VecDeque;
     use std::fmt::{self, Debug};
+    use std::thread::panicking;
 
     #[derive(Debug)]
     struct ViewMock {
@@ -142,11 +143,9 @@ mod tests {
 
     impl Drop for ViewMock {
         fn drop(&mut self) {
-            if std::thread::panicking() {
-                return;
+            if !panicking() {
+                assert_eq!(0, *self.expected_flush_calls.borrow());
             }
-
-            assert_eq!(0, *self.expected_flush_calls.borrow());
         }
     }
 
@@ -200,11 +199,9 @@ mod tests {
 
     impl<'mock> Drop for DeltaApplierMock<'mock> {
         fn drop(&mut self) {
-            if std::thread::panicking() {
-                return;
+            if !panicking() {
+                assert!(self.expected_calls.borrow().is_empty());
             }
-
-            assert!(self.expected_calls.borrow().is_empty());
         }
     }
 
@@ -244,11 +241,9 @@ mod tests {
 
     impl Drop for GlobalPolygonTranslatorMock {
         fn drop(&mut self) {
-            if std::thread::panicking() {
-                return;
+            if !panicking() {
+                assert!(self.expected_calls.borrow().is_empty());
             }
-
-            assert!(self.expected_calls.borrow().is_empty());
         }
     }
 
