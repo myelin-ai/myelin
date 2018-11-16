@@ -16,17 +16,29 @@ use unordered_pair::UnorderedPair;
 /// marked as invalid.
 pub trait IgnoringCollisionFilter: Send + Sync + Debug {
     /// Registers a handle that should be ignored by this filter.
-    fn add_ignored_handle(&mut self, handle: AnyHandle);
+    fn add_blacklisted_handle(&mut self, handle: AnyHandle);
+
+    /// Registers a handle that should not be ignored by this filter.
+    fn add_whitelisted_handle(&mut self, handle: AnyHandle);
+
     /// Checks if a handle has been previously registered as ignored with
-    /// [`add_ignored_handle`].
+    /// [`add_blacklisted_handle`].
     ///
-    /// [`add_ignored_handle`]: #tymethod.add_ignored_handle
-    fn is_handle_ignored(&self, handle: AnyHandle) -> bool;
+    /// [`add_blacklisted_handle`]: #tymethod.add_blacklisted_handle
+    fn is_handle_blacklisted(&self, handle: AnyHandle) -> bool;
+
     /// Unregisters a handle that has been previously registered as ignored with
-    /// [`add_ignored_handle`].
+    /// [`add_blacklisted_handle`].
     ///
-    /// [`add_ignored_handle`]: #tymethod.add_ignored_handle
-    fn remove_ignored_handle(&mut self, handle: AnyHandle);
+    /// [`add_blacklisted_handle`]: #tymethod.add_ignored_handle
+    fn remove_blacklisted_handle(&mut self, handle: AnyHandle);
+
+    /// Unregisters a handle that has been previously registered as not ignored with
+    /// [`add_whitelisted_handle`].
+    ///
+    /// [`add_whitelisted_handle`]: #tymethod.add_ignored_handle
+    fn remove_whitelisted_handle(&mut self, handle: AnyHandle);
+
     /// Checks if the pair should be considered a collision or not.
     /// Returns `false` if the pair should be ignored.
     fn is_pair_valid(&self, pair: UnorderedPair<AnyHandle>) -> bool;
@@ -42,26 +54,38 @@ pub trait IgnoringCollisionFilter: Send + Sync + Debug {
 /// [`IgnoringCollisionFilterWrapper`]: ./struct.IgnoringCollisionFilterWrapper.html
 #[derive(Debug, Default)]
 pub struct IgnoringCollisionFilterImpl {
-    ignored_handles: HashSet<AnyHandle>,
+    blacklisted_handles: HashSet<AnyHandle>,
+    whitelisted_handles: HashSet<AnyHandle>,
 }
 
 impl IgnoringCollisionFilterImpl {}
 
 impl IgnoringCollisionFilter for IgnoringCollisionFilterImpl {
-    fn add_ignored_handle(&mut self, handle: AnyHandle) {
-        self.ignored_handles.insert(handle);
+    fn add_blacklisted_handle(&mut self, handle: AnyHandle) {
+        self.blacklisted_handles.insert(handle);
     }
 
-    fn is_handle_ignored(&self, handle: AnyHandle) -> bool {
-        self.ignored_handles.contains(&handle)
+    fn add_whitelisted_handle(&mut self, handle: AnyHandle) {
+        self.whitelisted_handles.insert(handle);
     }
 
-    fn remove_ignored_handle(&mut self, handle: AnyHandle) {
-        self.ignored_handles.remove(&handle);
+    fn is_handle_blacklisted(&self, handle: AnyHandle) -> bool {
+        self.blacklisted_handles.contains(&handle)
+    }
+
+    fn remove_blacklisted_handle(&mut self, handle: AnyHandle) {
+        self.blacklisted_handles.remove(&handle);
+    }
+
+    fn remove_whitelisted_handle(&mut self, handle: AnyHandle) {
+        self.whitelisted_handles.remove(&handle);
     }
 
     fn is_pair_valid(&self, pair: UnorderedPair<AnyHandle>) -> bool {
-        !(self.ignored_handles.contains(&pair.0) || self.ignored_handles.contains(&pair.1))
+        self.whitelisted_handles.contains(&pair.0)
+            || self.whitelisted_handles.contains(&pair.1)
+            || !self.blacklisted_handles.contains(&pair.0)
+            || !self.blacklisted_handles.contains(&pair.1)
     }
 }
 

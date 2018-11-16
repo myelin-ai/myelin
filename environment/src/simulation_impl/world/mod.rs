@@ -167,7 +167,7 @@ impl NphysicsWorld {
         self.collision_filter
             .read()
             .expect("RwLock was poisoned")
-            .is_handle_ignored(body_handle.into())
+            .is_handle_blacklisted(body_handle.into())
     }
 }
 
@@ -319,7 +319,7 @@ impl World for NphysicsWorld {
             self.collision_filter
                 .write()
                 .expect("Lock was poisoned")
-                .add_ignored_handle(body_handle.into());
+                .add_blacklisted_handle(body_handle.into());
         }
 
         body_handle
@@ -337,7 +337,7 @@ impl World for NphysicsWorld {
             self.collision_filter
                 .write()
                 .expect("RwLock was poisoned")
-                .remove_ignored_handle(body_handle.into());
+                .remove_blacklisted_handle(body_handle.into());
         }
         self.physics_world.remove_bodies(&[nphysics_body_handle]);
         Some(physical_body)
@@ -407,7 +407,7 @@ impl World for NphysicsWorld {
         self.collision_filter
             .read()
             .expect("RwLock was poisoned")
-            .is_handle_ignored(body_handle.into())
+            .is_handle_blacklisted(body_handle.into())
     }
 }
 
