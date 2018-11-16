@@ -30,13 +30,13 @@ pub trait IgnoringCollisionFilter: Send + Sync + Debug {
     /// Unregisters a handle that has been previously registered as ignored with
     /// [`add_blacklisted_handle`].
     ///
-    /// [`add_blacklisted_handle`]: #tymethod.add_ignored_handle
+    /// [`add_blacklisted_handle`]: #tymethod.add_blacklisted_handle
     fn remove_blacklisted_handle(&mut self, handle: AnyHandle);
 
     /// Unregisters a handle that has been previously registered as not ignored with
     /// [`add_whitelisted_handle`].
     ///
-    /// [`add_whitelisted_handle`]: #tymethod.add_ignored_handle
+    /// [`add_whitelisted_handle`]: #tymethod.add_blacklisted_handle
     fn remove_whitelisted_handle(&mut self, handle: AnyHandle);
 
     /// Checks if the pair should be considered a collision or not.
@@ -163,7 +163,7 @@ mod mock {
         collision_filter.add_whitelisted_handle(whitelisted_handle);
         collision_filter.add_blacklisted_handle(blacklisted_handle);
 
-        assert!(collision_filter.is_pair_valid(UnorderedPair(whitelisted_handle, blacklisted_handle));
+        assert!(collision_filter.is_pair_valid(UnorderedPair(whitelisted_handle, blacklisted_handle)));
         assert!(collision_filter.is_pair_valid(UnorderedPair(blacklisted_handle, whitelisted_handle)));
     }
 
@@ -184,35 +184,47 @@ mod mock {
 
     #[derive(Default)]
     pub(crate) struct IgnoringCollisionFilterMock {
-        expect_add_ignored_handle: Option<AnyHandle>,
-        expect_is_handle_ignored_and_return: RwLock<VecDeque<(AnyHandle, bool)>>,
-        expect_remove_ignored_handle: Option<AnyHandle>,
+        expect_add_blacklisted_handle: Option<AnyHandle>,
+        expect_add_whitelisted_handle: Option<AnyHandle>,
+        expect_is_handle_blacklisted_and_return: RwLock<VecDeque<(AnyHandle, bool)>>,
+        expect_remove_blacklisted_handle: Option<AnyHandle>,
+        expect_remove_whitelisted_handle: Option<AnyHandle>,
         expect_is_pair_valid_and_return: RwLock<HashMap<UnorderedPair<AnyHandle>, bool>>,
 
-        add_ignored_handle_was_called: AtomicBool,
-        is_handle_ignored_was_called: AtomicBool,
-        remove_ignored_handle_was_called: AtomicBool,
+        add_blacklisted_handle_was_called: AtomicBool,
+        add_whitelisted_handle_was_called: AtomicBool,
+        is_handle_blacklisted_was_called: AtomicBool,
+        remove_blacklisted_handle_was_called: AtomicBool,
+        remove_whitelisted_handle_was_called: AtomicBool,
         is_pair_valid_was_called: AtomicBool,
     }
 
     impl IgnoringCollisionFilterMock {
-        #[allow(dead_code)]
-        pub fn expect_add_ignored_handle(&mut self, handle: AnyHandle) -> &mut Self {
-            self.expect_add_ignored_handle = Some(handle);
+        pub fn expect_add_blacklisted_handle(&mut self, handle: AnyHandle) -> &mut Self {
+            self.expect_add_blacklisted_handle = Some(handle);
             self
         }
 
-        pub fn expect_is_handle_ignored_and_return(
+        pub fn expect_add_whitelisted_handle(&mut self, handle: AnyHandle) -> &mut Self {
+            self.expect_add_blacklisted_handle = Some(handle);
+            self
+        }
+
+        pub fn expect_is_handle_blacklisted_and_return(
             &mut self,
             expected_calls: VecDeque<(AnyHandle, bool)>,
         ) -> &mut Self {
-            self.expect_is_handle_ignored_and_return = RwLock::new(expected_calls);
+            self.expect_is_handle_blacklisted_and_return = RwLock::new(expected_calls);
             self
         }
 
-        #[allow(dead_code)]
-        pub fn expect_remove_ignored_handle(&mut self, handle: AnyHandle) -> &mut Self {
-            self.expect_remove_ignored_handle = Some(handle);
+        pub fn expect_remove_blacklisted_handle(&mut self, handle: AnyHandle) -> &mut Self {
+            self.expect_remove_blacklisted_handle = Some(handle);
+            self
+        }
+
+        pub fn expect_remove_whitelisted_handle(&mut self, handle: AnyHandle) -> &mut Self {
+            self.expect_remove_whitelisted_handle = Some(handle);
             self
         }
 
@@ -228,29 +240,43 @@ mod mock {
     impl Drop for IgnoringCollisionFilterMock {
         fn drop(&mut self) {
             if !panicking() {
-                if self.expect_add_ignored_handle.is_some() {
+                if self.expect_add_blacklisted_handle.is_some() {
                     assert!(
-                        self.add_ignored_handle_was_called.load(Ordering::SeqCst),
-                        "add_ignored_handle() was not called, but was expected"
+                        self.add_blacklisted_handle_was_called.load(Ordering::SeqCst),
+                        "add_blacklisted_handle() was not called, but was expected"
+                    );
+                }
+
+                if self.expect_add_whitelisted_handle.is_some() {
+                    assert!(
+                        self.add_whitelisted_handle_was_called.load(Ordering::SeqCst),
+                        "add_whitelisted_handle() was not called, but was expected"
                     );
                 }
 
                 if !self
-                    .expect_is_handle_ignored_and_return
+                    .expect_is_handle_blacklisted_and_return
                     .read()
                     .expect("Lock was poisoned")
                     .is_empty()
                 {
                     assert!(
-                        self.is_handle_ignored_was_called.load(Ordering::SeqCst),
-                        "is_handle_ignored() was not called, but was expected"
+                        self.is_handle_blacklisted_was_called.load(Ordering::SeqCst),
+                        "is_handle_blacklisted() was not called, but was expected"
                     );
                 }
 
-                if self.expect_remove_ignored_handle.is_some() {
+                if self.expect_remove_blacklisted_handle.is_some() {
                     assert!(
-                        self.remove_ignored_handle_was_called.load(Ordering::SeqCst),
-                        "remove_ignored_handle() was not called, but was expected"
+                        self.remove_blacklisted_handle_was_called.load(Ordering::SeqCst),
+                        "remove_blacklisted_handle() was not called, but was expected"
+                    );
+                }
+
+                if self.expect_remove_whitelisted_handle.is_some() {
+                    assert!(
+                        self.remove_whitelisted_handle_was_called.load(Ordering::SeqCst),
+                        "remove_whitelisted_handle() was not called, but was expected"
                     );
                 }
 
@@ -277,58 +303,90 @@ mod mock {
     }
 
     impl IgnoringCollisionFilter for IgnoringCollisionFilterMock {
-        fn add_ignored_handle(&mut self, handle: AnyHandle) {
-            self.add_ignored_handle_was_called
+        fn add_blacklisted_handle(&mut self, handle: AnyHandle) {
+            self.add_blacklisted_handle_was_called
                 .store(true, Ordering::SeqCst);
 
-            if let Some(expected_input) = self.expect_add_ignored_handle {
+            if let Some(expected_input) = self.expect_add_blacklisted_handle {
                 if handle != expected_input {
                     panic!(
-                        "add_ignored_handle() was called with an unexpected input value: {:?}",
+                        "add_blacklisted_handle() was called with an unexpected input value: {:?}",
                         handle
                     )
                 }
             } else {
-                panic!("add_ignored_handle() was called unexpectedly")
+                panic!("add_blacklisted_handle() was called unexpectedly")
             }
         }
 
-        fn is_handle_ignored(&self, handle: AnyHandle) -> bool {
-            self.is_handle_ignored_was_called
+        fn add_whitelisted_handle(&mut self, handle: AnyHandle) {
+            self.add_whitelisted_handle_was_called
+                .store(true, Ordering::SeqCst);
+
+            if let Some(expected_input) = self.expect_add_whitelisted_handle {
+                if handle != expected_input {
+                    panic!(
+                        "add_whitelisted_handle() was called with an unexpected input value: {:?}",
+                        handle
+                    )
+                }
+            } else {
+                panic!("add_whitelisted_handle() was called unexpectedly")
+            }
+        }
+
+        fn is_handle_blacklisted(&self, handle: AnyHandle) -> bool {
+            self.is_handle_blacklisted_was_called
                 .store(true, Ordering::SeqCst);
 
             if let Some((expected_input, expected_output)) = self
-                .expect_is_handle_ignored_and_return
+                .expect_is_handle_blacklisted_and_return
                 .write()
                 .expect("RwLock was poisoned")
                 .pop_front()
             {
                 if handle != expected_input {
                     panic!(
-                        "is_handle_ignored() was called with an unexpected input value: {:?}",
+                        "is_handle_blacklisted() was called with an unexpected input value: {:?}",
                         handle
                     )
                 }
 
                 expected_output
             } else {
-                panic!("is_handle_ignored() was called unexpectedly")
+                panic!("is_handle_blacklisted() was called unexpectedly")
             }
         }
 
-        fn remove_ignored_handle(&mut self, handle: AnyHandle) {
-            self.remove_ignored_handle_was_called
+        fn remove_blacklisted_handle(&mut self, handle: AnyHandle) {
+            self.remove_blacklisted_handle_was_called
                 .store(true, Ordering::SeqCst);
 
-            if let Some(expected_input) = self.expect_remove_ignored_handle {
+            if let Some(expected_input) = self.expect_remove_blacklisted_handle {
                 if handle != expected_input {
                     panic!(
-                        "remove_ignored_handle() was called with an unexpected input value: {:?}",
+                        "remove_blacklisted_handle() was called with an unexpected input value: {:?}",
                         handle
                     )
                 }
             } else {
-                panic!("remove_ignored_handle() was called unexpectedly")
+                panic!("remove_blacklisted_handle() was called unexpectedly")
+            }
+        }
+
+        fn remove_whitelisted_handle(&mut self, handle: AnyHandle) {
+            self.remove_whitelisted_handle_was_called
+                .store(true, Ordering::SeqCst);
+
+            if let Some(expected_input) = self.expect_remove_whitelisted_handle {
+                if handle != expected_input {
+                    panic!(
+                        "remove_whitelisted_handle() was called with an unexpected input value: {:?}",
+                        handle
+                    )
+                }
+            } else {
+                panic!("remove_whitelisted_handle() was called unexpectedly")
             }
         }
 
