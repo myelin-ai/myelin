@@ -111,10 +111,7 @@ mod mock {
 
     impl Drop for ConnectionAcceptorMock {
         fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            if self.expect_run.load(Ordering::SeqCst) {
+            if !panicking() && self.expect_run.load(Ordering::SeqCst) {
                 assert!(
                     self.run_was_called.load(Ordering::SeqCst),
                     "run() was not called, but was expected"
@@ -236,10 +233,7 @@ mod tests {
 
     impl Drop for ClientMock {
         fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            if self.expect_run.load(Ordering::SeqCst) {
+            if !panicking() && self.expect_run.load(Ordering::SeqCst) {
                 assert!(
                     self.run_was_called.load(Ordering::SeqCst),
                     "run() was not called, but was expected"

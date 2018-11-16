@@ -118,20 +118,19 @@ pub mod mock {
 
     impl Drop for NphysicsRotationTranslatorMock {
         fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            if self.expect_to_nphysics_rotation_and_return.is_some() {
-                assert!(
-                    *self.to_nphysics_rotation_was_called.borrow(),
-                    "to_nphysics_rotation() was not called, but was expected"
-                )
-            }
-            if self.expect_to_radians_and_return.is_some() {
-                assert!(
-                    *self.to_radians_was_called.borrow(),
-                    "to_radians() was not called, but was expected"
-                )
+            if !panicking() {
+                if self.expect_to_nphysics_rotation_and_return.is_some() {
+                    assert!(
+                        *self.to_nphysics_rotation_was_called.borrow(),
+                        "to_nphysics_rotation() was not called, but was expected"
+                    )
+                }
+                if self.expect_to_radians_and_return.is_some() {
+                    assert!(
+                        *self.to_radians_was_called.borrow(),
+                        "to_radians() was not called, but was expected"
+                    )
+                }
             }
         }
     }

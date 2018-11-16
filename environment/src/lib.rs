@@ -161,32 +161,31 @@ mod mock {
 
     impl Drop for SimulationMock {
         fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            if self.expect_step.is_some() {
-                assert!(
-                    *self.step_was_called.borrow(),
-                    "step() was not called, but expected"
-                )
-            }
-            if self.expect_add_object.is_some() {
-                assert!(
-                    *self.add_object_was_called.borrow(),
-                    "add_object() was not called, but expected"
-                )
-            }
-            if self.expect_objects_and_return.is_some() {
-                assert!(
-                    *self.objects_was_called.borrow(),
-                    "objects() was not called, but expected"
-                )
-            }
-            if self.expect_set_simulated_timestep.is_some() {
-                assert!(
-                    *self.set_simulated_timestep_was_called.borrow(),
-                    "set_simulated_timestep() was not called, but expected"
-                )
+            if !panicking() {
+                if self.expect_step.is_some() {
+                    assert!(
+                        *self.step_was_called.borrow(),
+                        "step() was not called, but expected"
+                    )
+                }
+                if self.expect_add_object.is_some() {
+                    assert!(
+                        *self.add_object_was_called.borrow(),
+                        "add_object() was not called, but expected"
+                    )
+                }
+                if self.expect_objects_and_return.is_some() {
+                    assert!(
+                        *self.objects_was_called.borrow(),
+                        "objects() was not called, but expected"
+                    )
+                }
+                if self.expect_set_simulated_timestep.is_some() {
+                    assert!(
+                        *self.set_simulated_timestep_was_called.borrow(),
+                        "set_simulated_timestep() was not called, but expected"
+                    )
+                }
             }
         }
     }
@@ -250,10 +249,7 @@ mod mock {
 
     impl Drop for ObjectBehaviorMock {
         fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            if self.expect_step_and_return.is_some() {
+            if !panicking() && self.expect_step_and_return.is_some() {
                 assert!(
                     *self.step_was_called.borrow(),
                     "step() was not called, but expected"

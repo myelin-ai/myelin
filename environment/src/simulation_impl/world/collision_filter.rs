@@ -179,46 +179,44 @@ mod mock {
 
     impl Drop for IgnoringCollisionFilterMock {
         fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
+            if !panicking() {
+                if self.expect_add_ignored_handle.is_some() {
+                    assert!(
+                        self.add_ignored_handle_was_called.load(Ordering::SeqCst),
+                        "add_ignored_handle() was not called, but was expected"
+                    );
+                }
 
-            if self.expect_add_ignored_handle.is_some() {
-                assert!(
-                    self.add_ignored_handle_was_called.load(Ordering::SeqCst),
-                    "add_ignored_handle() was not called, but was expected"
-                );
-            }
+                if !self
+                    .expect_is_handle_ignored_and_return
+                    .read()
+                    .expect("Lock was poisoned")
+                    .is_empty()
+                {
+                    assert!(
+                        self.is_handle_ignored_was_called.load(Ordering::SeqCst),
+                        "is_handle_ignored() was not called, but was expected"
+                    );
+                }
 
-            if !self
-                .expect_is_handle_ignored_and_return
-                .read()
-                .expect("Lock was poisoned")
-                .is_empty()
-            {
-                assert!(
-                    self.is_handle_ignored_was_called.load(Ordering::SeqCst),
-                    "is_handle_ignored() was not called, but was expected"
-                );
-            }
+                if self.expect_remove_ignored_handle.is_some() {
+                    assert!(
+                        self.remove_ignored_handle_was_called.load(Ordering::SeqCst),
+                        "remove_ignored_handle() was not called, but was expected"
+                    );
+                }
 
-            if self.expect_remove_ignored_handle.is_some() {
-                assert!(
-                    self.remove_ignored_handle_was_called.load(Ordering::SeqCst),
-                    "remove_ignored_handle() was not called, but was expected"
-                );
-            }
-
-            if !self
-                .expect_is_pair_valid_and_return
-                .read()
-                .expect("Lock was poisoned")
-                .is_empty()
-            {
-                assert!(
-                    self.is_pair_valid_was_called.load(Ordering::SeqCst),
-                    "is_pair_valid() was not called, but was expected"
-                );
+                if !self
+                    .expect_is_pair_valid_and_return
+                    .read()
+                    .expect("Lock was poisoned")
+                    .is_empty()
+                {
+                    assert!(
+                        self.is_pair_valid_was_called.load(Ordering::SeqCst),
+                        "is_pair_valid() was not called, but was expected"
+                    );
+                }
             }
         }
     }
