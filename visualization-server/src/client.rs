@@ -403,10 +403,7 @@ mod tests {
 
     impl Drop for SerializerMock {
         fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            if self.expect_serialize_view_model_delta_and_return.is_some() {
+            if !panicking() && self.expect_serialize_view_model_delta_and_return.is_some() {
                 assert!(
                     *self.serialize_view_model_delta_was_called.borrow(),
                     "serialize_view_model_delta() was not called, but expected"

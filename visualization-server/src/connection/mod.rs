@@ -77,14 +77,12 @@ mod mock {
 
     impl Drop for SocketMock {
         fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            if self
-                .expect_send_message_and_return
-                .lock()
-                .unwrap()
-                .is_some()
+            if !panicking()
+                && self
+                    .expect_send_message_and_return
+                    .lock()
+                    .unwrap()
+                    .is_some()
             {
                 assert!(
                     self.send_message_was_called.load(Ordering::SeqCst),
