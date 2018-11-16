@@ -246,6 +246,7 @@ mod tests {
     use super::*;
     use myelin_environment::Id;
     use std::collections::HashMap;
+    use std::thread::panicking;
 
     #[derive(Debug, Default)]
     struct SimulationMock {
@@ -272,7 +273,9 @@ mod tests {
     }
     impl Drop for SimulationMock {
         fn drop(&mut self) {
-            assert!(!self.objects.is_empty());
+            if !panicking() {
+                assert!(!self.objects.is_empty());
+            }
         }
     }
 

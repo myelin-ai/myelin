@@ -153,10 +153,7 @@ mod mock {
 
     impl Drop for PresenterMock {
         fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-            if self.expect_calculate_deltas_and_return.is_some() {
+            if !panicking() && self.expect_calculate_deltas_and_return.is_some() {
                 assert!(
                     *self.calculate_deltas_was_called.borrow(),
                     "calculate_deltas() was not called, but expected"
