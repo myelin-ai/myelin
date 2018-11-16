@@ -27,9 +27,6 @@ use std::error::Error;
 use std::fmt;
 use std::sync::{Arc, RwLock};
 
-const COLLIDER_MARGIN: PhysicsType = 0.04;
-const DEFAULT_OBJECT_DENSITY: PhysicsType = 0.1;
-
 pub mod collision_filter;
 pub mod force_applier;
 pub mod rotation_translator;
@@ -277,6 +274,9 @@ impl World for NphysicsWorld {
     }
 
     fn add_body(&mut self, body: PhysicalBody) -> BodyHandle {
+        const COLLIDER_MARGIN: PhysicsType = 0.04;
+        const OBJECT_DENSITY: PhysicsType = 0.1;
+
         let shape = translate_shape(&body.shape);
         let local_inertia = shape.inertia(DEFAULT_OBJECT_DENSITY);
         let local_center_of_mass = shape.center_of_mass();
