@@ -84,8 +84,8 @@ impl IgnoringCollisionFilter for IgnoringCollisionFilterImpl {
     fn is_pair_valid(&self, pair: UnorderedPair<AnyHandle>) -> bool {
         self.whitelisted_handles.contains(&pair.0)
             || self.whitelisted_handles.contains(&pair.1)
-            || !self.blacklisted_handles.contains(&pair.0)
-            || !self.blacklisted_handles.contains(&pair.1)
+            || !(self.blacklisted_handles.contains(&pair.0)
+                || self.blacklisted_handles.contains(&pair.1))
     }
 }
 
@@ -163,8 +163,12 @@ mod mock {
         collision_filter.add_whitelisted_handle(whitelisted_handle);
         collision_filter.add_blacklisted_handle(blacklisted_handle);
 
-        assert!(collision_filter.is_pair_valid(UnorderedPair(whitelisted_handle, blacklisted_handle)));
-        assert!(collision_filter.is_pair_valid(UnorderedPair(blacklisted_handle, whitelisted_handle)));
+        assert!(
+            collision_filter.is_pair_valid(UnorderedPair(whitelisted_handle, blacklisted_handle))
+        );
+        assert!(
+            collision_filter.is_pair_valid(UnorderedPair(blacklisted_handle, whitelisted_handle))
+        );
     }
 
     #[test]
@@ -254,14 +258,16 @@ mod mock {
             if !panicking() {
                 if self.expect_add_blacklisted_handle.is_some() {
                     assert!(
-                        self.add_blacklisted_handle_was_called.load(Ordering::SeqCst),
+                        self.add_blacklisted_handle_was_called
+                            .load(Ordering::SeqCst),
                         "add_blacklisted_handle() was not called, but was expected"
                     );
                 }
 
                 if self.expect_add_whitelisted_handle.is_some() {
                     assert!(
-                        self.add_whitelisted_handle_was_called.load(Ordering::SeqCst),
+                        self.add_whitelisted_handle_was_called
+                            .load(Ordering::SeqCst),
                         "add_whitelisted_handle() was not called, but was expected"
                     );
                 }
@@ -280,14 +286,16 @@ mod mock {
 
                 if self.expect_remove_blacklisted_handle.is_some() {
                     assert!(
-                        self.remove_blacklisted_handle_was_called.load(Ordering::SeqCst),
+                        self.remove_blacklisted_handle_was_called
+                            .load(Ordering::SeqCst),
                         "remove_blacklisted_handle() was not called, but was expected"
                     );
                 }
 
                 if self.expect_remove_whitelisted_handle.is_some() {
                     assert!(
-                        self.remove_whitelisted_handle_was_called.load(Ordering::SeqCst),
+                        self.remove_whitelisted_handle_was_called
+                            .load(Ordering::SeqCst),
                         "remove_whitelisted_handle() was not called, but was expected"
                     );
                 }
