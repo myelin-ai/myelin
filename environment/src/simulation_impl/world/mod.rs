@@ -45,6 +45,7 @@ pub struct NphysicsWorld {
     rotation_translator: Box<dyn NphysicsRotationTranslator>,
     force_generator_handle: ForceGeneratorHandle,
     collision_filter: Arc<RwLock<dyn IgnoringCollisionFilter>>,
+    collider_to_body_handle: HashMap<ColliderHandle, NphysicsBodyHandle>,
 }
 
 impl NphysicsWorld {
@@ -92,6 +93,7 @@ impl NphysicsWorld {
             rotation_translator,
             force_generator_handle,
             collision_filter,
+            collider_to_body_handle: HashMap::new(),
         }
     }
 
@@ -282,6 +284,10 @@ impl World for NphysicsWorld {
             to_nphysics_isometry(body.location, body.rotation, &*self.rotation_translator);
         let material = Material::default();
 
+        let rigid_body_handle =
+            self.physics_world
+                .add_rigid_body(isometry, local_inertia, local_center_of_mass);
+
         let handle = match body.mobility {
             Mobility::Immovable => self.physics_world.add_collider(
                 0.04,
@@ -291,11 +297,6 @@ impl World for NphysicsWorld {
                 material,
             ),
             Mobility::Movable(velocity) => {
-                let rigid_body_handle = self.physics_world.add_rigid_body(
-                    isometry,
-                    local_inertia,
-                    local_center_of_mass,
-                );
                 let mut rigid_body = self
                     .physics_world
                     .rigid_body_mut(rigid_body_handle)
@@ -313,6 +314,9 @@ impl World for NphysicsWorld {
 
         let body_handle = to_body_handle(handle);
 
+        self.collider_to_body_handle
+            .insert(handle, rigid_body_handle);
+
         if body.passable {
             self.collision_filter
                 .write()
@@ -329,6 +333,10 @@ impl World for NphysicsWorld {
         let collider_handle = to_collider_handle(body_handle);
         let nphysics_body_handle = self.physics_world.collider_body_handle(collider_handle)?;
         if let Some(sensor_handle) = self.body_sensors.remove(&body_handle) {
+            self.collision_filter
+                .write()
+                .expect("Lock was poisoned")
+                .remove_whitelisted_handle(sensor_handle.into());
             self.sensor_collisions.remove(&sensor_handle)?;
         }
         if physical_body.passable {
@@ -344,14 +352,14 @@ impl World for NphysicsWorld {
     #[must_use]
     fn attach_sensor(&mut self, body_handle: BodyHandle, sensor: Sensor) -> Option<SensorHandle> {
         let collider_handle = to_collider_handle(body_handle);
-        let parent_handle = self.physics_world.collider_body_handle(collider_handle)?;
+        let parent_handle = self.collider_to_body_handle.get(&collider_handle)?;
 
         let shape = translate_shape(&sensor.shape);
         let position =
             to_nphysics_isometry(sensor.location, sensor.rotation, &*self.rotation_translator);
         let sensor_handle = self
             .physics_world
-            .add_sensor(shape, parent_handle, position);
+            .add_sensor(shape, *parent_handle, position);
 
         let sensor_handle = to_sensor_handle(sensor_handle);
 
@@ -447,6 +455,8 @@ impl fmt::Debug for NphysicsWorld {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("NphysicsWorld")
             .field("physics", &DebugPhysicsWorld(&self.physics_world))
+            .field("sensor_collisions", &self.sensor_collisions)
+            .field("body_sensors", &self.body_sensors)
             .finish()
     }
 }
@@ -852,7 +862,7 @@ mod tests {
             .expect("body handle was invalid");
 
         let close_body = PhysicalBody {
-            location: Point { x: 6.0, y: 6.0 },
+            location: Point { x: 11.0, y: 11.0 },
             rotation: Radians::default(),
             ..movable_body(Radians::default())
         };

@@ -183,7 +183,7 @@ fn build_terrain(location: (f64, f64), width: f64, length: f64) -> ObjectDescrip
 }
 
 fn build_plant(half_of_width_and_height: f64, x: f64, y: f64) -> ObjectDescription {
-    let half_of_sensor_width_and_height = half_of_width_and_height * 3.0;
+    let half_of_sensor_width_and_height = half_of_width_and_height * 3.0 + 1.0;
     ObjectBuilder::default()
         .shape(
             PolygonBuilder::default()
