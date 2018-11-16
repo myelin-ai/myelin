@@ -201,7 +201,7 @@ mod mock {
     #[derive(Default)]
     pub(crate) struct IgnoringCollisionFilterMock {
         expect_add_blacklisted_handle: Option<AnyHandle>,
-        expect_add_whitelisted_handle: Option<AnyHandle>,
+        expect_add_whitelisted_handle: bool,
         expect_is_handle_blacklisted_and_return: RwLock<VecDeque<(AnyHandle, bool)>>,
         expect_remove_blacklisted_handle: Option<AnyHandle>,
         expect_remove_whitelisted_handle: Option<AnyHandle>,
@@ -221,8 +221,8 @@ mod mock {
             self
         }
 
-        pub fn expect_add_whitelisted_handle(&mut self, handle: AnyHandle) -> &mut Self {
-            self.expect_add_blacklisted_handle = Some(handle);
+        pub fn expect_add_whitelisted_handle(&mut self) -> &mut Self {
+            self.expect_add_whitelisted_handle = true;
             self
         }
 
@@ -264,7 +264,7 @@ mod mock {
                     );
                 }
 
-                if self.expect_add_whitelisted_handle.is_some() {
+                if self.expect_add_whitelisted_handle {
                     assert!(
                         self.add_whitelisted_handle_was_called
                             .load(Ordering::SeqCst),
@@ -343,14 +343,7 @@ mod mock {
             self.add_whitelisted_handle_was_called
                 .store(true, Ordering::SeqCst);
 
-            if let Some(expected_input) = self.expect_add_whitelisted_handle {
-                if handle != expected_input {
-                    panic!(
-                        "add_whitelisted_handle() was called with an unexpected input value: {:?}",
-                        handle
-                    )
-                }
-            } else {
+            if !self.expect_add_whitelisted_handle {
                 panic!("add_whitelisted_handle() was called unexpectedly")
             }
         }

@@ -356,6 +356,12 @@ impl World for NphysicsWorld {
             .add_sensor(shape, parent_handle, position);
 
         let sensor_handle = to_sensor_handle(sensor_handle);
+
+        self.collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .add_whitelisted_handle(sensor_handle.into());
+
         self.sensor_collisions.insert(sensor_handle, HashSet::new());
         self.body_sensors.insert(body_handle, sensor_handle);
         Some(sensor_handle)
@@ -621,6 +627,7 @@ mod tests {
         collision_filter
             .write()
             .expect("RwLock was poisoned")
+            .expect_add_whitelisted_handle()
             .expect_is_handle_blacklisted_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         world
@@ -766,14 +773,21 @@ mod tests {
         rotation_translator.expect_to_nphysics_rotation_and_return(Radians::default(), 0.0);
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
+
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter,
+            collision_filter.clone(),
         );
         let body = immovable_body(Radians::default());
         let handle = world.add_body(body);
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_add_whitelisted_handle();
+
         let sensor_handle = world.attach_sensor(handle, sensor());
         assert!(sensor_handle.is_some())
     }
@@ -788,10 +802,15 @@ mod tests {
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter,
+            collision_filter.clone(),
         );
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_add_whitelisted_handle();
 
         let sensor_handle = world
             .attach_sensor(handle_one, sensor())
@@ -824,8 +843,14 @@ mod tests {
             box force_applier,
             collision_filter.clone(),
         );
+
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_add_whitelisted_handle();
 
         let sensor_handle = world
             .attach_sensor(handle_one, sensor())
@@ -875,6 +900,11 @@ mod tests {
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
 
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_add_whitelisted_handle();
+
         let sensor_handle = world
             .attach_sensor(handle_one, sensor())
             .expect("body handle was invalid");
@@ -922,6 +952,11 @@ mod tests {
         );
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_add_whitelisted_handle();
 
         let sensor_handle = world
             .attach_sensor(handle_one, sensor())
@@ -971,6 +1006,11 @@ mod tests {
         );
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_add_whitelisted_handle();
 
         let sensor_handle = world
             .attach_sensor(handle_one, sensor())
@@ -1029,6 +1069,11 @@ mod tests {
         );
         let body = movable_body(Radians::default());
         let handle_one = world.add_body(body);
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_add_whitelisted_handle();
 
         let sensor_handle = world
             .attach_sensor(handle_one, sensor())
