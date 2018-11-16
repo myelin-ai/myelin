@@ -12,11 +12,17 @@ use std::fmt;
 /// a row of organisms. The simulation is framed by terrain.
 pub struct HardcodedGenerator {
     simulation_factory: SimulationFactory,
-    object_factory: ObjectFactory,
+    plant_factory: PlantFactory,
+    organism_factory: OrganismFactory,
+    terrain_factory: TerrainFactory,
+    water_factory: WaterFactory,
 }
 
 pub type SimulationFactory = Box<dyn Fn() -> Box<dyn Simulation>>;
-pub type ObjectFactory = Box<dyn Fn(Kind) -> Box<dyn ObjectBehavior>>;
+pub type PlantFactory = Box<dyn Fn(Sensor) -> Box<dyn ObjectBehavior>>;
+pub type OrganismFactory = Box<dyn Fn() -> Box<dyn ObjectBehavior>>;
+pub type TerrainFactory = Box<dyn Fn() -> Box<dyn ObjectBehavior>>;
+pub type WaterFactory = Box<dyn Fn() -> Box<dyn ObjectBehavior>>;
 
 impl HardcodedGenerator {
     /// Creates a new generator, injecting a simulation factory, i.e.
@@ -52,32 +58,50 @@ impl HardcodedGenerator {
     ///     Box::new(SimulationImpl::new(world))
     /// });
     ///
-    /// let object_factory = Box::new(|_: Kind| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
-    /// let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
+    /// let organism_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
+    /// let terrain_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
+    /// let water_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
+    ///
+    /// let worldgen = HardcodedGenerator::new(
+    ///     simulation_factory,
+    ///     plant_factory,
+    ///     organism_factory,
+    ///     terrain_factory,
+    ///     water_factory,
+    /// );
     /// let generated_simulation = worldgen.generate();
-    pub fn new(simulation_factory: SimulationFactory, object_factory: ObjectFactory) -> Self {
+    pub fn new(
+        simulation_factory: SimulationFactory,
+        plant_factory: PlantFactory,
+        organism_factory: OrganismFactory,
+        terrain_factory: TerrainFactory,
+        water_factory: WaterFactory,
+    ) -> Self {
         Self {
             simulation_factory,
-            object_factory,
+            plant_factory,
+            organism_factory,
+            terrain_factory,
+            water_factory,
         }
     }
 
     fn populate_with_terrain(&self, simulation: &mut dyn Simulation) {
         simulation.add_object(
             build_terrain((25.0, 500.0), 50.0, 1000.0),
-            (self.object_factory)(Kind::Terrain),
+            (self.terrain_factory)(),
         );
         simulation.add_object(
             build_terrain((500.0, 25.0), 1000.0, 50.0),
-            (self.object_factory)(Kind::Terrain),
+            (self.terrain_factory)(),
         );
         simulation.add_object(
             build_terrain((975.0, 500.0), 50.0, 1000.0),
-            (self.object_factory)(Kind::Terrain),
+            (self.terrain_factory)(),
         );
         simulation.add_object(
             build_terrain((500.0, 975.0), 1000.0, 50.0),
-            (self.object_factory)(Kind::Terrain),
+            (self.terrain_factory)(),
         );
     }
 
@@ -99,15 +123,41 @@ impl HardcodedGenerator {
             .build()
             .expect("Failed to build water");
 
-        simulation.add_object(object_description, (self.object_factory)(Kind::Water));
+        simulation.add_object(object_description, (self.water_factory)());
     }
 
     fn populate_with_plants(&self, simulation: &mut dyn Simulation) {
+        /// Arbi
+        const HALF_OF_SENSOR_WIDTH_AND_HEIGHT: f64 = 30.0;
+
+        let sensor = Sensor {
+            shape: PolygonBuilder::default()
+                .vertex(
+                    -HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
+                    -HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
+                )
+                .vertex(
+                    HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
+                    -HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
+                )
+                .vertex(
+                    HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
+                    HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
+                )
+                .vertex(
+                    -HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
+                    HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
+                )
+                .build()
+                .unwrap(),
+            location: Point::default(),
+            rotation: Radians::default(),
+        };
         for i in 0..=10 {
             for j in 0..=7 {
                 simulation.add_object(
                     build_plant(100.0 + f64::from(i) * 30.0, 100.0 + f64::from(j) * 30.0),
-                    (self.object_factory)(Kind::Plant),
+                    (self.plant_factory)(sensor.clone()),
                 );
             }
         }
@@ -115,33 +165,18 @@ impl HardcodedGenerator {
             for j in 0..=7 {
                 simulation.add_object(
                     build_plant(600.0 + f64::from(i) * 30.0, 100.0 + f64::from(j) * 30.0),
-                    (self.object_factory)(Kind::Plant),
+                    (self.plant_factory)(sensor.clone()),
                 );
             }
         }
     }
 
     fn populate_with_organisms(&self, simulation: &mut dyn Simulation) {
-        simulation.add_object(
-            build_organism(300.0, 800.0),
-            (self.object_factory)(Kind::Organism),
-        );
-        simulation.add_object(
-            build_organism(400.0, 800.0),
-            (self.object_factory)(Kind::Organism),
-        );
-        simulation.add_object(
-            build_organism(500.0, 800.0),
-            (self.object_factory)(Kind::Organism),
-        );
-        simulation.add_object(
-            build_organism(600.0, 800.0),
-            (self.object_factory)(Kind::Organism),
-        );
-        simulation.add_object(
-            build_organism(700.0, 800.0),
-            (self.object_factory)(Kind::Organism),
-        );
+        simulation.add_object(build_organism(300.0, 800.0), (self.organism_factory)());
+        simulation.add_object(build_organism(400.0, 800.0), (self.organism_factory)());
+        simulation.add_object(build_organism(500.0, 800.0), (self.organism_factory)());
+        simulation.add_object(build_organism(600.0, 800.0), (self.organism_factory)());
+        simulation.add_object(build_organism(700.0, 800.0), (self.organism_factory)());
     }
 }
 fn build_terrain(location: (f64, f64), width: f64, length: f64) -> ObjectDescription {
@@ -244,7 +279,7 @@ impl fmt::Debug for HardcodedGenerator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::{Snapshot};
+    use myelin_environment::Snapshot;
     use std::thread::panicking;
 
     #[derive(Debug, Default)]
@@ -293,8 +328,19 @@ mod tests {
     #[test]
     fn generates_simulation() {
         let simulation_factory = box || -> Box<dyn Simulation> { box SimulationMock::default() };
-        let object_factory = box |_: Kind| -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock {} };
-        let generator = HardcodedGenerator::new(simulation_factory, object_factory);
+        let plant_factory =
+            box |_: Sensor| -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock {} };
+        let organism_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock {} };
+        let terrain_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock {} };
+        let water_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock {} };
+
+        let generator = HardcodedGenerator::new(
+            simulation_factory,
+            plant_factory,
+            organism_factory,
+            terrain_factory,
+            water_factory,
+        );
 
         let _simulation = generator.generate();
     }

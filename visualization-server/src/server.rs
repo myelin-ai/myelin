@@ -5,13 +5,12 @@ use crate::constant::*;
 use crate::controller::{ConnectionAcceptor, Controller, ControllerImpl};
 use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
-use myelin_environment::object::{Kind, ObjectBehavior, Sensor};
+use myelin_environment::object::{ObjectBehavior, Sensor};
 use myelin_environment::simulation_impl::world::collision_filter::IgnoringCollisionFilterImpl;
 use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
 use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
 use myelin_environment::simulation_impl::world::NphysicsWorld;
 use myelin_environment::{simulation_impl::SimulationImpl, Simulation};
-use myelin_geometry::{Point, PolygonBuilder, Radians};
 use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
 use myelin_object_behavior::Static;
 use myelin_visualization_core::serialization::BincodeSerializer;
@@ -43,40 +42,20 @@ where
         );
         box SimulationImpl::new(box world)
     };
-    let object_factory = box |kind: Kind| -> Box<dyn ObjectBehavior> {
-        const HALF_OF_SENSOR_WIDTH_AND_HEIGHT: f64 = 30.0;
-        match kind {
-            Kind::Plant => box StochasticSpreading::new(
-                1.0 / 100.0,
-                Sensor {
-                    shape: PolygonBuilder::default()
-                        .vertex(
-                            -HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
-                            -HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
-                        )
-                        .vertex(
-                            HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
-                            -HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
-                        )
-                        .vertex(
-                            HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
-                            HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
-                        )
-                        .vertex(
-                            -HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
-                            HALF_OF_SENSOR_WIDTH_AND_HEIGHT,
-                        )
-                        .build()
-                        .unwrap(),
-                    location: Point::default(),
-                    rotation: Radians::default(),
-                },
-                box RandomChanceCheckerImpl::new(),
-            ),
-            _ => box Static::default(),
-        }
+    let plant_factory = box |sensor: Sensor| -> Box<dyn ObjectBehavior> {
+        box StochasticSpreading::new(1.0 / 100.0, sensor, box RandomChanceCheckerImpl::new())
     };
-    let worldgen = HardcodedGenerator::new(simulation_factory, object_factory);
+    let organism_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
+    let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
+    let water_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
+
+    let worldgen = HardcodedGenerator::new(
+        simulation_factory,
+        plant_factory,
+        organism_factory,
+        terrain_factory,
+        water_factory,
+    );
 
     let conection_acceptor_factory_fn = Arc::new(move |current_snapshot_fn| {
         let client_factory_fn = Arc::new(|websocket_client, current_snapshot_fn| {
