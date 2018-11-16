@@ -129,34 +129,22 @@ fn calculate_possible_spreading_locations(vertices: &[Point]) -> Vec<Point> {
             x: -width,
             y: -height,
         },
-        Point {
-            x: -PADDING,
-            y: -height,
-        },
+        Point { x: 0.0, y: -height },
         Point {
             x: width,
             y: -height,
         },
-        Point {
-            x: width,
-            y: PADDING,
-        },
+        Point { x: width, y: 0.0 },
         Point {
             x: width,
             y: height,
         },
-        Point {
-            x: PADDING,
-            y: height,
-        },
+        Point { x: 0.0, y: height },
         Point {
             x: -width,
             y: height,
         },
-        Point {
-            x: -width,
-            y: -PADDING,
-        },
+        Point { x: -width, y: 0.0 },
     ]
 }
 

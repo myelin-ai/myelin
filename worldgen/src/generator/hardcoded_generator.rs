@@ -129,13 +129,14 @@ impl HardcodedGenerator {
 
     fn populate_with_plants(&self, simulation: &mut dyn Simulation) {
         const HALF_OF_PLANT_WIDTH_AND_HEIGHT: f64 = 10.0;
-
+        const PADDING: f64 = 1.0;
+        const DISPLACEMENT: f64 = HALF_OF_PLANT_WIDTH_AND_HEIGHT * 2.0 + PADDING;
         for i in 0..=10 {
             for j in 0..=7 {
                 let plant = build_plant(
                     HALF_OF_PLANT_WIDTH_AND_HEIGHT,
-                    100.0 + f64::from(i) * 30.0,
-                    100.0 + f64::from(j) * 30.0,
+                    102.0 + f64::from(i) * DISPLACEMENT,
+                    102.0 + f64::from(j) * DISPLACEMENT,
                 );
                 let sensor = plant.sensor.clone().unwrap();
                 simulation.add_object(plant, (self.plant_factory)(sensor));
@@ -145,8 +146,8 @@ impl HardcodedGenerator {
             for j in 0..=7 {
                 let plant = build_plant(
                     HALF_OF_PLANT_WIDTH_AND_HEIGHT,
-                    600.0 + f64::from(i) * 30.0,
-                    100.0 + f64::from(j) * 30.0,
+                    688.0 + f64::from(i) * DISPLACEMENT,
+                    102.0 + f64::from(j) * DISPLACEMENT,
                 );
                 let sensor = plant.sensor.clone().unwrap();
                 simulation.add_object(plant, (self.plant_factory)(sensor));
