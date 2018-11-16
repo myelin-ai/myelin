@@ -124,19 +124,19 @@ mod mock {
     use std::thread::panicking;
 
     #[test]
-    fn pair_is_not_valid_if_ignored() {
+    fn pair_is_not_valid_if_blacklisted() {
         let ignored_handle = AnyHandle(0);
 
         let mut collision_filter = IgnoringCollisionFilterImpl::default();
-        collision_filter.add_ignored_handle(ignored_handle);
+        collision_filter.add_blacklisted_handle(ignored_handle);
 
-        assert!(collision_filter.is_handle_ignored(ignored_handle));
+        assert!(collision_filter.is_handle_blacklisted(ignored_handle));
         assert!(!collision_filter.is_pair_valid(UnorderedPair(ignored_handle, AnyHandle(1))));
         assert!(!collision_filter.is_pair_valid(UnorderedPair(AnyHandle(1), ignored_handle)));
     }
 
     #[test]
-    fn pair_is_valid_if_not_ignored() {
+    fn pair_is_valid_if_not_blacklisted() {
         let collision_filter = IgnoringCollisionFilterImpl::default();
 
         assert!(collision_filter.is_pair_valid(UnorderedPair(AnyHandle(0), AnyHandle(1))));
@@ -144,15 +144,39 @@ mod mock {
     }
 
     #[test]
-    fn pair_is_valid_when_handle_added_and_removed() {
+    fn pair_is_valid_if_one_element_is_whitelisted() {
+        let whitelisted_handle = AnyHandle(0);
+
+        let mut collision_filter = IgnoringCollisionFilterImpl::default();
+        collision_filter.add_whitelisted_handle(whitelisted_handle);
+
+        assert!(collision_filter.is_pair_valid(UnorderedPair(whitelisted_handle, AnyHandle(1))));
+        assert!(collision_filter.is_pair_valid(UnorderedPair(AnyHandle(1), whitelisted_handle)));
+    }
+
+    #[test]
+    fn pair_is_valid_if_one_element_is_whitelisted_and_the_other_blacklisted() {
+        let whitelisted_handle = AnyHandle(0);
+        let blacklisted_handle = AnyHandle(1);
+
+        let mut collision_filter = IgnoringCollisionFilterImpl::default();
+        collision_filter.add_whitelisted_handle(whitelisted_handle);
+        collision_filter.add_blacklisted_handle(blacklisted_handle);
+
+        assert!(collision_filter.is_pair_valid(UnorderedPair(whitelisted_handle, blacklisted_handle));
+        assert!(collision_filter.is_pair_valid(UnorderedPair(blacklisted_handle, whitelisted_handle)));
+    }
+
+    #[test]
+    fn pair_is_valid_when_handle_added_and_removed_from_blacklist() {
         let ignored_handle = AnyHandle(0);
 
         let mut collision_filter = IgnoringCollisionFilterImpl::default();
-        collision_filter.add_ignored_handle(ignored_handle);
+        collision_filter.add_blacklisted_handle(ignored_handle);
 
-        assert!(collision_filter.is_handle_ignored(ignored_handle));
+        assert!(collision_filter.is_handle_blacklisted(ignored_handle));
 
-        collision_filter.remove_ignored_handle(ignored_handle);
+        collision_filter.remove_blacklisted_handle(ignored_handle);
 
         assert!(collision_filter.is_pair_valid(UnorderedPair(ignored_handle, AnyHandle(1))));
         assert!(collision_filter.is_pair_valid(UnorderedPair(AnyHandle(1), ignored_handle)));
