@@ -19,7 +19,9 @@ alga = "0.7"
 unordered-pair = "0.2"
 
 [dependencies.nphysics2d]
-version = "0.9.1"
+# version = "0.9.1"
+git = "https://github.com/myelin-ai/nphysics"
+rev = "interferences"
 default-features = false
 features = ["use-wasm-bindgen"]
 
