@@ -58,7 +58,7 @@ impl HardcodedGenerator {
     ///     Box::new(SimulationImpl::new(world))
     /// });
     ///
-    /// let plant_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
+    /// let plant_factory = Box::new(|_| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
     /// let organism_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
     /// let terrain_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
     /// let water_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
