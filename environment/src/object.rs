@@ -8,15 +8,29 @@ use crate::{Id, Snapshot};
 use myelin_geometry::*;
 use std::fmt::Debug;
 
-/// Behaviour of an object that can never be moved
+/// Behavior of an object
 pub trait ObjectBehavior: Debug + ObjectBehaviorClone {
     /// Returns all actions performed by the object
     /// in the current simulation tick
     fn step(
         &mut self,
         own_description: &ObjectDescription,
-        sensor_collisions: &Snapshot,
+        environment: &dyn ObjectEnvironment,
     ) -> Option<Action>;
+}
+
+/// Provides information to an [`ObjectBehavior`] about
+/// the world it is placed in.
+///
+/// [`ObjectBehavior`]: ./trait.ObjectBehavior.html
+pub trait ObjectEnvironment: Debug {
+    /// Scans for objects in the area defined by an [`Aabb`].
+    ///
+    /// Returns all objects either completely contained or intersecting
+    /// with the area.
+    ///
+    /// [`Aabb`]: ./struct.Aabb.html
+    fn find_objects_in_area(&self, area: Aabb) -> Snapshot;
 }
 
 /// Possible actions performed by an [`Object`]
@@ -46,6 +60,15 @@ impl Clone for Action {
             Action::Die => Action::Die,
         }
     }
+}
+
+/// An axix-aligned bounding box
+#[derive(Debug, PartialEq, Clone)]
+pub struct Aabb {
+    /// The position with the smallest coordinates
+    pub mins: Point,
+    /// The position with the highest coordinates
+    pub maxs: Point,
 }
 
 /// A sensor that can be attached to an [`Object`],
