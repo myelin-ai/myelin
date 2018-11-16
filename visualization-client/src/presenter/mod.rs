@@ -5,17 +5,14 @@ pub(crate) use self::global_polygon_translator::{
 use crate::controller::Presenter;
 use crate::view_model::{self, ViewModel};
 use myelin_environment::object::*;
-use myelin_environment::Id;
+use myelin_environment::Snapshot;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
 use std::borrow::Borrow;
-use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 
 mod delta_applier;
 mod global_polygon_translator;
-
-pub(crate) type Snapshot = HashMap<Id, ObjectDescription>;
 
 pub(crate) trait View: fmt::Debug {
     fn draw_objects(&self, view_model: &ViewModel);

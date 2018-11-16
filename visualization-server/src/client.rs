@@ -1,7 +1,8 @@
 use crate::connection::Connection;
 use crate::connection_acceptor::Client;
-use crate::controller::{CurrentSnapshotFn, Presenter, Snapshot};
+use crate::controller::{CurrentSnapshotFn, Presenter};
 use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperError};
+use myelin_environment::Snapshot;
 use myelin_visualization_core::serialization::ViewModelSerializer;
 use std::fmt::{self, Debug};
 use std::sync::Arc;

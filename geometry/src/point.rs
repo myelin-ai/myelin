@@ -1,3 +1,4 @@
+use crate::Vector;
 use std::ops::{Add, Sub};
 
 /// A point in space
@@ -27,6 +28,15 @@ impl Sub for Point {
         Point {
             x: self.x - other.x,
             y: self.y - other.y,
+        }
+    }
+}
+
+impl From<Vector> for Point {
+    fn from(vector: Vector) -> Self {
+        Self {
+            x: vector.x,
+            y: vector.y,
         }
     }
 }
