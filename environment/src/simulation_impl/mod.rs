@@ -2,7 +2,7 @@
 //! behaviour into a separate `World` type
 
 use crate::object::*;
-use crate::{Id, Simulation};
+use crate::{Simulation, Snapshot};
 use myelin_geometry::*;
 use ncollide2d::world::CollisionObjectHandle;
 use std::collections::HashMap;
@@ -88,10 +88,7 @@ impl SimulationImpl {
         })
     }
 
-    fn retrieve_objects_within_sensor(
-        &self,
-        body_handle: BodyHandle,
-    ) -> HashMap<Id, ObjectDescription> {
+    fn retrieve_objects_within_sensor(&self, body_handle: BodyHandle) -> Snapshot {
         if let Some(non_physical_object_data) = self.non_physical_object_data.get(&body_handle) {
             if let Some((sensor_handle, _)) = non_physical_object_data.sensor {
                 self.world
@@ -234,7 +231,7 @@ impl Simulation for SimulationImpl {
             .insert(body_handle, non_physical_object_data);
     }
 
-    fn objects(&self) -> HashMap<Id, ObjectDescription> {
+    fn objects(&self) -> Snapshot {
         self.non_physical_object_data
             .keys()
             .map(|&handle| {
@@ -1304,11 +1301,7 @@ mod tests {
 
     #[derive(Debug, Default, Clone)]
     struct ObjectBehaviorMock {
-        expect_step_and_return: Option<(
-            ObjectDescription,
-            HashMap<Id, ObjectDescription>,
-            Option<Action>,
-        )>,
+        expect_step_and_return: Option<(ObjectDescription, Snapshot, Option<Action>)>,
 
         step_was_called: RefCell<bool>,
     }
@@ -1321,7 +1314,7 @@ mod tests {
         pub(crate) fn expect_step_and_return(
             &mut self,
             own_description: ObjectDescription,
-            sensor_collisions: HashMap<Id, ObjectDescription>,
+            sensor_collisions: Snapshot,
             returned_value: Option<Action>,
         ) {
             self.expect_step_and_return =
@@ -1333,7 +1326,7 @@ mod tests {
         fn step(
             &mut self,
             own_description: &ObjectDescription,
-            sensor_collisions: &HashMap<Id, ObjectDescription>,
+            sensor_collisions: &Snapshot,
         ) -> Option<Action> {
             *self.step_was_called.borrow_mut() = true;
             if let Some((

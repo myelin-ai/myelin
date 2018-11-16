@@ -1,8 +1,7 @@
-//! Behaviours of various organisms
+//! Contains the [`Static`] behavior.
 
 use myelin_environment::object::*;
-use myelin_environment::Id;
-use std::collections::HashMap;
+use myelin_environment::Snapshot;
 
 /// A purely static and non-interactive behavior.
 /// This type will never perform any actions.
@@ -13,7 +12,7 @@ impl ObjectBehavior for Static {
     fn step(
         &mut self,
         _own_description: &ObjectDescription,
-        _sensor_collisions: &HashMap<Id, ObjectDescription>,
+        _sensor_collisions: &Snapshot,
     ) -> Option<Action> {
         None
     }
@@ -23,6 +22,7 @@ impl ObjectBehavior for Static {
 mod tests {
     use super::*;
     use myelin_geometry::*;
+    use std::collections::HashMap;
     use std::f64::consts::FRAC_PI_2;
 
     #[test]

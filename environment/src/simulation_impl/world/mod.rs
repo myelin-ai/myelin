@@ -27,8 +27,6 @@ use std::error::Error;
 use std::fmt;
 use std::sync::{Arc, RwLock};
 
-type PhysicsType = f64;
-
 const COLLIDER_MARGIN: PhysicsType = 0.04;
 const DEFAULT_OBJECT_DENSITY: PhysicsType = 0.1;
 
@@ -42,7 +40,7 @@ use self::force_applier::GenericSingleTimeForceApplierWrapper;
 ///
 /// [`World`]: ./trait.World.html
 pub struct NphysicsWorld {
-    physics_world: PhysicsWorld<PhysicsType>,
+    physics_world: PhysicsWorld<f64>,
     sensor_collisions: HashMap<SensorHandle, HashSet<ColliderHandle>>,
     /// Only used to track active sensors so that we can remove them
     /// when removing an object
@@ -118,7 +116,7 @@ impl NphysicsWorld {
         })
     }
 
-    fn get_shape(&self, collider: &Collider<PhysicsType>) -> Polygon {
+    fn get_shape(&self, collider: &Collider<f64>) -> Polygon {
         let convex_polygon: &ConvexPolygon<_> = collider
             .shape()
             .as_shape()
@@ -134,7 +132,7 @@ impl NphysicsWorld {
         Polygon { vertices }
     }
 
-    fn get_mobility(&self, collider: &Collider<PhysicsType>) -> Mobility {
+    fn get_mobility(&self, collider: &Collider<f64>) -> Mobility {
         let body_handle = collider.data().body();
         if body_handle.is_ground() {
             Mobility::Immovable
@@ -150,13 +148,13 @@ impl NphysicsWorld {
         }
     }
 
-    fn get_location(&self, collider: &Collider<PhysicsType>) -> Point {
+    fn get_location(&self, collider: &Collider<f64>) -> Point {
         let position = collider.position();
         let (x, y) = elements(&position.translation.vector);
         Point { x, y }
     }
 
-    fn get_rotation(&self, collider: &Collider<PhysicsType>) -> Radians {
+    fn get_rotation(&self, collider: &Collider<f64>) -> Radians {
         let position = collider.position();
         let rotation = position.rotation.angle();
 
@@ -165,7 +163,7 @@ impl NphysicsWorld {
             .expect("Rotation of a collider could not be translated into Radians")
     }
 
-    fn passable(&self, collider: &Collider<PhysicsType>) -> bool {
+    fn passable(&self, collider: &Collider<f64>) -> bool {
         let body_handle = to_body_handle(collider.handle());
         self.collision_filter
             .read()
@@ -206,7 +204,7 @@ impl fmt::Display for NphysicsRotationTranslatorError {
 impl Error for NphysicsRotationTranslatorError {}
 
 /// A [`ForceGenerator`] that applies a given force exactly once
-pub trait SingleTimeForceApplier: fmt::Debug + ForceGenerator<PhysicsType> {
+pub trait SingleTimeForceApplier: fmt::Debug + ForceGenerator<f64> {
     /// Registers a [`Force`] to be applied to the body identified by `handle`
     /// in the next step
     ///
@@ -227,18 +225,18 @@ fn to_nphysics_isometry(
     location: Point,
     rotation: Radians,
     rotation_translator: &dyn NphysicsRotationTranslator,
-) -> Isometry<PhysicsType> {
+) -> Isometry<f64> {
     Isometry::new(
-        NPhysicsVector::new(PhysicsType::from(location.x), PhysicsType::from(location.y)),
+        NPhysicsVector::new(location.x, location.y),
         rotation_translator.to_nphysics_rotation(rotation),
     )
 }
 
-fn translate_shape(shape: &Polygon) -> ShapeHandle<PhysicsType> {
+fn translate_shape(shape: &Polygon) -> ShapeHandle<f64> {
     let points: Vec<_> = shape
         .vertices
         .iter()
-        .map(|vertex| NPhysicsPoint::new(PhysicsType::from(vertex.x), PhysicsType::from(vertex.y)))
+        .map(|vertex| NPhysicsPoint::new(vertex.x, vertex.y))
         .collect();
 
     ShapeHandle::new(ConvexPolygon::try_new(points).expect("Polygon was not convex"))
@@ -421,11 +419,8 @@ impl NphysicsWorld {
     }
 }
 
-fn set_velocity(rigid_body: &mut RigidBody<PhysicsType>, velocity: &Vector) {
-    let nphysics_velocity = nphysics2d::algebra::Velocity2::linear(
-        PhysicsType::from(velocity.x),
-        PhysicsType::from(velocity.y),
-    );
+fn set_velocity(rigid_body: &mut RigidBody<f64>, velocity: &Vector) {
+    let nphysics_velocity = nphysics2d::algebra::Velocity2::linear(velocity.x, velocity.y);
     rigid_body.set_velocity(nphysics_velocity);
 }
 
@@ -458,7 +453,7 @@ impl fmt::Debug for NphysicsWorld {
 ///
 /// [`std::fmt::Debug`]: https://doc.rust-lang.org/nightly/std/fmt/trait.Debug.html
 /// [`NphysicsWorld`]: ./struct.NphysicsWorld.html
-struct DebugPhysicsWorld<'a>(&'a PhysicsWorld<PhysicsType>);
+struct DebugPhysicsWorld<'a>(&'a PhysicsWorld<f64>);
 
 impl<'a> fmt::Debug for DebugPhysicsWorld<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -1382,12 +1377,8 @@ mod tests {
         }
     }
 
-    impl ForceGenerator<PhysicsType> for SingleTimeForceApplierMock {
-        fn apply(
-            &mut self,
-            _: &IntegrationParameters<PhysicsType>,
-            _: &mut BodySet<PhysicsType>,
-        ) -> bool {
+    impl ForceGenerator<f64> for SingleTimeForceApplierMock {
+        fn apply(&mut self, _: &IntegrationParameters<f64>, _: &mut BodySet<f64>) -> bool {
             *self.apply_was_called.write().expect("RwLock was poisoned") = true;
 
             if let Some((return_value,)) = self.expect_apply_and_return {
