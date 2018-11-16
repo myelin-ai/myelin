@@ -50,7 +50,7 @@ pipeline {
         }
         stage('wasm') {
           steps {
-            sh 'bash visualization-client/scripts/build.py --webpack'
+            sh './visualization-client/scripts/build.py --webpack'
           }
         }
       }
