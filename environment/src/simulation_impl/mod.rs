@@ -25,7 +25,6 @@ pub struct SimulationImpl {
 
 #[derive(Debug)]
 struct NonPhysicalObjectData {
-    pub(crate) sensor: Option<(SensorHandle, Sensor)>,
     pub(crate) kind: Kind,
     pub(crate) behavior: RefCell<Box<dyn ObjectBehavior>>,
 }
@@ -84,49 +83,8 @@ impl SimulationImpl {
             rotation: physics_body.rotation,
             mobility: physics_body.mobility,
             kind: non_physical_object_data.kind,
-            sensor: sensor_without_handle(non_physical_object_data.sensor.clone()),
             passable: self.world.is_body_passable(body_handle),
         })
-    }
-
-    fn retrieve_objects_within_sensor(&self, body_handle: BodyHandle) -> Snapshot {
-        if let Some(non_physical_object_data) = self.non_physical_object_data.get(&body_handle) {
-            if let Some((sensor_handle, _)) = non_physical_object_data.sensor {
-                self.world
-                    .bodies_within_sensor(sensor_handle)
-                    .expect("Internal error: Stored invalid sensor handle")
-                    .iter()
-                    .map(|handle| {
-                        (
-                            handle.0,
-                            self.convert_to_object_description(*handle).expect(
-                                "Object handle returned by world was not found in simulation",
-                            ),
-                        )
-                    })
-                    .collect()
-            } else {
-                HashMap::new()
-            }
-        } else {
-            HashMap::new()
-        }
-    }
-
-    fn attach_sensor_if_available(
-        &mut self,
-        body_handle: BodyHandle,
-        sensor: Option<Sensor>,
-    ) -> Option<(SensorHandle, Sensor)> {
-        if let Some(sensor) = sensor {
-            let sensor_handle = self
-                .world
-                .attach_sensor(body_handle, sensor.clone())
-                .expect("Internal error: World returned invalid handle");
-            Some((sensor_handle, sensor))
-        } else {
-            None
-        }
     }
 
     fn handle_action(
@@ -159,22 +117,8 @@ impl SimulationImpl {
     }
 }
 
-fn sensor_without_handle(sensor: Option<(SensorHandle, Sensor)>) -> Option<Sensor> {
-    Some(sensor?.1)
-}
-
 impl Simulation for SimulationImpl {
     fn step(&mut self) {
-        let object_handle_to_objects_within_sensor: HashMap<_, _> = self
-            .non_physical_object_data
-            .keys()
-            .map(|&object_handle| {
-                (
-                    object_handle,
-                    self.retrieve_objects_within_sensor(object_handle),
-                )
-            })
-            .collect();
         let object_handle_to_own_description: HashMap<_, _> = self
             .non_physical_object_data
             .keys()
@@ -193,7 +137,6 @@ impl Simulation for SimulationImpl {
             // This is safe because the keys of self.objects and
             // object_handle_to_objects_within_sensor are identical
             let own_description = &object_handle_to_own_description[object_handle];
-            let objects_within_sensor = &object_handle_to_objects_within_sensor[object_handle];
             let action = non_physical_object_data
                 .behavior
                 .borrow_mut()
@@ -224,9 +167,7 @@ impl Simulation for SimulationImpl {
 
         let body_handle = self.world.add_body(physical_body);
 
-        let sensor = self.attach_sensor_if_available(body_handle, object_description.sensor);
         let non_physical_object_data = NonPhysicalObjectData {
-            sensor,
             kind: object_description.kind,
             behavior: RefCell::new(object_behavior),
         };
@@ -277,11 +218,6 @@ pub trait World: fmt::Debug {
     /// [`PhysicalBody`]: ./struct.PhysicalBody.html
     fn remove_body(&mut self, body_handle: BodyHandle) -> Option<PhysicalBody>;
 
-    /// Attaches a sensor to the body identified by `body_handle`.
-    /// # Errors
-    /// Returns `None` if `body_handle` did not match any bodies.
-    fn attach_sensor(&mut self, body_handle: BodyHandle, sensor: Sensor) -> Option<SensorHandle>;
-
     /// Returns a [`PhysicalBody`] that has previously been
     /// placed with [`add_body()`] by its [`BodyHandle`].
     ///
@@ -293,15 +229,6 @@ pub trait World: fmt::Debug {
     /// [`BodyHandle`]: ./struct.BodyHandle.html
     /// [`add_body()`]: ./trait.World.html#tymethod.add_body
     fn body(&self, handle: BodyHandle) -> Option<PhysicalBody>;
-
-    /// Retrieves the handles of all bodies that are within the range of
-    /// a sensor, excluding the parent body it is attached to.
-    /// # Errors
-    /// Returns `None` if `sensor_handle` did not match any sensors.
-    fn bodies_within_sensor(
-        &self,
-        sensor_handle: SensorHandle,
-    ) -> Result<Vec<BodyHandle>, ActionError>;
 
     /// Register a force that will be applied to a body on the next
     /// step.
@@ -353,16 +280,6 @@ pub struct PhysicalBody {
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct BodyHandle(pub usize);
 
-/// A unique identifier that can be used to retrieve [`PhysicalBodies`] that
-/// are within the range of a [`Sensor`].
-///
-/// Don't construct any of these by yourself, only use the
-/// instances that [`World`] provides you
-///
-/// [`PhysicalBodies`]: ./struct.PhysicalBody.html
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct SensorHandle(pub usize);
-
 /// A unique identifier that represents either a [`BodyHandle`]
 /// or a [`SensorHandle`]
 ///
@@ -373,12 +290,6 @@ pub struct AnyHandle(pub usize);
 impl From<BodyHandle> for AnyHandle {
     fn from(body_handle: BodyHandle) -> Self {
         AnyHandle(body_handle.0)
-    }
-}
-
-impl From<SensorHandle> for AnyHandle {
-    fn from(sensor_handle: SensorHandle) -> Self {
-        AnyHandle(sensor_handle.0)
     }
 }
 
@@ -394,7 +305,7 @@ struct ObjectEnvironmentImpl<'a> {
 }
 
 impl<'a> ObjectEnvironment for ObjectEnvironmentImpl<'a> {
-    fn find_objects_in_area(&self, area: Aabb) -> Snapshot {
+    fn find_objects_in_area(&self, _area: Aabb) -> Snapshot {
         unimplemented!();
     }
 }
@@ -485,105 +396,6 @@ mod tests {
     }
 
     #[test]
-    fn attaches_sensors_to_body() {
-        let mut world = WorldMock::new();
-        let expected_shape = shape();
-        let expected_location = location();
-        let expected_rotation = rotation();
-        let expected_mobility = Mobility::Movable(Vector::default());
-        let expected_passable = false;
-
-        let expected_physical_body = PhysicalBody {
-            shape: expected_shape.clone(),
-            location: expected_location.clone(),
-            rotation: expected_rotation.clone(),
-            mobility: expected_mobility.clone(),
-            passable: expected_passable,
-        };
-        let returned_handle = BodyHandle(1337);
-        world.expect_add_body_and_return(expected_physical_body, returned_handle);
-
-        let expected_sensor = Sensor {
-            shape: PolygonBuilder::default()
-                .vertex(-5.0, -5.0)
-                .vertex(5.0, -5.0)
-                .vertex(5.0, 5.0)
-                .vertex(-5.0, 5.0)
-                .build()
-                .unwrap(),
-            location: Point::default(),
-            rotation: Radians::default(),
-        };
-        let sensor_handle = Some(SensorHandle(69));
-        world.expect_attach_sensor_and_return(
-            returned_handle,
-            expected_sensor.clone(),
-            sensor_handle,
-        );
-
-        let object_description = ObjectBuilder::default()
-            .location(expected_location.x, expected_location.y)
-            .rotation(expected_rotation)
-            .shape(expected_shape)
-            .kind(Kind::Organism)
-            .mobility(expected_mobility)
-            .sensor(expected_sensor)
-            .build()
-            .unwrap();
-        let object_behavior = ObjectBehaviorMock::new();
-
-        let mut simulation = SimulationImpl::new(box world);
-        simulation.add_object(object_description, box object_behavior);
-    }
-
-    #[should_panic]
-    #[test]
-    fn panics_on_sensor_attachement_failure() {
-        let mut world = WorldMock::new();
-        let expected_shape = shape();
-        let expected_location = location();
-        let expected_rotation = rotation();
-        let expected_mobility = Mobility::Movable(Vector::default());
-        let expected_passable = false;
-
-        let expected_physical_body = PhysicalBody {
-            shape: expected_shape.clone(),
-            location: expected_location.clone(),
-            rotation: expected_rotation.clone(),
-            mobility: expected_mobility.clone(),
-            passable: expected_passable,
-        };
-        let returned_handle = BodyHandle(1337);
-        world.expect_add_body_and_return(expected_physical_body, returned_handle);
-
-        let sensor = Sensor {
-            shape: PolygonBuilder::default()
-                .vertex(-5.0, -5.0)
-                .vertex(5.0, -5.0)
-                .vertex(5.0, 5.0)
-                .vertex(-5.0, 5.0)
-                .build()
-                .unwrap(),
-            location: Point::default(),
-            rotation: Radians::default(),
-        };
-        world.expect_attach_sensor_and_return(returned_handle, sensor, None);
-
-        let object_description = ObjectBuilder::default()
-            .location(expected_location.x, expected_location.y)
-            .rotation(expected_rotation)
-            .shape(expected_shape)
-            .kind(Kind::Organism)
-            .mobility(expected_mobility)
-            .build()
-            .unwrap();
-        let object_behavior = ObjectBehaviorMock::new();
-
-        let mut simulation = SimulationImpl::new(box world);
-        simulation.add_object(object_description, box object_behavior);
-    }
-
-    #[test]
     fn propagates_step_to_added_object() {
         let mut world = WorldMock::new();
         world.expect_step();
@@ -623,67 +435,6 @@ mod tests {
         );
 
         let mut simulation = SimulationImpl::new(box world);
-        simulation.add_object(expected_object_description, box object_behavior);
-        simulation.step();
-    }
-
-    #[test]
-    fn propagates_objects_within_sensor() {
-        let mut world = box WorldMock::new();
-        world.expect_step();
-        let expected_shape = shape();
-        let expected_location = location();
-        let expected_rotation = rotation();
-        let expected_mobility = Mobility::Movable(Vector::default());
-        let expected_passable = false;
-
-        let expected_physical_body = PhysicalBody {
-            shape: expected_shape.clone(),
-            location: expected_location.clone(),
-            rotation: expected_rotation.clone(),
-            mobility: expected_mobility.clone(),
-            passable: expected_passable,
-        };
-        let returned_handle = BodyHandle(1337);
-        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
-        world.expect_is_body_passable_and_return(returned_handle, expected_passable);
-
-        let mut object_behavior = ObjectBehaviorMock::new();
-        let sensor_shape = shape();
-        let expected_sensor = Sensor {
-            shape: sensor_shape,
-            location: Point::default(),
-            rotation: Radians::default(),
-        };
-        let expected_sensor_handle = SensorHandle(1357);
-        world.expect_attach_sensor_and_return(
-            returned_handle,
-            expected_sensor.clone(),
-            Some(expected_sensor_handle),
-        );
-        world.expect_bodies_within_sensor_and_return(
-            expected_sensor_handle,
-            Ok(vec![returned_handle]),
-        );
-
-        let expected_object_description = ObjectBuilder::default()
-            .location(expected_location.x, expected_location.y)
-            .rotation(expected_rotation)
-            .shape(expected_shape)
-            .kind(Kind::Organism)
-            .mobility(expected_mobility)
-            .sensor(expected_sensor)
-            .build()
-            .unwrap();
-
-        object_behavior.expect_step_and_return(
-            expected_object_description.clone(),
-            hashmap!{returned_handle.0 => expected_object_description.clone()},
-            None,
-        );
-        world.expect_body_and_return(returned_handle, Some(expected_physical_body));
-
-        let mut simulation = SimulationImpl::new(world);
         simulation.add_object(expected_object_description, box object_behavior);
         simulation.step();
     }
@@ -1005,9 +756,6 @@ mod tests {
         expect_add_body_and_return: Option<(PhysicalBody, BodyHandle)>,
         expect_remove_body_and_return: Option<(BodyHandle, Option<PhysicalBody>)>,
         expect_body_and_return: Option<(BodyHandle, Option<PhysicalBody>)>,
-        expect_attach_sensor_and_return: Option<(BodyHandle, Sensor, Option<SensorHandle>)>,
-        expect_bodies_within_sensor_and_return:
-            Option<(SensorHandle, Result<Vec<BodyHandle>, ActionError>)>,
         expect_apply_force_and_return: Option<(BodyHandle, Force, Option<()>)>,
         expect_set_simulated_timestep: Option<f64>,
         expect_is_body_passable_and_return: Option<(BodyHandle, bool)>,
@@ -1015,9 +763,7 @@ mod tests {
         step_was_called: RefCell<bool>,
         add_body_was_called: RefCell<bool>,
         remove_body_was_called: RefCell<bool>,
-        attach_sensor_was_called: RefCell<bool>,
         body_was_called: RefCell<bool>,
-        bodies_within_sensor_was_called: RefCell<bool>,
         apply_force_was_called: RefCell<bool>,
         set_simulated_timestep_was_called: RefCell<bool>,
         is_body_passable: RefCell<bool>,
@@ -1047,29 +793,12 @@ mod tests {
             self.expect_remove_body_and_return = Some((body_handle, returned_value));
         }
 
-        pub(crate) fn expect_attach_sensor_and_return(
-            &mut self,
-            body_handle: BodyHandle,
-            sensor: Sensor,
-            returned_value: Option<SensorHandle>,
-        ) {
-            self.expect_attach_sensor_and_return = Some((body_handle, sensor, returned_value));
-        }
-
         pub(crate) fn expect_body_and_return(
             &mut self,
             handle: BodyHandle,
             returned_value: Option<PhysicalBody>,
         ) {
             self.expect_body_and_return = Some((handle, returned_value));
-        }
-
-        pub(crate) fn expect_bodies_within_sensor_and_return(
-            &mut self,
-            sensor_handle: SensorHandle,
-            returned_value: Result<Vec<BodyHandle>, ActionError>,
-        ) {
-            self.expect_bodies_within_sensor_and_return = Some((sensor_handle, returned_value));
         }
 
         pub(crate) fn expect_apply_force_and_return(
@@ -1110,24 +839,10 @@ mod tests {
                     )
                 }
 
-                if self.expect_attach_sensor_and_return.is_some() {
-                    assert!(
-                        *self.attach_sensor_was_called.borrow(),
-                        "attach_sensor() was not called, but was expected"
-                    )
-                }
-
                 if self.expect_body_and_return.is_some() {
                     assert!(
                         *self.body_was_called.borrow(),
                         "body() was not called, but was expected"
-                    )
-                }
-
-                if self.expect_bodies_within_sensor_and_return.is_some() {
-                    assert!(
-                        *self.bodies_within_sensor_was_called.borrow(),
-                        "bodies_within_sensor() was not called, but was expected"
                     )
                 }
 
@@ -1204,27 +919,6 @@ mod tests {
             }
         }
 
-        fn attach_sensor(
-            &mut self,
-            body_handle: BodyHandle,
-            sensor: Sensor,
-        ) -> Option<SensorHandle> {
-            *self.attach_sensor_was_called.borrow_mut() = true;
-            if let Some((ref expected_handle, ref expected_sensor, ref return_value)) =
-                self.expect_attach_sensor_and_return
-            {
-                if body_handle == *expected_handle && sensor == *expected_sensor {
-                    *return_value
-                } else {
-                    panic!(
-                        "attach_sensor() was called with {:?} and {:?}, expected {:?} and {:?}",
-                        body_handle, sensor, expected_handle, expected_sensor
-                    )
-                }
-            } else {
-                panic!("attach_sensor() was called unexpectedly")
-            }
-        }
         fn body(&self, handle: BodyHandle) -> Option<PhysicalBody> {
             *self.body_was_called.borrow_mut() = true;
             if let Some((ref expected_handle, ref return_value)) = self.expect_body_and_return {
@@ -1238,27 +932,6 @@ mod tests {
                 }
             } else {
                 panic!("body() was called unexpectedly")
-            }
-        }
-
-        fn bodies_within_sensor(
-            &self,
-            sensor_handle: SensorHandle,
-        ) -> Result<Vec<BodyHandle>, ActionError> {
-            *self.bodies_within_sensor_was_called.borrow_mut() = true;
-            if let Some((ref expected_handle, ref return_value)) =
-                self.expect_bodies_within_sensor_and_return
-            {
-                if sensor_handle == *expected_handle {
-                    return_value.clone()
-                } else {
-                    panic!(
-                        "bodies_within_sensor() was called with {:?}, expected {:?}",
-                        sensor_handle, expected_handle
-                    )
-                }
-            } else {
-                panic!("bodies_within_sensor() was called unexpectedly")
             }
         }
 

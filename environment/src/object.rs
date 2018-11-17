@@ -71,24 +71,6 @@ pub struct Aabb {
     pub maxs: Point,
 }
 
-/// A sensor that can be attached to an [`Object`],
-/// which will report any collisions to it.
-///
-/// [`Object`]: ./enum.Object.html
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-pub struct Sensor {
-    /// The shape of the sensor
-    pub shape: Polygon,
-    /// The sensor's location in relation to its
-    /// parent [`Object`]
-    ///
-    /// [`Object`]: ./enum.Object.html
-    pub location: Point,
-
-    /// the sensor's rotation
-    pub rotation: Radians,
-}
-
 /// The behaviourless description of an object that has
 /// been placed inside a [`Simulation`].
 ///
@@ -115,9 +97,6 @@ pub struct ObjectDescription {
 
     /// The object's kind
     pub kind: Kind,
-
-    /// The object's sensor
-    pub sensor: Option<Sensor>,
 
     /// Whether the object is passable or not
     pub passable: bool,

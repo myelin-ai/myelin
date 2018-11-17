@@ -48,7 +48,6 @@ pub struct ObjectBuilder {
     rotation: Option<Radians>,
     mobility: Option<Mobility>,
     kind: Option<Kind>,
-    sensor: Option<Sensor>,
     passable: bool,
 }
 
@@ -108,29 +107,6 @@ impl ObjectBuilder {
     /// ```
     pub fn mobility(&mut self, mobility: Mobility) -> &mut Self {
         self.mobility = Some(mobility);
-        self
-    }
-
-    /// # Examples
-    /// ```
-    /// use myelin_environment::object::*;
-    /// use myelin_geometry::*;
-    ///
-    /// ObjectBuilder::default()
-    ///     .sensor( Sensor {
-    ///         shape: PolygonBuilder::default()
-    ///             .vertex(-50.0, -50.0)
-    ///             .vertex(50.0, -50.0)
-    ///             .vertex(50.0, 50.0)
-    ///             .vertex(-50.0, 50.0)
-    ///             .build()
-    ///             .unwrap(),
-    ///         location: Point::default(),
-    ///         rotation: Radians::default(),
-    ///     });
-    /// ```
-    pub fn sensor(&mut self, sensor: Sensor) -> &mut Self {
-        self.sensor = Some(sensor);
         self
     }
 
@@ -199,7 +175,6 @@ impl ObjectBuilder {
             location: self.location.take().ok_or_else(|| error.clone())?,
             kind: self.kind.take().ok_or_else(|| error.clone())?,
             mobility: self.mobility.take().ok_or_else(|| error.clone())?,
-            sensor: self.sensor.take(),
             passable: self.passable,
         };
 
@@ -337,7 +312,6 @@ mod test {
             rotation: Radians::try_new(0.0).unwrap(),
             kind: Kind::Terrain,
             mobility: Mobility::Immovable,
-            sensor: None,
             passable: false,
         };
 
@@ -376,7 +350,6 @@ mod test {
             rotation: Radians::try_new(0.0).unwrap(),
             kind: Kind::Terrain,
             mobility: Mobility::Immovable,
-            sensor: None,
             passable: true,
         };
 
@@ -414,16 +387,6 @@ mod test {
             .kind(Kind::Organism)
             .location(30.0, 40.0)
             .rotation(Radians::try_new(1.1).unwrap())
-            .sensor(Sensor {
-                shape: PolygonBuilder::default()
-                    .vertex(2.0, 0.0)
-                    .vertex(-2.0, 0.0)
-                    .vertex(0.0, 1.0)
-                    .build()
-                    .unwrap(),
-                location: Point { x: 12.0, y: 42.0 },
-                rotation: Radians::try_new(1.2).unwrap(),
-            })
             .build();
 
         let expected = ObjectDescription {
@@ -439,17 +402,6 @@ mod test {
                     Point { x: 1.0, y: 1.0 },
                 ],
             },
-            sensor: Some(Sensor {
-                shape: Polygon {
-                    vertices: vec![
-                        Point { x: 2.0, y: 0.0 },
-                        Point { x: -2.0, y: 0.0 },
-                        Point { x: 0.0, y: 1.0 },
-                    ],
-                },
-                location: Point { x: 12.0, y: 42.0 },
-                rotation: Radians::try_new(1.2).unwrap(),
-            }),
             passable: false,
         };
 
