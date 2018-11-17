@@ -313,6 +313,7 @@ impl<'a> ObjectEnvironment for ObjectEnvironmentImpl<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::object::ObjectBehaviorMock;
     use crate::object_builder::ObjectBuilder;
     use myelin_geometry::PolygonBuilder;
     use std::cell::RefCell;
@@ -428,11 +429,7 @@ mod tests {
             .unwrap();
 
         let mut object_behavior = ObjectBehaviorMock::new();
-        object_behavior.expect_step_and_return(
-            expected_object_description.clone(),
-            HashMap::new(),
-            None,
-        );
+        object_behavior.expect_step_and_return(expected_object_description.clone(), None);
 
         let mut simulation = SimulationImpl::new(box world);
         simulation.add_object(expected_object_description, box object_behavior);
@@ -525,15 +522,10 @@ mod tests {
             .unwrap();
 
         let mut child_object_behavior = ObjectBehaviorMock::new();
-        child_object_behavior.expect_step_and_return(
-            expected_object_description.clone(),
-            HashMap::new(),
-            None,
-        );
+        child_object_behavior.expect_step_and_return(expected_object_description.clone(), None);
 
         object_behavior.expect_step_and_return(
             expected_object_description.clone(),
-            HashMap::new(),
             Some(Action::Reproduce(
                 expected_object_description.clone(),
                 box child_object_behavior,
@@ -583,11 +575,8 @@ mod tests {
             .build()
             .unwrap();
 
-        object_behavior.expect_step_and_return(
-            expected_object_description.clone(),
-            HashMap::new(),
-            Some(Action::Die),
-        );
+        object_behavior
+            .expect_step_and_return(expected_object_description.clone(), Some(Action::Die));
 
         simulation.add_object(expected_object_description.clone(), box object_behavior);
 
@@ -635,7 +624,6 @@ mod tests {
 
         object_behavior.expect_step_and_return(
             expected_object_description.clone(),
-            HashMap::new(),
             Some(Action::Destroy(handle_two.0)),
         );
 
@@ -687,7 +675,6 @@ mod tests {
 
         object_behavior.expect_step_and_return(
             expected_object_description.clone(),
-            HashMap::new(),
             Some(Action::ApplyForce(expected_force)),
         );
 
@@ -986,83 +973,4 @@ mod tests {
         }
     }
 
-    #[derive(Debug, Default, Clone)]
-    struct ObjectBehaviorMock {
-        expect_step_and_return: Option<(ObjectDescription, Snapshot, Option<Action>)>,
-        call_find_objects_in_area: Option<(Aabb, Snapshot)>,
-
-        step_was_called: RefCell<bool>,
-    }
-
-    impl ObjectBehaviorMock {
-        fn new() -> ObjectBehaviorMock {
-            Default::default()
-        }
-
-        pub(crate) fn expect_step_and_return(
-            &mut self,
-            own_description: ObjectDescription,
-            sensor_collisions: Snapshot,
-            returned_value: Option<Action>,
-        ) {
-            self.expect_step_and_return =
-                Some((own_description, sensor_collisions, returned_value));
-        }
-
-        pub(crate) fn call_find_objects_in_area(
-            &mut self,
-            area: Aabb,
-            expected_return_value: Snapshot,
-        ) {
-            self.call_find_objects_in_area = Some((area, expected_return_value));
-        }
-    }
-
-    impl ObjectBehavior for ObjectBehaviorMock {
-        fn step(
-            &mut self,
-            own_description: &ObjectDescription,
-            environment: &dyn ObjectEnvironment,
-        ) -> Option<Action> {
-            *self.step_was_called.borrow_mut() = true;
-            if let Some((
-                ref expected_own_description,
-                ref expected_sensor_collisions,
-                ref return_value,
-            )) = self.expect_step_and_return
-            {
-                if expected_own_description == own_description {
-                    if let Some((area, ref expected_objects)) = self.call_find_objects_in_area {
-                        let actual_objects = environment.find_objects_in_area(area);
-                        assert_eq!(
-                            *expected_objects, actual_objects,
-                            "find_objects_in_area() was expected to return {:?}. Actual return value: {:?}",
-                            *expected_objects, actual_objects
-                        );
-                    }
-
-                    return_value.clone()
-                } else {
-                    panic!(
-                        "step() was called with {:?}, expected {:?} and {:?}",
-                        own_description, expected_own_description, expected_sensor_collisions
-                    )
-                }
-            } else {
-                panic!("step() was called unexpectedly")
-            }
-        }
-    }
-    impl Drop for ObjectBehaviorMock {
-        fn drop(&mut self) {
-            if !panicking() {
-                if self.expect_step_and_return.is_some() {
-                    assert!(
-                        *self.step_was_called.borrow(),
-                        "step() was not called, but was expected"
-                    )
-                }
-            }
-        }
-    }
 }
