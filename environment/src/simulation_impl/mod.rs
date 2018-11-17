@@ -5,6 +5,7 @@ use crate::object::*;
 use crate::{Simulation, Snapshot};
 use myelin_geometry::*;
 use ncollide2d::world::CollisionObjectHandle;
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
@@ -26,7 +27,7 @@ pub struct SimulationImpl {
 struct NonPhysicalObjectData {
     pub(crate) sensor: Option<(SensorHandle, Sensor)>,
     pub(crate) kind: Kind,
-    pub(crate) behavior: Box<dyn ObjectBehavior>,
+    pub(crate) behavior: RefCell<Box<dyn ObjectBehavior>>,
 }
 
 /// An error that can occur whenever an action is performed
@@ -187,14 +188,16 @@ impl Simulation for SimulationImpl {
             })
             .collect();
         let mut actions = Vec::new();
-        for (object_handle, non_physical_object_data) in &mut self.non_physical_object_data {
+        let environment = ObjectEnvironmentImpl { simulation: &self };
+        for (object_handle, non_physical_object_data) in &self.non_physical_object_data {
             // This is safe because the keys of self.objects and
             // object_handle_to_objects_within_sensor are identical
             let own_description = &object_handle_to_own_description[object_handle];
             let objects_within_sensor = &object_handle_to_objects_within_sensor[object_handle];
             let action = non_physical_object_data
                 .behavior
-                .step(&own_description, objects_within_sensor);
+                .borrow_mut()
+                .step(&own_description, &environment);
             if let Some(action) = action {
                 actions.push((*object_handle, action));
             }
@@ -225,7 +228,7 @@ impl Simulation for SimulationImpl {
         let non_physical_object_data = NonPhysicalObjectData {
             sensor,
             kind: object_description.kind,
-            behavior: object_behavior,
+            behavior: RefCell::new(object_behavior),
         };
         self.non_physical_object_data
             .insert(body_handle, non_physical_object_data);
@@ -382,6 +385,17 @@ impl From<SensorHandle> for AnyHandle {
 impl From<CollisionObjectHandle> for AnyHandle {
     fn from(collision_object_handle: CollisionObjectHandle) -> Self {
         AnyHandle(collision_object_handle.0)
+    }
+}
+
+#[derive(Debug)]
+struct ObjectEnvironmentImpl<'a> {
+    simulation: &'a SimulationImpl,
+}
+
+impl<'a> ObjectEnvironment for ObjectEnvironmentImpl<'a> {
+    fn find_objects_in_area(&self, area: Aabb) -> Snapshot {
+        unimplemented!();
     }
 }
 
@@ -1302,6 +1316,7 @@ mod tests {
     #[derive(Debug, Default, Clone)]
     struct ObjectBehaviorMock {
         expect_step_and_return: Option<(ObjectDescription, Snapshot, Option<Action>)>,
+        call_find_objects_in_area: Option<(Aabb, Snapshot)>,
 
         step_was_called: RefCell<bool>,
     }
@@ -1320,13 +1335,21 @@ mod tests {
             self.expect_step_and_return =
                 Some((own_description, sensor_collisions, returned_value));
         }
+
+        pub(crate) fn call_find_objects_in_area(
+            &mut self,
+            area: Aabb,
+            expected_return_value: Snapshot,
+        ) {
+            self.call_find_objects_in_area = Some((area, expected_return_value));
+        }
     }
 
     impl ObjectBehavior for ObjectBehaviorMock {
         fn step(
             &mut self,
             own_description: &ObjectDescription,
-            sensor_collisions: &Snapshot,
+            environment: &dyn ObjectEnvironment,
         ) -> Option<Action> {
             *self.step_was_called.borrow_mut() = true;
             if let Some((
@@ -1335,17 +1358,21 @@ mod tests {
                 ref return_value,
             )) = self.expect_step_and_return
             {
-                if sensor_collisions == expected_sensor_collisions
-                    && expected_own_description == own_description
-                {
+                if expected_own_description == own_description {
+                    if let Some((area, ref expected_objects)) = self.call_find_objects_in_area {
+                        let actual_objects = environment.find_objects_in_area(area);
+                        assert_eq!(
+                            *expected_objects, actual_objects,
+                            "find_objects_in_area() was expected to return {:?}. Actual return value: {:?}",
+                            *expected_objects, actual_objects
+                        );
+                    }
+
                     return_value.clone()
                 } else {
                     panic!(
-                        "step() was called with {:?} and {:?}, expected {:?} and {:?}",
-                        own_description,
-                        sensor_collisions,
-                        expected_own_description,
-                        expected_sensor_collisions
+                        "step() was called with {:?}, expected {:?} and {:?}",
+                        own_description, expected_own_description, expected_sensor_collisions
                     )
                 }
             } else {
