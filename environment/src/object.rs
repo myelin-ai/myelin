@@ -63,7 +63,7 @@ impl Clone for Action {
 }
 
 /// An axix-aligned bounding box
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Aabb {
     /// The position with the smallest coordinates
     pub mins: Point,
