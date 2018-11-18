@@ -129,27 +129,30 @@ impl HardcodedGenerator {
 
     fn populate_with_plants(&self, simulation: &mut dyn Simulation) {
         const HALF_OF_PLANT_WIDTH_AND_HEIGHT: f64 = 10.0;
+        const PADDING: f64 = 1.0;
+        const DISPLACEMENT: f64 = HALF_OF_PLANT_WIDTH_AND_HEIGHT * 2.0 + PADDING;
+        const NUMBER_OF_PLANT_COLUMNS: u32 = 10;
+        const NUMBER_OF_PLANT_ROWS: u32 = 7;
+        for i in 0..=NUMBER_OF_PLANT_COLUMNS {
+            for j in 0..=NUMBER_OF_PLANT_ROWS {
+                let left_horizontal_position = 103.0 + f64::from(i) * DISPLACEMENT;
+                let right_horizontal_position = 687.0 + f64::from(i) * DISPLACEMENT;
+                let vertical_position = 103.0 + f64::from(j) * DISPLACEMENT;
 
-        for i in 0..=10 {
-            for j in 0..=7 {
-                let plant = build_plant(
+                let mut add_plant = |plant: ObjectDescription| {
+                    let sensor = plant.sensor.clone().unwrap();
+                    simulation.add_object(plant, (self.plant_factory)(sensor));
+                };
+                add_plant(build_plant(
                     HALF_OF_PLANT_WIDTH_AND_HEIGHT,
-                    100.0 + f64::from(i) * 30.0,
-                    100.0 + f64::from(j) * 30.0,
-                );
-                let sensor = plant.sensor.clone().unwrap();
-                simulation.add_object(plant, (self.plant_factory)(sensor));
-            }
-        }
-        for i in 0..=10 {
-            for j in 0..=7 {
-                let plant = build_plant(
+                    left_horizontal_position,
+                    vertical_position,
+                ));
+                add_plant(build_plant(
                     HALF_OF_PLANT_WIDTH_AND_HEIGHT,
-                    600.0 + f64::from(i) * 30.0,
-                    100.0 + f64::from(j) * 30.0,
-                );
-                let sensor = plant.sensor.clone().unwrap();
-                simulation.add_object(plant, (self.plant_factory)(sensor));
+                    right_horizontal_position,
+                    vertical_position,
+                ));
             }
         }
     }
