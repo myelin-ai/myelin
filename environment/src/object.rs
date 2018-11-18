@@ -65,10 +65,10 @@ impl Clone for Action {
 /// An axix-aligned bounding box
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Aabb {
-    /// The position with the smallest coordinates
-    pub mins: Point,
-    /// The position with the highest coordinates
-    pub maxs: Point,
+    /// The coordinates of the upper left corner of the box
+    pub upper_left: Point,
+    /// The coordinates of the lower right corner of the box
+    pub lower_right: Point,
 }
 
 /// The behaviourless description of an object that has
