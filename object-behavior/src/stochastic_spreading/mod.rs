@@ -125,34 +125,22 @@ fn calculate_possible_spreading_locations(vertices: &[Point]) -> Vec<Point> {
             x: -width,
             y: -height,
         },
-        Point {
-            x: -PADDING,
-            y: -height,
-        },
+        Point { x: 0.0, y: -height },
         Point {
             x: width,
             y: -height,
         },
-        Point {
-            x: width,
-            y: PADDING,
-        },
+        Point { x: width, y: 0.0 },
         Point {
             x: width,
             y: height,
         },
-        Point {
-            x: PADDING,
-            y: height,
-        },
+        Point { x: 0.0, y: height },
         Point {
             x: -width,
             y: height,
         },
-        Point {
-            x: -width,
-            y: -PADDING,
-        },
+        Point { x: -width, y: 0.0 },
     ]
 }
 
@@ -305,10 +293,8 @@ mod tests {
         let action = object.step(&own_description, &collisions);
         match action {
             Some(Action::Reproduce(object_description, _)) => {
-                let expected_object_description = object_description_at_location(
-                    60.0 + EXPECTED_PADDING,
-                    50.0 + EXPECTED_PADDING,
-                );
+                let expected_object_description =
+                    object_description_at_location(60.0 + EXPECTED_PADDING, 50.0);
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
@@ -335,10 +321,8 @@ mod tests {
         let action = object.step(&own_description, &collisions);
         match action {
             Some(Action::Reproduce(object_description, _)) => {
-                let expected_object_description = object_description_at_location(
-                    50.0 - EXPECTED_PADDING,
-                    40.0 - EXPECTED_PADDING,
-                );
+                let expected_object_description =
+                    object_description_at_location(50.0, 40.0 - EXPECTED_PADDING);
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
