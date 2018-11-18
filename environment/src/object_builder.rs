@@ -182,6 +182,30 @@ impl ObjectBuilder {
     }
 }
 
+impl From<ObjectDescription> for ObjectBuilder {
+    fn from(object_description: ObjectDescription) -> Self {
+        let ObjectDescription {
+            shape,
+            location,
+            rotation,
+            mobility,
+            kind,
+            sensor,
+            passable,
+        } = object_description;
+
+        ObjectBuilder {
+            shape: Some(shape),
+            location: Some(location),
+            rotation: Some(rotation),
+            mobility: Some(mobility),
+            kind: Some(kind),
+            sensor,
+            passable,
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -406,5 +430,42 @@ mod test {
         };
 
         assert_eq!(Ok(expected), result);
+    }
+
+    #[test]
+    fn can_create_object_builder_from_object_description() {
+        let object_description = ObjectDescription {
+            location: Point { x: 30.0, y: 40.0 },
+            rotation: Radians::try_new(1.1).unwrap(),
+            mobility: Mobility::Movable(Vector { x: -12.0, y: 5.0 }),
+            kind: Kind::Organism,
+            shape: Polygon {
+                vertices: vec![
+                    Point { x: 0.0, y: 0.0 },
+                    Point { x: 0.0, y: 1.0 },
+                    Point { x: 1.0, y: 0.0 },
+                    Point { x: 1.0, y: 1.0 },
+                ],
+            },
+            sensor: Some(Sensor {
+                shape: Polygon {
+                    vertices: vec![
+                        Point { x: 2.0, y: 0.0 },
+                        Point { x: -2.0, y: 0.0 },
+                        Point { x: 0.0, y: 1.0 },
+                    ],
+                },
+                location: Point { x: 12.0, y: 42.0 },
+                rotation: Radians::try_new(1.2).unwrap(),
+            }),
+            passable: true,
+        };
+
+        assert_eq!(
+            object_description,
+            ObjectBuilder::from(object_description.clone())
+                .build()
+                .unwrap()
+        );
     }
 }
