@@ -79,12 +79,8 @@ impl StochasticSpreading {
             .map(|&point| own_description.location + point)
             .find(|&location| can_spread_at_location(location, sensor_collisions));
         if let Some(spreading_location) = spreading_location {
-            let object_description = ObjectBuilder::default()
+            let object_description = ObjectBuilder::from(own_description.clone())
                 .location(spreading_location.x, spreading_location.y)
-                .rotation(own_description.rotation)
-                .shape(own_description.shape.clone())
-                .kind(own_description.kind)
-                .mobility(own_description.mobility.clone())
                 .build()
                 .unwrap();
             let object_behavior = Box::new(self.clone());
@@ -129,34 +125,22 @@ fn calculate_possible_spreading_locations(vertices: &[Point]) -> Vec<Point> {
             x: -width,
             y: -height,
         },
-        Point {
-            x: -PADDING,
-            y: -height,
-        },
+        Point { x: 0.0, y: -height },
         Point {
             x: width,
             y: -height,
         },
-        Point {
-            x: width,
-            y: PADDING,
-        },
+        Point { x: width, y: 0.0 },
         Point {
             x: width,
             y: height,
         },
-        Point {
-            x: PADDING,
-            y: height,
-        },
+        Point { x: 0.0, y: height },
         Point {
             x: -width,
             y: height,
         },
-        Point {
-            x: -width,
-            y: -PADDING,
-        },
+        Point { x: -width, y: 0.0 },
     ]
 }
 
@@ -309,10 +293,8 @@ mod tests {
         let action = object.step(&own_description, &collisions);
         match action {
             Some(Action::Reproduce(object_description, _)) => {
-                let expected_object_description = object_description_at_location(
-                    60.0 + EXPECTED_PADDING,
-                    50.0 + EXPECTED_PADDING,
-                );
+                let expected_object_description =
+                    object_description_at_location(60.0 + EXPECTED_PADDING, 50.0);
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
@@ -339,10 +321,8 @@ mod tests {
         let action = object.step(&own_description, &collisions);
         match action {
             Some(Action::Reproduce(object_description, _)) => {
-                let expected_object_description = object_description_at_location(
-                    50.0 - EXPECTED_PADDING,
-                    40.0 - EXPECTED_PADDING,
-                );
+                let expected_object_description =
+                    object_description_at_location(50.0, 40.0 - EXPECTED_PADDING);
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),

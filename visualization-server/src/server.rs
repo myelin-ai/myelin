@@ -43,7 +43,7 @@ where
         box SimulationImpl::new(box world)
     };
     let plant_factory = box |sensor: Sensor| -> Box<dyn ObjectBehavior> {
-        box StochasticSpreading::new(1.0 / 100.0, sensor, box RandomChanceCheckerImpl::new())
+        box StochasticSpreading::new(1.0 / 5_000.0, sensor, box RandomChanceCheckerImpl::new())
     };
     let organism_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
     let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
