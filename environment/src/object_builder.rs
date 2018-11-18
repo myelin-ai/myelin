@@ -190,7 +190,6 @@ impl From<ObjectDescription> for ObjectBuilder {
             rotation,
             mobility,
             kind,
-            sensor,
             passable,
         } = object_description;
 
@@ -200,7 +199,6 @@ impl From<ObjectDescription> for ObjectBuilder {
             rotation: Some(rotation),
             mobility: Some(mobility),
             kind: Some(kind),
-            sensor,
             passable,
         }
     }
@@ -447,17 +445,6 @@ mod test {
                     Point { x: 1.0, y: 1.0 },
                 ],
             },
-            sensor: Some(Sensor {
-                shape: Polygon {
-                    vertices: vec![
-                        Point { x: 2.0, y: 0.0 },
-                        Point { x: -2.0, y: 0.0 },
-                        Point { x: 0.0, y: 1.0 },
-                    ],
-                },
-                location: Point { x: 12.0, y: 42.0 },
-                rotation: Radians::try_new(1.2).unwrap(),
-            }),
             passable: true,
         };
 
