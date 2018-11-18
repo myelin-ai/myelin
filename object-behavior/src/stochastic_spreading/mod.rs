@@ -79,12 +79,8 @@ impl StochasticSpreading {
             .map(|&point| own_description.location + point)
             .find(|&location| can_spread_at_location(location, sensor_collisions));
         if let Some(spreading_location) = spreading_location {
-            let object_description = ObjectBuilder::default()
+            let object_description = ObjectBuilder::from(own_description.clone())
                 .location(spreading_location.x, spreading_location.y)
-                .rotation(own_description.rotation)
-                .shape(own_description.shape.clone())
-                .kind(own_description.kind)
-                .mobility(own_description.mobility.clone())
                 .build()
                 .unwrap();
             let object_behavior = Box::new(self.clone());
