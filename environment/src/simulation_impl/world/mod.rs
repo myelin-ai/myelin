@@ -274,17 +274,16 @@ impl World for NphysicsWorld {
     }
 
     fn add_body(&mut self, body: PhysicalBody) -> BodyHandle {
-        const COLLIDER_MARGIN: PhysicsType = 0.04;
-        const OBJECT_DENSITY: PhysicsType = 0.1;
-
         let shape = translate_shape(&body.shape);
-        let local_inertia = shape.inertia(DEFAULT_OBJECT_DENSITY);
+        const OBJECT_DENSITY: f64 = 0.1;
+        let local_inertia = shape.inertia(OBJECT_DENSITY);
         let local_center_of_mass = shape.center_of_mass();
 
         let isometry =
             to_nphysics_isometry(body.location, body.rotation, &*self.rotation_translator);
         let material = Material::default();
 
+        const COLLIDER_MARGIN: f64 = 0.04;
         let handle = match body.mobility {
             Mobility::Immovable => self.physics_world.add_collider(
                 COLLIDER_MARGIN,
