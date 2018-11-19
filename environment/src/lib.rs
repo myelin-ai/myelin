@@ -73,7 +73,6 @@ pub use self::mock::*;
 #[allow(clippy::float_cmp)]
 mod mock {
     use super::*;
-    use crate::object::Action;
     use std::cell::RefCell;
     use std::thread::panicking;
 
