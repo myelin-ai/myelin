@@ -232,7 +232,7 @@ mod mock {
     /// [`ObjectEnvironment`]: ./trait.ObjectEnvironment.html
     #[derive(Debug, Default, Clone)]
     pub struct ObjectEnvironmentMock {
-        expect_find_objects_in_area_and_return: Option<(Aabb, Snapshot)>,
+        expect_find_objects_in_area_and_return: Vec<(Aabb, Snapshot)>,
         find_objects_in_area_was_called: RefCell<bool>,
     }
 
@@ -244,35 +244,37 @@ mod mock {
             Self::default()
         }
 
-        /// Marks the method [`ObjectEnvironment::find_objects_in_area`] as expected.
+        /// Adds an expected method call for  [`ObjectEnvironment::find_objects_in_area`].
+        /// This can be called multiple times to expect multiple calls.
+        /// Note that for each `area` there may be only one `return_value`.
         pub fn expect_find_objects_in_area(&mut self, area: Aabb, return_value: Snapshot) {
-            self.expect_find_objects_in_area_and_return = Some((area, return_value));
+            self.expect_find_objects_in_area_and_return
+                .push((area, return_value));
         }
     }
 
     impl ObjectEnvironment for ObjectEnvironmentMock {
         fn find_objects_in_area(&self, area: Aabb) -> Snapshot {
-            if let Some((expected_area, ref return_value)) =
-                self.expect_find_objects_in_area_and_return
+            if let Some((_, ref return_value)) = self
+                .expect_find_objects_in_area_and_return
+                .iter()
+                .find(|(expected_area, _)| *expected_area == area)
             {
                 *self.find_objects_in_area_was_called.borrow_mut() = true;
 
-                assert_eq!(
-                    expected_area, area,
-                    "find_objects_in_area() was called with unexpected area: {:?}. Expected: {:?}",
-                    area, expected_area
-                );
-
                 return_value.clone()
             } else {
-                panic!("find_objects_in_area() was called unexpectedly");
+                panic!(
+                    "find_objects_in_area() was called with unexpected area: {:?}",
+                    area
+                );
             }
         }
     }
 
     impl Drop for ObjectEnvironmentMock {
         fn drop(&mut self) {
-            if !panicking() && self.expect_find_objects_in_area_and_return.is_some() {
+            if !panicking() && !self.expect_find_objects_in_area_and_return.is_empty() {
                 assert!(
                     *self.find_objects_in_area_was_called.borrow(),
                     "find_objects_in_area() was expected, but never called"
