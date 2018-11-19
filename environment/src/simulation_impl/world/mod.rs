@@ -277,7 +277,9 @@ impl World for NphysicsWorld {
 
     fn add_body(&mut self, body: PhysicalBody) -> BodyHandle {
         let shape = translate_shape(&body.shape);
-        let local_inertia = shape.inertia(0.1);
+        /// Arbitrary value
+        const OBJECT_DENSITY: f64 = 0.1;
+        let local_inertia = shape.inertia(OBJECT_DENSITY);
         let local_center_of_mass = shape.center_of_mass();
 
         let isometry =
@@ -288,9 +290,10 @@ impl World for NphysicsWorld {
             self.physics_world
                 .add_rigid_body(isometry, local_inertia, local_center_of_mass);
 
+        const COLLIDER_MARGIN: f64 = 0.04;
         let handle = match body.mobility {
             Mobility::Immovable => self.physics_world.add_collider(
-                0.04,
+                COLLIDER_MARGIN,
                 shape,
                 NphysicsBodyHandle::ground(),
                 isometry,
@@ -303,7 +306,7 @@ impl World for NphysicsWorld {
                     .expect("Invalid body handle");
                 set_velocity(&mut rigid_body, &velocity);
                 self.physics_world.add_collider(
-                    0.04,
+                    COLLIDER_MARGIN,
                     shape,
                     rigid_body_handle,
                     Isometry::identity(),
