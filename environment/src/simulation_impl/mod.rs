@@ -215,8 +215,18 @@ impl Simulation for SimulationImpl {
             .collect()
     }
 
-    fn objects_in_area(&self, _area: Aabb) -> Snapshot {
-        unimplemented!();
+    fn objects_in_area(&self, area: Aabb) -> Snapshot {
+        self.world
+            .bodies_in_area(area)
+            .into_iter()
+            .map(|handle| {
+                let object_description = self
+                    .convert_to_object_description(handle)
+                    .expect("Handle stored in simulation was not found in world");
+
+                (handle.0, object_description)
+            })
+            .collect()
     }
 
     fn set_simulated_timestep(&mut self, timestep: f64) {
@@ -751,6 +761,96 @@ mod tests {
         simulation.objects();
     }
 
+    #[test]
+    fn propagates_objects_in_area() {
+        let mut world = WorldMock::new();
+        let expected_shape = shape();
+        let expected_location = location();
+        let expected_rotation = rotation();
+        let expected_mobility = Mobility::Movable(Vector::default());
+        let expected_passable = false;
+        let expected_physical_body = PhysicalBody {
+            shape: expected_shape.clone(),
+            location: expected_location.clone(),
+            rotation: expected_rotation.clone(),
+            mobility: expected_mobility.clone(),
+            passable: expected_passable,
+        };
+        let area = Aabb {
+            upper_left: Point { x: 30.0, y: 30.0 },
+            lower_right: Point { x: 10.0, y: 10.0 },
+        };
+
+        let returned_handle = BodyHandle(1234);
+        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
+        world.expect_bodies_in_area_and_return(area, vec![returned_handle]);
+        world.expect_body_and_return(returned_handle, Some(expected_physical_body.clone()));
+        world.expect_is_body_passable_and_return(returned_handle, expected_passable);
+
+        let mut simulation = SimulationImpl::new(box world, box object_environment_factory_fn);
+
+        let object_description = ObjectBuilder::default()
+            .location(expected_location.x, expected_location.y)
+            .rotation(expected_rotation)
+            .shape(expected_shape)
+            .kind(Kind::Organism)
+            .mobility(expected_mobility)
+            .build()
+            .unwrap();
+
+        let object_behavior = ObjectBehaviorMock::default();
+        simulation.add_object(object_description.clone(), box object_behavior);
+
+        let expected_objects = hashmap! { 1234 => object_description };
+
+        assert_eq!(expected_objects, simulation.objects_in_area(area));
+    }
+
+    #[test]
+    #[should_panic]
+    fn objects_in_area_panics_when_given_invalid_handle() {
+        let mut world = WorldMock::new();
+        let expected_shape = shape();
+        let expected_location = location();
+        let expected_rotation = rotation();
+        let expected_mobility = Mobility::Movable(Vector::default());
+        let expected_passable = false;
+        let expected_physical_body = PhysicalBody {
+            shape: expected_shape.clone(),
+            location: expected_location.clone(),
+            rotation: expected_rotation.clone(),
+            mobility: expected_mobility.clone(),
+            passable: expected_passable,
+        };
+        let area = Aabb {
+            upper_left: Point { x: 30.0, y: 30.0 },
+            lower_right: Point { x: 10.0, y: 10.0 },
+        };
+
+        let returned_handle = BodyHandle(1234);
+        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
+        world.expect_bodies_in_area_and_return(area, vec![returned_handle]);
+        world.expect_body_and_return(returned_handle, None);
+
+        let mut simulation = SimulationImpl::new(box world, box object_environment_factory_fn);
+
+        let object_description = ObjectBuilder::default()
+            .location(expected_location.x, expected_location.y)
+            .rotation(expected_rotation)
+            .shape(expected_shape)
+            .kind(Kind::Organism)
+            .mobility(expected_mobility)
+            .build()
+            .unwrap();
+
+        let object_behavior = ObjectBehaviorMock::default();
+        simulation.add_object(object_description.clone(), box object_behavior);
+
+        let expected_objects = hashmap! { 1234 => object_description };
+
+        assert_eq!(expected_objects, simulation.objects_in_area(area));
+    }
+
     fn shape() -> Polygon {
         PolygonBuilder::default()
             .vertex(-5.0, -5.0)
@@ -789,6 +889,7 @@ mod tests {
         is_body_passable: RefCell<bool>,
         bodies_in_area_was_called: RefCell<bool>,
     }
+
     impl WorldMock {
         pub(crate) fn new() -> Self {
             Default::default()
@@ -1036,5 +1137,4 @@ mod tests {
             }
         }
     }
-
 }
