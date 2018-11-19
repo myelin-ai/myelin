@@ -205,7 +205,7 @@ mod mock {
         fn step(
             &mut self,
             own_description: &ObjectDescription,
-            environment: &dyn ObjectEnvironment,
+            _environment: &dyn ObjectEnvironment,
         ) -> Option<Action> {
             *self.step_was_called.borrow_mut() = true;
             if let Some((ref expected_own_description, ref return_value)) =

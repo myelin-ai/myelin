@@ -346,7 +346,7 @@ mod tests {
     use std::thread::panicking;
 
     fn object_environment_factory_fn<'a>(
-        simulation: &'a dyn Simulation,
+        _simulation: &'a dyn Simulation,
     ) -> Box<dyn ObjectEnvironment + 'a> {
         box ObjectEnvironmentMock::new()
     }
