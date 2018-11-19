@@ -275,7 +275,8 @@ impl World for NphysicsWorld {
 
     fn add_body(&mut self, body: PhysicalBody) -> BodyHandle {
         let shape = translate_shape(&body.shape);
-        const OBJECT_DENSITY: f64 = 0.1;
+        /// Average density of a human being in kg/m^3
+        const OBJECT_DENSITY: f64 = 985.0;
         let local_inertia = shape.inertia(OBJECT_DENSITY);
         let local_center_of_mass = shape.center_of_mass();
 
