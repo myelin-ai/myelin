@@ -79,6 +79,26 @@ impl Polygon {
             })
             .all(|side| side == reference_side || side == Side::OnTheLine)
     }
+
+    /// Returns an [`Aabb`] which fully contains this polygon.
+    ///
+    /// # Panics
+    /// Panics if the polygon has no vertices.
+    pub fn aabb(&self) -> Aabb {
+        let mut vertices = self.vertices.clone();
+
+        // Safe unwrap: A polygon's vertex should not be baloney like NaN
+        vertices.sort_unstable_by(|a, b| a.x.partial_cmp(&b.x).unwrap());
+        // Safe unwraps: A polygon should always have at least one vertex
+        let min_x = vertices.first().unwrap().x;
+        let max_x = vertices.last().unwrap().x;
+
+        vertices.sort_unstable_by(|a, b| a.y.partial_cmp(&b.y).unwrap());
+        let min_y = vertices.first().unwrap().y;
+        let max_y = vertices.last().unwrap().y;
+
+        Aabb::new((min_x, min_y), (max_x, max_y))
+    }
 }
 
 /// Calculate which on which side of a line from `a` to `b` a
@@ -294,5 +314,41 @@ mod test {
         let polygon = polygon().translate(translation);
         let point = Point::default();
         assert!(!polygon.contains_point(point));
+    }
+
+    #[test]
+    #[should_panic]
+    fn aabb_panics_when_polygon_has_zero_vertices() {
+        let polygon = Polygon::default();
+        let _aabb = polygon.aabb();
+    }
+
+    #[test]
+    fn aabb_returns_works_with_three_vertices() {
+        let polygon = Polygon {
+            vertices: vec![
+                Point { x: -5.0, y: -5.0 },
+                Point { x: 5.0, y: 0.0 },
+                Point { x: 5.0, y: 5.0 },
+            ],
+        };
+        let expected_aabb = Aabb::new((-5.0, -5.0), (5.0, 5.0));
+
+        assert_eq!(expected_aabb, polygon.aabb());
+    }
+
+    #[test]
+    fn aabb_returns_works_with_four_vertices() {
+        let polygon = Polygon {
+            vertices: vec![
+                Point { x: 5.0, y: 0.0 },
+                Point { x: 0.0, y: 5.0 },
+                Point { x: -5.0, y: -5.0 },
+                Point { x: 5.0, y: 5.0 },
+            ],
+        };
+        let expected_aabb = Aabb::new((-5.0, -5.0), (5.0, 5.0));
+
+        assert_eq!(expected_aabb, polygon.aabb());
     }
 }
