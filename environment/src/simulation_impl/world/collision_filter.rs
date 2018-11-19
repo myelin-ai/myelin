@@ -14,6 +14,15 @@ use unordered_pair::UnorderedPair;
 /// be examined more closely for collisions. This filter allows the explicit
 /// exclusion of body or sensor handles, which will have all their collisions
 /// marked as invalid.
+///
+/// | First        | Second       | Collision |
+/// |--------------|--------------|-----------|
+/// | In no list   | In no list   | true      |
+/// | In whitelist | In no list   | true      |
+/// | In whitelist | In blacklist | true      |
+/// | In whitelist | In whitelist | true      |
+/// | In blacklist | In no list   | false     |
+/// | In blacklist | In blacklist | false     |
 pub trait IgnoringCollisionFilter: Send + Sync + Debug {
     /// Registers a handle that should be ignored by this filter.
     fn add_blacklisted_handle(&mut self, handle: AnyHandle);
