@@ -822,6 +822,56 @@ mod tests {
         world.apply_force(handle, expected_force);
     }
 
+    #[test]
+    fn bodies_in_area_returns_body_in_area() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(
+            Radians::try_new(FRAC_PI_2).unwrap(),
+            FRAC_PI_2,
+        );
+        let force_applier = SingleTimeForceApplierMock::default();
+
+        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            box rotation_translator,
+            box force_applier,
+            collision_filter,
+        );
+        let expected_body = movable_body(Radians::try_new(FRAC_PI_2).unwrap());
+        let handle = world.add_body(expected_body.clone());
+
+        assert_eq!(
+            vec![handle],
+            world.bodies_in_area(Aabb::new((0.0, 0.0), (10.0, 10.0)))
+        );
+    }
+
+    #[test]
+    fn bodies_in_area_does_not_return_out_of_range_bodies() {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(
+            Radians::try_new(FRAC_PI_2).unwrap(),
+            FRAC_PI_2,
+        );
+        let force_applier = SingleTimeForceApplierMock::default();
+
+        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
+        let mut world = NphysicsWorld::with_timestep(
+            DEFAULT_TIMESTEP,
+            box rotation_translator,
+            box force_applier,
+            collision_filter,
+        );
+        let expected_body = movable_body(Radians::try_new(FRAC_PI_2).unwrap());
+        let _handle = world.add_body(expected_body.clone());
+
+        assert_eq!(
+            Vec::<BodyHandle>::new(),
+            world.bodies_in_area(Aabb::new((20.0, 20.0), (30.0, 40.0)))
+        );
+    }
+
     fn movable_body(orientation: Radians) -> PhysicalBody {
         PhysicalBody {
             location: Point { x: 5.0, y: 5.0 },
