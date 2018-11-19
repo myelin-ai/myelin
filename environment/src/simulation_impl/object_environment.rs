@@ -19,8 +19,8 @@ impl<'a> ObjectEnvironmentImpl<'a> {
 }
 
 impl<'a> ObjectEnvironment for ObjectEnvironmentImpl<'a> {
-    fn find_objects_in_area(&self, _area: Aabb) -> Snapshot {
-        unimplemented!();
+    fn find_objects_in_area(&self, area: Aabb) -> Snapshot {
+        self.simulation.objects_in_area(area)
     }
 }
 
