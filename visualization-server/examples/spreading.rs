@@ -46,7 +46,4 @@ fn main() {
     let mut simulation = worldgen.generate();
 
     simulation.step();
-    // simulation.step();
-
-     println!("{:#?}", simulation);
 }
