@@ -10,6 +10,12 @@ pub struct Point {
     pub y: f64,
 }
 
+impl From<(f64, f64)> for Point {
+    fn from((x, y): (f64, f64)) -> Self {
+        Self { x, y }
+    }
+}
+
 impl Add for Point {
     type Output = Point;
 
