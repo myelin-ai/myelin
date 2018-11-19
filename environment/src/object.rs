@@ -65,14 +65,13 @@ impl Clone for Action {
 /// An axix-aligned bounding box
 ///
 /// ```other
-/// ⚬ ――――――――――――――――――――――――――――――――――→ y
-/// |
-/// |  Upper left → |―――――――――――――|
-/// |               |             |
-/// |               |             |
-/// |               |―――――――――――――| ← Lower right
-/// |
-/// ↓
+/// ┼─────────────────────────────────────── y
+/// │
+/// │  Upper left → ┌─────────────┐
+/// │               │             │
+/// │               │             │
+/// │               └─────────────┘ ← Lower right
+/// │
 /// x
 /// ```
 #[derive(Debug, PartialEq, Copy, Clone)]
