@@ -66,10 +66,10 @@ pub type Id = usize;
 /// A representation of the current state of the simulation
 pub type Snapshot = HashMap<Id, ObjectDescription>;
 
-#[cfg(feature = "use-mocks")]
+#[cfg(any(test, feature = "use-mocks"))]
 pub use self::mock::*;
 
-#[cfg(feature = "use-mocks")]
+#[cfg(any(test, feature = "use-mocks"))]
 #[allow(clippy::float_cmp)]
 mod mock {
     use super::*;
@@ -157,9 +157,9 @@ mod mock {
             if let Some((expected_area, ref return_value)) = self.expect_objects_in_area_and_return
             {
                 assert_eq!(
-                    expected_area, return_value,
+                    expected_area, area,
                     "objects_in_area() was called with {:?}, expected {:?}",
-                    expected_area, return_value
+                    expected_area, area
                 );
                 return_value.clone()
             } else {

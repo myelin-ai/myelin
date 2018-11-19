@@ -300,6 +300,9 @@ mod tests {
         fn objects(&self) -> Snapshot {
             panic!("objects() called unexpectedly")
         }
+        fn objects_in_area(&self, area: Aabb) -> Snapshot {
+            panic!("objects_in_area() called unexpectedly");
+        }
         fn set_simulated_timestep(&mut self, _: f64) {
             panic!("set_simulated_timestep() called unexpectedly");
         }
