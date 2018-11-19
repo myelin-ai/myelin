@@ -11,6 +11,8 @@ use crate::simulation_impl::world::collision_filter::{
 };
 use myelin_geometry::*;
 use nalgebra::base::{Scalar, Vector2};
+use ncollide2d::bounding_volume::AABB as NcollideAabb;
+use ncollide2d::math::Point as NcollidePoint;
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
 use ncollide2d::world::CollisionObjectHandle;
 use nphysics2d::force_generator::{ForceGenerator, ForceGeneratorHandle};
@@ -330,8 +332,11 @@ impl World for NphysicsWorld {
             .is_handle_ignored(body_handle.into())
     }
 
-    fn bodies_in_area(&self, _area: Aabb) -> Vec<BodyHandle> {
-        unimplemented!();
+    fn bodies_in_area(&self, area: Aabb) -> Vec<BodyHandle> {
+        self.physics_world
+            .interferences_with_aabb(&to_ncollide_aabb(area))
+            .map(|collision| to_body_handle(collision.handle()))
+            .collect()
     }
 }
 
@@ -346,6 +351,17 @@ fn to_body_handle(collider_handle: ColliderHandle) -> BodyHandle {
 
 fn to_collider_handle(object_handle: BodyHandle) -> ColliderHandle {
     CollisionObjectHandle(object_handle.0)
+}
+
+fn to_ncollide_aabb(aabb: Aabb) -> NcollideAabb<f64> {
+    NcollideAabb::new(
+        to_ncollide_point(aabb.upper_left),
+        to_ncollide_point(aabb.lower_right),
+    )
+}
+
+fn to_ncollide_point(point: Point) -> NcollidePoint<f64> {
+    NcollidePoint::from(Vector2::new(point.x, point.y))
 }
 
 impl fmt::Debug for NphysicsWorld {
@@ -829,8 +845,8 @@ mod tests {
             Radians::try_new(FRAC_PI_2).unwrap(),
             FRAC_PI_2,
         );
-        let force_applier = SingleTimeForceApplierMock::default();
-
+        let mut force_applier = SingleTimeForceApplierMock::default();
+        force_applier.expect_apply_and_return(true);
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
@@ -839,11 +855,13 @@ mod tests {
             collision_filter,
         );
         let expected_body = movable_body(Radians::try_new(FRAC_PI_2).unwrap());
-        let handle = world.add_body(expected_body.clone());
+        let handle = world.add_body(expected_body);
+
+        world.step();
 
         assert_eq!(
             vec![handle],
-            world.bodies_in_area(Aabb::new((0.0, 0.0), (10.0, 10.0)))
+            world.bodies_in_area(Aabb::new((-100.0, -100.0), (100.0, 100.0)))
         );
     }
 
@@ -854,7 +872,8 @@ mod tests {
             Radians::try_new(FRAC_PI_2).unwrap(),
             FRAC_PI_2,
         );
-        let force_applier = SingleTimeForceApplierMock::default();
+        let mut force_applier = SingleTimeForceApplierMock::default();
+        force_applier.expect_apply_and_return(true);
 
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -865,6 +884,8 @@ mod tests {
         );
         let expected_body = movable_body(Radians::try_new(FRAC_PI_2).unwrap());
         let _handle = world.add_body(expected_body.clone());
+
+        world.step();
 
         assert_eq!(
             Vec::<BodyHandle>::new(),
