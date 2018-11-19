@@ -91,7 +91,7 @@ impl Aabb {
     /// ```
     /// use myelin_environment::object::Aabb;
     ///
-    /// let area = Aabb::new((10, 10), (20, 0));
+    /// let area = Aabb::new((10.0, 10.0), (20.0, 0.0));
     /// ```
     ///
     /// ## From points
@@ -99,7 +99,7 @@ impl Aabb {
     /// use myelin_environment::object::Aabb;
     /// use myelin_geometry::Point;
     ///
-    /// let area = Aabb::new(Point { x: 0, y: 10 }, Point { x: 20, y: 20 });
+    /// let area = Aabb::new(Point { x: 0.0, y: 10.0 }, Point { x: 20.0, y: 20.0 });
     /// ```
     pub fn new<P1, P2>(upper_left: P1, lower_right: P2) -> Self
     where
