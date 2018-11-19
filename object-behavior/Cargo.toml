@@ -17,3 +17,4 @@ log = "0.4"
 
 [dev-dependencies]
 maplit = "1.0"
+myelin-environment = { path = "../environment", features = ["use-mocks"] }
