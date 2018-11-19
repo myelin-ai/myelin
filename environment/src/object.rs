@@ -180,7 +180,6 @@ mod mock {
     #[derive(Debug, Default, Clone)]
     pub struct ObjectBehaviorMock {
         expect_step_and_return: Option<(ObjectDescription, Option<Action>)>,
-        call_find_objects_in_area: Option<(Aabb, Snapshot)>,
         step_was_called: RefCell<bool>,
     }
 
@@ -200,12 +199,6 @@ mod mock {
         ) {
             self.expect_step_and_return = Some((own_description, returned_value));
         }
-
-        /// Expects the mock to call [`ObjectEnvironment::call_find_objects_in_area`] on the
-        /// passed `environment` during `step`.
-        pub fn call_find_objects_in_area(&mut self, area: Aabb, expected_return_value: Snapshot) {
-            self.call_find_objects_in_area = Some((area, expected_return_value));
-        }
     }
 
     impl ObjectBehavior for ObjectBehaviorMock {
@@ -219,15 +212,6 @@ mod mock {
                 self.expect_step_and_return
             {
                 if expected_own_description == own_description {
-                    if let Some((area, ref expected_objects)) = self.call_find_objects_in_area {
-                        let actual_objects = environment.find_objects_in_area(area);
-                        assert_eq!(
-                            *expected_objects, actual_objects,
-                            "find_objects_in_area() was expected to return {:?}. Actual return value: {:?}",
-                            *expected_objects, actual_objects
-                        );
-                    }
-
                     return_value.clone()
                 } else {
                     panic!(
@@ -248,6 +232,57 @@ mod mock {
                     *self.step_was_called.borrow(),
                     "step() was not called, but was expected"
                 )
+            }
+        }
+    }
+
+    #[derive(Debug, Default, Clone)]
+    pub struct ObjectEnvironmentMock {
+        expect_find_objects_in_area_and_return: Option<(Aabb, Snapshot)>,
+        find_objects_in_area_was_called: RefCell<bool>,
+    }
+
+    impl ObjectEnvironmentMock {
+        /// Creates a new [`ObjectEnvironmentMock`] without any expectations set.
+        ///
+        /// [`ObjectEnvironmentMock`]: ./struct.ObjectEnvironmentMock.html
+        pub fn new() -> Self {
+            Self::default()
+        }
+
+        /// Marks the method [`ObjectEnvironment::find_objects_in_area`] as expected.
+        pub fn expect_find_objects_in_area(&mut self, area: Aabb, return_value: Snapshot) {
+            self.expect_find_objects_in_area_and_return = Some((area, return_value));
+        }
+    }
+
+    impl ObjectEnvironment for ObjectEnvironmentMock {
+        fn find_objects_in_area(&self, area: Aabb) -> Snapshot {
+            if let Some((expected_area, ref return_value)) =
+                self.expect_find_objects_in_area_and_return
+            {
+                *self.find_objects_in_area_was_called.borrow_mut() = true;
+
+                assert_eq!(
+                    expected_area, area,
+                    "find_objects_in_area() was called with unexpected area: {:?}. Expected: {:?}",
+                    area, expected_area
+                );
+
+                return_value.clone()
+            } else {
+                panic!("find_objects_in_area() was called unexpectedly");
+            }
+        }
+    }
+
+    impl Drop for ObjectEnvironmentMock {
+        fn drop(&mut self) {
+            if !panicking() && self.expect_find_objects_in_area_and_return.is_some() {
+                assert!(
+                    *self.find_objects_in_area_was_called.borrow(),
+                    "find_objects_in_area() was expected, but never called"
+                );
             }
         }
     }

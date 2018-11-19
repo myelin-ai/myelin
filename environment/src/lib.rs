@@ -15,8 +15,7 @@
 #[macro_use]
 extern crate serde_derive;
 
-#[cfg_attr(test, macro_use)]
-#[cfg(test)]
+#[macro_use]
 extern crate nameof;
 
 #[cfg_attr(test, macro_use)]
@@ -27,7 +26,7 @@ pub mod object;
 mod object_builder;
 pub mod simulation_impl;
 
-use crate::object::{ObjectBehavior, ObjectDescription};
+use crate::object::{Aabb, ObjectBehavior, ObjectDescription};
 use std::collections::HashMap;
 use std::fmt;
 
@@ -50,6 +49,9 @@ pub trait Simulation: fmt::Debug {
     );
     /// Returns a read-only description of all objects currently inhabiting the simulation.
     fn objects(&self) -> Snapshot;
+    /// Returns read-only descriptions for all objects either completely
+    /// contained or intersecting with the given area.
+    fn objects_in_area(&self, area: Aabb) -> Snapshot;
     /// Sets how much time in seconds is simulated for each step.
     /// # Examples
     /// If you want to run a simulation with 60 steps per second, you
@@ -82,11 +84,13 @@ mod mock {
         expect_add_object: Option<ObjectDescription>,
         expect_objects_and_return: Option<Snapshot>,
         expect_set_simulated_timestep: Option<f64>,
+        expect_objects_in_area_and_return: Option<(Aabb, Snapshot)>,
 
         step_was_called: RefCell<bool>,
         add_object_was_called: RefCell<bool>,
         objects_was_called: RefCell<bool>,
         set_simulated_timestep_was_called: RefCell<bool>,
+        objects_in_area_was_called: RefCell<bool>,
     }
 
     impl SimulationMock {
@@ -146,6 +150,23 @@ mod mock {
                 panic!("objects() was called unexpectedly")
             }
         }
+
+        fn objects_in_area(&self, area: Aabb) -> Snapshot {
+            *self.objects_in_area_was_called.borrow_mut() = true;
+
+            if let Some((expected_area, ref return_value)) = self.expect_objects_in_area_and_return
+            {
+                assert_eq!(
+                    expected_area, return_value,
+                    "objects_in_area() was called with {:?}, expected {:?}",
+                    expected_area, return_value
+                );
+                return_value.clone()
+            } else {
+                panic!("objects_in_area() was called unexpectedly");
+            }
+        }
+
         fn set_simulated_timestep(&mut self, timestep: f64) {
             *self.set_simulated_timestep_was_called.borrow_mut() = true;
 
@@ -180,6 +201,12 @@ mod mock {
                 if self.expect_objects_and_return.is_some() {
                     assert!(
                         *self.objects_was_called.borrow(),
+                        "objects() was not called, but expected"
+                    )
+                }
+                if self.expect_objects_in_area_and_return.is_some() {
+                    assert!(
+                        *self.objects_in_area_was_called.borrow(),
                         "objects() was not called, but expected"
                     )
                 }

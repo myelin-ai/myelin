@@ -1,6 +1,7 @@
 //! A `Simulation` that outsources all physical
 //! behaviour into a separate `World` type
 
+pub use self::object_environment::ObjectEnvironmentImpl;
 use crate::object::*;
 use crate::{Simulation, Snapshot};
 use myelin_geometry::*;
@@ -8,19 +9,36 @@ use ncollide2d::world::CollisionObjectHandle;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::error::Error;
-use std::fmt;
+use std::fmt::{self, Debug};
 
+mod object_environment;
 pub mod world;
+
+/// Factory used by [`SimulationImpl`] to create an [`ObjectEnvironment`].
+///
+/// [`SimulationImpl`]: ./struct.SimulationImpl.html
+/// [`ObjectEnvironment`]: ./../object/trait.ObjectEnvironment.html
+pub type ObjectEnvironmentFactoryFn =
+    dyn for<'a> Fn(&'a dyn Simulation) -> Box<dyn ObjectEnvironment + 'a>;
 
 /// Implementation of [`Simulation`] that uses a physical
 /// [`World`] in order to apply physics to objects.
 ///
 /// [`Simulation`]: ./../trait.Simulation.html
 /// [`World`]: ./trait.World.html
-#[derive(Debug)]
 pub struct SimulationImpl {
     world: Box<dyn World>,
     non_physical_object_data: HashMap<BodyHandle, NonPhysicalObjectData>,
+    object_environment_factory_fn: Box<ObjectEnvironmentFactoryFn>,
+}
+
+impl Debug for SimulationImpl {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct(name_of_type!(SimulationImpl))
+            .field("world", &self.world)
+            .field("non_physical_object_data", &self.non_physical_object_data)
+            .finish()
+    }
 }
 
 #[derive(Debug)]
@@ -49,7 +67,8 @@ impl SimulationImpl {
     /// # Examples
     /// ```
     /// use myelin_environment::simulation_impl::{
-    ///     SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl
+    ///     SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl,
+    ///     ObjectEnvironmentImpl,
     /// };
     /// use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
     /// use std::sync::{Arc, RwLock};
@@ -64,13 +83,17 @@ impl SimulationImpl {
     ///     Box::new(force_applier),
     ///     collision_filter,
     /// ));
-    /// let simulation = SimulationImpl::new(world);
+    /// let simulation = SimulationImpl::new(world, Box::new(|simulation| Box::new(ObjectEnvironmentImpl::new(simulation))));
     /// ```
     /// [`World`]: ./trait.World.html
-    pub fn new(world: Box<dyn World>) -> Self {
+    pub fn new(
+        world: Box<dyn World>,
+        object_environment_factory_fn: Box<ObjectEnvironmentFactoryFn>,
+    ) -> Self {
         Self {
             world,
             non_physical_object_data: HashMap::new(),
+            object_environment_factory_fn,
         }
     }
 
@@ -132,19 +155,23 @@ impl Simulation for SimulationImpl {
             })
             .collect();
         let mut actions = Vec::new();
-        let environment = ObjectEnvironmentImpl { simulation: &self };
-        for (object_handle, non_physical_object_data) in &self.non_physical_object_data {
-            // This is safe because the keys of self.objects and
-            // object_handle_to_objects_within_sensor are identical
-            let own_description = &object_handle_to_own_description[object_handle];
-            let action = non_physical_object_data
-                .behavior
-                .borrow_mut()
-                .step(&own_description, &environment);
-            if let Some(action) = action {
-                actions.push((*object_handle, action));
+
+        {
+            let environment = (self.object_environment_factory_fn)(self);
+            for (object_handle, non_physical_object_data) in &self.non_physical_object_data {
+                // This is safe because the keys of self.objects and
+                // object_handle_to_objects_within_sensor are identical
+                let own_description = &object_handle_to_own_description[object_handle];
+                let action = non_physical_object_data
+                    .behavior
+                    .borrow_mut()
+                    .step(&own_description, environment.as_ref());
+                if let Some(action) = action {
+                    actions.push((*object_handle, action));
+                }
             }
         }
+
         for (body_handle, action) in actions {
             self.handle_action(body_handle, action)
                 .expect("Body handle was not found within world");
@@ -186,6 +213,10 @@ impl Simulation for SimulationImpl {
                 )
             })
             .collect()
+    }
+
+    fn objects_in_area(&self, _area: Aabb) -> Snapshot {
+        unimplemented!();
     }
 
     fn set_simulated_timestep(&mut self, timestep: f64) {
@@ -247,6 +278,12 @@ pub trait World: fmt::Debug {
     ///
     /// [`BodyHandle`]: ./struct.BodyHandle.html
     fn is_body_passable(&self, body_handle: BodyHandle) -> bool;
+
+    /// Returns all bodies either completely contained or intersecting
+    /// with the area.
+    ///
+    /// [`Aabb`]: ./struct.Aabb.html
+    fn bodies_in_area(&self, area: Aabb) -> Vec<BodyHandle>;
 }
 
 /// The pure physical representation of an object
@@ -299,31 +336,26 @@ impl From<CollisionObjectHandle> for AnyHandle {
     }
 }
 
-#[derive(Debug)]
-struct ObjectEnvironmentImpl<'a> {
-    simulation: &'a SimulationImpl,
-}
-
-impl<'a> ObjectEnvironment for ObjectEnvironmentImpl<'a> {
-    fn find_objects_in_area(&self, _area: Aabb) -> Snapshot {
-        unimplemented!();
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::object::ObjectBehaviorMock;
+    use crate::object::{ObjectBehaviorMock, ObjectEnvironmentMock};
     use crate::object_builder::ObjectBuilder;
     use myelin_geometry::PolygonBuilder;
     use std::cell::RefCell;
     use std::thread::panicking;
 
+    fn object_environment_factory_fn<'a>(
+        simulation: &'a dyn Simulation,
+    ) -> Box<dyn ObjectEnvironment + 'a> {
+        box ObjectEnvironmentMock::new()
+    }
+
     #[test]
     fn propagates_step() {
         let mut world = box WorldMock::new();
         world.expect_step();
-        let mut simulation = SimulationImpl::new(world);
+        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
         simulation.step();
     }
 
@@ -332,7 +364,7 @@ mod tests {
         let mut world = box WorldMock::new();
         const EXPECTED_TIMESTEP: f64 = 1.0;
         world.expect_set_simulated_timestep(EXPECTED_TIMESTEP);
-        let mut simulation = SimulationImpl::new(world);
+        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
         simulation.set_simulated_timestep(EXPECTED_TIMESTEP);
     }
 
@@ -340,7 +372,7 @@ mod tests {
     #[test]
     fn panics_on_negative_timestep() {
         let world = box WorldMock::new();
-        let mut simulation = SimulationImpl::new(world);
+        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
         const INVALID_TIMESTEP: f64 = -0.1;
         simulation.set_simulated_timestep(INVALID_TIMESTEP);
     }
@@ -350,14 +382,14 @@ mod tests {
         let mut world = box WorldMock::new();
         const EXPECTED_TIMESTEP: f64 = 0.0;
         world.expect_set_simulated_timestep(EXPECTED_TIMESTEP);
-        let mut simulation = SimulationImpl::new(world);
+        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
         simulation.set_simulated_timestep(EXPECTED_TIMESTEP);
     }
 
     #[test]
     fn returns_no_objects_when_empty() {
         let world = box WorldMock::new();
-        let simulation = SimulationImpl::new(world);
+        let simulation = SimulationImpl::new(world, box object_environment_factory_fn);
         let objects = simulation.objects();
         assert!(objects.is_empty())
     }
@@ -392,7 +424,7 @@ mod tests {
             .unwrap();
         let object_behavior = ObjectBehaviorMock::new();
 
-        let mut simulation = SimulationImpl::new(world);
+        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
         simulation.add_object(object_description, box object_behavior);
     }
 
@@ -431,7 +463,7 @@ mod tests {
         let mut object_behavior = ObjectBehaviorMock::new();
         object_behavior.expect_step_and_return(expected_object_description.clone(), None);
 
-        let mut simulation = SimulationImpl::new(box world);
+        let mut simulation = SimulationImpl::new(box world, box object_environment_factory_fn);
         simulation.add_object(expected_object_description, box object_behavior);
         simulation.step();
     }
@@ -457,7 +489,7 @@ mod tests {
         world.expect_body_and_return(returned_handle, Some(expected_physical_body));
         world.expect_is_body_passable_and_return(returned_handle, expected_passable);
 
-        let mut simulation = SimulationImpl::new(world);
+        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
         let object_behavior = ObjectBehaviorMock::new();
 
         let expected_object_description = ObjectBuilder::default()
@@ -508,7 +540,7 @@ mod tests {
         world.expect_body_and_return(returned_handle, Some(expected_physical_body));
         world.expect_step();
 
-        let mut simulation = SimulationImpl::new(world);
+        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
@@ -561,7 +593,7 @@ mod tests {
         world.expect_remove_body_and_return(returned_handle, Some(expected_physical_body));
         world.expect_is_body_passable_and_return(returned_handle, expected_passable);
 
-        let mut simulation = SimulationImpl::new(world);
+        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
@@ -608,7 +640,7 @@ mod tests {
         world.expect_step();
         world.expect_remove_body_and_return(handle_two, Some(expected_physical_body));
 
-        let mut simulation = SimulationImpl::new(world);
+        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
@@ -659,7 +691,7 @@ mod tests {
         };
         world.expect_apply_force_and_return(returned_handle, expected_force.clone(), Some(()));
 
-        let mut simulation = SimulationImpl::new(world);
+        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
@@ -703,7 +735,7 @@ mod tests {
         let returned_handle = BodyHandle(1984);
         world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
         world.expect_body_and_return(returned_handle, None);
-        let mut simulation = SimulationImpl::new(world);
+        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
 
         let object_description = ObjectBuilder::default()
             .location(expected_location.x, expected_location.y)
@@ -746,6 +778,7 @@ mod tests {
         expect_apply_force_and_return: Option<(BodyHandle, Force, Option<()>)>,
         expect_set_simulated_timestep: Option<f64>,
         expect_is_body_passable_and_return: Option<(BodyHandle, bool)>,
+        expect_bodies_in_area_and_return: Option<(Aabb, Vec<BodyHandle>)>,
 
         step_was_called: RefCell<bool>,
         add_body_was_called: RefCell<bool>,
@@ -754,6 +787,7 @@ mod tests {
         apply_force_was_called: RefCell<bool>,
         set_simulated_timestep_was_called: RefCell<bool>,
         is_body_passable: RefCell<bool>,
+        bodies_in_area_was_called: RefCell<bool>,
     }
     impl WorldMock {
         pub(crate) fn new() -> Self {
@@ -808,6 +842,14 @@ mod tests {
         ) {
             self.expect_is_body_passable_and_return = Some((body_handle, return_value));
         }
+
+        pub(crate) fn expect_bodies_in_area_and_return(
+            &mut self,
+            area: Aabb,
+            return_value: Vec<BodyHandle>,
+        ) {
+            self.expect_bodies_in_area_and_return = Some((area, return_value));
+        }
     }
 
     impl Drop for WorldMock {
@@ -858,7 +900,14 @@ mod tests {
                     assert!(
                         *self.is_body_passable.borrow(),
                         "is_body_passable() was not called, but was expected"
-                    )
+                    );
+                }
+
+                if self.expect_bodies_in_area_and_return.is_some() {
+                    assert!(
+                        *self.bodies_in_area_was_called.borrow(),
+                        "bodies_in_area() was not called, but was expected"
+                    );
                 }
             }
         }
@@ -969,6 +1018,21 @@ mod tests {
                 }
             } else {
                 panic!("is_body_passable() was called unexpectedly")
+            }
+        }
+
+        fn bodies_in_area(&self, area: Aabb) -> Vec<BodyHandle> {
+            *self.bodies_in_area_was_called.borrow_mut() = true;
+
+            if let Some((expected_area, ref return_value)) = self.expect_bodies_in_area_and_return {
+                assert_eq!(
+                    expected_area, area,
+                    "bodies_in_area() was called with {:?}, expected {:?}",
+                    expected_area, area
+                );
+                return_value.clone()
+            } else {
+                panic!("bodies_in_area() was called unexpectedly")
             }
         }
     }

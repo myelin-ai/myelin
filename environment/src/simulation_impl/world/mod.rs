@@ -329,6 +329,10 @@ impl World for NphysicsWorld {
             .expect("RwLock was poisoned")
             .is_handle_ignored(body_handle.into())
     }
+
+    fn bodies_in_area(&self, _area: Aabb) -> Vec<BodyHandle> {
+        unimplemented!();
+    }
 }
 
 fn set_velocity(rigid_body: &mut RigidBody<f64>, velocity: &Vector) {
