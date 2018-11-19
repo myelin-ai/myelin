@@ -109,6 +109,11 @@ mod mock {
             self.expect_objects_and_return = Some(return_value)
         }
 
+        /// Marks the method [`Simulation::objects_in_area`] as expected.
+        pub fn expect_objects_in_area_and_return(&mut self, area: Aabb, return_value: Snapshot) {
+            self.expect_objects_in_area_and_return = Some((area, return_value));
+        }
+
         /// Marks the method [`Simulation::set_simulated_timestep`] as expected.
         pub fn expect_set_simulated_timestep(&mut self, timestep: f64) {
             self.expect_set_simulated_timestep = Some(timestep)

@@ -236,6 +236,9 @@ mod mock {
         }
     }
 
+    /// Mock for [`ObjectEnvironment`]
+    ///
+    /// [`ObjectEnvironment`]: ./trait.ObjectEnvironment.html
     #[derive(Debug, Default, Clone)]
     pub struct ObjectEnvironmentMock {
         expect_find_objects_in_area_and_return: Option<(Aabb, Snapshot)>,
