@@ -1,5 +1,6 @@
-use crate::object::{Aabb, ObjectEnvironment};
+use crate::object::ObjectEnvironment;
 use crate::{Simulation, Snapshot};
+use myelin_geometry::Aabb;
 
 /// Default implementation of [`ObjectEnvironment`].
 ///

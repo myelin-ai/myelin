@@ -26,7 +26,8 @@ pub mod object;
 mod object_builder;
 pub mod simulation_impl;
 
-use crate::object::{Aabb, ObjectBehavior, ObjectDescription};
+use crate::object::{ObjectBehavior, ObjectDescription};
+use myelin_geometry::Aabb;
 use std::collections::HashMap;
 use std::fmt;
 
