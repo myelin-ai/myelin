@@ -635,9 +635,15 @@ mod tests {
             .expect_add_whitelisted_handle()
             .expect_is_handle_blacklisted_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
-        world
+        let sensor_handle = world
             .attach_sensor(handle, sensor())
             .expect("Invalid handle");
+
+        collision_filter
+            .write()
+            .expect("RwLock was poisoned")
+            .expect_remove_whitelisted_handle(sensor_handle.into());
+
         let physical_body = world.remove_body(handle).expect("Invalid handle");
         assert_eq!(expected_body, physical_body);
     }
