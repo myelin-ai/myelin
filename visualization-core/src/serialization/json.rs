@@ -78,16 +78,6 @@ mod test {
             mobility: Some(Mobility::Movable(Vector { x: 2.0, y: 3.0 })),
             location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
-            sensor: Some(Some(Sensor {
-                shape: PolygonBuilder::default()
-                    .vertex(-10.0, -12.0)
-                    .vertex(10.0, 6.0)
-                    .vertex(16.0, 0.0)
-                    .build()
-                    .unwrap(),
-                location: Point { x: 2.0, y: 3.0 },
-                rotation: Radians::try_new(1.0).unwrap(),
-            })),
         };
 
         let view_model_delta = hashmap! { 12 => ObjectDelta::Updated(object_description_delta) };

@@ -58,7 +58,7 @@ impl HardcodedGenerator {
     ///     Box::new(SimulationImpl::new(world))
     /// });
     ///
-    /// let plant_factory = Box::new(|_| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
+    /// let plant_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
     /// let organism_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
     /// let terrain_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
     /// let water_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
@@ -140,8 +140,7 @@ impl HardcodedGenerator {
                 let vertical_position = 103.0 + f64::from(j) * DISPLACEMENT;
 
                 let mut add_plant = |plant: ObjectDescription| {
-                    let sensor = plant.sensor.clone().unwrap();
-                    simulation.add_object(plant, (self.plant_factory)(sensor));
+                    simulation.add_object(plant, (self.plant_factory)());
                 };
                 add_plant(build_plant(
                     HALF_OF_PLANT_WIDTH_AND_HEIGHT,
@@ -186,7 +185,6 @@ fn build_terrain(location: (f64, f64), width: f64, length: f64) -> ObjectDescrip
 }
 
 fn build_plant(half_of_width_and_height: f64, x: f64, y: f64) -> ObjectDescription {
-    let half_of_sensor_width_and_height = half_of_width_and_height * 3.0;
     ObjectBuilder::default()
         .shape(
             PolygonBuilder::default()
@@ -200,29 +198,6 @@ fn build_plant(half_of_width_and_height: f64, x: f64, y: f64) -> ObjectDescripti
         .location(x, y)
         .mobility(Mobility::Immovable)
         .kind(Kind::Plant)
-        .sensor(Sensor {
-            shape: PolygonBuilder::default()
-                .vertex(
-                    -half_of_sensor_width_and_height,
-                    -half_of_sensor_width_and_height,
-                )
-                .vertex(
-                    half_of_sensor_width_and_height,
-                    -half_of_sensor_width_and_height,
-                )
-                .vertex(
-                    half_of_sensor_width_and_height,
-                    half_of_sensor_width_and_height,
-                )
-                .vertex(
-                    -half_of_sensor_width_and_height,
-                    half_of_sensor_width_and_height,
-                )
-                .build()
-                .expect("Generated an invalid vertex"),
-            location: Point::default(),
-            rotation: Radians::default(),
-        })
         .passable(true)
         .build()
         .expect("Failed to build plant")
@@ -243,17 +218,6 @@ fn build_organism(x: f64, y: f64) -> ObjectDescription {
         .rotation(Radians::try_new(FRAC_PI_2).unwrap())
         .mobility(Mobility::Movable(Vector::default()))
         .kind(Kind::Organism)
-        .sensor(Sensor {
-            shape: PolygonBuilder::default()
-                .vertex(-25.0, -25.0)
-                .vertex(25.0, -25.0)
-                .vertex(25.0, 25.0)
-                .vertex(-25.0, 25.0)
-                .build()
-                .expect("Generated an invalid vertex"),
-            location: Point::default(),
-            rotation: Radians::default(),
-        })
         .build()
         .expect("Failed to build organism")
 }
@@ -330,8 +294,7 @@ mod tests {
     #[test]
     fn generates_simulation() {
         let simulation_factory = box || -> Box<dyn Simulation> { box SimulationMock::default() };
-        let plant_factory =
-            box |_: Sensor| -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock {} };
+        let plant_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock {} };
         let organism_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock {} };
         let terrain_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock {} };
         let water_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock {} };

@@ -325,17 +325,6 @@ mod tests {
                 )
                 .location(50.0, 50.0)
                 .rotation(Radians::try_new(1.0).unwrap())
-                .sensor(Sensor {
-                    shape: PolygonBuilder::default()
-                        .vertex(-2.0, -2.0)
-                        .vertex(2.0, -2.0)
-                        .vertex(2.0, 2.0)
-                        .vertex(-2.0, 2.0)
-                        .build()
-                        .unwrap(),
-                    location: Point::default(),
-                    rotation: Radians::default(),
-                })
                 .mobility(Mobility::Movable(Vector { x: 3.0, y: -4.0 }))
                 .kind(Kind::Plant)
                 .build()
@@ -351,7 +340,6 @@ mod tests {
             rotation: None,
             mobility: None,
             kind: None,
-            sensor: None,
         };
 
         hashmap! {

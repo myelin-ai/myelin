@@ -5,7 +5,7 @@ use crate::constant::*;
 use crate::controller::{ConnectionAcceptor, Controller, ControllerImpl};
 use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
-use myelin_environment::object::{ObjectBehavior, Sensor};
+use myelin_environment::object::ObjectBehavior;
 use myelin_environment::simulation_impl::world::collision_filter::IgnoringCollisionFilterImpl;
 use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
 use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
@@ -42,8 +42,8 @@ where
         );
         box SimulationImpl::new(box world)
     };
-    let plant_factory = box |sensor: Sensor| -> Box<dyn ObjectBehavior> {
-        box StochasticSpreading::new(1.0 / 5_000.0, sensor, box RandomChanceCheckerImpl::new())
+    let plant_factory = box || -> Box<dyn ObjectBehavior> {
+        box StochasticSpreading::new(1.0 / 5_000.0, box RandomChanceCheckerImpl::new())
     };
     let organism_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
     let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };

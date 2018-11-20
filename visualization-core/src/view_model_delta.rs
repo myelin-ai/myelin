@@ -44,8 +44,4 @@ pub struct ObjectDescriptionDelta {
 
     /// The object's kind
     pub kind: Option<Kind>,
-
-    /// The object's sensor
-    #[allow(clippy::option_option)]
-    pub sensor: Option<Option<Sensor>>,
 }
