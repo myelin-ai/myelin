@@ -19,7 +19,7 @@ pub struct HardcodedGenerator {
 }
 
 pub type SimulationFactory = Box<dyn Fn() -> Box<dyn Simulation>>;
-pub type PlantFactory = Box<dyn Fn(Sensor) -> Box<dyn ObjectBehavior>>;
+pub type PlantFactory = Box<dyn Fn() -> Box<dyn ObjectBehavior>>;
 pub type OrganismFactory = Box<dyn Fn() -> Box<dyn ObjectBehavior>>;
 pub type TerrainFactory = Box<dyn Fn() -> Box<dyn ObjectBehavior>>;
 pub type WaterFactory = Box<dyn Fn() -> Box<dyn ObjectBehavior>>;
@@ -35,7 +35,8 @@ impl HardcodedGenerator {
     /// ```
     /// use myelin_environment::Simulation;
     /// use myelin_environment::simulation_impl::{
-    ///     SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl
+    ///     SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl,
+    ///     ObjectEnvironmentImpl,
     /// };
     /// use myelin_environment::simulation_impl::world::collision_filter::IgnoringCollisionFilterImpl;
     /// use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
@@ -55,7 +56,9 @@ impl HardcodedGenerator {
     ///         Box::new(force_applier),
     ///         collision_filter,
     ///     ));
-    ///     Box::new(SimulationImpl::new(world))
+    ///     Box::new(SimulationImpl::new(world, Box::new(|simulation| {
+    ///         Box::new(ObjectEnvironmentImpl::new(simulation))
+    ///     })))
     /// });
     ///
     /// let plant_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
@@ -264,7 +267,7 @@ mod tests {
         fn objects(&self) -> Snapshot {
             panic!("objects() called unexpectedly")
         }
-        fn objects_in_area(&self, area: Aabb) -> Snapshot {
+        fn objects_in_area(&self, _area: Aabb) -> Snapshot {
             panic!("objects_in_area() called unexpectedly");
         }
         fn set_simulated_timestep(&mut self, _: f64) {
@@ -285,7 +288,7 @@ mod tests {
         fn step(
             &mut self,
             _own_description: &ObjectDescription,
-            _sensor_collisions: &Snapshot,
+            _environment: &dyn ObjectEnvironment,
         ) -> Option<Action> {
             panic!("step() was called unexpectedly")
         }
