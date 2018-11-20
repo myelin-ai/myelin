@@ -195,6 +195,25 @@ where
     }
 }
 
+///
+/// ```other
+/// ┼─────────────────────────────────────────────────── x
+/// |        Padding: 1       Width: 10
+/// |           ←→           ←―――――――→
+/// │  ┌───────┐  ┌───────┐  ┌───────┐  ↑
+/// │  │ x: 39 │  │ x: 50 │  │ x: 61 │  | Height: 10
+/// │  │ y: 39 │  │ y: 39 │  │ y: 39 │  │
+/// │  └───────┘  └───────┘  └───────┘  ↓
+/// │  ┌───────┐  ┌───────┐  ┌───────┐
+/// │  │ x: 39 │  │ x: 50 │  │ x: 61 │
+/// │  │ y: 50 │  │ y: 50 │  │ y: 50 │
+/// │  └───────┘  └───────┘  └───────┘
+/// │  ┌───────┐  ┌───────┐  ┌───────┐
+/// │  │ x: 39 │  │ x: 50 │  │ x: 61 │
+/// │  │ y: 61 │  │ y: 61 │  │ y: 61 │
+/// │  └───────┘  └───────┘  └───────┘
+/// y
+/// ```
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -225,7 +244,10 @@ mod tests {
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
-        let action = object.step(&own_description, &ObjectEnvironmentMock::new());
+        let mut environment = ObjectEnvironmentMock::new();
+        environment
+            .expect_find_objects_in_area(Aabb::new((34.0, 34.0), (44.0, 44.0)), HashMap::new());
+        let action = object.step(&own_description, &environment);
         match action {
             Some(Action::Reproduce(object_description, _)) => {
                 let expected_object_description = object_description_at_location(
@@ -248,18 +270,55 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
-        let collisions = hashmap!{
-            0 => object_description_at_location(40.0, 40.0),
-            1 => object_description_at_location(50.0, 40.0),
-            2 => object_description_at_location(60.0, 40.0),
-            3 => object_description_at_location(60.0, 50.0),
-            4 => object_description_at_location(60.0, 60.0),
-            5 => object_description_at_location(50.0, 60.0),
-            6 => object_description_at_location(40.0, 60.0),
-            7 => object_description_at_location(40.0, 50.0),
-        };
-
-        let environment = ObjectEnvironmentMock::new();
+        let mut environment = ObjectEnvironmentMock::new();
+        environment.expect_find_objects_in_area(
+            Aabb::new((34.0, 34.0), (44.0, 44.0)),
+            hashmap!{
+                0 => object_description_at_location(39.0, 39.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((45.0, 34.0), (55.0, 44.0)),
+            hashmap!{
+                1 => object_description_at_location(50.0, 39.0)
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((56.0, 34.0), (66.0, 44.0)),
+            hashmap!{
+               2 => object_description_at_location(60.0, 39.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((56.0, 45.0), (66.0, 55.0)),
+            hashmap!{
+               3 => object_description_at_location(61.0, 50.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((56.0, 56.0), (66.0, 66.0)),
+            hashmap!{
+               4 => object_description_at_location(61.0, 61.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((45.0, 56.0), (55.0, 66.0)),
+            hashmap!{
+               5 => object_description_at_location(50.0, 61.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((34.0, 56.0), (44.0, 66.0)),
+            hashmap!{
+               6 => object_description_at_location(39.0, 61.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((34.0, 45.0), (44.0, 55.0)),
+            hashmap!{
+               7 => object_description_at_location(39.0, 50.0),
+            },
+        );
 
         let action = object.step(&own_description, &environment);
         assert!(action.is_none());
@@ -279,49 +338,24 @@ mod tests {
         environment.expect_find_objects_in_area(
             Aabb::new((34.0, 34.0), (44.0, 44.0)),
             hashmap!{
-                0 => object_description_at_location(40.0, 40.0),
+                0 => object_description_at_location(39.0, 39.0),
             },
         );
         environment.expect_find_objects_in_area(
             Aabb::new((45.0, 34.0), (55.0, 44.0)),
             hashmap!{
-                1 => object_description_at_location(50.0, 40.0)
+                1 => object_description_at_location(50.0, 39.0)
             },
         );
         environment.expect_find_objects_in_area(
             Aabb::new((56.0, 34.0), (66.0, 44.0)),
             hashmap!{
-               2 => object_description_at_location(60.0, 40.0),
+               2 => object_description_at_location(60.0, 39.0),
             },
         );
 
         environment
             .expect_find_objects_in_area(Aabb::new((56.0, 45.0), (66.0, 55.0)), HashMap::new());
-
-        environment.expect_find_objects_in_area(
-            Aabb::new((56.0, 56.0), (66.0, 66.0)),
-            hashmap!{
-               3 => object_description_at_location(60.0, 60.0),
-            },
-        );
-        environment.expect_find_objects_in_area(
-            Aabb::new((45.0, 56.0), (55.0, 66.0)),
-            hashmap!{
-              4 => object_description_at_location(50.0, 60.0),
-            },
-        );
-        environment.expect_find_objects_in_area(
-            Aabb::new((34.0, 56.0), (44.0, 66.0)),
-            hashmap!{
-              5 => object_description_at_location(40.0, 60.0),
-            },
-        );
-        environment.expect_find_objects_in_area(
-            Aabb::new((34.0, 45.0), (44.0, 55.0)),
-            hashmap!{
-              6 => object_description_at_location(40.0, 50.0),
-            },
-        );
 
         let action = object.step(&own_description, &environment);
         match action {
@@ -343,15 +377,15 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
-        let collisions = hashmap!{
-            0 => object_description_at_location(40.0, 40.0),
-            1 => object_description_at_location(60.0, 40.0),
-            2 => object_description_at_location(60.0, 50.0),
-            3 => object_description_at_location(50.0, 60.0),
-            4 => object_description_at_location(40.0, 50.0),
-        };
-
-        let environment = ObjectEnvironmentMock::new();
+        let mut environment = ObjectEnvironmentMock::new();
+        environment.expect_find_objects_in_area(
+            Aabb::new((34.0, 34.0), (44.0, 44.0)),
+            hashmap!{
+                0 => object_description_at_location(40.0, 40.0),
+            },
+        );
+        environment
+            .expect_find_objects_in_area(Aabb::new((45.0, 34.0), (55.0, 44.0)), HashMap::new());
 
         let action = object.step(&own_description, &environment);
         match action {
