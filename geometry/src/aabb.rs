@@ -3,14 +3,14 @@ use crate::Point;
 /// An axix-aligned bounding box
 ///
 /// ```other
-/// ┼─────────────────────────────────────── y
+/// ┼─────────────────────────────────────── x
 /// │
 /// │  Upper left → ┌─────────────┐
 /// │               │             │
 /// │               │             │
 /// │               └─────────────┘ ← Lower right
 /// │
-/// x
+/// y
 /// ```
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Aabb {
