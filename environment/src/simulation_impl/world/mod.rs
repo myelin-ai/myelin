@@ -436,14 +436,7 @@ mod tests {
 
     #[test]
     fn can_return_rigid_object_with_valid_handle() {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator
-            .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(
-            3.0,
-            Radians::try_new(3.0)
-                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
-        );
+        let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -452,7 +445,7 @@ mod tests {
             box force_applier,
             collision_filter.clone(),
         );
-        let movable_body = movable_body(Radians::try_new(3.0).unwrap());
+        let movable_body = movable_body();
 
         let handle = world.add_body(movable_body);
 
@@ -466,14 +459,7 @@ mod tests {
 
     #[test]
     fn can_return_grounded_object_with_valid_handle() {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator
-            .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(
-            3.0,
-            Radians::try_new(3.0)
-                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
-        );
+        let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -482,7 +468,7 @@ mod tests {
             box force_applier,
             collision_filter.clone(),
         );
-        let body = immovable_body(Radians::try_new(3.0).unwrap());
+        let body = immovable_body();
 
         let handle = world.add_body(body);
 
@@ -496,14 +482,7 @@ mod tests {
 
     #[test]
     fn removing_object_returns_physical_body() {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator
-            .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(
-            3.0,
-            Radians::try_new(3.0)
-                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
-        );
+        let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -512,7 +491,7 @@ mod tests {
             box force_applier,
             collision_filter.clone(),
         );
-        let expected_body = movable_body(Radians::try_new(3.0).unwrap());
+        let expected_body = movable_body();
 
         let handle = world.add_body(expected_body.clone());
 
@@ -527,14 +506,7 @@ mod tests {
 
     #[test]
     fn removed_object_cannot_be_accessed() {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator
-            .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(
-            3.0,
-            Radians::try_new(3.0)
-                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
-        );
+        let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -543,7 +515,7 @@ mod tests {
             box force_applier,
             collision_filter.clone(),
         );
-        let expected_body = movable_body(Radians::try_new(3.0).unwrap());
+        let expected_body = movable_body();
 
         let handle = world.add_body(expected_body.clone());
 
@@ -559,14 +531,7 @@ mod tests {
 
     #[test]
     fn can_return_mixed_objects_with_valid_handles() {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator
-            .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(
-            3.0,
-            Radians::try_new(3.0)
-                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
-        );
+        let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -575,8 +540,8 @@ mod tests {
             box force_applier,
             collision_filter.clone(),
         );
-        let rigid_object = movable_body(Radians::try_new(3.0).unwrap());
-        let grounded_object = immovable_body(Radians::try_new(3.0).unwrap());
+        let rigid_object = movable_body();
+        let grounded_object = immovable_body();
 
         let rigid_handle = world.add_body(rigid_object);
         let grounded_handle = world.add_body(grounded_object);
@@ -595,14 +560,7 @@ mod tests {
 
     #[test]
     fn returns_correct_rigid_body() {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator
-            .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(
-            3.0,
-            Radians::try_new(3.0)
-                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
-        );
+        let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -611,7 +569,7 @@ mod tests {
             box force_applier,
             collision_filter.clone(),
         );
-        let expected_body = movable_body(Radians::try_new(3.0).unwrap());
+        let expected_body = movable_body();
         let handle = world.add_body(expected_body.clone());
 
         collision_filter
@@ -626,14 +584,7 @@ mod tests {
 
     #[test]
     fn returns_correct_grounded_body() {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator
-            .expect_to_nphysics_rotation_and_return(Radians::try_new(3.0).unwrap(), 3.0);
-        rotation_translator.expect_to_radians_and_return(
-            3.0,
-            Radians::try_new(3.0)
-                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
-        );
+        let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -642,7 +593,7 @@ mod tests {
             box force_applier,
             collision_filter.clone(),
         );
-        let expected_body = immovable_body(Radians::try_new(3.0).unwrap());
+        let expected_body = immovable_body();
         let handle = world.add_body(expected_body.clone());
 
         collision_filter
@@ -657,14 +608,7 @@ mod tests {
 
     #[test]
     fn timestep_is_respected() {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator
-            .expect_to_nphysics_rotation_and_return(Radians::try_new(0.0).unwrap(), 0.0);
-        rotation_translator.expect_to_radians_and_return(
-            0.0,
-            Radians::try_new(0.0)
-                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
-        );
+        let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let mut force_applier = SingleTimeForceApplierMock::default();
         force_applier.expect_apply_and_return(true);
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
@@ -675,7 +619,7 @@ mod tests {
             collision_filter.clone(),
         );
 
-        let local_object = movable_body(Radians::default());
+        let local_object = movable_body();
         let handle = world.add_body(local_object.clone());
 
         collision_filter
@@ -690,7 +634,6 @@ mod tests {
 
         let expected_body = PhysicalBody {
             location: Point { x: 6.0, y: 6.0 },
-            rotation: Radians::default(),
             ..local_object
         };
         assert_eq!(Some(expected_body), actual_body);
@@ -698,14 +641,7 @@ mod tests {
 
     #[test]
     fn timestep_can_be_changed() {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_radians_and_return(
-            0.0,
-            Radians::try_new(0.0)
-                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
-        );
-        rotation_translator
-            .expect_to_nphysics_rotation_and_return(Radians::try_new(0.0).unwrap(), 0.0);
+        let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let mut force_applier = SingleTimeForceApplierMock::default();
         force_applier.expect_apply_and_return(true);
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
@@ -717,7 +653,7 @@ mod tests {
         );
         world.set_simulated_timestep(2.0);
 
-        let local_object = movable_body(Radians::default());
+        let local_object = movable_body();
         let handle = world.add_body(local_object.clone());
 
         collision_filter
@@ -732,7 +668,6 @@ mod tests {
 
         let expected_body = PhysicalBody {
             location: Point { x: 7.0, y: 7.0 },
-            rotation: Radians::default(),
             ..local_object
         };
         assert_eq!(Some(expected_body), actual_body);
@@ -740,16 +675,7 @@ mod tests {
 
     #[test]
     fn step_is_ignored_for_rigid_objects_with_no_movement() {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(
-            Radians::try_new(FRAC_PI_2).unwrap(),
-            FRAC_PI_2,
-        );
-        rotation_translator.expect_to_radians_and_return(
-            FRAC_PI_2,
-            Radians::try_new(FRAC_PI_2)
-                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
-        );
+        let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let mut force_applier = SingleTimeForceApplierMock::default();
         force_applier.expect_apply_and_return(true);
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
@@ -759,7 +685,7 @@ mod tests {
             box force_applier,
             collision_filter.clone(),
         );
-        let expected_body = immovable_body(Radians::try_new(FRAC_PI_2).unwrap());
+        let expected_body = immovable_body();
         let handle = world.add_body(expected_body.clone());
 
         collision_filter
@@ -776,16 +702,7 @@ mod tests {
 
     #[test]
     fn step_is_ignored_for_grounded_objects() {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(
-            Radians::try_new(FRAC_PI_2).unwrap(),
-            FRAC_PI_2,
-        );
-        rotation_translator.expect_to_radians_and_return(
-            FRAC_PI_2,
-            Radians::try_new(FRAC_PI_2)
-                .map_err(|_| NphysicsRotationTranslatorError::InvalidNphysicsValue),
-        );
+        let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let mut force_applier = SingleTimeForceApplierMock::default();
         force_applier.expect_apply_and_return(true);
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
@@ -795,7 +712,7 @@ mod tests {
             box force_applier,
             collision_filter.clone(),
         );
-        let body = immovable_body(Radians::try_new(FRAC_PI_2).unwrap());
+        let body = immovable_body();
         let still_body = PhysicalBody {
             mobility: Mobility::Movable(Vector { x: 0.0, y: 0.0 }),
             ..body
@@ -816,11 +733,7 @@ mod tests {
 
     #[test]
     fn applied_force_is_propagated() {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(
-            Radians::try_new(FRAC_PI_2).unwrap(),
-            FRAC_PI_2,
-        );
+        let rotation_translator = rotation_translator_for_adding_body();
         let mut force_applier = SingleTimeForceApplierMock::default();
         let expected_force = Force {
             linear: Vector { x: 4.0, y: 10.0 },
@@ -835,7 +748,7 @@ mod tests {
             box force_applier,
             collision_filter,
         );
-        let expected_body = movable_body(Radians::try_new(FRAC_PI_2).unwrap());
+        let expected_body = movable_body();
         let handle = world.add_body(expected_body.clone());
 
         world.apply_force(handle, expected_force);
@@ -843,11 +756,7 @@ mod tests {
 
     #[test]
     fn bodies_in_area_returns_body_in_area() {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(
-            Radians::try_new(FRAC_PI_2).unwrap(),
-            FRAC_PI_2,
-        );
+        let rotation_translator = rotation_translator_for_adding_body();
         let mut force_applier = SingleTimeForceApplierMock::default();
         force_applier.expect_apply_and_return(true);
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
@@ -857,7 +766,7 @@ mod tests {
             box force_applier,
             collision_filter,
         );
-        let expected_body = movable_body(Radians::try_new(FRAC_PI_2).unwrap());
+        let expected_body = movable_body();
         let handle = world.add_body(expected_body);
 
         world.step();
@@ -870,11 +779,7 @@ mod tests {
 
     #[test]
     fn bodies_in_area_does_not_return_out_of_range_bodies() {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(
-            Radians::try_new(FRAC_PI_2).unwrap(),
-            FRAC_PI_2,
-        );
+        let rotation_translator = rotation_translator_for_adding_body();
         let mut force_applier = SingleTimeForceApplierMock::default();
         force_applier.expect_apply_and_return(true);
 
@@ -885,7 +790,7 @@ mod tests {
             box force_applier,
             collision_filter,
         );
-        let expected_body = movable_body(Radians::try_new(FRAC_PI_2).unwrap());
+        let expected_body = movable_body();
         let _handle = world.add_body(expected_body.clone());
 
         world.step();
@@ -896,10 +801,26 @@ mod tests {
         );
     }
 
-    fn movable_body(orientation: Radians) -> PhysicalBody {
+    fn rotation_translator_for_adding_body() -> NphysicsRotationTranslatorMock {
+        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
+        rotation_translator.expect_to_nphysics_rotation_and_return(
+            Radians::try_new(FRAC_PI_2).unwrap(),
+            FRAC_PI_2,
+        );
+        rotation_translator
+    }
+
+    fn rotation_translator_for_adding_and_reading_body() -> NphysicsRotationTranslatorMock {
+        let mut rotation_translator = rotation_translator_for_adding_body();
+        rotation_translator
+            .expect_to_radians_and_return(FRAC_PI_2, Ok(Radians::try_new(FRAC_PI_2).unwrap()));
+        rotation_translator
+    }
+
+    fn movable_body() -> PhysicalBody {
         PhysicalBody {
             location: Point { x: 5.0, y: 5.0 },
-            rotation: orientation,
+            rotation: Radians::try_new(FRAC_PI_2).unwrap(),
             mobility: Mobility::Movable(Vector { x: 1.0, y: 1.0 }),
             shape: PolygonBuilder::default()
                 .vertex(-5.0, -5.0)
@@ -912,7 +833,7 @@ mod tests {
         }
     }
 
-    fn immovable_body(orientation: Radians) -> PhysicalBody {
+    fn immovable_body() -> PhysicalBody {
         PhysicalBody {
             shape: PolygonBuilder::default()
                 .vertex(-100.0, -100.0)
@@ -923,7 +844,7 @@ mod tests {
                 .unwrap(),
             mobility: Mobility::Immovable,
             location: Point { x: 300.0, y: 200.0 },
-            rotation: orientation,
+            rotation: Radians::try_new(FRAC_PI_2).unwrap(),
             passable: false,
         }
     }
