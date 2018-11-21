@@ -325,7 +325,7 @@ mod tests {
     }
 
     #[test]
-    fn spreads_on_only_available_space() {
+    fn spreads_on_first_available_space_clockwise() {
         let mut random_chance_checker = RandomChanceCheckerMock::default();
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
         random_chance_checker.expect_random_number_in_range_and_return(0, 8, 0);
