@@ -32,7 +32,7 @@ impl GlobalPolygonTranslator for GlobalPolygonTranslatorImpl {
             .translate(location)
             .rotate_around_point(rotation, location);
         let view_model_vertices = global_polygon
-            .vertices
+            .vertices()
             .iter()
             .map(|vertex| view_model::Point {
                 x: vertex.x,

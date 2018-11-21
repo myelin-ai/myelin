@@ -5,14 +5,44 @@ mod builder;
 pub use self::builder::*;
 use itertools::Itertools;
 
-/// A convex polygon
+/// A convex polygon.
+///
+/// Can either be constructed using a [`PolygonBuilder`]
+/// or with [`Polygon::try_new`].
+///
+/// [`PolygonBuilder`]: ./struct.PolygonBuilder.html
+/// [`Polygon::try_new`]: ./struct.Polygon.html#method.try_new
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct Polygon {
     /// The vertices of the polygon
-    pub vertices: Vec<Point>,
+    vertices: Vec<Point>,
 }
 
 impl Polygon {
+    /// Creates a new [`Polygon`] from the given [`Point`]s.
+    ///
+    /// # Errors
+    /// This method will return an error if the number of configured
+    /// vertices is less than three, as the resulting [`Polygon`]
+    /// would not be two-dimensional.
+    ///
+    /// [`Polygon`]: ./struct.Polygon.html
+    /// [`Point`]: ./struct.Point.html
+    pub fn try_new(vertices: Vec<Point>) -> Result<Self, ()> {
+        const MINIMUM_VERTICES_IN_EUCLIDEAN_GEOMETRY: usize = 3;
+
+        if vertices.len() >= MINIMUM_VERTICES_IN_EUCLIDEAN_GEOMETRY {
+            Ok(Self { vertices })
+        } else {
+            Err(())
+        }
+    }
+
+    /// Returns the vertices of the polygon
+    pub fn vertices(&self) -> &[Point] {
+        &self.vertices
+    }
+
     /// Apply translation specified by `translation`, represented as
     /// a relative point
     pub fn translate(&self, translation: Point) -> Self {
@@ -83,8 +113,9 @@ impl Polygon {
     /// Returns an [`Aabb`] which fully contains this polygon.
     ///
     /// # Panics
-    /// Panics if the polygon has no vertices or if the floating-point values
-    /// representing the vertices' coordinates are not comparable, e.g. `NaN`
+    /// Panics if the floating-point values representing the vertices' coordinates
+    /// are not comparable, e.g. `NaN` or if the polygon has no vertices.
+    /// The latter should never occur, because the constructor validates that the polygon is valid.
     pub fn aabb(&self) -> Aabb {
         let mut vertices = self.vertices.clone();
 
@@ -351,5 +382,60 @@ mod test {
         let expected_aabb = Aabb::new((-5.0, -5.0), (5.0, 5.0));
 
         assert_eq!(expected_aabb, polygon.aabb());
+    }
+
+    #[test]
+    fn try_new_errors_for_zero_vertices() {
+        assert!(Polygon::try_new(Vec::new()).is_err());
+    }
+
+    #[test]
+    fn try_new_errors_for_one_vertex() {
+        assert!(Polygon::try_new(vec![Point { x: 0.0, y: 0.0 }]).is_err());
+    }
+
+    #[test]
+    fn try_new_errors_for_two_vertices() {
+        assert!(
+            Polygon::try_new(vec![Point { x: 0.0, y: 0.0 }, Point { x: 1.0, y: 0.0 }]).is_err()
+        );
+    }
+
+    #[test]
+    fn try_new_works_for_three_vertices() {
+        assert_eq!(
+            Ok(Polygon {
+                vertices: vec![
+                    Point { x: 0.0, y: 0.0 },
+                    Point { x: 1.0, y: 0.0 },
+                    Point { x: 0.0, y: 1.0 },
+                ]
+            }),
+            Polygon::try_new(vec![
+                Point { x: 0.0, y: 0.0 },
+                Point { x: 1.0, y: 0.0 },
+                Point { x: 0.0, y: 1.0 },
+            ])
+        );
+    }
+
+    #[test]
+    fn try_new_works_for_four_vertices() {
+        assert_eq!(
+            Ok(Polygon {
+                vertices: vec![
+                    Point { x: 0.0, y: 0.0 },
+                    Point { x: 1.0, y: 0.0 },
+                    Point { x: 0.0, y: 1.0 },
+                    Point { x: 1.0, y: 1.0 },
+                ]
+            }),
+            Polygon::try_new(vec![
+                Point { x: 0.0, y: 0.0 },
+                Point { x: 1.0, y: 0.0 },
+                Point { x: 0.0, y: 1.0 },
+                Point { x: 1.0, y: 1.0 },
+            ])
+        );
     }
 }

@@ -322,14 +322,13 @@ mod test {
             .build();
 
         let expected = ObjectDescription {
-            shape: Polygon {
-                vertices: vec![
-                    Point { x: 0.0, y: 0.0 },
-                    Point { x: 0.0, y: 1.0 },
-                    Point { x: 1.0, y: 0.0 },
-                    Point { x: 1.0, y: 1.0 },
-                ],
-            },
+            shape: PolygonBuilder::default()
+                .vertex(0.0, 0.0)
+                .vertex(0.0, 1.0)
+                .vertex(1.0, 0.0)
+                .vertex(1.0, 1.0)
+                .build()
+                .unwrap(),
             location: Point { x: 30.0, y: 40.0 },
             rotation: Radians::try_new(0.0).unwrap(),
             kind: Kind::Terrain,
@@ -360,14 +359,13 @@ mod test {
             .build();
 
         let expected = ObjectDescription {
-            shape: Polygon {
-                vertices: vec![
-                    Point { x: 0.0, y: 0.0 },
-                    Point { x: 0.0, y: 1.0 },
-                    Point { x: 1.0, y: 0.0 },
-                    Point { x: 1.0, y: 1.0 },
-                ],
-            },
+            shape: Polygon::try_new(vec![
+                Point { x: 0.0, y: 0.0 },
+                Point { x: 0.0, y: 1.0 },
+                Point { x: 1.0, y: 0.0 },
+                Point { x: 1.0, y: 1.0 },
+            ])
+            .unwrap(),
             location: Point { x: 30.0, y: 40.0 },
             rotation: Radians::try_new(0.0).unwrap(),
             kind: Kind::Terrain,
@@ -416,14 +414,13 @@ mod test {
             rotation: Radians::try_new(1.1).unwrap(),
             mobility: Mobility::Movable(Vector { x: -12.0, y: 5.0 }),
             kind: Kind::Organism,
-            shape: Polygon {
-                vertices: vec![
-                    Point { x: 0.0, y: 0.0 },
-                    Point { x: 0.0, y: 1.0 },
-                    Point { x: 1.0, y: 0.0 },
-                    Point { x: 1.0, y: 1.0 },
-                ],
-            },
+            shape: Polygon::try_new(vec![
+                Point { x: 0.0, y: 0.0 },
+                Point { x: 0.0, y: 1.0 },
+                Point { x: 1.0, y: 0.0 },
+                Point { x: 1.0, y: 1.0 },
+            ])
+            .unwrap(),
             passable: false,
         };
 
@@ -437,14 +434,13 @@ mod test {
             rotation: Radians::try_new(1.1).unwrap(),
             mobility: Mobility::Movable(Vector { x: -12.0, y: 5.0 }),
             kind: Kind::Organism,
-            shape: Polygon {
-                vertices: vec![
-                    Point { x: 0.0, y: 0.0 },
-                    Point { x: 0.0, y: 1.0 },
-                    Point { x: 1.0, y: 0.0 },
-                    Point { x: 1.0, y: 1.0 },
-                ],
-            },
+            shape: Polygon::try_new(vec![
+                Point { x: 0.0, y: 0.0 },
+                Point { x: 0.0, y: 1.0 },
+                Point { x: 1.0, y: 0.0 },
+                Point { x: 1.0, y: 1.0 },
+            ])
+            .unwrap(),
             passable: true,
         };
 

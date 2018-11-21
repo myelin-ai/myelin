@@ -119,7 +119,7 @@ impl NphysicsWorld {
                 y: point.y,
             })
             .collect();
-        Polygon { vertices }
+        Polygon::try_new(vertices).expect("The polygon from nphysics was not valid")
     }
 
     fn get_mobility(&self, collider: &Collider<f64>) -> Mobility {
@@ -224,7 +224,7 @@ fn to_nphysics_isometry(
 
 fn translate_shape(shape: &Polygon) -> ShapeHandle<f64> {
     let points: Vec<_> = shape
-        .vertices
+        .vertices()
         .iter()
         .map(|vertex| NPhysicsPoint::new(vertex.x, vertex.y))
         .collect();
