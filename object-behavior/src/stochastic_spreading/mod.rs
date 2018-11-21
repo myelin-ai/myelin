@@ -369,7 +369,7 @@ mod tests {
     }
 
     #[test]
-    fn spreads_on_available_space_treating_random_location_clockwise() {
+    fn can_spread_in_vertically() {
         let mut random_chance_checker = RandomChanceCheckerMock::default();
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
         random_chance_checker.expect_random_number_in_range_and_return(0, 8, 1);
@@ -381,17 +381,83 @@ mod tests {
         environment.expect_find_objects_in_area(
             Aabb::new((34.0, 34.0), (44.0, 44.0)),
             hashmap!{
-                0 => object_description_at_location(40.0, 40.0),
+                0 => object_description_at_location(39.0, 39.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((45.0, 34.0), (55.0, 44.0)),
+            hashmap!{
+                1 => object_description_at_location(50.0, 39.0)
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((56.0, 34.0), (66.0, 44.0)),
+            hashmap!{
+               2 => object_description_at_location(60.0, 39.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((56.0, 45.0), (66.0, 55.0)),
+            hashmap!{
+               3 => object_description_at_location(61.0, 50.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((56.0, 56.0), (66.0, 66.0)),
+            hashmap!{
+               4 => object_description_at_location(61.0, 61.0),
             },
         );
         environment
-            .expect_find_objects_in_area(Aabb::new((45.0, 34.0), (55.0, 44.0)), HashMap::new());
+            .expect_find_objects_in_area(Aabb::new((45.0, 56.0), (55.0, 66.0)), HashMap::new());
 
         let action = object.step(&own_description, &environment);
         match action {
             Some(Action::Reproduce(object_description, _)) => {
                 let expected_object_description =
-                    object_description_at_location(50.0, 40.0 - EXPECTED_PADDING);
+                    object_description_at_location(50.0, 60.0 + EXPECTED_PADDING);
+                assert_eq!(expected_object_description, object_description);
+            }
+            action => panic!("Expected Action::Reproduce, got {:#?}", action),
+        }
+    }
+
+    #[test]
+    fn can_spread_horizontally() {
+        let mut random_chance_checker = RandomChanceCheckerMock::default();
+        random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
+        random_chance_checker.expect_random_number_in_range_and_return(0, 8, 1);
+        let mut object =
+            StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
+        let own_description = object_description_at_location(50.0, 50.0);
+
+        let mut environment = ObjectEnvironmentMock::new();
+        environment.expect_find_objects_in_area(
+            Aabb::new((34.0, 34.0), (44.0, 44.0)),
+            hashmap!{
+                0 => object_description_at_location(39.0, 39.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((45.0, 34.0), (55.0, 44.0)),
+            hashmap!{
+                1 => object_description_at_location(50.0, 39.0)
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((56.0, 34.0), (66.0, 44.0)),
+            hashmap!{
+               2 => object_description_at_location(60.0, 39.0),
+            },
+        );
+        environment
+            .expect_find_objects_in_area(Aabb::new((56.0, 45.0), (66.0, 55.0)), HashMap::new());
+
+        let action = object.step(&own_description, &environment);
+        match action {
+            Some(Action::Reproduce(object_description, _)) => {
+                let expected_object_description =
+                    object_description_at_location(60.0 + EXPECTED_PADDING, 50.0);
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
