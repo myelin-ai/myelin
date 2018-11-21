@@ -83,7 +83,8 @@ impl Polygon {
     /// Returns an [`Aabb`] which fully contains this polygon.
     ///
     /// # Panics
-    /// Panics if the polygon has no vertices.
+    /// Panics if the polygon has no vertices or if the floating-point values
+    /// representing the vertices' coordinates are not comparable, e.g. `NaN`
     pub fn aabb(&self) -> Aabb {
         let mut vertices = self.vertices.clone();
 
