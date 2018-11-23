@@ -143,7 +143,7 @@ mod tests {
     fn steps_simulation_with_snapshot() {
         let mut simulation = SimulationMock::default();
         simulation.expect_step();
-        let expected_snapshot = hashmap!{
+        let expected_snapshot = hashmap! {
            0 => object_description()
         };
 
@@ -186,7 +186,7 @@ mod tests {
         let mut simulation = SimulationMock::default();
         simulation.expect_step();
 
-        let expected_snapshot = hashmap!{
+        let expected_snapshot = hashmap! {
            0 => object_description()
         };
         simulation.expect_objects_and_return(expected_snapshot.clone());

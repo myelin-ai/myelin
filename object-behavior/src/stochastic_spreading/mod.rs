@@ -265,49 +265,49 @@ mod tests {
         let mut environment = ObjectEnvironmentMock::new();
         environment.expect_find_objects_in_area(
             Aabb::new((34.0, 34.0), (44.0, 44.0)),
-            hashmap!{
+            hashmap! {
                 0 => object_description_at_location(39.0, 39.0),
             },
         );
         environment.expect_find_objects_in_area(
             Aabb::new((45.0, 34.0), (55.0, 44.0)),
-            hashmap!{
+            hashmap! {
                 1 => object_description_at_location(50.0, 39.0)
             },
         );
         environment.expect_find_objects_in_area(
             Aabb::new((56.0, 34.0), (66.0, 44.0)),
-            hashmap!{
+            hashmap! {
                2 => object_description_at_location(60.0, 39.0),
             },
         );
         environment.expect_find_objects_in_area(
             Aabb::new((56.0, 45.0), (66.0, 55.0)),
-            hashmap!{
+            hashmap! {
                3 => object_description_at_location(61.0, 50.0),
             },
         );
         environment.expect_find_objects_in_area(
             Aabb::new((56.0, 56.0), (66.0, 66.0)),
-            hashmap!{
+            hashmap! {
                4 => object_description_at_location(61.0, 61.0),
             },
         );
         environment.expect_find_objects_in_area(
             Aabb::new((45.0, 56.0), (55.0, 66.0)),
-            hashmap!{
+            hashmap! {
                5 => object_description_at_location(50.0, 61.0),
             },
         );
         environment.expect_find_objects_in_area(
             Aabb::new((34.0, 56.0), (44.0, 66.0)),
-            hashmap!{
+            hashmap! {
                6 => object_description_at_location(39.0, 61.0),
             },
         );
         environment.expect_find_objects_in_area(
             Aabb::new((34.0, 45.0), (44.0, 55.0)),
-            hashmap!{
+            hashmap! {
                7 => object_description_at_location(39.0, 50.0),
             },
         );
@@ -329,19 +329,19 @@ mod tests {
         let mut environment = ObjectEnvironmentMock::new();
         environment.expect_find_objects_in_area(
             Aabb::new((34.0, 34.0), (44.0, 44.0)),
-            hashmap!{
+            hashmap! {
                 0 => object_description_at_location(39.0, 39.0),
             },
         );
         environment.expect_find_objects_in_area(
             Aabb::new((45.0, 34.0), (55.0, 44.0)),
-            hashmap!{
+            hashmap! {
                 1 => object_description_at_location(50.0, 39.0)
             },
         );
         environment.expect_find_objects_in_area(
             Aabb::new((56.0, 34.0), (66.0, 44.0)),
-            hashmap!{
+            hashmap! {
                2 => object_description_at_location(60.0, 39.0),
             },
         );
@@ -372,31 +372,31 @@ mod tests {
         let mut environment = ObjectEnvironmentMock::new();
         environment.expect_find_objects_in_area(
             Aabb::new((34.0, 34.0), (44.0, 44.0)),
-            hashmap!{
+            hashmap! {
                 0 => object_description_at_location(39.0, 39.0),
             },
         );
         environment.expect_find_objects_in_area(
             Aabb::new((45.0, 34.0), (55.0, 44.0)),
-            hashmap!{
+            hashmap! {
                 1 => object_description_at_location(50.0, 39.0)
             },
         );
         environment.expect_find_objects_in_area(
             Aabb::new((56.0, 34.0), (66.0, 44.0)),
-            hashmap!{
+            hashmap! {
                2 => object_description_at_location(60.0, 39.0),
             },
         );
         environment.expect_find_objects_in_area(
             Aabb::new((56.0, 45.0), (66.0, 55.0)),
-            hashmap!{
+            hashmap! {
                3 => object_description_at_location(61.0, 50.0),
             },
         );
         environment.expect_find_objects_in_area(
             Aabb::new((56.0, 56.0), (66.0, 66.0)),
-            hashmap!{
+            hashmap! {
                4 => object_description_at_location(61.0, 61.0),
             },
         );
@@ -426,19 +426,19 @@ mod tests {
         let mut environment = ObjectEnvironmentMock::new();
         environment.expect_find_objects_in_area(
             Aabb::new((34.0, 34.0), (44.0, 44.0)),
-            hashmap!{
+            hashmap! {
                 0 => object_description_at_location(39.0, 39.0),
             },
         );
         environment.expect_find_objects_in_area(
             Aabb::new((45.0, 34.0), (55.0, 44.0)),
-            hashmap!{
+            hashmap! {
                 1 => object_description_at_location(50.0, 39.0)
             },
         );
         environment.expect_find_objects_in_area(
             Aabb::new((56.0, 34.0), (66.0, 44.0)),
-            hashmap!{
+            hashmap! {
                2 => object_description_at_location(60.0, 39.0),
             },
         );
