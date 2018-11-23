@@ -664,7 +664,7 @@ mod tests {
 
         object_behavior.expect_step_and_return(
             expected_object_description.clone(),
-            hashmap!{returned_handle.0 => expected_object_description.clone()},
+            hashmap! {returned_handle.0 => expected_object_description.clone()},
             None,
         );
         world.expect_body_and_return(returned_handle, Some(expected_physical_body));

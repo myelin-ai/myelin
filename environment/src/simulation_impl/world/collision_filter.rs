@@ -1,7 +1,7 @@
 //! Implementations for [`IgnoringCollisionFilter`]
 
-use alga::general::Real;
 use crate::simulation_impl::AnyHandle;
+use alga::general::Real;
 use ncollide2d::broad_phase::BroadPhasePairFilter;
 use ncollide2d::world::CollisionObject;
 use nphysics2d::object::ColliderData;
