@@ -34,10 +34,11 @@ pub struct ObjectBuilderError {
 ///             .vertex(-50.0, 50.0)
 ///             .build()
 ///             .unwrap(),
-///     ).location(300.0, 450.0)
+///     )
+///     .location(300.0, 450.0)
 ///     .rotation(Radians::try_new(FRAC_PI_2).unwrap())
 ///     .kind(Kind::Organism)
-///     .mobility(Mobility::Movable(Vector{x: 3.0, y: 5.0}))
+///     .mobility(Mobility::Movable(Vector { x: 3.0, y: 5.0 }))
 ///     .build()
 ///     .unwrap();
 /// ```
@@ -54,19 +55,18 @@ pub struct ObjectBuilder {
 impl ObjectBuilder {
     /// # Examples
     /// ```
-    /// use myelin_geometry::PolygonBuilder;
     /// use myelin_environment::object::ObjectBuilder;
+    /// use myelin_geometry::PolygonBuilder;
     ///
-    /// ObjectBuilder::default()
-    ///     .shape(
-    ///         PolygonBuilder::default()
-    ///             .vertex(-50.0, -50.0)
-    ///             .vertex(50.0, -50.0)
-    ///             .vertex(50.0, 50.0)
-    ///             .vertex(-50.0, 50.0)
-    ///             .build()
-    ///             .unwrap(),
-    ///     );
+    /// ObjectBuilder::default().shape(
+    ///     PolygonBuilder::default()
+    ///         .vertex(-50.0, -50.0)
+    ///         .vertex(50.0, -50.0)
+    ///         .vertex(50.0, 50.0)
+    ///         .vertex(-50.0, 50.0)
+    ///         .build()
+    ///         .unwrap(),
+    /// );
     /// ```
     pub fn shape(&mut self, polygon: Polygon) -> &mut Self {
         self.shape = Some(polygon);
@@ -77,8 +77,7 @@ impl ObjectBuilder {
     /// ```
     /// use myelin_environment::object::ObjectBuilder;
     ///
-    /// ObjectBuilder::default()
-    ///     .location(3.0, 2.0);
+    /// ObjectBuilder::default().location(3.0, 2.0);
     /// ```
     pub fn location(&mut self, x: f64, y: f64) -> &mut Self {
         self.location = Some(Point { x, y });
@@ -89,8 +88,7 @@ impl ObjectBuilder {
     /// ```
     /// use myelin_environment::object::{Kind, ObjectBuilder};
     ///
-    /// ObjectBuilder::default()
-    ///     .kind(Kind::Plant);
+    /// ObjectBuilder::default().kind(Kind::Plant);
     /// ```
     pub fn kind(&mut self, kind: Kind) -> &mut Self {
         self.kind = Some(kind);
@@ -102,8 +100,7 @@ impl ObjectBuilder {
     /// use myelin_environment::object::{Mobility, ObjectBuilder};
     /// use myelin_geometry::Vector;
     ///
-    /// ObjectBuilder::default()
-    ///     .mobility(Mobility::Movable(Vector { x: -12.0, y: 4.0 }));
+    /// ObjectBuilder::default().mobility(Mobility::Movable(Vector { x: -12.0, y: 4.0 }));
     /// ```
     pub fn mobility(&mut self, mobility: Mobility) -> &mut Self {
         self.mobility = Some(mobility);
@@ -115,8 +112,7 @@ impl ObjectBuilder {
     /// use myelin_environment::object::ObjectBuilder;
     /// use myelin_geometry::Radians;
     ///
-    /// ObjectBuilder::default()
-    ///     .rotation(Radians::try_new(4.5).unwrap());
+    /// ObjectBuilder::default().rotation(Radians::try_new(4.5).unwrap());
     /// ```
     pub fn rotation(&mut self, rotation: Radians) -> &mut Self {
         self.rotation = Some(rotation);
@@ -154,10 +150,11 @@ impl ObjectBuilder {
     ///             .vertex(-50.0, 50.0)
     ///             .build()
     ///             .unwrap(),
-    ///     ).location(300.0, 450.0)
+    ///     )
+    ///     .location(300.0, 450.0)
     ///     .rotation(Radians::try_new(FRAC_PI_2).unwrap())
     ///     .kind(Kind::Organism)
-    ///     .mobility(Mobility::Movable(Vector{x: 3.0, y: 5.0}))
+    ///     .mobility(Mobility::Movable(Vector { x: 3.0, y: 5.0 }))
     ///     .build()
     ///     .unwrap();
     /// ```

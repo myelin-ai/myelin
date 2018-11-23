@@ -11,8 +11,8 @@ use std::marker::PhantomData;
 ///
 /// # Examples
 /// ```
+/// use myelin_visualization_core::serialization::{BincodeSerializer, ViewModelSerializer};
 /// use myelin_visualization_core::view_model_delta::ViewModelDelta;
-/// use myelin_visualization_core::serialization::{ViewModelSerializer, BincodeSerializer};
 ///
 /// let view_model_delta = ViewModelDelta::default();
 /// let serializer = BincodeSerializer::default();
@@ -36,8 +36,8 @@ impl ViewModelSerializer for BincodeSerializer {
 /// [`bincode`], a compact binary encoding format.
 /// # Examples
 /// ```
+/// use myelin_visualization_core::serialization::{BincodeDeserializer, ViewModelDeserializer};
 /// use myelin_visualization_core::view_model_delta::ViewModelDelta;
-/// use myelin_visualization_core::serialization::{ViewModelDeserializer, BincodeDeserializer};
 ///
 /// // Replace with a `Vec` that represents a ViewModelDelta
 /// let source: Vec<u8> = vec![];

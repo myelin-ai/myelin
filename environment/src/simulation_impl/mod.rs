@@ -66,13 +66,13 @@ impl SimulationImpl {
     /// Create a new SimulationImpl by injecting a [`World`]
     /// # Examples
     /// ```
-    /// use myelin_environment::simulation_impl::{
-    ///     SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl,
-    ///     ObjectEnvironmentImpl,
-    /// };
-    /// use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
-    /// use std::sync::{Arc, RwLock};
     /// use myelin_environment::simulation_impl::world::collision_filter::IgnoringCollisionFilterImpl;
+    /// use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
+    /// use myelin_environment::simulation_impl::{
+    ///     world::rotation_translator::NphysicsRotationTranslatorImpl, world::NphysicsWorld,
+    ///     ObjectEnvironmentImpl, SimulationImpl,
+    /// };
+    /// use std::sync::{Arc, RwLock};
     ///
     /// let rotation_translator = NphysicsRotationTranslatorImpl::default();
     /// let force_applier = SingleTimeForceApplierImpl::default();
@@ -83,7 +83,10 @@ impl SimulationImpl {
     ///     Box::new(force_applier),
     ///     collision_filter,
     /// ));
-    /// let simulation = SimulationImpl::new(world, Box::new(|simulation| Box::new(ObjectEnvironmentImpl::new(simulation))));
+    /// let simulation = SimulationImpl::new(
+    ///     world,
+    ///     Box::new(|simulation| Box::new(ObjectEnvironmentImpl::new(simulation))),
+    /// );
     /// ```
     /// [`World`]: ./trait.World.html
     pub fn new(

@@ -552,7 +552,8 @@ mod tests {
                     return_value.clone()
                 } else {
                     panic!(
-                        "random_number_in_range() was called with {:?} and {:?}, expected {:?} and {:?}",
+                        "random_number_in_range() was called with {:?} and {:?}, expected {:?} \
+                         and {:?}",
                         min, max, expected_min, expected_max
                     )
                 }
