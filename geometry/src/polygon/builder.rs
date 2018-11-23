@@ -12,7 +12,7 @@ use crate::Point;
 /// let builder = PolygonBuilder::default();
 /// ```
 ///
-/// [`Polygon`]: ../object/struct.Polygon.html
+/// [`Polygon`]: ./struct.Polygon.html
 #[derive(Default, Debug)]
 pub struct PolygonBuilder {
     vertices: Vec<Point>,
@@ -55,15 +55,7 @@ impl PolygonBuilder {
     ///
     /// [`Polygon`]: ../object/struct.Polygon.html
     pub fn build(self) -> Result<Polygon, ()> {
-        const MINIMUM_VERTICES_IN_A_POLYGON: usize = 3;
-
-        if self.vertices.len() < MINIMUM_VERTICES_IN_A_POLYGON {
-            return Err(());
-        }
-
-        Ok(Polygon {
-            vertices: self.vertices,
-        })
+        Polygon::try_new(self.vertices)
     }
 }
 

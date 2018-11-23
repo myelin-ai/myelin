@@ -135,7 +135,6 @@ mod tests {
             rotation: Some(Radians::try_new(6.0).unwrap()),
             mobility: None,
             kind: None,
-            sensor: None,
         }
     }
 

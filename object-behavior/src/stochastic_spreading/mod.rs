@@ -1,7 +1,6 @@
 //! Types relating to a behavior that reproduces at random intervals
 
 use myelin_environment::object::*;
-use myelin_environment::Snapshot;
 use myelin_geometry::*;
 use std::fmt;
 
@@ -14,7 +13,6 @@ pub use self::random_chance_checker_impl::RandomChanceCheckerImpl;
 #[derive(Debug)]
 pub struct StochasticSpreading {
     random_chance_checker: Box<dyn RandomChanceChecker>,
-    spreading_sensor: Sensor,
     spreading_probability: f64,
 }
 
@@ -22,7 +20,6 @@ impl Clone for StochasticSpreading {
     fn clone(&self) -> StochasticSpreading {
         Self {
             random_chance_checker: self.random_chance_checker.clone_box(),
-            spreading_sensor: self.spreading_sensor.clone(),
             spreading_probability: self.spreading_probability,
         }
     }
@@ -34,12 +31,10 @@ impl StochasticSpreading {
     /// find a vacant spot to spread.
     pub fn new(
         spreading_probability: f64,
-        spreading_sensor: Sensor,
         random_chance_checker: Box<dyn RandomChanceChecker>,
     ) -> Self {
         Self {
             spreading_probability,
-            spreading_sensor,
             random_chance_checker,
         }
     }
@@ -52,18 +47,10 @@ impl StochasticSpreading {
     fn spread(
         &mut self,
         own_description: &ObjectDescription,
-        sensor_collisions: &Snapshot,
+        environment: &dyn ObjectEnvironment,
     ) -> Option<Action> {
-        // Highly illegal state, as polygons should be built by
-        // PolygonBuilder, which does not allow empty polygons
-        assert!(
-            !own_description.shape.vertices.is_empty(),
-            "own_description.shape.vertices was empty while calling spread(): {:#?}",
-            own_description
-        );
-
         let possible_spreading_locations =
-            calculate_possible_spreading_locations(&own_description.shape.vertices);
+            calculate_possible_spreading_locations(&own_description.shape);
 
         let first_try_index = self
             .random_chance_checker
@@ -77,7 +64,7 @@ impl StochasticSpreading {
             .skip(first_try_index)
             .take(possible_spreading_locations.len())
             .map(|&point| own_description.location + point)
-            .find(|&location| can_spread_at_location(location, sensor_collisions));
+            .find(|&location| can_spread_at_location(&own_description, location, environment));
         if let Some(spreading_location) = spreading_location {
             let object_description = ObjectBuilder::from(own_description.clone())
                 .location(spreading_location.x, spreading_location.y)
@@ -100,18 +87,11 @@ impl StochasticSpreading {
 /// -----------------------------------------
 ///  Lower Left | Lower Middle | Lower Right
 /// ```
-fn calculate_possible_spreading_locations(vertices: &[Point]) -> Vec<Point> {
-    let mut vertices = vertices.to_vec();
-
-    // Safe unwrap: A polygon's vertex should not be baloney like NaN
-    vertices.sort_unstable_by(|a, b| a.x.partial_cmp(&b.x).unwrap());
-    // Safe unwraps: We do an early return if vertices is empty
-    let min_x = vertices.first().unwrap().x;
-    let max_x = vertices.last().unwrap().x;
-
-    vertices.sort_unstable_by(|a, b| a.y.partial_cmp(&b.y).unwrap());
-    let min_y = vertices.first().unwrap().y;
-    let max_y = vertices.last().unwrap().y;
+fn calculate_possible_spreading_locations(polygon: &Polygon) -> Vec<Point> {
+    let Aabb {
+        upper_left: Point { x: min_x, y: min_y },
+        lower_right: Point { x: max_x, y: max_y },
+    } = polygon.aabb();
 
     /// Arbitrary number in meters representing the space
     /// between the spread objects
@@ -144,26 +124,30 @@ fn calculate_possible_spreading_locations(vertices: &[Point]) -> Vec<Point> {
     ]
 }
 
-fn can_spread_at_location(location: Point, sensor_collisions: &Snapshot) -> bool {
-    !sensor_collisions
-        .values()
-        .map(|object_description| {
-            object_description
-                .shape
-                .translate(object_description.location)
-                .rotate_around_point(object_description.rotation, object_description.location)
-        })
-        .any(|polygon| polygon.contains_point(location))
+fn can_spread_at_location(
+    own_description: &ObjectDescription,
+    location: Point,
+    environment: &dyn ObjectEnvironment,
+) -> bool {
+    let target_area = own_description
+        .shape
+        .translate(location)
+        .rotate_around_point(own_description.rotation, own_description.location)
+        .aabb();
+
+    let objects_in_area = environment.find_objects_in_area(target_area);
+
+    objects_in_area.is_empty()
 }
 
 impl ObjectBehavior for StochasticSpreading {
     fn step(
         &mut self,
         own_description: &ObjectDescription,
-        sensor_collisions: &Snapshot,
+        environment: &dyn ObjectEnvironment,
     ) -> Option<Action> {
         if self.should_spread() {
-            self.spread(own_description, sensor_collisions)
+            self.spread(own_description, environment)
         } else {
             None
         }
@@ -203,9 +187,29 @@ where
     }
 }
 
+///
+/// ```other
+/// ┼─────────────────────────────────────────────────── x
+/// |        Padding: 1       Width: 10
+/// |           ←→           ←―――――――→
+/// │  ┌───────┐  ┌───────┐  ┌───────┐  ↑
+/// │  │ x: 39 │  │ x: 50 │  │ x: 61 │  | Height: 10
+/// │  │ y: 39 │  │ y: 39 │  │ y: 39 │  │
+/// │  └───────┘  └───────┘  └───────┘  ↓
+/// │  ┌───────┐  ┌───────┐  ┌───────┐
+/// │  │ x: 39 │  │ x: 50 │  │ x: 61 │
+/// │  │ y: 50 │  │ y: 50 │  │ y: 50 │
+/// │  └───────┘  └───────┘  └───────┘
+/// │  ┌───────┐  ┌───────┐  ┌───────┐
+/// │  │ x: 39 │  │ x: 50 │  │ x: 61 │
+/// │  │ y: 61 │  │ y: 61 │  │ y: 61 │
+/// │  └───────┘  └───────┘  └───────┘
+/// y
+/// ```
 #[cfg(test)]
 mod tests {
     use super::*;
+    use myelin_environment::object::ObjectEnvironmentMock;
     use std::cell::RefCell;
     use std::collections::HashMap;
     use std::thread::panicking;
@@ -218,9 +222,9 @@ mod tests {
         let mut random_chance_checker = RandomChanceCheckerMock::default();
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, false);
         let mut object =
-            StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
+            StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
-        let action = object.step(&own_description, &HashMap::new());
+        let action = object.step(&own_description, &ObjectEnvironmentMock::new());
         assert!(action.is_none());
     }
 
@@ -230,9 +234,12 @@ mod tests {
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
         random_chance_checker.expect_random_number_in_range_and_return(0, 8, 0);
         let mut object =
-            StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
+            StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
-        let action = object.step(&own_description, &HashMap::new());
+        let mut environment = ObjectEnvironmentMock::new();
+        environment
+            .expect_find_objects_in_area(Aabb::new((34.0, 34.0), (44.0, 44.0)), HashMap::new());
+        let action = object.step(&own_description, &environment);
         match action {
             Some(Action::Reproduce(object_description, _)) => {
                 let expected_object_description = object_description_at_location(
@@ -252,45 +259,97 @@ mod tests {
         random_chance_checker.expect_random_number_in_range_and_return(0, 8, 0);
 
         let mut object =
-            StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
+            StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
-        let collisions = hashmap! {
-            0 => object_description_at_location(40.0, 40.0),
-            1 => object_description_at_location(50.0, 40.0),
-            2 => object_description_at_location(60.0, 40.0),
-            3 => object_description_at_location(60.0, 50.0),
-            4 => object_description_at_location(60.0, 60.0),
-            5 => object_description_at_location(50.0, 60.0),
-            6 => object_description_at_location(40.0, 60.0),
-            7 => object_description_at_location(40.0, 50.0),
-        };
+        let mut environment = ObjectEnvironmentMock::new();
+        environment.expect_find_objects_in_area(
+            Aabb::new((34.0, 34.0), (44.0, 44.0)),
+            hashmap! {
+                0 => object_description_at_location(39.0, 39.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((45.0, 34.0), (55.0, 44.0)),
+            hashmap! {
+                1 => object_description_at_location(50.0, 39.0)
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((56.0, 34.0), (66.0, 44.0)),
+            hashmap! {
+               2 => object_description_at_location(60.0, 39.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((56.0, 45.0), (66.0, 55.0)),
+            hashmap! {
+               3 => object_description_at_location(61.0, 50.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((56.0, 56.0), (66.0, 66.0)),
+            hashmap! {
+               4 => object_description_at_location(61.0, 61.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((45.0, 56.0), (55.0, 66.0)),
+            hashmap! {
+               5 => object_description_at_location(50.0, 61.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((34.0, 56.0), (44.0, 66.0)),
+            hashmap! {
+               6 => object_description_at_location(39.0, 61.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((34.0, 45.0), (44.0, 55.0)),
+            hashmap! {
+               7 => object_description_at_location(39.0, 50.0),
+            },
+        );
 
-        let action = object.step(&own_description, &collisions);
+        let action = object.step(&own_description, &environment);
         assert!(action.is_none());
     }
 
     #[test]
-    fn spreads_on_only_available_space() {
+    fn spreads_on_first_available_space_clockwise() {
         let mut random_chance_checker = RandomChanceCheckerMock::default();
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
         random_chance_checker.expect_random_number_in_range_and_return(0, 8, 0);
 
         let mut object =
-            StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
+            StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
-        let collisions = hashmap! {
-            0 => object_description_at_location(40.0, 40.0),
-            1 => object_description_at_location(50.0, 40.0),
-            2 => object_description_at_location(60.0, 40.0),
-            3 => object_description_at_location(60.0, 60.0),
-            4 => object_description_at_location(50.0, 60.0),
-            5 => object_description_at_location(40.0, 60.0),
-            6 => object_description_at_location(40.0, 50.0),
-        };
+        let mut environment = ObjectEnvironmentMock::new();
+        environment.expect_find_objects_in_area(
+            Aabb::new((34.0, 34.0), (44.0, 44.0)),
+            hashmap! {
+                0 => object_description_at_location(39.0, 39.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((45.0, 34.0), (55.0, 44.0)),
+            hashmap! {
+                1 => object_description_at_location(50.0, 39.0)
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((56.0, 34.0), (66.0, 44.0)),
+            hashmap! {
+               2 => object_description_at_location(60.0, 39.0),
+            },
+        );
 
-        let action = object.step(&own_description, &collisions);
+        environment
+            .expect_find_objects_in_area(Aabb::new((56.0, 45.0), (66.0, 55.0)), HashMap::new());
+
+        let action = object.step(&own_description, &environment);
         match action {
             Some(Action::Reproduce(object_description, _)) => {
                 let expected_object_description =
@@ -302,27 +361,95 @@ mod tests {
     }
 
     #[test]
-    fn spreads_on_available_space_treating_random_location_clockwise() {
+    fn can_spread_in_vertically() {
         let mut random_chance_checker = RandomChanceCheckerMock::default();
         random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
         random_chance_checker.expect_random_number_in_range_and_return(0, 8, 1);
         let mut object =
-            StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
+            StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
-        let collisions = hashmap! {
-            0 => object_description_at_location(40.0, 40.0),
-            1 => object_description_at_location(60.0, 40.0),
-            2 => object_description_at_location(60.0, 50.0),
-            3 => object_description_at_location(50.0, 60.0),
-            4 => object_description_at_location(40.0, 50.0),
-        };
+        let mut environment = ObjectEnvironmentMock::new();
+        environment.expect_find_objects_in_area(
+            Aabb::new((34.0, 34.0), (44.0, 44.0)),
+            hashmap! {
+                0 => object_description_at_location(39.0, 39.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((45.0, 34.0), (55.0, 44.0)),
+            hashmap! {
+                1 => object_description_at_location(50.0, 39.0)
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((56.0, 34.0), (66.0, 44.0)),
+            hashmap! {
+               2 => object_description_at_location(60.0, 39.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((56.0, 45.0), (66.0, 55.0)),
+            hashmap! {
+               3 => object_description_at_location(61.0, 50.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((56.0, 56.0), (66.0, 66.0)),
+            hashmap! {
+               4 => object_description_at_location(61.0, 61.0),
+            },
+        );
+        environment
+            .expect_find_objects_in_area(Aabb::new((45.0, 56.0), (55.0, 66.0)), HashMap::new());
 
-        let action = object.step(&own_description, &collisions);
+        let action = object.step(&own_description, &environment);
         match action {
             Some(Action::Reproduce(object_description, _)) => {
                 let expected_object_description =
-                    object_description_at_location(50.0, 40.0 - EXPECTED_PADDING);
+                    object_description_at_location(50.0, 60.0 + EXPECTED_PADDING);
+                assert_eq!(expected_object_description, object_description);
+            }
+            action => panic!("Expected Action::Reproduce, got {:#?}", action),
+        }
+    }
+
+    #[test]
+    fn can_spread_horizontally() {
+        let mut random_chance_checker = RandomChanceCheckerMock::default();
+        random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
+        random_chance_checker.expect_random_number_in_range_and_return(0, 8, 1);
+        let mut object =
+            StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
+        let own_description = object_description_at_location(50.0, 50.0);
+
+        let mut environment = ObjectEnvironmentMock::new();
+        environment.expect_find_objects_in_area(
+            Aabb::new((34.0, 34.0), (44.0, 44.0)),
+            hashmap! {
+                0 => object_description_at_location(39.0, 39.0),
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((45.0, 34.0), (55.0, 44.0)),
+            hashmap! {
+                1 => object_description_at_location(50.0, 39.0)
+            },
+        );
+        environment.expect_find_objects_in_area(
+            Aabb::new((56.0, 34.0), (66.0, 44.0)),
+            hashmap! {
+               2 => object_description_at_location(60.0, 39.0),
+            },
+        );
+        environment
+            .expect_find_objects_in_area(Aabb::new((56.0, 45.0), (66.0, 55.0)), HashMap::new());
+
+        let action = object.step(&own_description, &environment);
+        match action {
+            Some(Action::Reproduce(object_description, _)) => {
+                let expected_object_description =
+                    object_description_at_location(60.0 + EXPECTED_PADDING, 50.0);
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Reproduce, got {:#?}", action),
@@ -345,20 +472,6 @@ mod tests {
             .kind(Kind::Plant)
             .build()
             .unwrap()
-    }
-
-    fn sensor() -> Sensor {
-        Sensor {
-            shape: PolygonBuilder::default()
-                .vertex(-20.0, -20.0)
-                .vertex(20.0, -20.0)
-                .vertex(20.0, 20.0)
-                .vertex(-20.0, 20.0)
-                .build()
-                .unwrap(),
-            location: Point::default(),
-            rotation: Radians::default(),
-        }
     }
 
     #[derive(Debug, Default, Clone)]

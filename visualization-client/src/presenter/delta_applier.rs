@@ -89,7 +89,7 @@ fn apply_object_description_delta(
         };
     }
 
-    apply_delta!(shape, location, rotation, mobility, kind, sensor);
+    apply_delta!(shape, location, rotation, mobility, kind);
 }
 
 #[cfg(test)]
@@ -286,27 +286,6 @@ mod test {
             {
                 let mut object_description = object_description();
                 object_description.kind = Kind::Water;
-                object_description
-            },
-        );
-    }
-
-    #[test]
-    fn apply_delta_handles_sensor_update() {
-        let sensor = Sensor {
-            shape: polygon(),
-            location: Point { x: 4.0, y: 2.0 },
-            rotation: Radians::default(),
-        };
-
-        test_apply_delta_handles_update(
-            ObjectDescriptionDelta {
-                sensor: Some(Some(sensor.clone())),
-                ..Default::default()
-            },
-            {
-                let mut object_description = object_description();
-                object_description.sensor = Some(sensor);
                 object_description
             },
         );

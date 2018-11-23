@@ -15,8 +15,7 @@
 #[macro_use]
 extern crate serde_derive;
 
-#[cfg_attr(test, macro_use)]
-#[cfg(test)]
+#[macro_use]
 extern crate nameof;
 
 #[cfg_attr(test, macro_use)]
@@ -28,6 +27,7 @@ mod object_builder;
 pub mod simulation_impl;
 
 use crate::object::{ObjectBehavior, ObjectDescription};
+use myelin_geometry::Aabb;
 use std::collections::HashMap;
 use std::fmt;
 
@@ -50,6 +50,9 @@ pub trait Simulation: fmt::Debug {
     );
     /// Returns a read-only description of all objects currently inhabiting the simulation.
     fn objects(&self) -> Snapshot;
+    /// Returns read-only descriptions for all objects either completely
+    /// contained or intersecting with the given area.
+    fn objects_in_area(&self, area: Aabb) -> Snapshot;
     /// Sets how much time in seconds is simulated for each step.
     /// # Examples
     /// If you want to run a simulation with 60 steps per second, you
@@ -64,14 +67,13 @@ pub type Id = usize;
 /// A representation of the current state of the simulation
 pub type Snapshot = HashMap<Id, ObjectDescription>;
 
-#[cfg(feature = "use-mocks")]
+#[cfg(any(test, feature = "use-mocks"))]
 pub use self::mock::*;
 
-#[cfg(feature = "use-mocks")]
+#[cfg(any(test, feature = "use-mocks"))]
 #[allow(clippy::float_cmp)]
 mod mock {
     use super::*;
-    use crate::object::Action;
     use std::cell::RefCell;
     use std::thread::panicking;
 
@@ -82,11 +84,13 @@ mod mock {
         expect_add_object: Option<ObjectDescription>,
         expect_objects_and_return: Option<Snapshot>,
         expect_set_simulated_timestep: Option<f64>,
+        expect_objects_in_area_and_return: Option<(Aabb, Snapshot)>,
 
         step_was_called: RefCell<bool>,
         add_object_was_called: RefCell<bool>,
         objects_was_called: RefCell<bool>,
         set_simulated_timestep_was_called: RefCell<bool>,
+        objects_in_area_was_called: RefCell<bool>,
     }
 
     impl SimulationMock {
@@ -103,6 +107,11 @@ mod mock {
         /// Marks the method [`Simulation::objects`] as expected.
         pub fn expect_objects_and_return(&mut self, return_value: Snapshot) {
             self.expect_objects_and_return = Some(return_value)
+        }
+
+        /// Marks the method [`Simulation::objects_in_area`] as expected.
+        pub fn expect_objects_in_area_and_return(&mut self, area: Aabb, return_value: Snapshot) {
+            self.expect_objects_in_area_and_return = Some((area, return_value));
         }
 
         /// Marks the method [`Simulation::set_simulated_timestep`] as expected.
@@ -146,6 +155,23 @@ mod mock {
                 panic!("objects() was called unexpectedly")
             }
         }
+
+        fn objects_in_area(&self, area: Aabb) -> Snapshot {
+            *self.objects_in_area_was_called.borrow_mut() = true;
+
+            if let Some((expected_area, ref return_value)) = self.expect_objects_in_area_and_return
+            {
+                assert_eq!(
+                    expected_area, area,
+                    "objects_in_area() was called with {:?}, expected {:?}",
+                    expected_area, area
+                );
+                return_value.clone()
+            } else {
+                panic!("objects_in_area() was called unexpectedly");
+            }
+        }
+
         fn set_simulated_timestep(&mut self, timestep: f64) {
             *self.set_simulated_timestep_was_called.borrow_mut() = true;
 
@@ -183,76 +209,18 @@ mod mock {
                         "objects() was not called, but expected"
                     )
                 }
+                if self.expect_objects_in_area_and_return.is_some() {
+                    assert!(
+                        *self.objects_in_area_was_called.borrow(),
+                        "objects() was not called, but expected"
+                    )
+                }
                 if self.expect_set_simulated_timestep.is_some() {
                     assert!(
                         *self.set_simulated_timestep_was_called.borrow(),
                         "set_simulated_timestep() was not called, but expected"
                     )
                 }
-            }
-        }
-    }
-
-    /// Mock [`ObjectBehavior`]
-    #[derive(Debug, Default, Clone)]
-    pub struct ObjectBehaviorMock {
-        expect_step_and_return: Option<(ObjectDescription, Snapshot, Option<Action>)>,
-
-        step_was_called: RefCell<bool>,
-    }
-
-    impl ObjectBehaviorMock {
-        /// Marks the method [`ObjectBehavior::step`] as expected.
-        pub fn expect_step_and_return(
-            &mut self,
-            own_description: ObjectDescription,
-            sensor_collisions: Snapshot,
-            return_value: Option<Action>,
-        ) {
-            self.expect_step_and_return = Some((own_description, sensor_collisions, return_value))
-        }
-    }
-
-    impl ObjectBehavior for ObjectBehaviorMock {
-        fn step(
-            &mut self,
-            own_description: &ObjectDescription,
-            sensor_collisions: &Snapshot,
-        ) -> Option<Action> {
-            *self.step_was_called.borrow_mut() = true;
-
-            if let Some((
-                ref expected_own_description,
-                ref expected_sensor_collisions,
-                ref return_value,
-            )) = self.expect_step_and_return
-            {
-                if *own_description == *expected_own_description
-                    && sensor_collisions == expected_sensor_collisions
-                {
-                    return_value.clone()
-                } else {
-                    panic!(
-                        "step() was called with {:?} and {:?}, expected {:?} and {:?}",
-                        own_description,
-                        sensor_collisions,
-                        expected_own_description,
-                        expected_sensor_collisions,
-                    )
-                }
-            } else {
-                panic!("step() was called unexpectedly")
-            }
-        }
-    }
-
-    impl Drop for ObjectBehaviorMock {
-        fn drop(&mut self) {
-            if !panicking() && self.expect_step_and_return.is_some() {
-                assert!(
-                    *self.step_was_called.borrow(),
-                    "step() was not called, but expected"
-                )
             }
         }
     }

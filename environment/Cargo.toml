@@ -17,14 +17,16 @@ serde = "1.0"
 serde_derive = "1.0"
 alga = "0.7"
 unordered-pair = "0.2"
+nameof = "1.0"
 
 [dependencies.nphysics2d]
-version = "0.9.1"
+# version = "0.9.1"
+git = "https://github.com/myelin-ai/nphysics"
+rev = "interferences"
 default-features = false
 features = ["use-wasm-bindgen"]
 
 [dev-dependencies]
-nameof = "1.0"
 maplit = "1.0"
 
 [features]

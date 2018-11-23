@@ -68,7 +68,6 @@ fn get_object_description_delta(
         rotation: get_delta(first.map(|o| &o.rotation), second.rotation),
         mobility: get_delta(first.map(|o| &o.mobility), second.mobility),
         kind: get_delta(first.map(|o| &o.kind), second.kind),
-        sensor: get_delta(first.map(|o| &o.sensor), second.sensor),
     }
 }
 
@@ -88,7 +87,6 @@ fn delta_contains_changes(delta: &ObjectDescriptionDelta) -> bool {
         || delta.rotation.is_some()
         || delta.mobility.is_some()
         || delta.kind.is_some()
-        || delta.sensor.is_some()
 }
 
 #[cfg(test)]
@@ -255,7 +253,6 @@ mod tests {
             rotation: None,
             mobility: None,
             kind: None,
-            sensor: None,
         };
 
         assert_eq!(

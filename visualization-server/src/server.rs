@@ -5,12 +5,13 @@ use crate::constant::*;
 use crate::controller::{ConnectionAcceptor, Controller, ControllerImpl};
 use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
-use myelin_environment::object::{ObjectBehavior, Sensor};
+use myelin_environment::object::ObjectBehavior;
 use myelin_environment::simulation_impl::world::collision_filter::IgnoringCollisionFilterImpl;
 use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
 use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
 use myelin_environment::simulation_impl::world::NphysicsWorld;
-use myelin_environment::{simulation_impl::SimulationImpl, Simulation};
+use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
+use myelin_environment::Simulation;
 use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
 use myelin_object_behavior::Static;
 use myelin_visualization_core::serialization::BincodeSerializer;
@@ -40,10 +41,12 @@ where
             box force_applier,
             collision_filter,
         );
-        box SimulationImpl::new(box world)
+        box SimulationImpl::new(box world, box |simulation| {
+            box ObjectEnvironmentImpl::new(simulation)
+        })
     };
-    let plant_factory = box |sensor: Sensor| -> Box<dyn ObjectBehavior> {
-        box StochasticSpreading::new(1.0 / 5_000.0, sensor, box RandomChanceCheckerImpl::new())
+    let plant_factory = box || -> Box<dyn ObjectBehavior> {
+        box StochasticSpreading::new(1.0 / 5_000.0, box RandomChanceCheckerImpl::new())
     };
     let organism_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
     let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
