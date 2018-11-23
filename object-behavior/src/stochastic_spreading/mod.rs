@@ -255,7 +255,7 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
-        let collisions = hashmap!{
+        let collisions = hashmap! {
             0 => object_description_at_location(40.0, 40.0),
             1 => object_description_at_location(50.0, 40.0),
             2 => object_description_at_location(60.0, 40.0),
@@ -280,7 +280,7 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
-        let collisions = hashmap!{
+        let collisions = hashmap! {
             0 => object_description_at_location(40.0, 40.0),
             1 => object_description_at_location(50.0, 40.0),
             2 => object_description_at_location(60.0, 40.0),
@@ -310,7 +310,7 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, sensor(), Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
-        let collisions = hashmap!{
+        let collisions = hashmap! {
             0 => object_description_at_location(40.0, 40.0),
             1 => object_description_at_location(60.0, 40.0),
             2 => object_description_at_location(60.0, 50.0),

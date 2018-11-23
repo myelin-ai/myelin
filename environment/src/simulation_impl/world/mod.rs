@@ -836,7 +836,7 @@ mod tests {
         };
         let expected_handle = world.add_body(close_body);
 
-        let expected_is_valid_pairs = hashmap!{
+        let expected_is_valid_pairs = hashmap! {
             UnorderedPair(handle_one.into(), sensor_handle.into()) => true,
             UnorderedPair(handle_one.into(), expected_handle.into()) => true,
             UnorderedPair(sensor_handle.into(), expected_handle.into()) => true,
@@ -884,7 +884,7 @@ mod tests {
         };
         let expected_handle = world.add_body(close_body);
 
-        let expected_is_valid_pairs = hashmap!{
+        let expected_is_valid_pairs = hashmap! {
             UnorderedPair(handle_one.into(), sensor_handle.into()) => true,
             UnorderedPair(handle_one.into(), expected_handle.into()) => true,
             UnorderedPair(sensor_handle.into(), expected_handle.into()) => true,
@@ -932,7 +932,7 @@ mod tests {
         };
         let handle_two = world.add_body(close_body);
 
-        let expected_is_valid_pairs = hashmap!{
+        let expected_is_valid_pairs = hashmap! {
             UnorderedPair(handle_one.into(), sensor_handle.into()) => true,
             UnorderedPair(handle_one.into(), handle_two.into()) => true,
             UnorderedPair(sensor_handle.into(), handle_two.into()) => true,
@@ -984,7 +984,7 @@ mod tests {
             .attach_sensor(close_body_handle, sensor())
             .expect("body handle was invalid");
 
-        let expected_is_valid_pairs = hashmap!{
+        let expected_is_valid_pairs = hashmap! {
             UnorderedPair(handle_one.into(), sensor_handle.into()) => true,
             UnorderedPair(handle_one.into(), close_body_handle.into()) => true,
             UnorderedPair(handle_one.into(), close_body_sensor_handle.into()) => true,
@@ -1042,7 +1042,7 @@ mod tests {
             .attach_sensor(close_body_handle, sensor())
             .expect("body handle was invalid");
 
-        let expected_is_valid_pairs = hashmap!{
+        let expected_is_valid_pairs = hashmap! {
             UnorderedPair(handle_one.into(), sensor_handle.into()) => true,
             UnorderedPair(handle_one.into(), close_body_handle.into()) => true,
             UnorderedPair(handle_one.into(), close_body_sensor_handle.into()) => true,
