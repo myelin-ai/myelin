@@ -1,1 +1,2 @@
 format_strings = true
+format_doc_comments = true

@@ -6,8 +6,8 @@ use std::marker::PhantomData;
 /// Provides methods for JSON serialization.
 /// # Examples
 /// ```
+/// use myelin_visualization_core::serialization::{JsonSerializer, ViewModelSerializer};
 /// use myelin_visualization_core::view_model_delta::ViewModelDelta;
-/// use myelin_visualization_core::serialization::{ViewModelSerializer, JsonSerializer};
 ///
 /// let view_model_delta = ViewModelDelta::default();
 /// let serializer = JsonSerializer::default();
@@ -19,8 +19,8 @@ pub struct JsonSerializer(PhantomData<()>);
 /// Provides methods for JSON deserialization
 /// # Examples
 /// ```
+/// use myelin_visualization_core::serialization::{JsonDeserializer, ViewModelDeserializer};
 /// use myelin_visualization_core::view_model_delta::ViewModelDelta;
-/// use myelin_visualization_core::serialization::{ViewModelDeserializer, JsonDeserializer};
 ///
 /// // Replace with a string that represents a ViewModelDelta
 /// let source: Vec<u8> = r#"{}"#.into();
