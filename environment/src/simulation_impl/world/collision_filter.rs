@@ -301,9 +301,9 @@ mod mock {
             }
 
             panic!(
-                "is_pair_valid() was called with unexpected input values: handle1: {:?} and handle2: {:?}",
-                pair.0,
-                pair.1
+                "is_pair_valid() was called with unexpected input values: handle1: {:?} and \
+                 handle2: {:?}",
+                pair.0, pair.1
             )
         }
     }
