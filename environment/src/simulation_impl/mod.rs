@@ -66,12 +66,11 @@ impl SimulationImpl {
     /// Create a new SimulationImpl by injecting a [`World`]
     /// # Examples
     /// ```
-    /// use myelin_environment::simulation_impl::world::collision_filter::IgnoringCollisionFilterImpl;
-    /// use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
-    /// use myelin_environment::simulation_impl::{
-    ///     world::rotation_translator::NphysicsRotationTranslatorImpl, world::NphysicsWorld,
-    ///     ObjectEnvironmentImpl, SimulationImpl,
+    /// use myelin_environment::simulation_impl::world::{
+    ///     IgnoringCollisionFilterImpl, NphysicsRotationTranslatorImpl, NphysicsWorld,
+    ///     SingleTimeForceApplierImpl,
     /// };
+    /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
     /// use std::sync::{Arc, RwLock};
     ///
     /// let rotation_translator = NphysicsRotationTranslatorImpl::default();
