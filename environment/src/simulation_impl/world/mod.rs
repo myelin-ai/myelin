@@ -7,6 +7,7 @@
 pub use self::collision_filter::*;
 use self::force_applier::GenericSingleTimeForceApplierWrapper;
 pub use self::force_applier::*;
+use self::physics_world_wrapper::PhysicsWorldWrapper;
 pub use self::rotation_translator::*;
 use super::{BodyHandle, PhysicalBody, World};
 use crate::object::*;
@@ -32,14 +33,16 @@ use std::sync::{Arc, RwLock};
 
 mod collision_filter;
 mod force_applier;
+mod physics_world_wrapper;
 mod rotation_translator;
 
 /// An implementation of [`World`] that uses nphysics
 /// in the background.
 ///
 /// [`World`]: ./trait.World.html
+#[derive(Debug)]
 pub struct NphysicsWorld {
-    physics_world: PhysicsWorld<f64>,
+    physics_world: PhysicsWorldWrapper,
     rotation_translator: Box<dyn NphysicsRotationTranslator>,
     force_generator_handle: ForceGeneratorHandle,
     collision_filter: Arc<RwLock<dyn IgnoringCollisionFilter>>,
@@ -71,7 +74,7 @@ impl NphysicsWorld {
         force_applier: Box<dyn SingleTimeForceApplier>,
         collision_filter: Arc<RwLock<dyn IgnoringCollisionFilter>>,
     ) -> Self {
-        let mut physics_world = PhysicsWorld::new();
+        let mut physics_world = PhysicsWorldWrapper(PhysicsWorld::new());
 
         physics_world.set_timestep(timestep);
         let generic_wrapper = GenericSingleTimeForceApplierWrapper::new(force_applier);
@@ -373,27 +376,6 @@ fn to_ncollide_aabb(aabb: Aabb) -> NcollideAabb<f64> {
 
 fn to_ncollide_point(point: Point) -> NcollidePoint<f64> {
     NcollidePoint::from(Vector2::new(point.x, point.y))
-}
-
-impl fmt::Debug for NphysicsWorld {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct(name_of_type!(NphysicsWorld))
-            .field("physics", &DebugPhysicsWorld(&self.physics_world))
-            .finish()
-    }
-}
-
-/// A helper struct used to implement [`std::fmt::Debug`]
-/// for [`NphysicsWorld`]
-///
-/// [`std::fmt::Debug`]: https://doc.rust-lang.org/nightly/std/fmt/trait.Debug.html
-/// [`NphysicsWorld`]: ./struct.NphysicsWorld.html
-struct DebugPhysicsWorld<'a>(&'a PhysicsWorld<f64>);
-
-impl<'a> fmt::Debug for DebugPhysicsWorld<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct(name_of_type!(PhysicsWorld<f64>)).finish()
-    }
 }
 
 #[cfg(test)]
