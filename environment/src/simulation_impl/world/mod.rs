@@ -377,7 +377,7 @@ fn to_ncollide_point(point: Point) -> NcollidePoint<f64> {
 
 impl fmt::Debug for NphysicsWorld {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("NphysicsWorld")
+        f.debug_struct(name_of_type!(NphysicsWorld))
             .field("physics", &DebugPhysicsWorld(&self.physics_world))
             .finish()
     }
@@ -392,7 +392,7 @@ struct DebugPhysicsWorld<'a>(&'a PhysicsWorld<f64>);
 
 impl<'a> fmt::Debug for DebugPhysicsWorld<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("PhysicsWorld").finish()
+        f.debug_struct(name_of_type!(PhysicsWorld<f64>)).finish()
     }
 }
 
@@ -868,7 +868,8 @@ mod tests {
 
     impl fmt::Debug for SingleTimeForceApplierMock {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            f.debug_struct("SingleTimeForceApplierMock").finish()
+            f.debug_struct(name_of_type!(SingleTimeForceApplierMock))
+                .finish()
         }
     }
 

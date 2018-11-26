@@ -40,7 +40,7 @@ pub(crate) struct ControllerImpl {
 
 impl Debug for ControllerImpl {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("ControllerImpl")
+        f.debug_struct(name_of_type!(ControllerImpl))
             .field("expected_delta", &self.expected_delta)
             .finish()
     }

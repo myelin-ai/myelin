@@ -238,7 +238,7 @@ impl WorldGenerator for HardcodedGenerator {
 
 impl fmt::Debug for HardcodedGenerator {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("HardcodedGenerator").finish()
+        f.debug_struct(name_of_type!(HardcodedGenerator)).finish()
     }
 }
 
