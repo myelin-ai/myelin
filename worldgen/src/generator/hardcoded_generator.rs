@@ -41,8 +41,7 @@ impl HardcodedGenerator {
     /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
     /// use myelin_environment::Simulation;
     /// use myelin_object_behavior::Static;
-    /// use myelin_worldgen::generator::HardcodedGenerator;
-    /// use myelin_worldgen::WorldGenerator;
+    /// use myelin_worldgen::{HardcodedGenerator, WorldGenerator};
     /// use std::sync::{Arc, RwLock};
     ///
     /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
