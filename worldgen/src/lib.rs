@@ -15,9 +15,10 @@
 #[macro_use]
 extern crate nameof;
 
+pub use self::generator::*;
 use myelin_environment::Simulation;
 
-pub mod generator;
+mod generator;
 
 /// API for [`World`] generation
 ///

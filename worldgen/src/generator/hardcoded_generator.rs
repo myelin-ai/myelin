@@ -33,17 +33,15 @@ impl HardcodedGenerator {
     ///
     /// # Examples
     /// ```
-    /// use myelin_environment::Simulation;
-    /// use myelin_environment::simulation_impl::{
-    ///     SimulationImpl, world::NphysicsWorld, world::rotation_translator::NphysicsRotationTranslatorImpl,
-    ///     ObjectEnvironmentImpl,
-    /// };
-    /// use myelin_environment::simulation_impl::world::collision_filter::IgnoringCollisionFilterImpl;
-    /// use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
     /// use myelin_environment::object::{Kind, ObjectBehavior};
-    /// use myelin_worldgen::WorldGenerator;
-    /// use myelin_worldgen::generator::HardcodedGenerator;
+    /// use myelin_environment::simulation_impl::world::{
+    ///     IgnoringCollisionFilterImpl, NphysicsRotationTranslatorImpl, NphysicsWorld,
+    ///     SingleTimeForceApplierImpl,
+    /// };
+    /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
+    /// use myelin_environment::Simulation;
     /// use myelin_object_behavior::Static;
+    /// use myelin_worldgen::{HardcodedGenerator, WorldGenerator};
     /// use std::sync::{Arc, RwLock};
     ///
     /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
@@ -56,9 +54,10 @@ impl HardcodedGenerator {
     ///         Box::new(force_applier),
     ///         collision_filter,
     ///     ));
-    ///     Box::new(SimulationImpl::new(world, Box::new(|simulation| {
-    ///         Box::new(ObjectEnvironmentImpl::new(simulation))
-    ///     })))
+    ///     Box::new(SimulationImpl::new(
+    ///         world,
+    ///         Box::new(|simulation| Box::new(ObjectEnvironmentImpl::new(simulation))),
+    ///     ))
     /// });
     ///
     /// let plant_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
@@ -74,6 +73,7 @@ impl HardcodedGenerator {
     ///     water_factory,
     /// );
     /// let generated_simulation = worldgen.generate();
+    /// ```
     pub fn new(
         simulation_factory: SimulationFactory,
         plant_factory: PlantFactory,
