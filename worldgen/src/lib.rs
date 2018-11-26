@@ -12,6 +12,9 @@
     clippy::unimplemented
 )]
 
+#[macro_use]
+extern crate nameof;
+
 use myelin_environment::Simulation;
 
 pub mod generator;
