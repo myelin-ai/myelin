@@ -22,7 +22,7 @@ fn panic_hook(info: &PanicInfo<'_>) {
 /// user interaction. This function is intended to be called from
 /// JavaScript or, preferably, TypeScript.
 ///
-/// [`InputHandler`]: ../input_handler/struct.InputHandler.html
+/// [`InputHandler`]: ./struct.InputHandler.html
 #[wasm_bindgen]
 pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
     set_hook(Box::new(panic_hook));

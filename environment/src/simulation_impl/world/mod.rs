@@ -4,6 +4,10 @@
 //!
 //! [`World`]: ./trait.World.html
 //! [`Objects`]: ../object/struct.Body.html
+pub use self::collision_filter::*;
+use self::force_applier::GenericSingleTimeForceApplierWrapper;
+pub use self::force_applier::*;
+pub use self::rotation_translator::*;
 use super::{BodyHandle, PhysicalBody, World};
 use crate::object::*;
 use crate::simulation_impl::world::collision_filter::{
@@ -26,10 +30,9 @@ use std::error::Error;
 use std::fmt;
 use std::sync::{Arc, RwLock};
 
-pub mod collision_filter;
-pub mod force_applier;
-pub mod rotation_translator;
-use self::force_applier::GenericSingleTimeForceApplierWrapper;
+mod collision_filter;
+mod force_applier;
+mod rotation_translator;
 
 /// An implementation of [`World`] that uses nphysics
 /// in the background.
@@ -46,16 +49,21 @@ impl NphysicsWorld {
     /// Instantiates a new empty world
     /// # Examples
     /// ```
-    /// use myelin_environment::simulation_impl::world::NphysicsWorld;
-    /// use myelin_environment::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
-    /// use myelin_environment::simulation_impl::world::force_applier::SingleTimeForceApplierImpl;
-    /// use myelin_environment::simulation_impl::world::collision_filter::IgnoringCollisionFilterImpl;
+    /// use myelin_environment::simulation_impl::world::{
+    ///     IgnoringCollisionFilterImpl, NphysicsRotationTranslatorImpl, NphysicsWorld,
+    ///     SingleTimeForceApplierImpl,
+    /// };
     /// use std::sync::{Arc, RwLock};
     ///
     /// let rotation_translator = NphysicsRotationTranslatorImpl::default();
     /// let force_applier = SingleTimeForceApplierImpl::default();
     /// let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterImpl::default()));
-    /// let mut world = NphysicsWorld::with_timestep(1.0, Box::new(rotation_translator), Box::new(force_applier), collision_filter);
+    /// let mut world = NphysicsWorld::with_timestep(
+    ///     1.0,
+    ///     Box::new(rotation_translator),
+    ///     Box::new(force_applier),
+    ///     collision_filter,
+    /// );
     /// ```
     pub fn with_timestep(
         timestep: f64,

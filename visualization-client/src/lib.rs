@@ -17,9 +17,12 @@ extern crate maplit;
 #[cfg(test)]
 extern crate nameof;
 
-pub mod bootstrapper;
+pub use self::bootstrapper::*;
+pub use self::input_handler::*;
+
+mod bootstrapper;
 mod controller;
-pub mod input_handler;
+mod input_handler;
 mod presenter;
 mod view;
 mod view_model;

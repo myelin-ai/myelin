@@ -6,9 +6,9 @@ use std::fmt::Debug;
 use wasm_bindgen::prelude::*;
 
 /// Struct used to signal user interaction or events.
-/// Created by [`bootstrapper::init()`].
+/// Created by [`init()`].
 ///
-/// [`bootstrapper::init()`]: ../bootstrapper/fn.init.html
+/// [`init()`]: ./fn.init.html
 
 #[wasm_bindgen]
 #[derive(Debug)]
