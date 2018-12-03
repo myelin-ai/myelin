@@ -39,3 +39,4 @@ features = [
 [dev-dependencies]
 maplit = "1.0"
 nameof = "0.1"
+mockiato = { git = "https://github.com/myelin-ai/mockiato" }
