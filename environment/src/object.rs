@@ -8,6 +8,9 @@ use crate::{Id, Snapshot};
 use myelin_geometry::*;
 use std::fmt::Debug;
 
+#[cfg(any(test, feature = "use-mocks"))]
+use mockiato::mockable;
+
 /// Behavior of an object
 pub trait ObjectBehavior: Debug + ObjectBehaviorClone {
     /// Returns all actions performed by the object
@@ -23,6 +26,7 @@ pub trait ObjectBehavior: Debug + ObjectBehaviorClone {
 /// the world it is placed in.
 ///
 /// [`ObjectBehavior`]: ./trait.ObjectBehavior.html
+#[cfg_attr(any(test, feature = "use-mocks"), mockable)]
 pub trait ObjectEnvironment: Debug {
     /// Scans for objects in the area defined by an [`Aabb`].
     ///
@@ -223,62 +227,6 @@ mod mock {
                     *self.step_was_called.borrow(),
                     "step() was not called, but was expected"
                 )
-            }
-        }
-    }
-
-    /// Mock for [`ObjectEnvironment`]
-    ///
-    /// [`ObjectEnvironment`]: ./trait.ObjectEnvironment.html
-    #[derive(Debug, Default, Clone)]
-    pub struct ObjectEnvironmentMock {
-        expect_find_objects_in_area_and_return: Vec<(Aabb, Snapshot)>,
-        find_objects_in_area_was_called: RefCell<bool>,
-    }
-
-    impl ObjectEnvironmentMock {
-        /// Creates a new [`ObjectEnvironmentMock`] without any expectations set.
-        ///
-        /// [`ObjectEnvironmentMock`]: ./struct.ObjectEnvironmentMock.html
-        pub fn new() -> Self {
-            Self::default()
-        }
-
-        /// Adds an expected method call for  [`ObjectEnvironment::find_objects_in_area`].
-        /// This can be called multiple times to expect multiple calls.
-        /// Note that for each `area` there may be only one `return_value`.
-        pub fn expect_find_objects_in_area(&mut self, area: Aabb, return_value: Snapshot) {
-            self.expect_find_objects_in_area_and_return
-                .push((area, return_value));
-        }
-    }
-
-    impl ObjectEnvironment for ObjectEnvironmentMock {
-        fn find_objects_in_area(&self, area: Aabb) -> Snapshot {
-            if let Some((_, ref return_value)) = self
-                .expect_find_objects_in_area_and_return
-                .iter()
-                .find(|(expected_area, _)| *expected_area == area)
-            {
-                *self.find_objects_in_area_was_called.borrow_mut() = true;
-
-                return_value.clone()
-            } else {
-                panic!(
-                    "find_objects_in_area() was called with unexpected area: {:?}",
-                    area
-                );
-            }
-        }
-    }
-
-    impl Drop for ObjectEnvironmentMock {
-        fn drop(&mut self) {
-            if !panicking() && !self.expect_find_objects_in_area_and_return.is_empty() {
-                assert!(
-                    *self.find_objects_in_area_was_called.borrow(),
-                    "find_objects_in_area() was expected, but never called"
-                );
             }
         }
     }
