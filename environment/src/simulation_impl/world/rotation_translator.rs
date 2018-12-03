@@ -40,13 +40,6 @@ impl NphysicsRotationTranslator for NphysicsRotationTranslatorImpl {
 }
 
 #[cfg(test)]
-pub mod mock {
-    use super::*;
-    use std::cell::RefCell;
-    use std::thread::panicking;
-}
-
-#[cfg(test)]
 mod tests {
     use super::*;
     use std::f64::consts::FRAC_PI_2;

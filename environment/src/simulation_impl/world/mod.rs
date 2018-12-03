@@ -14,7 +14,7 @@ use crate::object::*;
 use crate::simulation_impl::world::collision_filter::{
     IgnoringCollisionFilter, IgnoringCollisionFilterWrapper,
 };
-use mockiato::mockable;
+
 use myelin_geometry::*;
 use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::bounding_volume::AABB as NcollideAabb;
@@ -31,6 +31,9 @@ use nphysics2d::world::World as PhysicsWorld;
 use std::error::Error;
 use std::fmt;
 use std::sync::{Arc, RwLock};
+
+#[cfg(test)]
+use mockiato::mockable;
 
 mod collision_filter;
 mod force_applier;
@@ -177,7 +180,7 @@ impl NphysicsWorld {
 /// This trait translates the rotation from [`Radians`] to the range (-π; π] defined by nphysics
 ///
 /// [`Radians`]: ../../object/struct.Radians.html
-#[mockable]
+#[cfg_attr(test, mockable)]
 pub trait NphysicsRotationTranslator: fmt::Debug {
     /// Converts an `orientation` into a representation that is suitable for nphysics
     fn to_nphysics_rotation(&self, orientation: Radians) -> f64;
