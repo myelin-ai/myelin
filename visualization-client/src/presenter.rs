@@ -8,6 +8,7 @@ use myelin_environment::object::*;
 use myelin_environment::Snapshot;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
 use std::borrow::Borrow;
+use std::cmp::Ordering;
 use std::error::Error;
 use std::fmt;
 
@@ -52,7 +53,7 @@ fn map_objects(
     snapshot: &Snapshot,
     global_polygon_translator: &dyn GlobalPolygonTranslator,
 ) -> Vec<view_model::Object> {
-    snapshot
+    let mut objects: Vec<_> = snapshot
         .values()
         .map(|business_object| {
             let shape = global_polygon_translator.to_global_polygon(
@@ -65,7 +66,17 @@ fn map_objects(
 
             view_model::Object { shape, kind }
         })
-        .collect()
+        .collect();
+
+    // The ordering of items in the iterator created by .values()
+    // is not guaranteed to always be the same.
+    objects.sort_unstable_by(|first_object, second_object| {
+        first_object
+            .partial_cmp(second_object)
+            .unwrap_or(Ordering::Equal)
+    });
+
+    objects
 }
 
 fn map_kind(kind: Kind) -> view_model::Kind {
