@@ -526,7 +526,16 @@ mod tests {
 
     #[test]
     fn can_return_mixed_objects_with_valid_handles() {
-        let rotation_translator = rotation_translator_for_adding_and_reading_body();
+        let mut rotation_translator = NphysicsRotationTranslatorMock::new();
+        rotation_translator
+            .expect_to_radians(partial_eq(FRAC_PI_2))
+            .returns(Ok(Radians::try_new(FRAC_PI_2).unwrap()))
+            .times(2);
+        rotation_translator
+            .expect_to_nphysics_rotation(partial_eq(Radians::try_new(FRAC_PI_2).unwrap()))
+            .returns(FRAC_PI_2)
+            .times(2);
+
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
