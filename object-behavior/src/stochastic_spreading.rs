@@ -155,6 +155,7 @@ impl ObjectBehavior for StochasticSpreading {
 }
 
 /// Dedicated random number generator
+#[cfg_attr(test, mockiato::mockable)]
 pub trait RandomChanceChecker: fmt::Debug + RandomChanceCheckerClone {
     /// Returns a random boolean with a given probability of returning true.
     /// The probability is defined in the range `[0.0; 1.0]` where `0.0` means
@@ -211,17 +212,17 @@ mod tests {
     use super::*;
     use mockiato::partial_eq;
     use myelin_environment::object::ObjectEnvironmentMock;
-    use std::cell::RefCell;
     use std::collections::HashMap;
-    use std::thread::panicking;
 
     const SPREADING_CHANGE: f64 = 1.0 / (60.0 * 30.0);
     const EXPECTED_PADDING: f64 = 1.0;
 
     #[test]
     fn does_nothing_when_chance_is_not_hit() {
-        let mut random_chance_checker = RandomChanceCheckerMock::default();
-        random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, false);
+        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        random_chance_checker
+            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .returns(false);
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
@@ -231,9 +232,13 @@ mod tests {
 
     #[test]
     fn spreads_when_chance_is_hit() {
-        let mut random_chance_checker = RandomChanceCheckerMock::default();
-        random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
-        random_chance_checker.expect_random_number_in_range_and_return(0, 8, 0);
+        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        random_chance_checker
+            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .returns(true);
+        random_chance_checker
+            .expect_random_number_in_range(partial_eq(0), partial_eq(8))
+            .returns(0);
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
@@ -256,9 +261,13 @@ mod tests {
 
     #[test]
     fn does_not_spread_when_surrounded() {
-        let mut random_chance_checker = RandomChanceCheckerMock::default();
-        random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
-        random_chance_checker.expect_random_number_in_range_and_return(0, 8, 0);
+        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        random_chance_checker
+            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .returns(true);
+        random_chance_checker
+            .expect_random_number_in_range(partial_eq(0), partial_eq(8))
+            .returns(0);
 
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
@@ -312,9 +321,13 @@ mod tests {
 
     #[test]
     fn spreads_on_first_available_space_clockwise() {
-        let mut random_chance_checker = RandomChanceCheckerMock::default();
-        random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
-        random_chance_checker.expect_random_number_in_range_and_return(0, 8, 0);
+        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        random_chance_checker
+            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .returns(true);
+        random_chance_checker
+            .expect_random_number_in_range(partial_eq(0), partial_eq(8))
+            .returns(0);
 
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
@@ -353,9 +366,13 @@ mod tests {
 
     #[test]
     fn can_spread_in_vertically() {
-        let mut random_chance_checker = RandomChanceCheckerMock::default();
-        random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
-        random_chance_checker.expect_random_number_in_range_and_return(0, 8, 1);
+        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        random_chance_checker
+            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .returns(true);
+        random_chance_checker
+            .expect_random_number_in_range(partial_eq(0), partial_eq(8))
+            .returns(1);
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
@@ -398,9 +415,13 @@ mod tests {
 
     #[test]
     fn can_spread_horizontally() {
-        let mut random_chance_checker = RandomChanceCheckerMock::default();
-        random_chance_checker.expect_flip_coin_with_probability_and_return(SPREADING_CHANGE, true);
-        random_chance_checker.expect_random_number_in_range_and_return(0, 8, 1);
+        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        random_chance_checker
+            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .returns(true);
+        random_chance_checker
+            .expect_random_number_in_range(partial_eq(0), partial_eq(8))
+            .returns(1);
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
@@ -447,94 +468,5 @@ mod tests {
             .kind(Kind::Plant)
             .build()
             .unwrap()
-    }
-
-    #[derive(Debug, Default, Clone)]
-    struct RandomChanceCheckerMock {
-        expect_flip_coin_with_probability_and_return: Option<(f64, bool)>,
-        expect_random_number_in_range_and_return: Option<(i32, i32, i32)>,
-
-        flip_coin_with_probability_was_called: RefCell<bool>,
-        random_number_in_range_was_called: RefCell<bool>,
-    }
-
-    impl RandomChanceCheckerMock {
-        pub(crate) fn expect_flip_coin_with_probability_and_return(
-            &mut self,
-            probability: f64,
-            returned_value: bool,
-        ) {
-            self.expect_flip_coin_with_probability_and_return = Some((probability, returned_value));
-        }
-
-        pub(crate) fn expect_random_number_in_range_and_return(
-            &mut self,
-            min: i32,
-            max: i32,
-            returned_value: i32,
-        ) {
-            self.expect_random_number_in_range_and_return = Some((min, max, returned_value));
-        }
-    }
-
-    impl Drop for RandomChanceCheckerMock {
-        fn drop(&mut self) {
-            if panicking() {
-                return;
-            }
-
-            if self.expect_flip_coin_with_probability_and_return.is_some() {
-                assert!(
-                    *self.flip_coin_with_probability_was_called.borrow(),
-                    "flip_coin_with_probability() was not called, but was expected"
-                )
-            }
-
-            if self.expect_random_number_in_range_and_return.is_some() {
-                assert!(
-                    *self.random_number_in_range_was_called.borrow(),
-                    "random_number_in_range() was not called, but was expected"
-                )
-            }
-        }
-    }
-
-    impl RandomChanceChecker for RandomChanceCheckerMock {
-        fn flip_coin_with_probability(&mut self, probability: f64) -> bool {
-            *self.flip_coin_with_probability_was_called.borrow_mut() = true;
-            if let Some((ref expected_probability, ref return_value)) =
-                self.expect_flip_coin_with_probability_and_return
-            {
-                if probability == *expected_probability {
-                    return_value.clone()
-                } else {
-                    panic!(
-                        "flip_coin_with_probability() was called with {:?}, expected {:?}",
-                        probability, expected_probability
-                    )
-                }
-            } else {
-                panic!("flip_coin_with_probability() was called unexpectedly")
-            }
-        }
-
-        fn random_number_in_range(&mut self, min: i32, max: i32) -> i32 {
-            *self.random_number_in_range_was_called.borrow_mut() = true;
-            if let Some((ref expected_min, ref expected_max, ref return_value)) =
-                self.expect_random_number_in_range_and_return
-            {
-                if min == *expected_min && max == *expected_max {
-                    return_value.clone()
-                } else {
-                    panic!(
-                        "random_number_in_range() was called with {:?} and {:?}, expected {:?} \
-                         and {:?}",
-                        min, max, expected_min, expected_max
-                    )
-                }
-            } else {
-                panic!("random_number_in_range() was called unexpectedly")
-            }
-        }
     }
 }
