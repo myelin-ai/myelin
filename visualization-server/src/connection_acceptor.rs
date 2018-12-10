@@ -1,6 +1,3 @@
-#[cfg(test)]
-pub(crate) use self::mock::*;
-
 use crate::controller::{ConnectionAcceptor, CurrentSnapshotFn};
 use std::boxed::FnBox;
 use std::fmt::{self, Debug};
@@ -74,51 +71,6 @@ impl Debug for WebsocketConnectionAcceptor {
 
 fn should_accept(_request: &Request<TcpStream, Option<Buffer>>) -> bool {
     true
-}
-
-#[cfg(test)]
-mod mock {
-    use super::*;
-    use std::sync::atomic::{AtomicBool, Ordering};
-    use std::thread::panicking;
-
-    #[derive(Debug, Default)]
-    pub(crate) struct ConnectionAcceptorMock {
-        expect_run: AtomicBool,
-        run_was_called: AtomicBool,
-        address_was_called: AtomicBool,
-    }
-
-    impl ConnectionAcceptorMock {
-        pub(crate) fn expect_run(&mut self) {
-            self.expect_run.store(true, Ordering::SeqCst);
-        }
-    }
-
-    impl ConnectionAcceptor for ConnectionAcceptorMock {
-        fn run(self: Box<Self>) {
-            assert!(
-                self.expect_run.load(Ordering::SeqCst),
-                "run() was called unexpectedly"
-            );
-            self.run_was_called.store(true, Ordering::SeqCst);
-        }
-
-        fn address(&self) -> SocketAddr {
-            panic!("address() was called unexpectedly")
-        }
-    }
-
-    impl Drop for ConnectionAcceptorMock {
-        fn drop(&mut self) {
-            if !panicking() && self.expect_run.load(Ordering::SeqCst) {
-                assert!(
-                    self.run_was_called.load(Ordering::SeqCst),
-                    "run() was not called, but was expected"
-                );
-            }
-        }
-    }
 }
 
 #[cfg(test)]

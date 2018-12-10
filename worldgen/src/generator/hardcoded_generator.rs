@@ -245,62 +245,25 @@ impl fmt::Debug for HardcodedGenerator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::Snapshot;
-    use std::thread::panicking;
-
-    #[derive(Debug, Default)]
-    struct SimulationMock {
-        objects: Vec<(ObjectDescription, Box<dyn ObjectBehavior>)>,
-    }
-
-    impl Simulation for SimulationMock {
-        fn step(&mut self) {
-            panic!("step() called unexpectedly")
-        }
-        fn add_object(
-            &mut self,
-            object_description: ObjectDescription,
-            object_behavior: Box<dyn ObjectBehavior>,
-        ) {
-            self.objects.push((object_description, object_behavior))
-        }
-        fn objects(&self) -> Snapshot {
-            panic!("objects() called unexpectedly")
-        }
-        fn objects_in_area(&self, _area: Aabb) -> Snapshot {
-            panic!("objects_in_area() called unexpectedly");
-        }
-        fn set_simulated_timestep(&mut self, _: f64) {
-            panic!("set_simulated_timestep() called unexpectedly");
-        }
-    }
-    impl Drop for SimulationMock {
-        fn drop(&mut self) {
-            if !panicking() {
-                assert!(!self.objects.is_empty());
-            }
-        }
-    }
-
-    #[derive(Debug, Clone)]
-    struct ObjectBehaviorMock;
-    impl ObjectBehavior for ObjectBehaviorMock {
-        fn step(
-            &mut self,
-            _own_description: &ObjectDescription,
-            _environment: &dyn ObjectEnvironment,
-        ) -> Option<Action> {
-            panic!("step() was called unexpectedly")
-        }
-    }
+    use mockiato::{any, ExpectedCalls};
+    use myelin_environment::object::ObjectBehaviorMock;
+    use myelin_environment::SimulationMock;
 
     #[test]
     fn generates_simulation() {
-        let simulation_factory = box || -> Box<dyn Simulation> { box SimulationMock::default() };
-        let plant_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock {} };
-        let organism_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock {} };
-        let terrain_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock {} };
-        let water_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock {} };
+        let simulation_factory = box || -> Box<dyn Simulation> {
+            let mut simulation = SimulationMock::new();
+
+            simulation
+                .expect_add_object(any(), any())
+                .times(ExpectedCalls::any());
+
+            box simulation
+        };
+        let plant_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
+        let organism_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
+        let terrain_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
+        let water_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
 
         let generator = HardcodedGenerator::new(
             simulation_factory,

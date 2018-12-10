@@ -14,6 +14,7 @@ use crate::object::*;
 use crate::simulation_impl::world::collision_filter::{
     IgnoringCollisionFilter, IgnoringCollisionFilterWrapper,
 };
+
 use myelin_geometry::*;
 use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::bounding_volume::AABB as NcollideAabb;
@@ -30,6 +31,9 @@ use nphysics2d::world::World as PhysicsWorld;
 use std::error::Error;
 use std::fmt;
 use std::sync::{Arc, RwLock};
+
+#[cfg(test)]
+use mockiato::mockable;
 
 mod collision_filter;
 mod force_applier;
@@ -176,6 +180,7 @@ impl NphysicsWorld {
 /// This trait translates the rotation from [`Radians`] to the range (-π; π] defined by nphysics
 ///
 /// [`Radians`]: ../../object/struct.Radians.html
+#[cfg_attr(test, mockable)]
 pub trait NphysicsRotationTranslator: fmt::Debug {
     /// Converts an `orientation` into a representation that is suitable for nphysics
     fn to_nphysics_rotation(&self, orientation: Radians) -> f64;
@@ -382,7 +387,7 @@ fn to_ncollide_point(point: Point) -> NcollidePoint<f64> {
 mod tests {
     use super::*;
     use crate::simulation_impl::world::collision_filter::IgnoringCollisionFilterMock;
-    use crate::simulation_impl::world::rotation_translator::mock::NphysicsRotationTranslatorMock;
+    use mockiato::partial_eq;
     use nphysics2d::object::BodySet;
     use nphysics2d::solver::IntegrationParameters;
     use std::collections::VecDeque;
@@ -394,7 +399,7 @@ mod tests {
 
     #[test]
     fn returns_none_when_calling_body_with_invalid_handle() {
-        let rotation_translator = NphysicsRotationTranslatorMock::default();
+        let rotation_translator = NphysicsRotationTranslatorMock::new();
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let world = NphysicsWorld::with_timestep(
@@ -410,7 +415,7 @@ mod tests {
 
     #[test]
     fn returns_none_when_removing_invalid_object() {
-        let rotation_translator = NphysicsRotationTranslatorMock::default();
+        let rotation_translator = NphysicsRotationTranslatorMock::new();
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -521,7 +526,16 @@ mod tests {
 
     #[test]
     fn can_return_mixed_objects_with_valid_handles() {
-        let rotation_translator = rotation_translator_for_adding_and_reading_body();
+        let mut rotation_translator = NphysicsRotationTranslatorMock::new();
+        rotation_translator
+            .expect_to_radians(partial_eq(FRAC_PI_2))
+            .returns(Ok(Radians::try_new(FRAC_PI_2).unwrap()))
+            .times(2);
+        rotation_translator
+            .expect_to_nphysics_rotation(partial_eq(Radians::try_new(FRAC_PI_2).unwrap()))
+            .returns(FRAC_PI_2)
+            .times(2);
+
         let force_applier = SingleTimeForceApplierMock::default();
         let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
@@ -792,18 +806,18 @@ mod tests {
     }
 
     fn rotation_translator_for_adding_body() -> NphysicsRotationTranslatorMock {
-        let mut rotation_translator = NphysicsRotationTranslatorMock::default();
-        rotation_translator.expect_to_nphysics_rotation_and_return(
-            Radians::try_new(FRAC_PI_2).unwrap(),
-            FRAC_PI_2,
-        );
+        let mut rotation_translator = NphysicsRotationTranslatorMock::new();
+        rotation_translator
+            .expect_to_nphysics_rotation(partial_eq(Radians::try_new(FRAC_PI_2).unwrap()))
+            .returns(FRAC_PI_2);
         rotation_translator
     }
 
     fn rotation_translator_for_adding_and_reading_body() -> NphysicsRotationTranslatorMock {
         let mut rotation_translator = rotation_translator_for_adding_body();
         rotation_translator
-            .expect_to_radians_and_return(FRAC_PI_2, Ok(Radians::try_new(FRAC_PI_2).unwrap()));
+            .expect_to_radians(partial_eq(FRAC_PI_2))
+            .returns(Ok(Radians::try_new(FRAC_PI_2).unwrap()));
         rotation_translator
     }
 

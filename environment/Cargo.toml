@@ -18,6 +18,7 @@ serde_derive = "1.0"
 alga = "0.7"
 unordered-pair = "0.2"
 nameof = "1.0"
+mockiato = { git = "https://github.com/myelin-ai/mockiato", optional = true }
 
 [dependencies.nphysics2d]
 # version = "0.9.1"
@@ -28,6 +29,7 @@ features = ["use-wasm-bindgen"]
 
 [dev-dependencies]
 maplit = "1.0"
+mockiato = { git = "https://github.com/myelin-ai/mockiato" }
 
 [features]
-use-mocks = []
+use-mocks = ["mockiato"]

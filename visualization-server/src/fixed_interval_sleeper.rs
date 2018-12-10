@@ -3,6 +3,9 @@ use std::fmt::{self, Display};
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
+#[cfg(test)]
+use mockiato::mockable;
+
 macro_rules! sleep_for_fixed_interval {
     ($interval:expr, $sleeper:expr, $code:expr) => {{
         let _assert_sleeper: &dyn FixedIntervalSleeper = std::borrow::Borrow::borrow(&$sleeper);
@@ -17,6 +20,7 @@ macro_rules! sleep_for_fixed_interval {
     }};
 }
 
+#[cfg_attr(test, mockable)]
 pub(crate) trait FixedIntervalSleeper {
     fn register_work_started(&mut self);
     fn sleep_until_interval_passed(

@@ -14,6 +14,10 @@ use std::fmt;
 mod delta_applier;
 mod global_polygon_translator;
 
+#[cfg(test)]
+use mockiato::mockable;
+
+#[cfg_attr(test, mockable)]
 pub(crate) trait View: fmt::Debug {
     fn draw_objects(&self, view_model: &ViewModel);
     fn flush(&self);
@@ -92,59 +96,15 @@ impl CanvasPresenter {
 mod tests {
     use super::delta_applier::DeltaApplierError;
     use super::*;
+    use crate::presenter::global_polygon_translator::GlobalPolygonTranslatorMock;
     use crate::view_model::{self, ViewModel};
+    use mockiato::{partial_eq, partial_eq_owned};
     use myelin_geometry::*;
     use myelin_visualization_core::view_model_delta::ObjectDelta;
     use std::cell::RefCell;
     use std::collections::VecDeque;
     use std::fmt::{self, Debug};
     use std::thread::panicking;
-
-    #[derive(Debug)]
-    struct ViewMock {
-        expected_draw_objects_calls: RefCell<VecDeque<ViewModel>>,
-        expected_flush_calls: RefCell<usize>,
-    }
-
-    impl ViewMock {
-        fn new(
-            expected_draw_objects_calls: VecDeque<ViewModel>,
-            expected_flush_calls: usize,
-        ) -> Self {
-            Self {
-                expected_draw_objects_calls: RefCell::new(expected_draw_objects_calls),
-                expected_flush_calls: RefCell::new(expected_flush_calls),
-            }
-        }
-    }
-
-    impl View for ViewMock {
-        fn draw_objects(&self, view_model: &ViewModel) {
-            let expected_view_model = self
-                .expected_draw_objects_calls
-                .borrow_mut()
-                .pop_front()
-                .expect("Unexpected call to draw_objects()");
-
-            assert_eq!(expected_view_model, *view_model);
-        }
-
-        fn flush(&self) {
-            assert!(
-                *self.expected_flush_calls.borrow() > 0,
-                "Unexpected call to flush()"
-            );
-            *self.expected_flush_calls.borrow_mut() -= 1;
-        }
-    }
-
-    impl Drop for ViewMock {
-        fn drop(&mut self) {
-            if !panicking() {
-                assert_eq!(0, *self.expected_flush_calls.borrow());
-            }
-        }
-    }
 
     struct DeltaApplierMock<'mock> {
         expected_calls: RefCell<
@@ -202,48 +162,6 @@ mod tests {
         }
     }
 
-    #[derive(Debug)]
-    struct GlobalPolygonTranslatorMock {
-        expected_calls: RefCell<VecDeque<(Polygon, Point, Radians, view_model::Polygon)>>,
-    }
-
-    impl GlobalPolygonTranslatorMock {
-        fn new(expected_calls: VecDeque<(Polygon, Point, Radians, view_model::Polygon)>) -> Self {
-            Self {
-                expected_calls: RefCell::new(expected_calls),
-            }
-        }
-    }
-
-    impl GlobalPolygonTranslator for GlobalPolygonTranslatorMock {
-        fn to_global_polygon(
-            &self,
-            polygon: &Polygon,
-            location: Point,
-            rotation: Radians,
-        ) -> view_model::Polygon {
-            let (expected_polygon, expected_location, expected_rotation, return_value) = self
-                .expected_calls
-                .borrow_mut()
-                .pop_front()
-                .expect("Unexpected call to to_global_polygon()");
-
-            assert_eq!(expected_polygon, *polygon);
-            assert_eq!(expected_location, location);
-            assert_eq!(expected_rotation, rotation);
-
-            return_value
-        }
-    }
-
-    impl Drop for GlobalPolygonTranslatorMock {
-        fn drop(&mut self) {
-            if !panicking() {
-                assert!(self.expected_calls.borrow().is_empty());
-            }
-        }
-    }
-
     fn object_description() -> ObjectDescription {
         ObjectBuilder::default()
             .shape(
@@ -263,13 +181,34 @@ mod tests {
             .unwrap()
     }
 
+    fn object_description2() -> ObjectDescription {
+        ObjectBuilder::default()
+            .shape(
+                PolygonBuilder::default()
+                    .vertex(-10.0, -10.0)
+                    .vertex(10.0, -10.0)
+                    .vertex(10.0, 10.0)
+                    .vertex(-10.0, 10.0)
+                    .build()
+                    .unwrap(),
+            )
+            .mobility(Mobility::Immovable)
+            .location(30.0, 50.0)
+            .rotation(Radians::default())
+            .kind(Kind::Plant)
+            .build()
+            .unwrap()
+    }
+
     #[test]
     fn maps_to_empty_view_model() {
         let expected_view_model = ViewModel {
             objects: Vec::new(),
         };
-        let view_mock = ViewMock::new(vec![expected_view_model].into(), 1);
-        let global_polygon_translator = GlobalPolygonTranslatorMock::new(Default::default());
+        let mut view_mock = ViewMock::new();
+        view_mock.expect_draw_objects(partial_eq_owned(expected_view_model));
+        view_mock.expect_flush();
+        let global_polygon_translator = GlobalPolygonTranslatorMock::new();
         let delta_applier_mock = DeltaApplierMock::new(
             vec![(
                 {
@@ -305,7 +244,7 @@ mod tests {
             12 => ObjectDelta::Created(object_description_1.clone())
         };
 
-        let object_description_2 = object_description();
+        let object_description_2 = object_description2();
         let view_model_polygon_2 = view_model::Polygon {
             vertices: vec![view_model::Point { x: 5.0, y: 5.0 }],
         };
@@ -325,30 +264,27 @@ mod tests {
             45 => ObjectDelta::Created(object_description_2.clone())
         };
 
-        let view_mock = ViewMock::new(vec![expected_view_model_1, expected_view_model_2].into(), 2);
-        let global_polygon_translator = GlobalPolygonTranslatorMock::new(
-            vec![
-                (
-                    object_description_1.shape.clone(),
-                    object_description_1.location,
-                    object_description_1.rotation,
-                    view_model_polygon_1.clone(),
-                ),
-                (
-                    object_description_1.shape.clone(),
-                    object_description_1.location,
-                    object_description_1.rotation,
-                    view_model_polygon_1.clone(),
-                ),
-                (
-                    object_description_2.shape.clone(),
-                    object_description_2.location,
-                    object_description_2.rotation,
-                    view_model_polygon_2.clone(),
-                ),
-            ]
-            .into(),
-        );
+        let mut view_mock = ViewMock::new();
+        view_mock.expect_draw_objects(partial_eq_owned(expected_view_model_1));
+        view_mock.expect_draw_objects(partial_eq_owned(expected_view_model_2));
+        view_mock.expect_flush().times(2);
+
+        let mut global_polygon_translator = GlobalPolygonTranslatorMock::new();
+        global_polygon_translator
+            .expect_to_global_polygon(
+                partial_eq_owned(object_description_1.shape.clone()),
+                partial_eq(object_description_1.location),
+                partial_eq(object_description_1.rotation),
+            )
+            .returns(view_model_polygon_1.clone())
+            .times(2);
+        global_polygon_translator
+            .expect_to_global_polygon(
+                partial_eq_owned(object_description_2.shape.clone()),
+                partial_eq(object_description_2.location),
+                partial_eq(object_description_2.rotation),
+            )
+            .returns(view_model_polygon_2.clone());
 
         let delta_applier_mock = DeltaApplierMock::new(
             vec![

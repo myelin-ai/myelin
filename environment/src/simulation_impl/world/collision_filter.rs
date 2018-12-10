@@ -154,6 +154,7 @@ mod mock {
             self
         }
 
+        #[allow(dead_code)]
         pub fn expect_is_handle_ignored_and_return(
             &mut self,
             expected_calls: VecDeque<(AnyHandle, bool)>,
@@ -168,6 +169,7 @@ mod mock {
             self
         }
 
+        #[allow(dead_code)]
         pub fn expect_is_pair_valid_and_return(
             &mut self,
             expected_calls: HashMap<UnorderedPair<AnyHandle>, bool>,

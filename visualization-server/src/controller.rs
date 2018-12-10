@@ -7,6 +7,9 @@ use std::net::SocketAddr;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
+#[cfg(test)]
+use mockiato::mockable;
+
 pub(crate) type ConnectionAcceptorFactoryFn =
     dyn Fn(Arc<CurrentSnapshotFn>) -> Box<dyn ConnectionAcceptor> + Send + Sync;
 pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send + Sync;
@@ -16,6 +19,7 @@ pub(crate) trait Controller: Debug {
     fn run(&mut self);
 }
 
+#[cfg_attr(test, mockable)]
 pub(crate) trait Presenter: Debug {
     fn calculate_deltas(
         &self,
@@ -24,6 +28,7 @@ pub(crate) trait Presenter: Debug {
     ) -> ViewModelDelta;
 }
 
+#[cfg_attr(test, mockable)]
 pub(crate) trait ConnectionAcceptor: Debug {
     fn run(self: Box<Self>);
     /// Returns the address that the [`ConnectionAcceptor`] listens on.
@@ -91,7 +96,6 @@ impl ControllerImpl {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::connection_acceptor::ConnectionAcceptorMock;
     use myelin_environment::object::*;
     use myelin_environment::SimulationMock;
     use myelin_geometry::PolygonBuilder;
@@ -103,8 +107,8 @@ mod tests {
     #[test]
     fn can_be_assembled() {
         ControllerImpl::new(
-            box SimulationMock::default(),
-            Arc::new(move |_| box ConnectionAcceptorMock::default() as Box<dyn ConnectionAcceptor>),
+            box SimulationMock::new(),
+            Arc::new(move |_| box ConnectionAcceptorMock::new() as Box<dyn ConnectionAcceptor>),
             main_thread_spawn_fn(),
             EXPECTED_DELTA,
         );
@@ -113,9 +117,9 @@ mod tests {
     #[test]
     fn runs_connection_acceptor() {
         let controller = ControllerImpl::new(
-            box SimulationMock::default(),
+            box SimulationMock::new(),
             Arc::new(move |_| {
-                let mut connection_acceptor = box ConnectionAcceptorMock::default();
+                let mut connection_acceptor = box ConnectionAcceptorMock::new();
                 connection_acceptor.expect_run();
                 connection_acceptor as Box<dyn ConnectionAcceptor>
             }),
@@ -127,9 +131,9 @@ mod tests {
 
     #[test]
     fn steps_simulation_with_empty_snapshot() {
-        let mut simulation = SimulationMock::default();
+        let mut simulation = SimulationMock::new();
         simulation.expect_step();
-        simulation.expect_objects_and_return(HashMap::new());
+        simulation.expect_objects().returns(HashMap::new());
         let mut controller = ControllerImpl::new(
             box simulation,
             Arc::new(move |_| panic!("No connection acceptor is expected to be created")),
@@ -141,13 +145,13 @@ mod tests {
 
     #[test]
     fn steps_simulation_with_snapshot() {
-        let mut simulation = SimulationMock::default();
+        let mut simulation = SimulationMock::new();
         simulation.expect_step();
         let expected_snapshot = hashmap! {
            0 => object_description()
         };
 
-        simulation.expect_objects_and_return(expected_snapshot);
+        simulation.expect_objects().returns(expected_snapshot);
         let mut controller = ControllerImpl::new(
             box simulation,
             Arc::new(move |_| panic!("No connection acceptor is expected to be created")),
@@ -159,7 +163,7 @@ mod tests {
 
     #[test]
     fn snapshot_is_empty_before_step() {
-        let simulation = SimulationMock::default();
+        let simulation = SimulationMock::new();
 
         let current_snapshot_fn: Arc<Mutex<Option<Arc<CurrentSnapshotFn>>>> = Default::default();
         let snapshot_fn = current_snapshot_fn.clone();
@@ -167,7 +171,7 @@ mod tests {
             box simulation,
             Arc::new(move |current_snapshot_fn| {
                 *snapshot_fn.lock().unwrap() = Some(current_snapshot_fn);
-                let mut connection_acceptor = box ConnectionAcceptorMock::default();
+                let mut connection_acceptor = box ConnectionAcceptorMock::new();
                 connection_acceptor.expect_run();
                 connection_acceptor as Box<dyn ConnectionAcceptor>
             }),
@@ -183,13 +187,15 @@ mod tests {
 
     #[test]
     fn stepping_simulation_sets_snapshot() {
-        let mut simulation = SimulationMock::default();
+        let mut simulation = SimulationMock::new();
         simulation.expect_step();
 
         let expected_snapshot = hashmap! {
            0 => object_description()
         };
-        simulation.expect_objects_and_return(expected_snapshot.clone());
+        simulation
+            .expect_objects()
+            .returns(expected_snapshot.clone());
 
         let current_snapshot_fn: Arc<Mutex<Option<Arc<CurrentSnapshotFn>>>> = Default::default();
         let snapshot_fn = current_snapshot_fn.clone();
@@ -197,7 +203,7 @@ mod tests {
             box simulation,
             Arc::new(move |current_snapshot_fn| {
                 *snapshot_fn.lock().unwrap() = Some(current_snapshot_fn);
-                let mut connection_acceptor = box ConnectionAcceptorMock::default();
+                let mut connection_acceptor = box ConnectionAcceptorMock::new();
                 connection_acceptor.expect_run();
                 connection_acceptor as Box<dyn ConnectionAcceptor>
             }),

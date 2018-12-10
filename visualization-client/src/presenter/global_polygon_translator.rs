@@ -3,6 +3,10 @@ use myelin_geometry::*;
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
+#[cfg(test)]
+use mockiato::mockable;
+
+#[cfg_attr(test, mockable)]
 pub(crate) trait GlobalPolygonTranslator: Debug {
     fn to_global_polygon(
         &self,
