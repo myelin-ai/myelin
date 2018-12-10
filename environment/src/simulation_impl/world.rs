@@ -387,6 +387,7 @@ fn to_ncollide_point(point: Point) -> NcollidePoint<f64> {
 mod tests {
     use super::*;
     use crate::simulation_impl::world::collision_filter::IgnoringCollisionFilterMock;
+    use mockiato::partial_eq;
     use nphysics2d::object::BodySet;
     use nphysics2d::solver::IntegrationParameters;
     use std::collections::VecDeque;
@@ -798,7 +799,7 @@ mod tests {
     fn rotation_translator_for_adding_body() -> NphysicsRotationTranslatorMock {
         let mut rotation_translator = NphysicsRotationTranslatorMock::new();
         rotation_translator
-            .expect_to_nphysics_rotation(Radians::try_new(FRAC_PI_2).unwrap())
+            .expect_to_nphysics_rotation(partial_eq(Radians::try_new(FRAC_PI_2).unwrap()))
             .returns(FRAC_PI_2);
         rotation_translator
     }
@@ -806,7 +807,7 @@ mod tests {
     fn rotation_translator_for_adding_and_reading_body() -> NphysicsRotationTranslatorMock {
         let mut rotation_translator = rotation_translator_for_adding_body();
         rotation_translator
-            .expect_to_radians(FRAC_PI_2)
+            .expect_to_radians(partial_eq(FRAC_PI_2))
             .returns(Ok(Radians::try_new(FRAC_PI_2).unwrap()));
         rotation_translator
     }
