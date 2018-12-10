@@ -353,6 +353,7 @@ mod tests {
     use super::*;
     use crate::object::{ObjectBehaviorMock, ObjectEnvironmentMock};
     use crate::object_builder::ObjectBuilder;
+    use mockiato::{any, partial_eq_owned};
     use myelin_geometry::PolygonBuilder;
     use std::cell::RefCell;
     use std::thread::panicking;
@@ -473,7 +474,9 @@ mod tests {
             .unwrap();
 
         let mut object_behavior = ObjectBehaviorMock::new();
-        object_behavior.expect_step_and_return(expected_object_description.clone(), None);
+        object_behavior
+            .expect_step(partial_eq_owned(expected_object_description.clone()), any())
+            .returns(None);
 
         let mut simulation = SimulationImpl::new(box world, box object_environment_factory_fn);
         simulation.add_object(expected_object_description, box object_behavior);
@@ -566,15 +569,16 @@ mod tests {
             .unwrap();
 
         let mut child_object_behavior = ObjectBehaviorMock::new();
-        child_object_behavior.expect_step_and_return(expected_object_description.clone(), None);
+        child_object_behavior
+            .expect_step(partial_eq_owned(expected_object_description.clone()), any())
+            .returns(None);
 
-        object_behavior.expect_step_and_return(
-            expected_object_description.clone(),
-            Some(Action::Reproduce(
+        object_behavior
+            .expect_step(partial_eq_owned(expected_object_description.clone()), any())
+            .returns(Some(Action::Reproduce(
                 expected_object_description.clone(),
                 box child_object_behavior,
-            )),
-        );
+            )));
 
         simulation.add_object(expected_object_description.clone(), box object_behavior);
 
@@ -620,7 +624,8 @@ mod tests {
             .unwrap();
 
         object_behavior
-            .expect_step_and_return(expected_object_description.clone(), Some(Action::Die));
+            .expect_step(partial_eq_owned(expected_object_description.clone()), any())
+            .returns(Some(Action::Die));
 
         simulation.add_object(expected_object_description.clone(), box object_behavior);
 
@@ -666,10 +671,9 @@ mod tests {
             .build()
             .unwrap();
 
-        object_behavior.expect_step_and_return(
-            expected_object_description.clone(),
-            Some(Action::Destroy(handle_two.0)),
-        );
+        object_behavior
+            .expect_step(partial_eq_owned(expected_object_description.clone()), any())
+            .returns(Some(Action::Destroy(handle_two.0)));
 
         simulation.add_object(expected_object_description.clone(), box object_behavior);
 
@@ -717,10 +721,9 @@ mod tests {
             .build()
             .unwrap();
 
-        object_behavior.expect_step_and_return(
-            expected_object_description.clone(),
-            Some(Action::ApplyForce(expected_force)),
-        );
+        object_behavior
+            .expect_step(partial_eq_owned(expected_object_description.clone()), any())
+            .returns(Some(Action::ApplyForce(expected_force)));
 
         simulation.add_object(expected_object_description.clone(), box object_behavior);
 
@@ -758,7 +761,7 @@ mod tests {
             .build()
             .unwrap();
 
-        let object_behavior = ObjectBehaviorMock::default();
+        let object_behavior = ObjectBehaviorMock::new();
         simulation.add_object(object_description, box object_behavior);
         simulation.objects();
     }
@@ -780,7 +783,7 @@ mod tests {
 
         let mut simulation = SimulationImpl::new(box world, box object_environment_factory_fn);
 
-        let object_behavior = ObjectBehaviorMock::default();
+        let object_behavior = ObjectBehaviorMock::new();
         simulation.add_object(object_description.clone(), box object_behavior);
 
         let expected_objects = hashmap! { 1234 => object_description };
@@ -805,7 +808,7 @@ mod tests {
 
         let mut simulation = SimulationImpl::new(box world, box object_environment_factory_fn);
 
-        let object_behavior = ObjectBehaviorMock::default();
+        let object_behavior = ObjectBehaviorMock::new();
         simulation.add_object(object_description.clone(), box object_behavior);
 
         let expected_objects = hashmap! { 1234 => object_description };
