@@ -14,6 +14,10 @@ use std::fmt;
 mod delta_applier;
 mod global_polygon_translator;
 
+#[cfg(test)]
+use mockiato::mockable;
+
+#[cfg_attr(test, mockable)]
 pub(crate) trait View: fmt::Debug {
     fn draw_objects(&self, view_model: &ViewModel);
     fn flush(&self);
@@ -93,58 +97,13 @@ mod tests {
     use super::delta_applier::DeltaApplierError;
     use super::*;
     use crate::view_model::{self, ViewModel};
+    use mockiato::partial_eq_owned;
     use myelin_geometry::*;
     use myelin_visualization_core::view_model_delta::ObjectDelta;
     use std::cell::RefCell;
     use std::collections::VecDeque;
     use std::fmt::{self, Debug};
     use std::thread::panicking;
-
-    #[derive(Debug)]
-    struct ViewMock {
-        expected_draw_objects_calls: RefCell<VecDeque<ViewModel>>,
-        expected_flush_calls: RefCell<usize>,
-    }
-
-    impl ViewMock {
-        fn new(
-            expected_draw_objects_calls: VecDeque<ViewModel>,
-            expected_flush_calls: usize,
-        ) -> Self {
-            Self {
-                expected_draw_objects_calls: RefCell::new(expected_draw_objects_calls),
-                expected_flush_calls: RefCell::new(expected_flush_calls),
-            }
-        }
-    }
-
-    impl View for ViewMock {
-        fn draw_objects(&self, view_model: &ViewModel) {
-            let expected_view_model = self
-                .expected_draw_objects_calls
-                .borrow_mut()
-                .pop_front()
-                .expect("Unexpected call to draw_objects()");
-
-            assert_eq!(expected_view_model, *view_model);
-        }
-
-        fn flush(&self) {
-            assert!(
-                *self.expected_flush_calls.borrow() > 0,
-                "Unexpected call to flush()"
-            );
-            *self.expected_flush_calls.borrow_mut() -= 1;
-        }
-    }
-
-    impl Drop for ViewMock {
-        fn drop(&mut self) {
-            if !panicking() {
-                assert_eq!(0, *self.expected_flush_calls.borrow());
-            }
-        }
-    }
 
     struct DeltaApplierMock<'mock> {
         expected_calls: RefCell<
@@ -268,7 +227,9 @@ mod tests {
         let expected_view_model = ViewModel {
             objects: Vec::new(),
         };
-        let view_mock = ViewMock::new(vec![expected_view_model].into(), 1);
+        let mut view_mock = ViewMock::new();
+        view_mock.expect_draw_objects(partial_eq_owned(expected_view_model));
+        view_mock.expect_flush();
         let global_polygon_translator = GlobalPolygonTranslatorMock::new(Default::default());
         let delta_applier_mock = DeltaApplierMock::new(
             vec![(
@@ -325,7 +286,10 @@ mod tests {
             45 => ObjectDelta::Created(object_description_2.clone())
         };
 
-        let view_mock = ViewMock::new(vec![expected_view_model_1, expected_view_model_2].into(), 2);
+        let mut view_mock = ViewMock::new();
+        view_mock.expect_draw_objects(partial_eq_owned(expected_view_model_1));
+        view_mock.expect_draw_objects(partial_eq_owned(expected_view_model_2));
+        view_mock.expect_flush().times(2);
         let global_polygon_translator = GlobalPolygonTranslatorMock::new(
             vec![
                 (
