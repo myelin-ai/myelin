@@ -114,11 +114,7 @@ mod tests {
     #[test]
     fn can_be_constructed() {
         let interval = Duration::from_millis(INTERVAL);
-        let mut sleeper = FixedIntervalSleeperMock::new();
-        sleeper.expect_register_work_started();
-        sleeper
-            .expect_sleep_until_interval_passed(partial_eq(interval))
-            .returns(Ok(()));
+        let sleeper = FixedIntervalSleeperMock::new();
         let presenter = Box::new(PresenterMock::new());
         let serializer = Box::new(SerializerMock::default());
         let socket = Box::new(SocketMock::default());
