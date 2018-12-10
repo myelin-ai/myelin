@@ -19,6 +19,7 @@ pub(crate) trait Controller: Debug {
     fn run(&mut self);
 }
 
+#[cfg_attr(test, mockable)]
 pub(crate) trait Presenter: Debug {
     fn calculate_deltas(
         &self,

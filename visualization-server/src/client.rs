@@ -94,8 +94,9 @@ impl Debug for ClientHandler {
 mod tests {
     use super::*;
     use crate::connection::{SocketErrorMock, SocketMock};
+    use crate::controller::PresenterMock;
     use crate::fixed_interval_sleeper::FixedIntervalSleeperError;
-    use crate::presenter::PresenterMock;
+    use mockiato::partial_eq_owned;
     use myelin_environment::object::*;
     use myelin_geometry::*;
     use myelin_visualization_core::view_model_delta::{
@@ -163,7 +164,7 @@ mod tests {
         let mut sleeper = FixedIntervalSleeperMock::default();
         sleeper.expect_register_work_started_called();
         sleeper.expect_sleep_until_interval_passed_and_return(interval, Ok(()));
-        let presenter = Box::new(PresenterMock::default());
+        let presenter = Box::new(PresenterMock::new());
         let serializer = Box::new(SerializerMock::default());
         let socket = Box::new(SocketMock::default());
         let connection = Connection {
@@ -187,8 +188,13 @@ mod tests {
         let mut sleeper = FixedIntervalSleeperMock::default();
         sleeper.expect_register_work_started_called();
         sleeper.expect_sleep_until_interval_passed_and_return(interval, Ok(()));
-        let mut presenter = Box::new(PresenterMock::default());
-        presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), delta());
+        let mut presenter = Box::new(PresenterMock::new());
+        presenter
+            .expect_calculate_deltas(
+                partial_eq_owned(Snapshot::new()),
+                partial_eq_owned(snapshot()),
+            )
+            .returns(delta());
         let mut serializer = Box::new(SerializerMock::default());
         let expected_payload = vec![0xFF, 0x01, 0x32];
         serializer
@@ -220,8 +226,13 @@ mod tests {
         let mut sleeper = FixedIntervalSleeperMock::default();
         sleeper.expect_register_work_started_called();
         sleeper.expect_sleep_until_interval_passed_and_return(interval, Ok(()));
-        let mut presenter = Box::new(PresenterMock::default());
-        presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), ViewModelDelta::default());
+        let mut presenter = Box::new(PresenterMock::new());
+        presenter
+            .expect_calculate_deltas(
+                partial_eq_owned(Snapshot::new()),
+                partial_eq_owned(snapshot()),
+            )
+            .returns(ViewModelDelta::default());
         let serializer = Box::new(SerializerMock::default());
         let socket = Box::new(SocketMock::default());
         let connection = Connection {
@@ -250,8 +261,13 @@ mod tests {
         let mut sleeper = FixedIntervalSleeperMock::default();
         sleeper.expect_register_work_started_called();
         sleeper.expect_sleep_until_interval_passed_and_return(interval, Ok(()));
-        let mut presenter = Box::new(PresenterMock::default());
-        presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), delta());
+        let mut presenter = Box::new(PresenterMock::new());
+        presenter
+            .expect_calculate_deltas(
+                partial_eq_owned(Snapshot::new()),
+                partial_eq_owned(snapshot()),
+            )
+            .returns(delta());
         let mut serializer = Box::new(SerializerMock::default());
         let err = ErrorMock;
         serializer.expect_serialize_view_model_delta_and_return(delta(), Err(err));
@@ -281,8 +297,13 @@ mod tests {
         let mut sleeper = FixedIntervalSleeperMock::default();
         sleeper.expect_register_work_started_called();
         sleeper.expect_sleep_until_interval_passed_and_return(interval, Ok(()));
-        let mut presenter = Box::new(PresenterMock::default());
-        presenter.expect_calculate_deltas(Snapshot::new(), snapshot(), delta());
+        let mut presenter = Box::new(PresenterMock::new());
+        presenter
+            .expect_calculate_deltas(
+                partial_eq_owned(Snapshot::new()),
+                partial_eq_owned(snapshot()),
+            )
+            .returns(delta());
         let mut serializer = Box::new(SerializerMock::default());
         let expected_payload = vec![0xFF, 0x01, 0x32];
         serializer
