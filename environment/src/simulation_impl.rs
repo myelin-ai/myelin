@@ -242,6 +242,7 @@ impl Simulation for SimulationImpl {
 ///
 /// [`PhysicalBodies`]: ./struct.PhysicalBody.html
 /// [`step`]: ./trait.World.html#tymethod.step
+#[cfg_attr(test, mockiato::mockable)]
 pub trait World: fmt::Debug {
     /// Advance the simulation by one tick. This will apply
     /// forces to the objects and handle collisions;
@@ -353,10 +354,8 @@ mod tests {
     use super::*;
     use crate::object::{ObjectBehaviorMock, ObjectEnvironmentMock};
     use crate::object_builder::ObjectBuilder;
-    use mockiato::{any, partial_eq_owned};
+    use mockiato::{any, partial_eq, partial_eq_owned};
     use myelin_geometry::PolygonBuilder;
-    use std::cell::RefCell;
-    use std::thread::panicking;
 
     fn object_environment_factory_fn<'a>(
         _simulation: &'a dyn Simulation,
@@ -376,7 +375,7 @@ mod tests {
     fn propagates_simulated_timestep() {
         let mut world = box WorldMock::new();
         const EXPECTED_TIMESTEP: f64 = 1.0;
-        world.expect_set_simulated_timestep(EXPECTED_TIMESTEP);
+        world.expect_set_simulated_timestep(partial_eq(EXPECTED_TIMESTEP));
         let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
         simulation.set_simulated_timestep(EXPECTED_TIMESTEP);
     }
@@ -394,7 +393,7 @@ mod tests {
     fn propagates_zero_timestep() {
         let mut world = box WorldMock::new();
         const EXPECTED_TIMESTEP: f64 = 0.0;
-        world.expect_set_simulated_timestep(EXPECTED_TIMESTEP);
+        world.expect_set_simulated_timestep(partial_eq(EXPECTED_TIMESTEP));
         let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
         simulation.set_simulated_timestep(EXPECTED_TIMESTEP);
     }
@@ -424,7 +423,9 @@ mod tests {
             passable: expected_passable,
         };
         let returned_handle = BodyHandle(1337);
-        world.expect_add_body_and_return(expected_physical_body, returned_handle);
+        world
+            .expect_add_body(partial_eq(expected_physical_body))
+            .returns(returned_handle);
 
         let object_description = ObjectBuilder::default()
             .location(expected_location.x, expected_location.y)
@@ -459,9 +460,15 @@ mod tests {
             passable: expected_passable,
         };
         let returned_handle = BodyHandle(1337);
-        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
-        world.expect_body_and_return(returned_handle, Some(expected_physical_body));
-        world.expect_is_body_passable_and_return(returned_handle.into(), expected_passable);
+        world
+            .expect_add_body(partial_eq(expected_physical_body.clone()))
+            .returns(returned_handle);
+        world
+            .expect_body(partial_eq(returned_handle))
+            .returns(Some(expected_physical_body));
+        world
+            .expect_is_body_passable(partial_eq(returned_handle))
+            .returns(expected_passable);
 
         let expected_object_description = ObjectBuilder::default()
             .location(expected_location.x, expected_location.y)
@@ -500,9 +507,15 @@ mod tests {
             passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
-        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
-        world.expect_body_and_return(returned_handle, Some(expected_physical_body));
-        world.expect_is_body_passable_and_return(returned_handle, expected_passable);
+        world
+            .expect_add_body(partial_eq(expected_physical_body.clone()))
+            .returns(returned_handle);
+        world
+            .expect_body(partial_eq(returned_handle))
+            .returns(Some(expected_physical_body));
+        world
+            .expect_is_body_passable(partial_eq(returned_handle))
+            .returns(expected_passable);
 
         let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
         let object_behavior = ObjectBehaviorMock::new();
@@ -551,8 +564,12 @@ mod tests {
             passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
-        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
-        world.expect_body_and_return(returned_handle, Some(expected_physical_body));
+        world
+            .expect_add_body(partial_eq(expected_physical_body.clone()))
+            .returns(returned_handle);
+        world
+            .expect_body(partial_eq(returned_handle))
+            .returns(Some(expected_physical_body));
         world.expect_step();
 
         let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
@@ -603,11 +620,19 @@ mod tests {
             passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
-        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
-        world.expect_body_and_return(returned_handle, Some(expected_physical_body.clone()));
+        world
+            .expect_add_body(partial_eq(expected_physical_body.clone()))
+            .returns(returned_handle);
+        world
+            .expect_body(partial_eq(returned_handle))
+            .returns(Some(expected_physical_body.clone()));
         world.expect_step();
-        world.expect_remove_body_and_return(returned_handle, Some(expected_physical_body));
-        world.expect_is_body_passable_and_return(returned_handle, expected_passable);
+        world
+            .expect_remove_body(partial_eq(returned_handle))
+            .returns(Some(expected_physical_body));
+        world
+            .expect_is_body_passable(partial_eq(returned_handle))
+            .returns(expected_passable);
 
         let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
 
@@ -651,11 +676,19 @@ mod tests {
 
         let handle_one = BodyHandle(1);
         let handle_two = BodyHandle(2);
-        world.expect_add_body_and_return(expected_physical_body.clone(), handle_one);
-        world.expect_body_and_return(handle_one, Some(expected_physical_body.clone()));
-        world.expect_is_body_passable_and_return(handle_one, expected_passable);
+        world
+            .expect_add_body(partial_eq(expected_physical_body.clone()))
+            .returns(handle_one);
+        world
+            .expect_body(partial_eq(handle_one))
+            .returns(Some(expected_physical_body.clone()));
+        world
+            .expect_is_body_passable(partial_eq(handle_one))
+            .returns(expected_passable);
         world.expect_step();
-        world.expect_remove_body_and_return(handle_two, Some(expected_physical_body));
+        world
+            .expect_remove_body(partial_eq(handle_two))
+            .returns(Some(expected_physical_body));
 
         let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
 
@@ -697,15 +730,26 @@ mod tests {
             passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
-        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
-        world.expect_body_and_return(returned_handle, Some(expected_physical_body.clone()));
+        world
+            .expect_add_body(partial_eq(expected_physical_body.clone()))
+            .returns(returned_handle);
+        world
+            .expect_body(partial_eq(returned_handle))
+            .returns(Some(expected_physical_body.clone()));
         world.expect_step();
-        world.expect_is_body_passable_and_return(returned_handle, expected_passable);
+        world
+            .expect_is_body_passable(partial_eq(returned_handle))
+            .returns(expected_passable);
         let expected_force = Force {
             linear: Vector { x: 20.0, y: -5.0 },
             torque: Torque(-8.0),
         };
-        world.expect_apply_force_and_return(returned_handle, expected_force.clone(), Some(()));
+        world
+            .expect_apply_force(
+                partial_eq(returned_handle),
+                partial_eq(expected_force.clone()),
+            )
+            .returns(Some(()));
 
         let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
 
@@ -748,8 +792,10 @@ mod tests {
             passable: expected_passable,
         };
         let returned_handle = BodyHandle(1984);
-        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
-        world.expect_body_and_return(returned_handle, None);
+        world
+            .expect_add_body(partial_eq(expected_physical_body.clone()))
+            .returns(returned_handle);
+        world.expect_body(partial_eq(returned_handle)).returns(None);
         let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
 
         let object_description = ObjectBuilder::default()
@@ -776,10 +822,18 @@ mod tests {
         };
 
         let returned_handle = BodyHandle(1234);
-        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
-        world.expect_bodies_in_area_and_return(area, vec![returned_handle]);
-        world.expect_body_and_return(returned_handle, Some(expected_physical_body.clone()));
-        world.expect_is_body_passable_and_return(returned_handle, expected_physical_body.passable);
+        world
+            .expect_add_body(partial_eq(expected_physical_body.clone()))
+            .returns(returned_handle);
+        world
+            .expect_bodies_in_area(partial_eq(area))
+            .returns(vec![returned_handle]);
+        world
+            .expect_body(partial_eq(returned_handle))
+            .returns(Some(expected_physical_body.clone()));
+        world
+            .expect_is_body_passable(partial_eq(returned_handle))
+            .returns(expected_physical_body.passable);
 
         let mut simulation = SimulationImpl::new(box world, box object_environment_factory_fn);
 
@@ -802,9 +856,13 @@ mod tests {
         };
 
         let returned_handle = BodyHandle(1234);
-        world.expect_add_body_and_return(expected_physical_body.clone(), returned_handle);
-        world.expect_bodies_in_area_and_return(area, vec![returned_handle]);
-        world.expect_body_and_return(returned_handle, None);
+        world
+            .expect_add_body(partial_eq(expected_physical_body.clone()))
+            .returns(returned_handle);
+        world
+            .expect_bodies_in_area(partial_eq(area))
+            .returns(vec![returned_handle]);
+        world.expect_body(partial_eq(returned_handle)).returns(None);
 
         let mut simulation = SimulationImpl::new(box world, box object_environment_factory_fn);
 
@@ -857,274 +915,5 @@ mod tests {
 
     fn rotation() -> Radians {
         Radians::try_new(3.4).unwrap()
-    }
-
-    #[derive(Debug, Default)]
-    struct WorldMock {
-        expect_step: Option<()>,
-        expect_add_body_and_return: Option<(PhysicalBody, BodyHandle)>,
-        expect_remove_body_and_return: Option<(BodyHandle, Option<PhysicalBody>)>,
-        expect_body_and_return: Option<(BodyHandle, Option<PhysicalBody>)>,
-        expect_apply_force_and_return: Option<(BodyHandle, Force, Option<()>)>,
-        expect_set_simulated_timestep: Option<f64>,
-        expect_is_body_passable_and_return: Option<(BodyHandle, bool)>,
-        expect_bodies_in_area_and_return: Option<(Aabb, Vec<BodyHandle>)>,
-
-        step_was_called: RefCell<bool>,
-        add_body_was_called: RefCell<bool>,
-        remove_body_was_called: RefCell<bool>,
-        body_was_called: RefCell<bool>,
-        apply_force_was_called: RefCell<bool>,
-        set_simulated_timestep_was_called: RefCell<bool>,
-        is_body_passable: RefCell<bool>,
-        bodies_in_area_was_called: RefCell<bool>,
-    }
-
-    impl WorldMock {
-        pub(crate) fn new() -> Self {
-            Default::default()
-        }
-
-        pub(crate) fn expect_step(&mut self) {
-            self.expect_step = Some(());
-        }
-
-        pub(crate) fn expect_add_body_and_return(
-            &mut self,
-            body: PhysicalBody,
-            returned_value: BodyHandle,
-        ) {
-            self.expect_add_body_and_return = Some((body, returned_value));
-        }
-
-        pub(crate) fn expect_remove_body_and_return(
-            &mut self,
-            body_handle: BodyHandle,
-            returned_value: Option<PhysicalBody>,
-        ) {
-            self.expect_remove_body_and_return = Some((body_handle, returned_value));
-        }
-
-        pub(crate) fn expect_body_and_return(
-            &mut self,
-            handle: BodyHandle,
-            returned_value: Option<PhysicalBody>,
-        ) {
-            self.expect_body_and_return = Some((handle, returned_value));
-        }
-
-        pub(crate) fn expect_apply_force_and_return(
-            &mut self,
-            body_handle: BodyHandle,
-            force: Force,
-            returned_value: Option<()>,
-        ) {
-            self.expect_apply_force_and_return = Some((body_handle, force, returned_value));
-        }
-
-        pub(crate) fn expect_set_simulated_timestep(&mut self, timestep: f64) {
-            self.expect_set_simulated_timestep = Some(timestep);
-        }
-
-        pub(crate) fn expect_is_body_passable_and_return(
-            &mut self,
-            body_handle: BodyHandle,
-            return_value: bool,
-        ) {
-            self.expect_is_body_passable_and_return = Some((body_handle, return_value));
-        }
-
-        pub(crate) fn expect_bodies_in_area_and_return(
-            &mut self,
-            area: Aabb,
-            return_value: Vec<BodyHandle>,
-        ) {
-            self.expect_bodies_in_area_and_return = Some((area, return_value));
-        }
-    }
-
-    impl Drop for WorldMock {
-        fn drop(&mut self) {
-            if !panicking() {
-                if self.expect_step.is_some() {
-                    assert!(
-                        *self.step_was_called.borrow(),
-                        "step() was not called, but was expected"
-                    )
-                }
-                if self.expect_add_body_and_return.is_some() {
-                    assert!(
-                        *self.add_body_was_called.borrow(),
-                        "add_body() was not called, but was expected"
-                    )
-                }
-
-                if self.expect_body_and_return.is_some() {
-                    assert!(
-                        *self.body_was_called.borrow(),
-                        "body() was not called, but was expected"
-                    )
-                }
-
-                if self.expect_apply_force_and_return.is_some() {
-                    assert!(
-                        *self.apply_force_was_called.borrow(),
-                        "apply_force() was not called, but was expected"
-                    )
-                }
-
-                if self.expect_set_simulated_timestep.is_some() {
-                    assert!(
-                        *self.set_simulated_timestep_was_called.borrow(),
-                        "set_simulated_timestep() was not called, but was expected"
-                    )
-                }
-
-                if self.expect_remove_body_and_return.is_some() {
-                    assert!(
-                        *self.remove_body_was_called.borrow(),
-                        "remove_body() was not called, but was expected"
-                    )
-                }
-
-                if self.expect_is_body_passable_and_return.is_some() {
-                    assert!(
-                        *self.is_body_passable.borrow(),
-                        "is_body_passable() was not called, but was expected"
-                    );
-                }
-
-                if self.expect_bodies_in_area_and_return.is_some() {
-                    assert!(
-                        *self.bodies_in_area_was_called.borrow(),
-                        "bodies_in_area() was not called, but was expected"
-                    );
-                }
-            }
-        }
-    }
-
-    impl World for WorldMock {
-        fn step(&mut self) {
-            *self.step_was_called.borrow_mut() = true;
-            if self.expect_step.is_none() {
-                panic!("step() was called unexpectedly")
-            }
-        }
-
-        fn add_body(&mut self, body: PhysicalBody) -> BodyHandle {
-            *self.add_body_was_called.borrow_mut() = true;
-            if let Some((ref expected_body, ref return_value)) = self.expect_add_body_and_return {
-                if body == *expected_body {
-                    *return_value
-                } else {
-                    panic!(
-                        "add_body() was called with {:?}, expected {:?}",
-                        body, expected_body
-                    )
-                }
-            } else {
-                panic!("add_body() was called unexpectedly")
-            }
-        }
-
-        fn remove_body(&mut self, body_handle: BodyHandle) -> Option<PhysicalBody> {
-            *self.remove_body_was_called.borrow_mut() = true;
-            if let Some((ref expected_body_handle, ref return_value)) =
-                self.expect_remove_body_and_return
-            {
-                if body_handle == *expected_body_handle {
-                    return_value.clone()
-                } else {
-                    panic!(
-                        "remove_body() was called with {:?}, expected {:?}",
-                        body_handle, expected_body_handle
-                    )
-                }
-            } else {
-                panic!("remove_body() was called unexpectedly")
-            }
-        }
-
-        fn body(&self, handle: BodyHandle) -> Option<PhysicalBody> {
-            *self.body_was_called.borrow_mut() = true;
-            if let Some((ref expected_handle, ref return_value)) = self.expect_body_and_return {
-                if handle == *expected_handle {
-                    return_value.clone()
-                } else {
-                    panic!(
-                        "body() was called with {:?}, expected {:?}",
-                        handle, expected_handle
-                    )
-                }
-            } else {
-                panic!("body() was called unexpectedly")
-            }
-        }
-
-        fn apply_force(&mut self, body_handle: BodyHandle, force: Force) -> Option<()> {
-            *self.apply_force_was_called.borrow_mut() = true;
-            if let Some((ref expected_body_handle, ref expected_force, ref return_value)) =
-                self.expect_apply_force_and_return
-            {
-                if body_handle == *expected_body_handle && force == *expected_force {
-                    *return_value
-                } else {
-                    panic!(
-                        "apply_force() was called with {:?} and {:?}, expected {:?} and {:?}",
-                        body_handle, force, expected_body_handle, expected_force
-                    )
-                }
-            } else {
-                panic!("set_simulated_timestep() was called unexpectedly")
-            }
-        }
-
-        fn set_simulated_timestep(&mut self, timestep: f64) {
-            *self.set_simulated_timestep_was_called.borrow_mut() = true;
-            if let Some(expected_timestep) = self.expect_set_simulated_timestep {
-                if timestep != expected_timestep {
-                    panic!(
-                        "set_simulated_timestep() was called with {:?}, expected {:?}",
-                        timestep, expected_timestep
-                    )
-                }
-            } else {
-                panic!("set_simulated_timestep() was called unexpectedly")
-            }
-        }
-
-        fn is_body_passable(&self, body_handle: BodyHandle) -> bool {
-            *self.is_body_passable.borrow_mut() = true;
-            if let Some((expected_body_handle, return_value)) =
-                self.expect_is_body_passable_and_return
-            {
-                if expected_body_handle == body_handle {
-                    return_value
-                } else {
-                    panic!(
-                        "is_body_passable() was called with {:?}, expected {:?}",
-                        body_handle, expected_body_handle
-                    )
-                }
-            } else {
-                panic!("is_body_passable() was called unexpectedly")
-            }
-        }
-
-        fn bodies_in_area(&self, area: Aabb) -> Vec<BodyHandle> {
-            *self.bodies_in_area_was_called.borrow_mut() = true;
-
-            if let Some((expected_area, ref return_value)) = self.expect_bodies_in_area_and_return {
-                assert_eq!(
-                    expected_area, area,
-                    "bodies_in_area() was called with {:?}, expected {:?}",
-                    expected_area, area
-                );
-                return_value.clone()
-            } else {
-                panic!("bodies_in_area() was called unexpectedly")
-            }
-        }
     }
 }
