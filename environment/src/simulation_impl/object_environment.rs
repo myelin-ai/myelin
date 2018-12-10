@@ -31,6 +31,7 @@ mod test {
     use crate::object::*;
     use crate::object_builder::ObjectBuilder;
     use crate::SimulationMock;
+    use mockiato::partial_eq;
     use myelin_geometry::{Point, PolygonBuilder};
 
     fn object_description() -> ObjectDescription {
@@ -58,8 +59,10 @@ mod test {
             lower_right: Point { x: 20.0, y: 0.0 },
         };
 
-        let mut simulation = SimulationMock::default();
-        simulation.expect_objects_in_area_and_return(area, objects.clone());
+        let mut simulation = SimulationMock::new();
+        simulation
+            .expect_objects_in_area(partial_eq(area))
+            .returns(objects.clone());
         let object_environment = ObjectEnvironmentImpl::new(&simulation);
 
         assert_eq!(objects, object_environment.find_objects_in_area(area));
