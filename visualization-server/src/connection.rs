@@ -38,6 +38,7 @@ mod mock {
 
     #[derive(Debug, Default)]
     pub(crate) struct SocketMock {
+        #[allow(clippy::type_complexity)]
         expect_send_message_and_return: Mutex<Option<(Vec<u8>, Result<(), SocketErrorMock>)>>,
         send_message_was_called: AtomicBool,
     }

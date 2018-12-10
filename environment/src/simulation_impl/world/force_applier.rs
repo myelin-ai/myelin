@@ -172,8 +172,8 @@ mod tests {
         let body = physical_body();
         let force = Force {
             linear: Vector {
-                x: 100.00000000000001,
-                y: 100.00000000000001,
+                x: 100.000_000_000_000_01,
+                y: 100.000_000_000_000_01,
             },
             torque: Torque::default(),
         };
