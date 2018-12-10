@@ -185,10 +185,10 @@ mod tests {
         ObjectBuilder::default()
             .shape(
                 PolygonBuilder::default()
-                    .vertex(-10.0, -10.0)
-                    .vertex(10.0, -10.0)
-                    .vertex(10.0, 10.0)
-                    .vertex(-10.0, 10.0)
+                    .vertex(-20.0, -20.0)
+                    .vertex(20.0, -20.0)
+                    .vertex(20.0, 20.0)
+                    .vertex(-20.0, 20.0)
                     .build()
                     .unwrap(),
             )
