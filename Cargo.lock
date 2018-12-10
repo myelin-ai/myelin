@@ -517,7 +517,7 @@ dependencies = [
 [[package]]
 name = "mockiato"
 version = "0.1.0"
-source = "git+https://github.com/myelin-ai/mockiato#4e5e34b37b5a18594caed48446b88b1fe9be0f3e"
+source = "git+https://github.com/myelin-ai/mockiato#1bee0153e8b3a427d8b5d30977d116787df46281"
 dependencies = [
  "mockiato_codegen 0.1.0 (git+https://github.com/myelin-ai/mockiato)",
 ]
@@ -525,7 +525,7 @@ dependencies = [
 [[package]]
 name = "mockiato_codegen"
 version = "0.1.0"
-source = "git+https://github.com/myelin-ai/mockiato#4e5e34b37b5a18594caed48446b88b1fe9be0f3e"
+source = "git+https://github.com/myelin-ai/mockiato#1bee0153e8b3a427d8b5d30977d116787df46281"
 dependencies = [
  "heck 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "proc-macro2 0.4.20 (registry+https://github.com/rust-lang/crates.io-index)",
