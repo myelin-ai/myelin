@@ -82,7 +82,7 @@ mod tests {
     fn radians_value_returns_1_when_given_1() {
         let value = 1.0;
         let radians = Radians::try_new(value).unwrap();
-        assert_eq!(value, radians.value())
+        assert_nearly_eq!(value, radians.value())
     }
 
 }
