@@ -172,8 +172,8 @@ mod tests {
         let body = physical_body();
         let force = Force {
             linear: Vector {
-                x: 100.00000000000001,
-                y: 100.00000000000001,
+                x: 100.000_000_000_000_01,
+                y: 100.000_000_000_000_01,
             },
             torque: Torque::default(),
         };
@@ -190,8 +190,8 @@ mod tests {
         let body = physical_body();
         let force = Force {
             linear: Vector {
-                x: -50.00000000000001,
-                y: -50.00000000000001,
+                x: -50.000_000_000_000_01,
+                y: -50.000_000_000_000_01,
             },
             torque: Torque::default(),
         };
@@ -208,8 +208,8 @@ mod tests {
         let body = physical_body();
         let force = Force {
             linear: Vector {
-                x: -100.00000000000001,
-                y: -200.00000000000002,
+                x: -100.000_000_000_000_01,
+                y: -200.000_000_000_000_03,
             },
             torque: Torque::default(),
         };
@@ -226,8 +226,8 @@ mod tests {
         let body = physical_body();
         let force = Force {
             linear: Vector {
-                x: 50.00000000000001,
-                y: 100.00000000000001,
+                x: 50.000_000_000_000_01,
+                y: 100.000_000_000_000_01,
             },
             torque: Torque(1.5),
         };

@@ -82,6 +82,11 @@ pipeline {
             sh 'cargo clippy -- -Dwarnings'
           }
         }
+        stage('clippy tests') {
+          steps {
+            sh 'cargo clippy --tests -- -Dwarnings'
+          }
+        }
         stage('rustfmt') {
           steps {
             sh 'cargo fmt --all -- --check'

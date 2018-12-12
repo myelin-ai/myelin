@@ -101,10 +101,7 @@ mod test {
 
             let message = client.incoming_messages().next().unwrap().unwrap();
 
-            assert_eq!(
-                OwnedMessage::Binary(PAYLOAD.iter().map(|b| *b).collect()),
-                message
-            );
+            assert_eq!(OwnedMessage::Binary(PAYLOAD.to_vec()), message);
         });
 
         server_thread.join().unwrap();

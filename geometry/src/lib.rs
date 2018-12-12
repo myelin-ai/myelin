@@ -8,6 +8,10 @@
     clippy::unimplemented
 )]
 
+#[cfg_attr(test, macro_use)]
+#[cfg(test)]
+extern crate nearly_eq;
+
 #[macro_use]
 extern crate serde_derive;
 

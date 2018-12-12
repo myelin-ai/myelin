@@ -122,7 +122,7 @@ mod tests {
             id: Uuid::new_v4(),
             socket,
         };
-        let current_snapshot_fn = Arc::new(|| Snapshot::new());
+        let current_snapshot_fn = Arc::new(Snapshot::new);
         let _client = ClientHandler::new(
             interval,
             Box::new(sleeper),
@@ -159,7 +159,7 @@ mod tests {
             socket,
         };
 
-        let current_snapshot_fn = Arc::new(|| snapshot());
+        let current_snapshot_fn = Arc::new(snapshot);
         let mut client = ClientHandler::new(
             interval,
             Box::new(sleeper),
@@ -195,7 +195,7 @@ mod tests {
             socket,
         };
 
-        let current_snapshot_fn = Arc::new(|| snapshot());
+        let current_snapshot_fn = Arc::new(snapshot);
         let mut client = ClientHandler::new(
             interval,
             Box::new(sleeper),
@@ -234,7 +234,7 @@ mod tests {
             socket,
         };
 
-        let current_snapshot_fn = Arc::new(|| snapshot());
+        let current_snapshot_fn = Arc::new(snapshot);
         let mut client = ClientHandler::new(
             interval,
             Box::new(sleeper),
@@ -275,7 +275,7 @@ mod tests {
             socket,
         };
 
-        let current_snapshot_fn = Arc::new(|| snapshot());
+        let current_snapshot_fn = Arc::new(snapshot);
         let mut client = ClientHandler::new(
             interval,
             Box::new(sleeper),
