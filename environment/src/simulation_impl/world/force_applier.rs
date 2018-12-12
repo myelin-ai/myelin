@@ -209,7 +209,7 @@ mod tests {
         let force = Force {
             linear: Vector {
                 x: -100.000_000_000_000_01,
-                y: -200.000_000_000_000_02,
+                y: -200.000_000_000_000_03,
             },
             torque: Torque::default(),
         };
