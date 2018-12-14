@@ -14,8 +14,8 @@ pub(crate) struct CanvasView {
 }
 
 impl View for CanvasView {
-    fn draw_objects(&self, view_model: &ViewModel) {
-        for object in &view_model.objects {
+    fn draw_objects(&self, objects: &[Object]) {
+        for object in objects {
             self.draw_object(object);
         }
     }
