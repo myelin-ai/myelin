@@ -1,8 +1,3 @@
-#[derive(Debug, PartialEq, Clone)]
-pub struct ViewModel {
-    pub objects: Vec<Object>,
-}
-
 #[derive(Debug, PartialEq, Clone, PartialOrd)]
 pub struct Object {
     pub shape: Polygon,

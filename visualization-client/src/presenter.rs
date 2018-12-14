@@ -3,12 +3,11 @@ pub(crate) use self::global_polygon_translator::{
     GlobalPolygonTranslator, GlobalPolygonTranslatorImpl,
 };
 use crate::controller::Presenter;
-use crate::view_model::{self, ViewModel};
+use crate::view_model;
 use myelin_environment::object::*;
 use myelin_environment::Snapshot;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
 use std::borrow::Borrow;
-use std::cmp::Ordering;
 use std::error::Error;
 use std::fmt;
 
@@ -20,7 +19,7 @@ use mockiato::mockable;
 
 #[cfg_attr(test, mockable)]
 pub(crate) trait View: fmt::Debug {
-    fn draw_objects(&self, view_model: &ViewModel);
+    fn draw_objects(&self, objects: &[view_model::Object]);
     fn flush(&self);
 }
 
@@ -43,7 +42,7 @@ impl Presenter for CanvasPresenter {
         );
 
         self.view.flush();
-        self.view.draw_objects(&ViewModel { objects });
+        self.view.draw_objects(&objects);
 
         Ok(())
     }
@@ -53,7 +52,7 @@ fn map_objects(
     snapshot: &Snapshot,
     global_polygon_translator: &dyn GlobalPolygonTranslator,
 ) -> Vec<view_model::Object> {
-    let mut objects: Vec<_> = snapshot
+    snapshot
         .values()
         .map(|business_object| {
             let shape = global_polygon_translator.to_global_polygon(
@@ -66,17 +65,7 @@ fn map_objects(
 
             view_model::Object { shape, kind }
         })
-        .collect();
-
-    // The ordering of items in the iterator created by .values()
-    // is not guaranteed to always be the same.
-    objects.sort_unstable_by(|first_object, second_object| {
-        first_object
-            .partial_cmp(second_object)
-            .unwrap_or(Ordering::Equal)
-    });
-
-    objects
+        .collect()
 }
 
 fn map_kind(kind: Kind) -> view_model::Kind {
@@ -108,8 +97,8 @@ mod tests {
     use super::delta_applier::DeltaApplierError;
     use super::*;
     use crate::presenter::global_polygon_translator::GlobalPolygonTranslatorMock;
-    use crate::view_model::{self, ViewModel};
-    use mockiato::{partial_eq, partial_eq_owned};
+    use crate::view_model;
+    use mockiato::{partial_eq, partial_eq_owned, unordered_vec_eq};
     use myelin_geometry::*;
     use myelin_visualization_core::view_model_delta::ObjectDelta;
     use std::cell::RefCell;
@@ -215,11 +204,8 @@ mod tests {
 
     #[test]
     fn maps_to_empty_view_model() {
-        let expected_view_model = ViewModel {
-            objects: Vec::new(),
-        };
         let mut view_mock = ViewMock::new();
-        view_mock.expect_draw_objects(partial_eq_owned(expected_view_model));
+        view_mock.expect_draw_objects(unordered_vec_eq(vec![]));
         view_mock.expect_flush();
         let global_polygon_translator = GlobalPolygonTranslatorMock::new();
         let delta_applier_mock = DeltaApplierMock::new(
@@ -247,12 +233,10 @@ mod tests {
         let view_model_polygon_1 = view_model::Polygon {
             vertices: vec![view_model::Point { x: 1.0, y: 1.0 }],
         };
-        let expected_view_model_1 = ViewModel {
-            objects: vec![view_model::Object {
-                shape: view_model_polygon_1.clone(),
-                kind: view_model::Kind::Plant,
-            }],
-        };
+        let expected_view_model_1 = vec![view_model::Object {
+            shape: view_model_polygon_1.clone(),
+            kind: view_model::Kind::Plant,
+        }];
         let view_model_delta_1 = hashmap! {
             12 => ObjectDelta::Created(object_description_1.clone())
         };
@@ -261,25 +245,23 @@ mod tests {
         let view_model_polygon_2 = view_model::Polygon {
             vertices: vec![view_model::Point { x: 5.0, y: 5.0 }],
         };
-        let expected_view_model_2 = ViewModel {
-            objects: vec![
-                view_model::Object {
-                    shape: view_model_polygon_1.clone(),
-                    kind: view_model::Kind::Plant,
-                },
-                view_model::Object {
-                    shape: view_model_polygon_2.clone(),
-                    kind: view_model::Kind::Plant,
-                },
-            ],
-        };
+        let expected_view_model_2 = vec![
+            view_model::Object {
+                shape: view_model_polygon_1.clone(),
+                kind: view_model::Kind::Plant,
+            },
+            view_model::Object {
+                shape: view_model_polygon_2.clone(),
+                kind: view_model::Kind::Plant,
+            },
+        ];
         let view_model_delta_2 = hashmap! {
             45 => ObjectDelta::Created(object_description_2.clone())
         };
 
         let mut view_mock = ViewMock::new();
-        view_mock.expect_draw_objects(partial_eq_owned(expected_view_model_1));
-        view_mock.expect_draw_objects(partial_eq_owned(expected_view_model_2));
+        view_mock.expect_draw_objects(unordered_vec_eq(expected_view_model_1));
+        view_mock.expect_draw_objects(unordered_vec_eq(expected_view_model_2));
         view_mock.expect_flush().times(2);
 
         let mut global_polygon_translator = GlobalPolygonTranslatorMock::new();
