@@ -524,6 +524,7 @@ mod tests {
         let object_behavior = ObjectBehaviorMock::new();
 
         let expected_object_description = ObjectBuilder::default()
+            .name(String::from("Foo"))
             .location(expected_location.x, expected_location.y)
             .rotation(expected_rotation)
             .shape(expected_shape)
