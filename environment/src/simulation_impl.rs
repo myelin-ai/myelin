@@ -417,8 +417,8 @@ mod tests {
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
-            location: expected_location.clone(),
-            rotation: expected_rotation.clone(),
+            location: expected_location,
+            rotation: expected_rotation,
             mobility: expected_mobility.clone(),
             passable: expected_passable,
         };
@@ -454,8 +454,8 @@ mod tests {
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
-            location: expected_location.clone(),
-            rotation: expected_rotation.clone(),
+            location: expected_location,
+            rotation: expected_rotation,
             mobility: expected_mobility.clone(),
             passable: expected_passable,
         };
@@ -501,8 +501,8 @@ mod tests {
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
-            location: expected_location.clone(),
-            rotation: expected_rotation.clone(),
+            location: expected_location,
+            rotation: expected_rotation,
             mobility: expected_mobility.clone(),
             passable: expected_passable,
         };
@@ -558,8 +558,8 @@ mod tests {
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
-            location: expected_location.clone(),
-            rotation: expected_rotation.clone(),
+            location: expected_location,
+            rotation: expected_rotation,
             mobility: expected_mobility.clone(),
             passable: expected_passable,
         };
@@ -614,8 +614,8 @@ mod tests {
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
-            location: expected_location.clone(),
-            rotation: expected_rotation.clone(),
+            location: expected_location,
+            rotation: expected_rotation,
             mobility: expected_mobility.clone(),
             passable: expected_passable,
         };
@@ -668,8 +668,8 @@ mod tests {
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
-            location: expected_location.clone(),
-            rotation: expected_rotation.clone(),
+            location: expected_location,
+            rotation: expected_rotation,
             mobility: expected_mobility.clone(),
             passable: expected_passable,
         };
@@ -724,8 +724,8 @@ mod tests {
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
-            location: expected_location.clone(),
-            rotation: expected_rotation.clone(),
+            location: expected_location,
+            rotation: expected_rotation,
             mobility: expected_mobility.clone(),
             passable: expected_passable,
         };
@@ -786,8 +786,8 @@ mod tests {
 
         let expected_physical_body = PhysicalBody {
             shape: expected_shape.clone(),
-            location: expected_location.clone(),
-            rotation: expected_rotation.clone(),
+            location: expected_location,
+            rotation: expected_rotation,
             mobility: expected_mobility.clone(),
             passable: expected_passable,
         };

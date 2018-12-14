@@ -118,6 +118,7 @@ mod tests {
     use std::thread::panicking;
 
     struct DeltaApplierMock<'mock> {
+        #[allow(clippy::type_complexity)]
         expected_calls: RefCell<
             VecDeque<(
                 Box<dyn for<'a> Fn(&'a mut Snapshot) + 'mock>,
@@ -133,6 +134,7 @@ mod tests {
     }
 
     impl<'mock> DeltaApplierMock<'mock> {
+        #[allow(clippy::type_complexity)]
         fn new(
             expected_calls: VecDeque<(
                 Box<dyn for<'a> Fn(&'a mut Snapshot) + 'mock>,

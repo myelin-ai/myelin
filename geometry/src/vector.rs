@@ -190,7 +190,7 @@ mod tests {
         let b = Vector { x: -4.0, y: 10.0 };
         let expected_dot_product = 22.0;
         let dot_product = a.dot_product(b);
-        assert_eq!(expected_dot_product, dot_product);
+        assert_nearly_eq!(expected_dot_product, dot_product);
     }
 
     #[test]
@@ -199,7 +199,7 @@ mod tests {
         let b = Vector { x: -40.0, y: 10.0 };
         let expected_dot_product = -50.0;
         let dot_product = a.dot_product(b);
-        assert_eq!(expected_dot_product, dot_product);
+        assert_nearly_eq!(expected_dot_product, dot_product);
     }
 
     #[test]
@@ -208,7 +208,7 @@ mod tests {
         let b = Vector { x: 0.0, y: 0.0 };
         let expected_dot_product = 0.0;
         let dot_product = a.dot_product(b);
-        assert_eq!(expected_dot_product, dot_product);
+        assert_nearly_eq!(expected_dot_product, dot_product);
     }
 
     #[test]
@@ -217,7 +217,7 @@ mod tests {
         let b = Vector { x: 0.0, y: 0.0 };
         let expected_dot_product = 0.0;
         let dot_product = a.dot_product(b);
-        assert_eq!(expected_dot_product, dot_product);
+        assert_nearly_eq!(expected_dot_product, dot_product);
     }
 
     #[test]
@@ -226,7 +226,7 @@ mod tests {
         let b = Vector { x: -4.0, y: 10.0 };
         let expected_cross_product = 32.0;
         let cross_product = a.cross_product(b);
-        assert_eq!(expected_cross_product, cross_product);
+        assert_nearly_eq!(expected_cross_product, cross_product);
     }
 
     #[test]
@@ -235,7 +235,7 @@ mod tests {
         let b = Vector { x: 40.0, y: 10.0 };
         let expected_cross_product = -100.0;
         let cross_product = a.cross_product(b);
-        assert_eq!(expected_cross_product, cross_product);
+        assert_nearly_eq!(expected_cross_product, cross_product);
     }
 
     #[test]
@@ -244,7 +244,7 @@ mod tests {
         let b = Vector { x: 0.0, y: 0.0 };
         let expected_cross_product = 0.0;
         let cross_product = a.cross_product(b);
-        assert_eq!(expected_cross_product, cross_product);
+        assert_nearly_eq!(expected_cross_product, cross_product);
     }
 
     #[test]
@@ -253,6 +253,6 @@ mod tests {
         let b = Vector { x: 0.0, y: 0.0 };
         let expected_cross_product = 0.0;
         let cross_product = a.cross_product(b);
-        assert_eq!(expected_cross_product, cross_product);
+        assert_nearly_eq!(expected_cross_product, cross_product);
     }
 }

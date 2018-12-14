@@ -204,7 +204,7 @@ mod test {
     fn rotates_by_pi() {
         let polygon = polygon();
 
-        const FLOATING_POINT_INACCURACY: f64 = 0.000000000000002;
+        const FLOATING_POINT_INACCURACY: f64 = 0.000_000_000_000_002;
         assert_eq!(
             Polygon {
                 vertices: vec![
@@ -234,8 +234,8 @@ mod test {
     fn rotates_by_arbitrary_orientation() {
         let polygon = polygon();
 
-        const ROTATION_A: f64 = 8.488724885405782;
-        const ROTATION_B: f64 = 11.311125046603125;
+        const ROTATION_A: f64 = 8.488_724_885_405_782;
+        const ROTATION_B: f64 = 11.311_125_046_603_125;
 
         assert_eq!(
             Polygon {
@@ -272,20 +272,20 @@ mod test {
             Polygon {
                 vertices: vec![
                     Point {
-                        x: 38.48872488540578,
-                        y: 51.311125046603124
+                        x: 38.488_724_885_405_78,
+                        y: 51.311_125_046_603_124
                     },
                     Point {
-                        x: 18.688874953396876,
-                        y: 48.48872488540578
+                        x: 18.688_874_953_396_876,
+                        y: 48.488_724_885_405_78
                     },
                     Point {
-                        x: 21.51127511459422,
-                        y: 28.688874953396876
+                        x: 21.511_275_114_594_22,
+                        y: 28.688_874_953_396_876
                     },
                     Point {
-                        x: 41.311125046603124,
-                        y: 31.51127511459422
+                        x: 41.311_125_046_603_124,
+                        y: 31.511_275_114_594_22
                     },
                 ],
             },
