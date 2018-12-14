@@ -44,6 +44,7 @@ pub struct ObjectBuilderError {
 /// ```
 #[derive(Default, Debug)]
 pub struct ObjectBuilder {
+    name: Option<String>,
     shape: Option<Polygon>,
     location: Option<Point>,
     rotation: Option<Radians>,
@@ -53,6 +54,20 @@ pub struct ObjectBuilder {
 }
 
 impl ObjectBuilder {
+    /// # Examples
+    /// ```
+    /// use myelin_environment::object::ObjectBuilder;
+    ///
+    /// ObjectBuilder::default().name(String::from("Foo"));
+    /// ```
+    pub fn name<T>(&mut self, name: T) -> &mut Self
+    where
+        T: Into<Option<String>>,
+    {
+        self.name = name.into();
+        self
+    }
+
     /// # Examples
     /// ```
     /// use myelin_environment::object::ObjectBuilder;
@@ -167,6 +182,7 @@ impl ObjectBuilder {
         };
 
         let object = ObjectDescription {
+            name: self.name.clone(),
             shape: self.shape.take().ok_or_else(|| error.clone())?,
             rotation: self.rotation.take().unwrap_or_else(Default::default),
             location: self.location.take().ok_or_else(|| error.clone())?,
@@ -182,6 +198,7 @@ impl ObjectBuilder {
 impl From<ObjectDescription> for ObjectBuilder {
     fn from(object_description: ObjectDescription) -> Self {
         let ObjectDescription {
+            name,
             shape,
             location,
             rotation,
@@ -191,6 +208,7 @@ impl From<ObjectDescription> for ObjectBuilder {
         } = object_description;
 
         ObjectBuilder {
+            name,
             shape: Some(shape),
             location: Some(location),
             rotation: Some(rotation),
@@ -319,6 +337,7 @@ mod test {
             .build();
 
         let expected = ObjectDescription {
+            name: None,
             shape: PolygonBuilder::default()
                 .vertex(0.0, 0.0)
                 .vertex(0.0, 1.0)
@@ -356,6 +375,7 @@ mod test {
             .build();
 
         let expected = ObjectDescription {
+            name: None,
             shape: Polygon::try_new(vec![
                 Point { x: 0.0, y: 0.0 },
                 Point { x: 0.0, y: 1.0 },
@@ -368,6 +388,44 @@ mod test {
             kind: Kind::Terrain,
             mobility: Mobility::Immovable,
             passable: true,
+        };
+
+        assert_eq!(Ok(expected), result);
+    }
+
+    #[test]
+    fn test_object_builder_uses_name() {
+        let result = ObjectBuilder::default()
+            .name(String::from("Foo"))
+            .shape(
+                PolygonBuilder::default()
+                    .vertex(0.0, 0.0)
+                    .vertex(0.0, 1.0)
+                    .vertex(1.0, 0.0)
+                    .vertex(1.0, 1.0)
+                    .build()
+                    .unwrap(),
+            )
+            .rotation(Radians::try_new(0.0).unwrap())
+            .location(30.0, 40.0)
+            .kind(Kind::Terrain)
+            .mobility(Mobility::Immovable)
+            .build();
+
+        let expected = ObjectDescription {
+            name: String::from("Foo").into(),
+            shape: Polygon::try_new(vec![
+                Point { x: 0.0, y: 0.0 },
+                Point { x: 0.0, y: 1.0 },
+                Point { x: 1.0, y: 0.0 },
+                Point { x: 1.0, y: 1.0 },
+            ])
+            .unwrap(),
+            location: Point { x: 30.0, y: 40.0 },
+            rotation: Radians::try_new(0.0).unwrap(),
+            kind: Kind::Terrain,
+            mobility: Mobility::Immovable,
+            passable: false,
         };
 
         assert_eq!(Ok(expected), result);
@@ -407,6 +465,7 @@ mod test {
             .build();
 
         let expected = ObjectDescription {
+            name: None,
             location: Point { x: 30.0, y: 40.0 },
             rotation: Radians::try_new(1.1).unwrap(),
             mobility: Mobility::Movable(Vector { x: -12.0, y: 5.0 }),
@@ -427,6 +486,7 @@ mod test {
     #[test]
     fn can_create_object_builder_from_object_description() {
         let object_description = ObjectDescription {
+            name: None,
             location: Point { x: 30.0, y: 40.0 },
             rotation: Radians::try_new(1.1).unwrap(),
             mobility: Mobility::Movable(Vector { x: -12.0, y: 5.0 }),

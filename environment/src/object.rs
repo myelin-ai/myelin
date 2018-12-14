@@ -74,6 +74,9 @@ impl Clone for Action {
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[non_exhaustive]
 pub struct ObjectDescription {
+    /// The name of the object
+    pub name: Option<String>,
+
     /// The vertices defining the shape of the object
     /// in relation to its [`position`]
     ///
