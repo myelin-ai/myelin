@@ -15,7 +15,7 @@ pub struct Point {
     pub y: f64,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Ord)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Kind {
     Organism,
     Plant,
