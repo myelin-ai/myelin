@@ -57,7 +57,7 @@ mod tests {
     fn add_file_for_kind_works_with_one_name() {
         let mut builder = FileSystemNameProviderBuilder::default();
 
-        let path = Path::new("./test_data/object-names/plants.txt");
+        let path = Path::new("./test-data/object-names/plants.txt");
         builder
             .add_file_for_kind(path, Kind::Plant)
             .expect("Error while reading file");
