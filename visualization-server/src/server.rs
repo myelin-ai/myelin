@@ -55,7 +55,7 @@ where
 
     let mut name_provider_builder = FileSystemNameProviderBuilder::default();
     name_provider_builder
-        .add_file_for_kind(Path::new("./object_names/organisms.txt"), Kind::Organism)
+        .add_file_for_kind(Path::new("./object-names/organisms.txt"), Kind::Organism)
         .expect("Error while loading the file");
 
     let name_provider = name_provider_builder.build_randomized();
