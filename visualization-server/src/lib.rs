@@ -27,7 +27,6 @@ mod connection;
 mod connection_acceptor;
 mod constant;
 mod controller;
-mod name_provider;
 mod presenter;
 mod server;
 

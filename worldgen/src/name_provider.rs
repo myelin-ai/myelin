@@ -1,7 +1,6 @@
 use myelin_environment::object::Kind;
-use myelin_worldgen::generator::NameProvider;
+use crate::NameProvider;
 use std::collections::HashMap;
-use std::error::Error;
 use std::fs::read_to_string;
 use std::io;
 use rand::thread_rng;
@@ -12,24 +11,28 @@ struct FileSystemNameProvider {
     names: HashMap<Kind, Vec<String>>,
 }
 
-#[derive(Default)]
+/// Provides names read from files
+#[derive(Default, Debug)]
 pub struct FileSystemNameProviderBuilder {
     names: HashMap<Kind, Vec<String>>,
 }
 
 impl FileSystemNameProviderBuilder {
-    fn add_file_for_kind(&mut self, path: &Path, kind: Kind) -> io::Result<()> {
+    /// Add names from a file for a certain kind of object
+    pub fn add_file_for_kind(&mut self, path: &Path, kind: Kind) -> io::Result<()> {
         let contents = read_to_string(&path)?;
         let new_names = contents.lines().map(String::from);
         self.names.entry(kind).or_default().extend(new_names);
         Ok(())
     }
 
-    fn build(self) -> Box<dyn NameProvider> {
+    /// Build
+    pub fn build(self) -> Box<dyn NameProvider> {
         Box::new(FileSystemNameProvider { names: self.names })
     }
 
-    fn build_randomized(mut self) -> Box<dyn NameProvider> {
+    /// Build, but shuffle the names beforehand
+    pub fn build_randomized(mut self) -> Box<dyn NameProvider> {
         let mut rng = thread_rng();
         self.names.values_mut().map(|e| e.shuffle(&mut rng));
         self.build()
@@ -50,7 +53,7 @@ mod tests {
     fn add_file_for_kind_works_with_one_name() {
         let mut builder = FileSystemNameProviderBuilder::default();
 
-        let path = Path::new("./tests/object_names/plants.txt");
+        let path = Path::new("./test_data/object_names/plants.txt");
         builder.add_file_for_kind(path, Kind::Plant).expect("Error while reading file");
 
         let mut name_provider = builder.build();

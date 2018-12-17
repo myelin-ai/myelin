@@ -24,7 +24,6 @@ websocket = "0.20.3"
 spmc = "0.2"
 nameof = "0.1"
 uuid = { version = "0.7", features = ["v4"] }
-rand = "0.6.1"
 
 [dev-dependencies]
 maplit = "1.0"

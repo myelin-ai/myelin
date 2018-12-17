@@ -5,7 +5,7 @@ use crate::constant::*;
 use crate::controller::{ConnectionAcceptor, Controller, ControllerImpl};
 use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
-use myelin_environment::object::ObjectBehavior;
+use myelin_environment::object::{ObjectBehavior, Kind};
 use myelin_environment::simulation_impl::world::{
     IgnoringCollisionFilterImpl, NphysicsRotationTranslatorImpl, NphysicsWorld,
     SingleTimeForceApplierImpl,
@@ -21,6 +21,8 @@ use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::Duration;
 use uuid::Uuid;
+use myelin_worldgen::FileSystemNameProviderBuilder;
+use std::path::Path;
 
 /// Starts the simulation and a websocket server, that broadcasts
 /// `ViewModel`s on each step to all clients.
@@ -51,12 +53,18 @@ where
     let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
     let water_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
 
-    let worldgen = HardcodedGenerator::new(
+    let mut name_provider_builder = FileSystemNameProviderBuilder::default();
+    name_provider_builder.add_file_for_kind(Path::new("./object_names/organisms.txt"), Kind::Organism).expect("Error while loading the file");
+    
+    let name_provider = name_provider_builder.build_randomized();
+
+    let mut worldgen = HardcodedGenerator::new(
         simulation_factory,
         plant_factory,
         organism_factory,
         terrain_factory,
         water_factory,
+        name_provider,
     );
 
     let conection_acceptor_factory_fn = Arc::new(move |current_snapshot_fn| {

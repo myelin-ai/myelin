@@ -617,7 +617,6 @@ dependencies = [
  "myelin-visualization-core 0.1.0",
  "myelin-worldgen 0.1.0",
  "nameof 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "rand 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.80 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.32 (registry+https://github.com/rust-lang/crates.io-index)",
  "simple_logger 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -635,6 +634,7 @@ dependencies = [
  "myelin-geometry 0.1.0",
  "myelin-object-behavior 0.1.0",
  "nameof 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

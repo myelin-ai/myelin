@@ -16,9 +16,11 @@
 extern crate nameof;
 
 pub use self::generator::*;
+pub use self::name_provider::*;
 use myelin_environment::Simulation;
 
-pub mod generator;
+mod name_provider;
+mod generator;
 
 /// API for [`World`] generation
 ///
@@ -28,5 +30,5 @@ pub trait WorldGenerator {
     ///
     /// [`World`]: ../myelin_environment/world/trait.World.html
     /// [`Objects`]: ../myelin_environment/object/struct.Body.html
-    fn generate(&self) -> Box<dyn Simulation>;
+    fn generate(&mut self) -> Box<dyn Simulation>;
 }

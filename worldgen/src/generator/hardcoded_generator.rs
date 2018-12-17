@@ -6,6 +6,7 @@ use myelin_environment::Simulation;
 use myelin_geometry::*;
 use std::f64::consts::FRAC_PI_2;
 use std::fmt;
+use crate::NameProvider;
 
 /// Simulation generation algorithm that creates a fixed simulation
 /// inhabited by two forests, a large central lake and
@@ -16,6 +17,7 @@ pub struct HardcodedGenerator {
     organism_factory: OrganismFactory,
     terrain_factory: TerrainFactory,
     water_factory: WaterFactory,
+    name_provider: Box<dyn NameProvider>,
 }
 
 pub type SimulationFactory = Box<dyn Fn() -> Box<dyn Simulation>>;
@@ -80,6 +82,7 @@ impl HardcodedGenerator {
         organism_factory: OrganismFactory,
         terrain_factory: TerrainFactory,
         water_factory: WaterFactory,
+        name_provider: Box<dyn NameProvider>,
     ) -> Self {
         Self {
             simulation_factory,
@@ -87,6 +90,7 @@ impl HardcodedGenerator {
             organism_factory,
             terrain_factory,
             water_factory,
+            name_provider,
         }
     }
 
@@ -159,12 +163,12 @@ impl HardcodedGenerator {
         }
     }
 
-    fn populate_with_organisms(&self, simulation: &mut dyn Simulation) {
-        simulation.add_object(build_organism(300.0, 800.0), (self.organism_factory)());
-        simulation.add_object(build_organism(400.0, 800.0), (self.organism_factory)());
-        simulation.add_object(build_organism(500.0, 800.0), (self.organism_factory)());
-        simulation.add_object(build_organism(600.0, 800.0), (self.organism_factory)());
-        simulation.add_object(build_organism(700.0, 800.0), (self.organism_factory)());
+    fn populate_with_organisms(&mut self, simulation: &mut dyn Simulation) {
+        simulation.add_object(build_organism(300.0, 800.0, self.name_provider.get_name(Kind::Organism)), (self.organism_factory)());
+        simulation.add_object(build_organism(400.0, 800.0, self.name_provider.get_name(Kind::Organism)), (self.organism_factory)());
+        simulation.add_object(build_organism(500.0, 800.0, self.name_provider.get_name(Kind::Organism)), (self.organism_factory)());
+        simulation.add_object(build_organism(600.0, 800.0, self.name_provider.get_name(Kind::Organism)), (self.organism_factory)());
+        simulation.add_object(build_organism(700.0, 800.0, self.name_provider.get_name(Kind::Organism)), (self.organism_factory)());
     }
 }
 fn build_terrain(location: (f64, f64), width: f64, length: f64) -> ObjectDescription {
@@ -206,8 +210,9 @@ fn build_plant(half_of_width_and_height: f64, x: f64, y: f64) -> ObjectDescripti
         .expect("Failed to build plant")
 }
 
-fn build_organism(x: f64, y: f64) -> ObjectDescription {
+fn build_organism(x: f64, y: f64, name: Option<String>) -> ObjectDescription {
     ObjectBuilder::default()
+        .name(name)
         .shape(
             PolygonBuilder::default()
                 .vertex(25.0, 0.0)
@@ -226,7 +231,7 @@ fn build_organism(x: f64, y: f64) -> ObjectDescription {
 }
 
 impl WorldGenerator for HardcodedGenerator {
-    fn generate(&self) -> Box<dyn Simulation> {
+    fn generate(&mut self) -> Box<dyn Simulation> {
         let mut simulation = (self.simulation_factory)();
         self.populate_with_terrain(&mut *simulation);
         self.populate_with_water(&mut *simulation);
