@@ -34,7 +34,11 @@ impl FileSystemNameProviderBuilder {
     /// Build, but shuffle the names beforehand
     pub fn build_randomized(mut self) -> Box<dyn NameProvider> {
         let mut rng = thread_rng();
-        self.names.values_mut().map(|e| e.shuffle(&mut rng));
+
+        for name_list in self.names.values_mut() {
+            name_list.shuffle(&mut rng);
+        }
+
         self.build()
     }
 }

@@ -250,9 +250,10 @@ impl fmt::Debug for HardcodedGenerator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockiato::{any, ExpectedCalls};
+    use mockiato::{any, ExpectedCalls, partial_eq};
     use myelin_environment::object::ObjectBehaviorMock;
     use myelin_environment::SimulationMock;
+    use crate::NameProviderMock;
 
     #[test]
     fn generates_simulation() {
@@ -270,12 +271,16 @@ mod tests {
         let terrain_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
         let water_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
 
-        let generator = HardcodedGenerator::new(
+        let mut name_provider = box NameProviderMock::new();
+        name_provider.expect_get_name(partial_eq(Kind::Organism)).returns(None).times(5);
+
+        let mut generator = HardcodedGenerator::new(
             simulation_factory,
             plant_factory,
             organism_factory,
             terrain_factory,
             water_factory,
+            name_provider,
         );
 
         let _simulation = generator.generate();
