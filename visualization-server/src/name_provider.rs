@@ -1,15 +1,18 @@
-use std::fs::read_to_string;
-use std::path::Path;
 use myelin_environment::object::Kind;
 use myelin_worldgen::generator::NameProvider;
 use std::collections::HashMap;
 use std::error::Error;
+use std::fs::read_to_string;
 use std::io;
+use rand::thread_rng;
+use std::path::Path;
+use rand::seq::SliceRandom;
 
 struct FileSystemNameProvider {
     names: HashMap<Kind, Vec<String>>,
 }
 
+#[derive(Default)]
 pub struct FileSystemNameProviderBuilder {
     names: HashMap<Kind, Vec<String>>,
 }
@@ -26,8 +29,10 @@ impl FileSystemNameProviderBuilder {
         Box::new(FileSystemNameProvider { names: self.names })
     }
 
-    fn build_randomized(self) -> Box<dyn NameProvider> {
-        unimplemented!()
+    fn build_randomized(mut self) -> Box<dyn NameProvider> {
+        let mut rng = thread_rng();
+        self.names.values_mut().map(|e| e.shuffle(&mut rng));
+        self.build()
     }
 }
 
