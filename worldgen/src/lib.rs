@@ -18,7 +18,7 @@ extern crate nameof;
 pub use self::generator::*;
 use myelin_environment::Simulation;
 
-mod generator;
+pub mod generator;
 
 /// API for [`World`] generation
 ///

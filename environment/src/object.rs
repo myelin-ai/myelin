@@ -118,7 +118,7 @@ pub enum Mobility {
 
 /// The part of an object that is responsible for custom
 /// behavior and interactions
-#[derive(Debug, Eq, PartialEq, Clone, Copy, Serialize, Deserialize)]
+#[derive(Hash, Debug, Eq, PartialEq, Clone, Copy, Serialize, Deserialize)]
 pub enum Kind {
     /// An intelligent organism featuring a neural network
     Organism,
