@@ -1,12 +1,12 @@
 //! A generator for a hardcoded simulation
 
+use crate::NameProvider;
 use crate::WorldGenerator;
 use myelin_environment::object::*;
 use myelin_environment::Simulation;
 use myelin_geometry::*;
 use std::f64::consts::FRAC_PI_2;
 use std::fmt;
-use crate::NameProvider;
 
 /// Simulation generation algorithm that creates a fixed simulation
 /// inhabited by two forests, a large central lake and
@@ -43,9 +43,9 @@ impl HardcodedGenerator {
     /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
     /// use myelin_environment::Simulation;
     /// use myelin_object_behavior::Static;
-    /// use myelin_worldgen::{HardcodedGenerator, WorldGenerator, FileSystemNameProviderBuilder};
-    /// use std::sync::{Arc, RwLock};
+    /// use myelin_worldgen::{FileSystemNameProviderBuilder, HardcodedGenerator, WorldGenerator};
     /// use std::path::Path;
+    /// use std::sync::{Arc, RwLock};
     ///
     /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
     ///     let rotation_translator = NphysicsRotationTranslatorImpl::default();
@@ -69,10 +69,15 @@ impl HardcodedGenerator {
     /// let water_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
     ///
     /// let mut name_provider_builder = FileSystemNameProviderBuilder::default();
-    /// name_provider_builder.add_file_for_kind(Path::new("../visualization-server/object_names/organisms.txt"), Kind::Organism).expect("Error while loading the file");
-    /// 
+    /// name_provider_builder
+    ///     .add_file_for_kind(
+    ///         Path::new("../visualization-server/object_names/organisms.txt"),
+    ///         Kind::Organism,
+    ///     )
+    ///     .expect("Error while loading the file");
+    ///
     /// let name_provider = name_provider_builder.build_randomized();
-    /// 
+    ///
     /// let mut worldgen = HardcodedGenerator::new(
     ///     simulation_factory,
     ///     plant_factory,
@@ -171,11 +176,26 @@ impl HardcodedGenerator {
     }
 
     fn populate_with_organisms(&mut self, simulation: &mut dyn Simulation) {
-        simulation.add_object(build_organism(300.0, 800.0, self.name_provider.get_name(Kind::Organism)), (self.organism_factory)());
-        simulation.add_object(build_organism(400.0, 800.0, self.name_provider.get_name(Kind::Organism)), (self.organism_factory)());
-        simulation.add_object(build_organism(500.0, 800.0, self.name_provider.get_name(Kind::Organism)), (self.organism_factory)());
-        simulation.add_object(build_organism(600.0, 800.0, self.name_provider.get_name(Kind::Organism)), (self.organism_factory)());
-        simulation.add_object(build_organism(700.0, 800.0, self.name_provider.get_name(Kind::Organism)), (self.organism_factory)());
+        simulation.add_object(
+            build_organism(300.0, 800.0, self.name_provider.get_name(Kind::Organism)),
+            (self.organism_factory)(),
+        );
+        simulation.add_object(
+            build_organism(400.0, 800.0, self.name_provider.get_name(Kind::Organism)),
+            (self.organism_factory)(),
+        );
+        simulation.add_object(
+            build_organism(500.0, 800.0, self.name_provider.get_name(Kind::Organism)),
+            (self.organism_factory)(),
+        );
+        simulation.add_object(
+            build_organism(600.0, 800.0, self.name_provider.get_name(Kind::Organism)),
+            (self.organism_factory)(),
+        );
+        simulation.add_object(
+            build_organism(700.0, 800.0, self.name_provider.get_name(Kind::Organism)),
+            (self.organism_factory)(),
+        );
     }
 }
 fn build_terrain(location: (f64, f64), width: f64, length: f64) -> ObjectDescription {
@@ -257,10 +277,10 @@ impl fmt::Debug for HardcodedGenerator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockiato::{any, ExpectedCalls, partial_eq};
+    use crate::NameProviderMock;
+    use mockiato::{any, partial_eq, ExpectedCalls};
     use myelin_environment::object::ObjectBehaviorMock;
     use myelin_environment::SimulationMock;
-    use crate::NameProviderMock;
 
     #[test]
     fn generates_simulation() {
@@ -279,7 +299,10 @@ mod tests {
         let water_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
 
         let mut name_provider = box NameProviderMock::new();
-        name_provider.expect_get_name(partial_eq(Kind::Organism)).returns(None).times(5);
+        name_provider
+            .expect_get_name(partial_eq(Kind::Organism))
+            .returns(None)
+            .times(5);
 
         let mut generator = HardcodedGenerator::new(
             simulation_factory,

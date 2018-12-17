@@ -19,8 +19,8 @@ pub use self::generator::*;
 pub use self::name_provider::*;
 use myelin_environment::Simulation;
 
-mod name_provider;
 mod generator;
+mod name_provider;
 
 /// API for [`World`] generation
 ///

@@ -1,11 +1,11 @@
-use myelin_environment::object::Kind;
 use crate::NameProvider;
+use myelin_environment::object::Kind;
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 use std::collections::HashMap;
 use std::fs::read_to_string;
 use std::io;
-use rand::thread_rng;
 use std::path::Path;
-use rand::seq::SliceRandom;
 
 struct FileSystemNameProvider {
     names: HashMap<Kind, Vec<String>>,
@@ -58,14 +58,19 @@ mod tests {
         let mut builder = FileSystemNameProviderBuilder::default();
 
         let path = Path::new("./test_data/object_names/plants.txt");
-        builder.add_file_for_kind(path, Kind::Plant).expect("Error while reading file");
+        builder
+            .add_file_for_kind(path, Kind::Plant)
+            .expect("Error while reading file");
 
         let mut name_provider = builder.build();
 
         assert_eq!(None, name_provider.get_name(Kind::Organism));
         assert_eq!(None, name_provider.get_name(Kind::Terrain));
         assert_eq!(None, name_provider.get_name(Kind::Water));
-        assert_eq!(Some(String::from("Malus domestica")), name_provider.get_name(Kind::Plant));
+        assert_eq!(
+            Some(String::from("Malus domestica")),
+            name_provider.get_name(Kind::Plant)
+        );
         assert_eq!(None, name_provider.get_name(Kind::Plant));
     }
 }

@@ -5,7 +5,7 @@ use crate::constant::*;
 use crate::controller::{ConnectionAcceptor, Controller, ControllerImpl};
 use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
-use myelin_environment::object::{ObjectBehavior, Kind};
+use myelin_environment::object::{Kind, ObjectBehavior};
 use myelin_environment::simulation_impl::world::{
     IgnoringCollisionFilterImpl, NphysicsRotationTranslatorImpl, NphysicsWorld,
     SingleTimeForceApplierImpl,
@@ -15,14 +15,14 @@ use myelin_environment::Simulation;
 use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
 use myelin_object_behavior::Static;
 use myelin_visualization_core::serialization::BincodeSerializer;
+use myelin_worldgen::FileSystemNameProviderBuilder;
 use myelin_worldgen::{HardcodedGenerator, WorldGenerator};
 use std::net::SocketAddr;
+use std::path::Path;
 use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::Duration;
 use uuid::Uuid;
-use myelin_worldgen::FileSystemNameProviderBuilder;
-use std::path::Path;
 
 /// Starts the simulation and a websocket server, that broadcasts
 /// `ViewModel`s on each step to all clients.
@@ -54,8 +54,10 @@ where
     let water_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
 
     let mut name_provider_builder = FileSystemNameProviderBuilder::default();
-    name_provider_builder.add_file_for_kind(Path::new("./object_names/organisms.txt"), Kind::Organism).expect("Error while loading the file");
-    
+    name_provider_builder
+        .add_file_for_kind(Path::new("./object_names/organisms.txt"), Kind::Organism)
+        .expect("Error while loading the file");
+
     let name_provider = name_provider_builder.build_randomized();
 
     let mut worldgen = HardcodedGenerator::new(
