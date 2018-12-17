@@ -43,8 +43,9 @@ impl HardcodedGenerator {
     /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
     /// use myelin_environment::Simulation;
     /// use myelin_object_behavior::Static;
-    /// use myelin_worldgen::{HardcodedGenerator, WorldGenerator};
+    /// use myelin_worldgen::{HardcodedGenerator, WorldGenerator, FileSystemNameProviderBuilder};
     /// use std::sync::{Arc, RwLock};
+    /// use std::path::Path;
     ///
     /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
     ///     let rotation_translator = NphysicsRotationTranslatorImpl::default();
@@ -67,12 +68,18 @@ impl HardcodedGenerator {
     /// let terrain_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
     /// let water_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
     ///
-    /// let worldgen = HardcodedGenerator::new(
+    /// let mut name_provider_builder = FileSystemNameProviderBuilder::default();
+    /// name_provider_builder.add_file_for_kind(Path::new("../visualization-server/object_names/organisms.txt"), Kind::Organism).expect("Error while loading the file");
+    /// 
+    /// let name_provider = name_provider_builder.build_randomized();
+    /// 
+    /// let mut worldgen = HardcodedGenerator::new(
     ///     simulation_factory,
     ///     plant_factory,
     ///     organism_factory,
     ///     terrain_factory,
     ///     water_factory,
+    ///     name_provider,
     /// );
     /// let generated_simulation = worldgen.generate();
     /// ```
