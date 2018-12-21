@@ -173,26 +173,24 @@ impl HardcodedGenerator {
     }
 
     fn populate_with_organisms(&mut self, simulation: &mut dyn Simulation) {
-        simulation.add_object(
-            build_organism(300.0, 800.0, self.name_provider.get_name(Kind::Organism)),
-            (self.organism_factory)(),
-        );
-        simulation.add_object(
-            build_organism(400.0, 800.0, self.name_provider.get_name(Kind::Organism)),
-            (self.organism_factory)(),
-        );
-        simulation.add_object(
-            build_organism(500.0, 800.0, self.name_provider.get_name(Kind::Organism)),
-            (self.organism_factory)(),
-        );
-        simulation.add_object(
-            build_organism(600.0, 800.0, self.name_provider.get_name(Kind::Organism)),
-            (self.organism_factory)(),
-        );
-        simulation.add_object(
-            build_organism(700.0, 800.0, self.name_provider.get_name(Kind::Organism)),
-            (self.organism_factory)(),
-        );
+        let coordinates = [
+            (300.0, 800.0),
+            (400.0, 800.0),
+            (500.0, 800.0),
+            (600.0, 800.0),
+            (700.0, 800.0),
+        ];
+
+        for coordinate in coordinates.iter() {
+            simulation.add_object(
+                build_organism(
+                    coordinate.0,
+                    coordinate.1,
+                    self.name_provider.get_name(Kind::Organism),
+                ),
+                (self.organism_factory)(),
+            );
+        }
     }
 }
 fn build_terrain(location: (f64, f64), width: f64, length: f64) -> ObjectDescription {
