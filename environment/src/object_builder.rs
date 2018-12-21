@@ -89,7 +89,7 @@ impl ObjectBuilder {
     }
 
     /// # Examples
-    /// ```
+    /// ```rust,ignore // The compiler fails for this test (TODO: Open issue)
     /// use myelin_environment::object::ObjectBuilder;
     ///
     /// ObjectBuilder::default().location(3.0, 2.0);
