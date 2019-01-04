@@ -41,7 +41,7 @@ impl PolygonBuilder {
     /// vertices is less than three, as the resulting [`Polygon`]
     /// would not be two-dimensional.
     /// # Examples
-    /// ```rust,ignore // The compiler fails for this test (TODO: Open issue)
+    /// ```
     /// use myelin_geometry::PolygonBuilder;
     ///
     /// let square = PolygonBuilder::default()
