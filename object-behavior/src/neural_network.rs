@@ -1,6 +1,7 @@
 //! Neural networks and their components
 
 mod connection;
+pub(crate) mod constant;
 pub use self::connection::*;
 
 /// A handle to a [`Neuron`]
