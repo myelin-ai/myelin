@@ -39,7 +39,7 @@ pub trait NeuralNetwork: Debug {
     );
 
     /// Returns the last calculated state of the neuron referenced by `handle`
-    fn membrane_potential_of_neuron(&self, neuron: Handle) -> Result<MembranePotential>;
+    fn membrane_potential_of_neuron(&self, neuron: Handle) -> Result<Option<MembranePotential>>;
 
     /// Add a new unconnected sensor to the network
     fn push_sensor(&mut self) -> Handle;

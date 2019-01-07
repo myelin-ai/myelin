@@ -12,7 +12,7 @@ use std::collections::HashMap;
 #[derive(Debug, Default)]
 pub struct SpikingNeuralNetwork {
     neurons: Slab<SpikingNeuron>,
-    last_state: HashMap<Handle, MembranePotential>,
+    last_state: HashMap<Handle, Option<MembranePotential>>,
     connections: HashMap<Handle, Vec<(Handle, Weight)>>,
     sensors: Vec<Handle>,
 }
@@ -27,7 +27,7 @@ impl NeuralNetwork for SpikingNeuralNetwork {
     }
 
     /// Returns the last calculated state of the neuron referenced by `handle`
-    fn membrane_potential_of_neuron(&self, neuron: Handle) -> Result<MembranePotential> {
+    fn membrane_potential_of_neuron(&self, neuron: Handle) -> Result<Option<MembranePotential>> {
         self.last_state.get(&neuron).map(|&state| state).ok_or(())
     }
 
@@ -40,10 +40,7 @@ impl NeuralNetwork for SpikingNeuralNetwork {
 
     /// Add a new unconnected neuron to the network
     fn push_neuron(&mut self) -> Handle {
-        let handle = Handle(self.neurons.insert(SpikingNeuron::default()));
-        self.last_state
-            .insert(handle, constant::RESTING_POTENTIAL);
-        handle
+        Handle(self.neurons.insert(SpikingNeuron::default()))
     }
 
     /// Add a new connection between two neurons.
@@ -108,23 +105,23 @@ mod tests {
     }
 
     #[test]
-    fn new_neuron_is_at_resting_potential() {
+    fn new_neuron_emits_no_potential() {
         let mut neural_network = SpikingNeuralNetwork::default();
         let neuron_handle = neural_network.push_neuron();
         let membrane_potential = neural_network
             .membrane_potential_of_neuron(neuron_handle)
             .unwrap();
-        assert_eq!(constant::RESTING_POTENTIAL, membrane_potential);
+        assert!(membrane_potential.is_none());
     }
 
     #[test]
-    fn new_sensor_is_at_resting_potential() {
+    fn new_sensor_emits_no_potential() {
         let mut neural_network = SpikingNeuralNetwork::default();
         let sensor_handle = neural_network.push_sensor();
         let membrane_potential = neural_network
             .membrane_potential_of_neuron(sensor_handle)
             .unwrap();
-        assert_eq!(constant::RESTING_POTENTIAL, membrane_potential);
+        assert!(membrane_potential.is_none());
     }
 
     #[test]
@@ -203,7 +200,7 @@ mod tests {
     }
 
     #[test]
-    fn step_leaves_unconnected_neurons_at_resting_potential() {
+    fn step_on_unconnected_neurons_emits_no_potential() {
         let mut neural_network = SpikingNeuralNetwork::default();
         let sensor_handle = neural_network.push_sensor();
         let neuron_handle = neural_network.push_neuron();
@@ -219,7 +216,7 @@ mod tests {
             .membrane_potential_of_neuron(sensor_handle)
             .unwrap();
 
-        assert_eq!(constant::RESTING_POTENTIAL, neuron_membrane_potential);
-        assert_eq!(constant::RESTING_POTENTIAL, sensor_membrane_potential);
+        assert!(neuron_membrane_potential.is_none());
+        assert!(sensor_membrane_potential.is_none());
     }
 }
