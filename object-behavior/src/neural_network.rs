@@ -25,6 +25,9 @@ pub struct TimeInMilliseconds(pub f64);
 #[derive(Debug)]
 pub struct MembranePotential(pub f64);
 
+/// The result type used when working with handles
+pub type Result<T> = std::result::Result<T, ()>;
+
 /// A neural network that supports construction from multiple neurons and arbitrary connections between them
 #[cfg_attr(test, mockable)]
 pub trait NeuralNetwork: Debug {
@@ -36,7 +39,7 @@ pub trait NeuralNetwork: Debug {
     );
 
     /// Returns the last calculated state of the neuron referenced by `handle`
-    fn membrane_potential_of_neuron(&self, neuron: Handle) -> Option<MembranePotential>;
+    fn membrane_potential_of_neuron(&self, neuron: Handle) -> Result<MembranePotential>;
 
     /// Add a new unconnected sensor to the network
     fn push_sensor(&mut self) -> Handle;
@@ -47,5 +50,5 @@ pub trait NeuralNetwork: Debug {
     /// Add a new connection between two neurons.
     /// # Errors
     /// Returns `Err` if an involved handle is invalid
-    fn add_connection(&mut self, connection: Connection) -> Result<(), ()>;
+    fn add_connection(&mut self, connection: Connection) -> Result<()>;
 }
