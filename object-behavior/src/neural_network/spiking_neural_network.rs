@@ -112,7 +112,7 @@ mod tests {
         let membrane_potential = neural_network
             .membrane_potential_of_neuron(neuron_handle)
             .unwrap();
-        assert_eq!(membrane_potential.0, constant::RESTING_POTENTIAL);
+        assert_eq!(constant::RESTING_POTENTIAL, membrane_potential.0);
     }
 
     #[test]
@@ -122,7 +122,7 @@ mod tests {
         let membrane_potential = neural_network
             .membrane_potential_of_neuron(sensor_handle)
             .unwrap();
-        assert_eq!(membrane_potential.0, constant::RESTING_POTENTIAL);
+        assert_eq!(constant::RESTING_POTENTIAL, membrane_potential.0);
     }
 
     #[test]
