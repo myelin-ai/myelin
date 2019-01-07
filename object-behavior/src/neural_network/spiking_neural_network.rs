@@ -63,9 +63,9 @@ mod tests {
 
     #[test]
     fn invalid_handle_has_no_membrane_potential() {
-        let invalid_handle = Handle(1337);
         let mut neural_network = SpikingNeuralNetwork::default();
-        let _valid_handle = neural_network.push_neuron();
+        let valid_handle = neural_network.push_neuron();
+        let invalid_handle = Handle(valid_handle.0 + 1);
         let result = neural_network.membrane_potential_of_neuron(invalid_handle);
         assert!(result.is_err());
     }
@@ -96,5 +96,45 @@ mod tests {
             .membrane_potential_of_neuron(sensor_handle)
             .unwrap();
         assert_eq!(membrane_potential.0, constant::RESTING_POTENTIAL);
+    }
+
+    #[test]
+    fn returns_err_when_adding_connection_on_empty_network() {
+        let mut neural_network = SpikingNeuralNetwork::default();
+        let connection = Connection {
+            from: Handle(0),
+            to: Handle(1),
+            weight: Weight(1.0),
+        };
+        let result = neural_network.add_connection(connection);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn returns_err_when_adding_connection_with_invalid_handles() {
+        let mut neural_network = SpikingNeuralNetwork::default();
+        let sensor_handle = SpikingNeuralNetwork.push_sensor();
+        let neuron_handle = SpikingNeuralNetwork.push_neuron();
+        let connection = Connection {
+            from: Handle(sensor_handle.0 + 1),
+            to: Handle(neuron_handle.0 + 1),
+            weight: Weight(1.0),
+        };
+        let result = neural_network.add_connection(connection);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn returns_ok_when_adding_connection_with_valid_handles() {
+        let mut neural_network = SpikingNeuralNetwork::default();
+        let sensor_handle = SpikingNeuralNetwork.push_sensor();
+        let neuron_handle = SpikingNeuralNetwork.push_neuron();
+        let connection = Connection {
+            from: Handle(sensor_handle.0),
+            to: Handle(neuron_handle.0),
+            weight: Weight(1.0),
+        };
+        let result = neural_network.add_connection(connection);
+        assert!(result.is_ok());
     }
 }
