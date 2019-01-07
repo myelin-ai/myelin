@@ -41,7 +41,9 @@ impl NeuralNetwork for SpikingNeuralNetwork {
 
     /// Add a new unconnected neuron to the network
     fn push_neuron(&mut self) -> Handle {
-        Handle(self.neurons.insert(SpikingNeuron::default()))
+        let handle = Handle(self.neurons.insert(SpikingNeuron::default()));
+        self.last_state.insert(handle, MembranePotential(constant::RESTING_POTENTIAL));
+        handle
     }
 
     /// Add a new connection between two neurons.
