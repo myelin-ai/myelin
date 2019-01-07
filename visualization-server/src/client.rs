@@ -82,7 +82,10 @@ impl Client for ClientHandler {
         loop {
             match self.step_and_return_current_snapshot(&last_snapshot) {
                 Ok(snapshot) => last_snapshot = snapshot,
-                Err(StepError::Socket(ref err)) if err.is_broken_pipe() => break,
+                Err(StepError::Socket(ref err)) if err.is_broken_pipe() => {
+                    debug!("Client {} disconnected", self.connection.id);
+                    break;
+                }
                 Err(err) => error!("{}", err),
             }
         }
