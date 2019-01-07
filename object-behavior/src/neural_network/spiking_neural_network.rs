@@ -21,10 +21,10 @@ impl NeuralNetwork for SpikingNeuralNetwork {
     /// Update the state of all neurons
     fn step(
         &mut self,
-        _time_since_last_step: Milliseconds,
-        _external_inputs: &HashMap<Handle, MembranePotential>,
+        time_since_last_step: Milliseconds,
+        external_inputs: &HashMap<Handle, MembranePotential>,
     ) {
-        // Process stuff with external inputs
+        self.process_external_inputs(time_since_last_step, external_inputs);
         // Process all the other neurons, excluding the ones with external inputs
         // Check incoming values
     }
@@ -68,6 +68,31 @@ impl NeuralNetwork for SpikingNeuralNetwork {
                 .or_default()
                 .push((connection.from, connection.weight));
             Ok(())
+        }
+    }
+}
+
+impl SpikingNeuralNetwork {
+    fn process_external_inputs(
+        &mut self,
+        time_since_last_step: Milliseconds,
+        external_inputs: &HashMap<Handle, MembranePotential>,
+    ) {
+        for &sensor_handle in &self.sensors {
+            let input = external_inputs.get(&sensor_handle).cloned();
+            let sensor_neuron = self
+                .neurons
+                .get_mut(sensor_handle.0)
+                .expect("Invalid sensor handle");
+            let sensor_state = match input {
+                Some(input) => {
+                    const EXTERNAL_CONNECTION_WEIGHT: Weight = Weight(1.0);
+                    let external_connection = (input, EXTERNAL_CONNECTION_WEIGHT);
+                    sensor_neuron.step(time_since_last_step, &[external_connection])
+                }
+                None => sensor_neuron.step(time_since_last_step, &[]),
+            };
+            self.last_state.insert(sensor_handle, sensor_state);
         }
     }
 }
