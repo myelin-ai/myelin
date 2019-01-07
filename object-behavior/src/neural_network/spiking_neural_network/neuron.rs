@@ -115,9 +115,7 @@ impl SpikingNeuron {
 
     fn output(&self) -> Option<MembranePotential> {
         if self.is_above_threshold() {
-            Some(MembranePotential(
-                self.current_membrane_potential.0 - constant::THRESHOLD_POTENTIAL.0,
-            ))
+            Some(MembranePotential(self.current_membrane_potential.0))
         } else {
             None
         }
@@ -213,7 +211,7 @@ mod tests {
         let inputs = [(MembranePotential(1000.0), Weight(1000.0))];
 
         let membrane_potential = neuron.step(elapsed_time, &inputs);
-        assert!(membrane_potential.is_none());
+        assert!(membrane_potential.is_some());
     }
 
     #[test]
@@ -224,7 +222,7 @@ mod tests {
         let inputs = [(constant::THRESHOLD_POTENTIAL, Weight(1.0))];
 
         let membrane_potential = neuron.step(elapsed_time, &inputs);
-        assert!(membrane_potential.is_none());
+        assert!(membrane_potential.is_some());
     }
 
     #[test]
