@@ -31,7 +31,7 @@ impl NeuralNetwork for SpikingNeuralNetwork {
 
     /// Returns the last calculated state of the neuron referenced by `handle`
     fn membrane_potential_of_neuron(&self, neuron: Handle) -> Result<Option<MembranePotential>> {
-        self.last_state.get(&neuron).map(|&state| state).ok_or(())
+        self.last_state.get(&neuron).cloned().ok_or(())
     }
 
     /// Add a new unconnected sensor to the network
