@@ -29,7 +29,7 @@ impl SpikingNeuron {
         inputs: &[(MembranePotential, Weight)],
     ) -> Option<MembranePotential> {
         self.update_phase(time_since_last_step);
-        self.handle_phase(inputs);
+        self.handle_phase(inputs, time_since_last_step);
         self.output()
     }
 
@@ -68,9 +68,13 @@ impl SpikingNeuron {
         }
     }
 
-    fn handle_phase(&mut self, inputs: &[(MembranePotential, Weight)]) {
+    fn handle_phase(
+        &mut self,
+        inputs: &[(MembranePotential, Weight)],
+        time_since_last_step: Milliseconds,
+    ) {
         match &self.current_phase {
-            Phase::RestingState => self.handle_resting_state(inputs),
+            Phase::RestingState => self.handle_resting_state(inputs, time_since_last_step),
             Phase::Depolarization => self.handle_depolarization(inputs),
             Phase::ActionPotential => self.handle_action_potential(inputs),
             Phase::Repolarization => self.handle_repolarization(inputs),
@@ -78,9 +82,14 @@ impl SpikingNeuron {
         }
     }
 
-    fn handle_resting_state(&mut self, inputs: &[(MembranePotential, Weight)]) {
+    fn handle_resting_state(
+        &mut self,
+        inputs: &[(MembranePotential, Weight)],
+        time_since_last_step: Milliseconds,
+    ) {
         self.current_membrane_potential.0 +=
-            passive_repolarization(self.current_membrane_potential) + sum_inputs(inputs).0;
+            passive_repolarization(self.current_membrane_potential, time_since_last_step)
+                + sum_inputs(inputs).0;
     }
 
     fn handle_depolarization(&mut self, _inputs: &[(MembranePotential, Weight)]) {
@@ -130,9 +139,12 @@ enum Phase {
     RefractoryPeriod,
 }
 
-fn passive_repolarization(current_membrane_potential: MembranePotential) -> f64 {
+fn passive_repolarization(
+    current_membrane_potential: MembranePotential,
+    time_since_last_step: Milliseconds,
+) -> f64 {
     let delta = constant::RESTING_POTENTIAL.0 - current_membrane_potential.0;
-    delta * constant::PASSIVE_REPOLARIZATION_FACTOR
+    delta * constant::PASSIVE_REPOLARIZATION_FACTOR * time_since_last_step.0
 }
 
 fn spike(elapsed_ms: Milliseconds) -> f64 {
@@ -171,22 +183,10 @@ mod tests {
     }
 
     #[test]
-    fn emits_no_potential_with_high_input_and_no_elapsed_time() {
-        let mut neuron = SpikingNeuron::default();
-        let elapsed_time = Milliseconds(0.0);
-        let inputs = [(constant::ACTION_POTENTIAL, Weight(1.0))];
-        let membrane_potential = neuron.step(elapsed_time, &inputs);
-        assert!(membrane_potential.is_none());
-    }
-
-    #[test]
     fn emits_no_potential_with_high_input_and_no_weight() {
         let mut neuron = SpikingNeuron::default();
         let elapsed_time = Milliseconds(10.0);
         let inputs = [(constant::ACTION_POTENTIAL, Weight(0.0))];
-
-        let membrane_potential = neuron.step(elapsed_time, &inputs);
-        assert!(membrane_potential.is_none());
 
         let membrane_potential = neuron.step(elapsed_time, &inputs);
         assert!(membrane_potential.is_none());
@@ -203,9 +203,6 @@ mod tests {
         )];
         let membrane_potential = neuron.step(elapsed_time, &nearly_threshold);
         assert!(membrane_potential.is_none());
-
-        let membrane_potential = neuron.step(elapsed_time, &[]);
-        assert!(membrane_potential.is_none());
     }
 
     #[test]
@@ -217,9 +214,6 @@ mod tests {
 
         let membrane_potential = neuron.step(elapsed_time, &inputs);
         assert!(membrane_potential.is_none());
-
-        let membrane_potential = neuron.step(elapsed_time, &[]);
-        assert!(membrane_potential.is_some());
     }
 
     #[test]
@@ -231,9 +225,6 @@ mod tests {
 
         let membrane_potential = neuron.step(elapsed_time, &inputs);
         assert!(membrane_potential.is_none());
-
-        let membrane_potential = neuron.step(elapsed_time, &[]);
-        assert!(membrane_potential.is_some());
     }
 
     #[test]
