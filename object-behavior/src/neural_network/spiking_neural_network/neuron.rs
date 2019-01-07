@@ -1,5 +1,5 @@
 /// A spiking neuron
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct SpikingNeuron;
 
 impl SpikingNeuron {}

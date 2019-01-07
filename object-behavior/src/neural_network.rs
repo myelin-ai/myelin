@@ -10,19 +10,19 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 
 /// A handle to a [`Neuron`]
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct Handle(pub usize);
 
 /// A modifier of incoming spikes
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Weight(pub f64);
 
 /// A representation of time
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct TimeInMilliseconds(pub f64);
 
 /// The state of a neuron at a given time
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct MembranePotential(pub f64);
 
 /// The result type used when working with handles

@@ -10,11 +10,12 @@ authors = [
 edition = "2018"
 
 [dependencies]
+mockiato = { git = "https://github.com/myelin-ai/mockiato", optional = true }
 myelin-environment = { path = "../environment" }
 myelin-geometry = { path = "../geometry" }
 rand = "0.5.5"
 log = "0.4"
-mockiato = { git = "https://github.com/myelin-ai/mockiato", optional = true }
+slab = "0.4"
 
 [dev-dependencies]
 maplit = "1.0"

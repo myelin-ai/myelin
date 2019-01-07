@@ -5,9 +5,17 @@ mod neuron;
 pub use self::neuron::*;
 use crate::neural_network::*;
 
+use slab::Slab;
+use std::collections::HashMap;
+
 /// A spiking neural network
 #[derive(Debug, Default)]
-pub struct SpikingNeuralNetwork;
+pub struct SpikingNeuralNetwork {
+    neurons: Slab<SpikingNeuron>,
+    last_state: HashMap<Handle, MembranePotential>,
+    connections: HashMap<Handle, Vec<(Handle, Weight)>>,
+    sensors: Vec<Handle>,
+}
 
 impl NeuralNetwork for SpikingNeuralNetwork {
     /// Update the state of all neurons
@@ -21,24 +29,37 @@ impl NeuralNetwork for SpikingNeuralNetwork {
 
     /// Returns the last calculated state of the neuron referenced by `handle`
     fn membrane_potential_of_neuron(&self, neuron: Handle) -> Result<MembranePotential> {
-        unimplemented!()
+        self.last_state.get(&neuron).map(|&state| state).ok_or(())
     }
 
     /// Add a new unconnected sensor to the network
     fn push_sensor(&mut self) -> Handle {
-        unimplemented!()
+        let handle = self.push_neuron();
+        self.sensors.push(handle);
+        handle
     }
 
     /// Add a new unconnected neuron to the network
     fn push_neuron(&mut self) -> Handle {
-        unimplemented!()
+        Handle(self.neurons.insert(SpikingNeuron::default()))
     }
 
     /// Add a new connection between two neurons.
     /// # Errors
     /// Returns `Err` if an involved handle is invalid
     fn add_connection(&mut self, connection: Connection) -> Result<()> {
-        unimplemented!()
+        let contains_origin = self.neurons.contains(connection.from.0);
+        let contains_destination = self.neurons.contains(connection.to.0);
+        let is_destination_a_sensor = self.sensors.contains(&connection.to);
+        if !contains_origin || !contains_destination || is_destination_a_sensor {
+            Err(())
+        } else {
+            self.connections
+                .entry(connection.to)
+                .or_default()
+                .push((connection.from, connection.weight));
+            Ok(())
+        }
     }
 }
 
@@ -113,8 +134,8 @@ mod tests {
     #[test]
     fn returns_err_when_adding_connection_with_invalid_handles() {
         let mut neural_network = SpikingNeuralNetwork::default();
-        let sensor_handle = SpikingNeuralNetwork.push_sensor();
-        let neuron_handle = SpikingNeuralNetwork.push_neuron();
+        let sensor_handle = neural_network.push_sensor();
+        let neuron_handle = neural_network.push_neuron();
         let connection = Connection {
             from: Handle(sensor_handle.0 + 1),
             to: Handle(neuron_handle.0 + 1),
@@ -125,10 +146,37 @@ mod tests {
     }
 
     #[test]
+    fn returns_err_when_adding_connection_sensor_as_destination() {
+        let mut neural_network = SpikingNeuralNetwork::default();
+        let sensor_handle = neural_network.push_sensor();
+        let neuron_handle = neural_network.push_neuron();
+        let connection = Connection {
+            from: Handle(neuron_handle.0),
+            to: Handle(sensor_handle.0),
+            weight: Weight(1.0),
+        };
+        let result = neural_network.add_connection(connection);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn returns_err_when_adding_connection_with_same_origin_as_destination() {
+        let mut neural_network = SpikingNeuralNetwork::default();
+        let neuron_handle = neural_network.push_neuron();
+        let connection = Connection {
+            from: Handle(neuron_handle.0),
+            to: Handle(neuron_handle.0),
+            weight: Weight(1.0),
+        };
+        let result = neural_network.add_connection(connection);
+        assert!(result.is_err());
+    }
+
+    #[test]
     fn returns_ok_when_adding_connection_with_valid_handles() {
         let mut neural_network = SpikingNeuralNetwork::default();
-        let sensor_handle = SpikingNeuralNetwork.push_sensor();
-        let neuron_handle = SpikingNeuralNetwork.push_neuron();
+        let sensor_handle = neural_network.push_sensor();
+        let neuron_handle = neural_network.push_neuron();
         let connection = Connection {
             from: Handle(sensor_handle.0),
             to: Handle(neuron_handle.0),

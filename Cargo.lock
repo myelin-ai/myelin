@@ -570,6 +570,7 @@ dependencies = [
  "myelin-environment 0.1.0",
  "myelin-geometry 0.1.0",
  "rand 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "slab 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
