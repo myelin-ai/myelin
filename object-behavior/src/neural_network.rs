@@ -10,16 +10,16 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 
 /// A handle to a [`Neuron`]
-pub type Handle = usize;
+pub struct Handle(pub usize);
 
 /// A modifier of incoming spikes
-pub type Weight = f64;
+pub struct Weight(pub f64);
 
 /// A representation of time
-pub type TimeInMilliseconds = f64;
+pub struct TimeInMilliseconds(pub f64);
 
 /// The state of a neuron at a given time
-pub type MembranePotential = f64;
+pub struct MembranePotential(pub f64);
 
 /// A neural network that supports construction from multiple neurons and arbitrary connections between them
 #[cfg_attr(test, mockable)]
