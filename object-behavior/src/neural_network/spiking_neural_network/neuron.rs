@@ -226,7 +226,7 @@ mod tests {
     }
 
     #[test]
-    fn spike_goes_away_after_a_while() {
+    fn spike_goes_away_after_many_small_time_steps() {
         let mut neuron = SpikingNeuron::default();
         let elapsed_time = Milliseconds(10.0);
 
@@ -237,6 +237,15 @@ mod tests {
             neuron.step(elapsed_time, &[]);
         }
         let membrane_potential = neuron.step(elapsed_time, &[]);
+        assert!(membrane_potential.is_none());
+    }
+
+    #[test]
+    fn spike_goes_away_after_one_big_time_step() {
+        let mut neuron = SpikingNeuron::default();
+        let inputs = [(constant::THRESHOLD_POTENTIAL, Weight(1.0))];
+        neuron.step(Milliseconds(10.0), &inputs);
+        let membrane_potential = neuron.step(Milliseconds(1_000.0), &[]);
         assert!(membrane_potential.is_none());
     }
 }
