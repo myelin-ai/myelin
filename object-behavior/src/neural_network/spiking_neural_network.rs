@@ -24,6 +24,9 @@ impl NeuralNetwork for SpikingNeuralNetwork {
         _time_since_last_step: Milliseconds,
         _external_inputs: &HashMap<Handle, MembranePotential>,
     ) {
+        // Process stuff with external inputs
+        // Process all the other neurons, excluding the ones with external inputs
+        // Check incoming values
     }
 
     /// Returns the last calculated state of the neuron referenced by `handle`
