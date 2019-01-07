@@ -1,7 +1,7 @@
 //! Neural networks and their components
 
 mod connection;
-pub(crate) mod constant;
+pub mod spiking_neural_network;
 pub use self::connection::*;
 
 #[cfg(any(test, feature = "use-mocks"))]
