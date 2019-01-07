@@ -204,8 +204,7 @@ mod tests {
         let membrane_potential = neuron.step(elapsed_time, &nearly_threshold);
         assert!(membrane_potential.is_none());
 
-        let no_inputs = [(MembranePotential(0.0), Weight(1.0))];
-        let membrane_potential = neuron.step(elapsed_time, &no_inputs);
+        let membrane_potential = neuron.step(elapsed_time, &[]);
         assert!(membrane_potential.is_none());
     }
 
