@@ -14,10 +14,10 @@ impl SpikingNeuron {
     /// Update the state of the neuron and return it
     pub fn step(
         &mut self,
-        _time_since_last_step: TimeInMilliseconds,
-        _inputs: MembranePotential,
-    ) -> MembranePotential {
-        MembranePotential(constant::RESTING_POTENTIAL)
+        _time_since_last_step: Milliseconds,
+        _inputs: &[(MembranePotential, Weight)],
+    ) -> Option<MembranePotential> {
+        None
     }
 }
 
@@ -37,20 +37,49 @@ mod tests {
     }
 
     #[test]
-    fn step_with_no_inputs_returns_resting_potential() {
+    fn emits_no_potential_without_inputs() {
         let mut neuron = SpikingNeuron::default();
-        let elapsed_time = TimeInMilliseconds(1.0);
-        let inputs = MembranePotential(0.0);
-        let membrane_potential = neuron.step(elapsed_time, inputs);
-        assert_eq!(constant::RESTING_POTENTIAL, membrane_potential.0);
+        let elapsed_time = Milliseconds(1.0);
+        let membrane_potential = neuron.step(elapsed_time, &[]);
+        assert!(membrane_potential.is_none());
     }
 
     #[test]
-    fn step_with_high_input_and_no_elapsed_time_returns_resting_potential() {
+    fn emits_no_potential_with_high_input_and_no_elapsed_time() {
         let mut neuron = SpikingNeuron::default();
-        let elapsed_time = TimeInMilliseconds(0.0);
-        let inputs = MembranePotential(constant::ACTION_POTENTIAL);
-        let membrane_potential = neuron.step(elapsed_time, inputs);
-        assert_eq!(constant::RESTING_POTENTIAL, membrane_potential.0);
+        let elapsed_time = Milliseconds(0.0);
+        let inputs = [(constant::ACTION_POTENTIAL, Weight(1.0))];
+        let membrane_potential = neuron.step(elapsed_time, &inputs);
+        assert!(membrane_potential.is_none());
+    }
+
+    #[test]
+    fn emits_no_potential_with_high_input_and_no_weight() {
+        let mut neuron = SpikingNeuron::default();
+        let elapsed_time = Milliseconds(10.0);
+        let inputs = [(constant::ACTION_POTENTIAL, Weight(0.0))];
+
+        let membrane_potential = neuron.step(elapsed_time, &inputs);
+        assert!(membrane_potential.is_none());
+
+        let membrane_potential = neuron.step(elapsed_time, &inputs);
+        assert!(membrane_potential.is_none());
+    }
+
+    #[test]
+    fn emits_no_potential_when_input_is_too_low() {
+        let mut neuron = SpikingNeuron::default();
+        let elapsed_time = Milliseconds(10.0);
+
+        let nearly_threshold = [(
+            MembranePotential(constant::THRESHOLD_POTENTIAL.0 - 0.1),
+            Weight(1.0),
+        )];
+        let membrane_potential = neuron.step(elapsed_time, &nearly_threshold);
+        assert!(membrane_potential.is_none());
+
+        let no_inputs = [(MembranePotential(0.0), Weight(1.0))];
+        let membrane_potential = neuron.step(elapsed_time, &no_inputs);
+        assert!(membrane_potential.is_none());
     }
 }

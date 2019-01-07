@@ -19,7 +19,7 @@ pub struct Weight(pub f64);
 
 /// A representation of time
 #[derive(Debug, PartialEq, Clone, Copy)]
-pub struct TimeInMilliseconds(pub f64);
+pub struct Milliseconds(pub f64);
 
 /// The state of a neuron at a given time
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -34,7 +34,7 @@ pub trait NeuralNetwork: Debug {
     /// Update the state of all neurons
     fn step(
         &mut self,
-        time_since_last_step: TimeInMilliseconds,
+        time_since_last_step: Milliseconds,
         external_inputs: &HashMap<Handle, MembranePotential>,
     );
 

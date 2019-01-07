@@ -21,7 +21,7 @@ impl NeuralNetwork for SpikingNeuralNetwork {
     /// Update the state of all neurons
     fn step(
         &mut self,
-        _time_since_last_step: TimeInMilliseconds,
+        _time_since_last_step: Milliseconds,
         _external_inputs: &HashMap<Handle, MembranePotential>,
     ) {
     }
@@ -42,7 +42,7 @@ impl NeuralNetwork for SpikingNeuralNetwork {
     fn push_neuron(&mut self) -> Handle {
         let handle = Handle(self.neurons.insert(SpikingNeuron::default()));
         self.last_state
-            .insert(handle, MembranePotential(constant::RESTING_POTENTIAL));
+            .insert(handle, constant::RESTING_POTENTIAL);
         handle
     }
 
@@ -114,7 +114,7 @@ mod tests {
         let membrane_potential = neural_network
             .membrane_potential_of_neuron(neuron_handle)
             .unwrap();
-        assert_eq!(constant::RESTING_POTENTIAL, membrane_potential.0);
+        assert_eq!(constant::RESTING_POTENTIAL, membrane_potential);
     }
 
     #[test]
@@ -124,7 +124,7 @@ mod tests {
         let membrane_potential = neural_network
             .membrane_potential_of_neuron(sensor_handle)
             .unwrap();
-        assert_eq!(constant::RESTING_POTENTIAL, membrane_potential.0);
+        assert_eq!(constant::RESTING_POTENTIAL, membrane_potential);
     }
 
     #[test]
@@ -197,7 +197,7 @@ mod tests {
     #[test]
     fn step_works_on_empty_network() {
         let mut neural_network = SpikingNeuralNetwork::default();
-        let elapsed_time = TimeInMilliseconds(1.0);
+        let elapsed_time = Milliseconds(1.0);
         let inputs = HashMap::new();
         neural_network.step(elapsed_time, &inputs);
     }
@@ -208,7 +208,7 @@ mod tests {
         let sensor_handle = neural_network.push_sensor();
         let neuron_handle = neural_network.push_neuron();
 
-        let elapsed_time = TimeInMilliseconds(1.0);
+        let elapsed_time = Milliseconds(1.0);
         let inputs = HashMap::new();
         neural_network.step(elapsed_time, &inputs);
 
@@ -219,7 +219,7 @@ mod tests {
             .membrane_potential_of_neuron(sensor_handle)
             .unwrap();
 
-        assert_eq!(constant::RESTING_POTENTIAL, neuron_membrane_potential.0);
-        assert_eq!(constant::RESTING_POTENTIAL, sensor_membrane_potential.0);
+        assert_eq!(constant::RESTING_POTENTIAL, neuron_membrane_potential);
+        assert_eq!(constant::RESTING_POTENTIAL, sensor_membrane_potential);
     }
 }
