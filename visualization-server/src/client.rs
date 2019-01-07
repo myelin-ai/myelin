@@ -53,7 +53,7 @@ impl ClientHandler {
                 let serialized = self
                     .serializer
                     .serialize_view_model_delta(&deltas)
-                    .map_err(StepError::Serialize)?;
+                    .map_err(StepError::Serialization)?;
 
                 self.connection
                     .socket
@@ -104,14 +104,14 @@ impl Debug for ClientHandler {
 
 #[derive(Debug)]
 enum StepError {
-    Serialize(Box<dyn Error>),
+    Serialization(Box<dyn Error>),
     Socket(Box<dyn SocketError>),
 }
 
 impl Display for StepError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            StepError::Serialize(ref err) => write!(f, "Failed to serialize delta: {}", err),
+            StepError::Serialization(ref err) => write!(f, "Failed to serialize delta: {}", err),
             StepError::Socket(ref err) => write!(f, "Failed to send delta: {}", err),
         }
     }
