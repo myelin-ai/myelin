@@ -11,7 +11,7 @@ impl SpikingNeuron {
         SpikingNeuron
     }
 
-    /// The step function, called every smallest tick in the simulation
+    /// Update the state of the neuron and return it
     pub fn step(
         &mut self,
         _time_since_last_step: TimeInMilliseconds,
