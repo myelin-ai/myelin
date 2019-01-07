@@ -226,6 +226,19 @@ mod tests {
     }
 
     #[test]
+    fn spikes_with_input_of_threshold_when_factoring_in_weight() {
+        let mut neuron = SpikingNeuron::default();
+        let elapsed_time = Milliseconds(10.0);
+
+        let inputs = [(
+            MembranePotential(constant::THRESHOLD_POTENTIAL.0 / 2.0),
+            Weight(2.0),
+        )];
+
+        let membrane_potential = neuron.step(elapsed_time, &inputs);
+        assert!(membrane_potential.is_some());
+    }
+    #[test]
     fn spike_goes_away_after_many_small_time_steps() {
         let mut neuron = SpikingNeuron::default();
         let elapsed_time = Milliseconds(10.0);
