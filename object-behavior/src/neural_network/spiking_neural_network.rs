@@ -24,7 +24,6 @@ impl NeuralNetwork for SpikingNeuralNetwork {
         time_since_last_update: TimeInMilliseconds,
         external_inputs: &HashMap<Handle, MembranePotential>,
     ) {
-        unimplemented!()
     }
 
     /// Returns the last calculated state of the neuron referenced by `handle`
@@ -42,7 +41,8 @@ impl NeuralNetwork for SpikingNeuralNetwork {
     /// Add a new unconnected neuron to the network
     fn push_neuron(&mut self) -> Handle {
         let handle = Handle(self.neurons.insert(SpikingNeuron::default()));
-        self.last_state.insert(handle, MembranePotential(constant::RESTING_POTENTIAL));
+        self.last_state
+            .insert(handle, MembranePotential(constant::RESTING_POTENTIAL));
         handle
     }
 
@@ -192,5 +192,34 @@ mod tests {
         };
         let result = neural_network.add_connection(connection);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn step_works_on_empty_network() {
+        let mut neural_network = SpikingNeuralNetwork::default();
+        let elapsed_time = TimeInMilliseconds(1.0);
+        let inputs = HashMap::new();
+        neural_network.step(elapsed_time, &inputs);
+    }
+
+    #[test]
+    fn step_leaves_unconnected_neurons_at_resting_potential() {
+        let mut neural_network = SpikingNeuralNetwork::default();
+        let sensor_handle = neural_network.push_sensor();
+        let neuron_handle = neural_network.push_neuron();
+
+        let elapsed_time = TimeInMilliseconds(1.0);
+        let inputs = HashMap::new();
+        neural_network.step(elapsed_time, &inputs);
+
+        let neuron_membrane_potential = neural_network
+            .membrane_potential_of_neuron(neuron_handle)
+            .unwrap();
+        let sensor_membrane_potential = neural_network
+            .membrane_potential_of_neuron(sensor_handle)
+            .unwrap();
+
+        assert_eq!(constant::RESTING_POTENTIAL, neuron_membrane_potential.0);
+        assert_eq!(constant::RESTING_POTENTIAL, sensor_membrane_potential.0);
     }
 }
