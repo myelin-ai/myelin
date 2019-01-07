@@ -1,7 +1,8 @@
 //! Implementation of a spiking neural network
 
 pub(crate) mod constant;
-pub mod neuron;
+mod neuron;
+pub use self::neuron::*;
 use crate::neural_network::*;
 
 /// A spiking neural network
