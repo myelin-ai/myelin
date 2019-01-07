@@ -111,8 +111,8 @@ enum StepError {
 impl Display for StepError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            StepError::Serialize(ref err) => write!(f, "Unable to serialize delta: {}", err),
-            StepError::Socket(ref err) => write!(f, "Unable to send delta: {}", err),
+            StepError::Serialize(ref err) => write!(f, "Failed to serialize delta: {}", err),
+            StepError::Socket(ref err) => write!(f, "Failed to send delta: {}", err),
         }
     }
 }
