@@ -141,7 +141,16 @@ fn spike(elapsed_ms: Milliseconds) -> f64 {
 }
 
 fn sum_inputs(inputs: &[(MembranePotential, Weight)]) -> MembranePotential {
-    unimplemented!()
+    MembranePotential(
+        inputs
+            .iter()
+            .map(|(membrane_potential, weight)| {
+                let input_shifted_into_positive_range =
+                    membrane_potential.0 - constant::RESTING_POTENTIAL.0;
+                input_shifted_into_positive_range * weight.0
+            })
+            .sum(),
+    )
 }
 
 #[cfg(test)]
