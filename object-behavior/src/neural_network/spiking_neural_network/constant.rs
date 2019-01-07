@@ -2,5 +2,5 @@
 
 pub(crate) const RESTING_POTENTIAL: f64 = -70.0;
 pub(crate) const _THRESHOLD_POTENTIAL: f64 = -55.0;
-pub(crate) const _ACTION_POTENTIAL: f64 = 40.0;
+pub(crate) const ACTION_POTENTIAL: f64 = 40.0;
 pub(crate) const _PASSIVE_REPOLARIZATION_FACTOR: f64 = 0.01;
