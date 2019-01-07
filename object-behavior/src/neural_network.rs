@@ -10,15 +10,19 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 
 /// A handle to a [`Neuron`]
+#[derive(Debug)]
 pub struct Handle(pub usize);
 
 /// A modifier of incoming spikes
+#[derive(Debug)]
 pub struct Weight(pub f64);
 
 /// A representation of time
+#[derive(Debug)]
 pub struct TimeInMilliseconds(pub f64);
 
 /// The state of a neuron at a given time
+#[derive(Debug)]
 pub struct MembranePotential(pub f64);
 
 /// A neural network that supports construction from multiple neurons and arbitrary connections between them
