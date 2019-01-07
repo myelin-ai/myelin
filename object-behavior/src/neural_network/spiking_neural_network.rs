@@ -68,6 +68,7 @@ impl NeuralNetwork for SpikingNeuralNetwork {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 
