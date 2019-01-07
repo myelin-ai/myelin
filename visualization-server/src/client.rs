@@ -1,10 +1,12 @@
 use crate::connection::Connection;
+use crate::connection::SocketError;
 use crate::connection_acceptor::Client;
 use crate::controller::{CurrentSnapshotFn, Presenter};
 use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperError};
 use myelin_environment::Snapshot;
 use myelin_visualization_core::serialization::ViewModelSerializer;
-use std::fmt::{self, Debug};
+use std::error::Error;
+use std::fmt::{self, Debug, Display};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -36,7 +38,10 @@ impl ClientHandler {
         }
     }
 
-    fn step_and_return_current_snapshot(&mut self, last_snapshot: &Snapshot) -> Snapshot {
+    fn step_and_return_current_snapshot(
+        &mut self,
+        last_snapshot: &Snapshot,
+    ) -> Result<Snapshot, StepError> {
         let (sleeper_result, snapshot) = sleep_for_fixed_interval!(self.interval, self.sleeper, {
             let current_snapshot = (self.current_snapshot_fn)();
 
@@ -48,12 +53,12 @@ impl ClientHandler {
                 let serialized = self
                     .serializer
                     .serialize_view_model_delta(&deltas)
-                    .expect("Failed to serialize delta");
+                    .map_err(StepError::Serialization)?;
 
                 self.connection
                     .socket
                     .send_message(&serialized)
-                    .expect("Failed to send message to client");
+                    .map_err(StepError::Socket)?;
             }
 
             current_snapshot
@@ -67,7 +72,7 @@ impl ClientHandler {
             }
         }
 
-        snapshot
+        Ok(snapshot)
     }
 }
 
@@ -75,7 +80,14 @@ impl Client for ClientHandler {
     fn run(&mut self) {
         let mut last_snapshot = Snapshot::new();
         loop {
-            last_snapshot = self.step_and_return_current_snapshot(&last_snapshot);
+            match self.step_and_return_current_snapshot(&last_snapshot) {
+                Ok(snapshot) => last_snapshot = snapshot,
+                Err(StepError::Socket(ref err)) if err.is_broken_pipe() => {
+                    debug!("Client {} disconnected", self.connection.id);
+                    break;
+                }
+                Err(err) => error!("{}", err),
+            }
         }
     }
 }
@@ -87,6 +99,21 @@ impl Debug for ClientHandler {
             .field("serializer", &self.serializer)
             .field("connection", &self.connection)
             .finish()
+    }
+}
+
+#[derive(Debug)]
+enum StepError {
+    Serialization(Box<dyn Error>),
+    Socket(Box<dyn SocketError>),
+}
+
+impl Display for StepError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            StepError::Serialization(ref err) => write!(f, "Failed to serialize delta: {}", err),
+            StepError::Socket(ref err) => write!(f, "Failed to send delta: {}", err),
+        }
     }
 }
 
@@ -170,7 +197,7 @@ mod tests {
         );
         let last_snapshot = Snapshot::new();
         let current_snapshot = client.step_and_return_current_snapshot(&last_snapshot);
-        assert_eq!(snapshot(), current_snapshot);
+        assert_eq!(snapshot(), current_snapshot.unwrap());
     }
 
     #[test]
@@ -206,7 +233,7 @@ mod tests {
         );
         let last_snapshot = Snapshot::new();
         let current_snapshot = client.step_and_return_current_snapshot(&last_snapshot);
-        assert_eq!(snapshot(), current_snapshot);
+        assert_eq!(snapshot(), current_snapshot.unwrap());
     }
 
     #[should_panic]
@@ -286,7 +313,7 @@ mod tests {
         );
         let last_snapshot = Snapshot::new();
         let current_snapshot = client.step_and_return_current_snapshot(&last_snapshot);
-        assert_eq!(snapshot(), current_snapshot);
+        assert_eq!(snapshot(), current_snapshot.unwrap());
     }
 
     fn snapshot() -> Snapshot {
