@@ -48,10 +48,15 @@ impl NeuralNetwork for SpikingNeuralNetwork {
     /// # Errors
     /// Returns `Err` if an involved handle is invalid
     fn add_connection(&mut self, connection: Connection) -> Result<()> {
+        let is_origin_same_as_destination = connection.from == connection.to;
         let contains_origin = self.neurons.contains(connection.from.0);
         let contains_destination = self.neurons.contains(connection.to.0);
         let is_destination_a_sensor = self.sensors.contains(&connection.to);
-        if !contains_origin || !contains_destination || is_destination_a_sensor {
+        if is_origin_same_as_destination
+            || !contains_origin
+            || !contains_destination
+            || is_destination_a_sensor
+        {
             Err(())
         } else {
             self.connections
