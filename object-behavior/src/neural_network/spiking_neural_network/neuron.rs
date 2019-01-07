@@ -82,4 +82,47 @@ mod tests {
         let membrane_potential = neuron.step(elapsed_time, &no_inputs);
         assert!(membrane_potential.is_none());
     }
+
+    #[test]
+    fn spikes_with_extremely_high_input() {
+        let mut neuron = SpikingNeuron::default();
+        let elapsed_time = Milliseconds(10.0);
+
+        let inputs = [(MembranePotential(1000.0), Weight(1000.0))];
+
+        let membrane_potential = neuron.step(elapsed_time, &inputs);
+        assert!(membrane_potential.is_none());
+
+        let membrane_potential = neuron.step(elapsed_time, &[]);
+        assert!(membrane_potential.is_some());
+    }
+
+    #[test]
+    fn spikes_with_input_of_threshold() {
+        let mut neuron = SpikingNeuron::default();
+        let elapsed_time = Milliseconds(10.0);
+
+        let inputs = [(constant::THRESHOLD_POTENTIAL, Weight(1.0))];
+
+        let membrane_potential = neuron.step(elapsed_time, &inputs);
+        assert!(membrane_potential.is_none());
+
+        let membrane_potential = neuron.step(elapsed_time, &[]);
+        assert!(membrane_potential.is_some());
+    }
+
+    #[test]
+    fn spike_goes_away_after_a_while() {
+        let mut neuron = SpikingNeuron::default();
+        let elapsed_time = Milliseconds(10.0);
+
+        let inputs = [(constant::THRESHOLD_POTENTIAL, Weight(1.0))];
+        neuron.step(elapsed_time, &inputs);
+
+        for _ in 0..100 {
+            neuron.step(elapsed_time, &[]);
+        }
+        let membrane_potential = neuron.step(elapsed_time, &[]);
+        assert!(membrane_potential.is_none());
+    }
 }
