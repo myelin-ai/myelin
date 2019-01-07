@@ -21,8 +21,8 @@ impl NeuralNetwork for SpikingNeuralNetwork {
     /// Update the state of all neurons
     fn step(
         &mut self,
-        time_since_last_update: TimeInMilliseconds,
-        external_inputs: &HashMap<Handle, MembranePotential>,
+        _time_since_last_step: TimeInMilliseconds,
+        _external_inputs: &HashMap<Handle, MembranePotential>,
     ) {
     }
 

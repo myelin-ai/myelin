@@ -34,7 +34,7 @@ pub trait NeuralNetwork: Debug {
     /// Update the state of all neurons
     fn step(
         &mut self,
-        time_since_last_update: TimeInMilliseconds,
+        time_since_last_step: TimeInMilliseconds,
         external_inputs: &HashMap<Handle, MembranePotential>,
     );
 
