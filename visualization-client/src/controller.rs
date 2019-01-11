@@ -122,6 +122,7 @@ mod tests {
 
     fn object_description_delta() -> ObjectDescriptionDelta {
         ObjectDescriptionDelta {
+            name: Some(Some(String::from("Cat"))),
             shape: Some(
                 PolygonBuilder::default()
                     .vertex(-5.0, -5.0)

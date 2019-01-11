@@ -43,6 +43,7 @@ impl Debug for SimulationImpl {
 
 #[derive(Debug)]
 struct NonPhysicalObjectData {
+    pub(crate) name: Option<String>,
     pub(crate) kind: Kind,
     pub(crate) behavior: RefCell<Box<dyn ObjectBehavior>>,
 }
@@ -103,6 +104,7 @@ impl SimulationImpl {
         let physics_body = self.world.body(body_handle)?;
         let non_physical_object_data = self.non_physical_object_data.get(&body_handle)?;
         Some(ObjectDescription {
+            name: non_physical_object_data.name.clone(),
             shape: physics_body.shape,
             location: physics_body.location,
             rotation: physics_body.rotation,
@@ -197,6 +199,7 @@ impl Simulation for SimulationImpl {
         let body_handle = self.world.add_body(physical_body);
 
         let non_physical_object_data = NonPhysicalObjectData {
+            name: object_description.name,
             kind: object_description.kind,
             behavior: RefCell::new(object_behavior),
         };
@@ -521,6 +524,7 @@ mod tests {
         let object_behavior = ObjectBehaviorMock::new();
 
         let expected_object_description = ObjectBuilder::default()
+            .name(String::from("Foo"))
             .location(expected_location.x, expected_location.y)
             .rotation(expected_rotation)
             .shape(expected_shape)
