@@ -63,12 +63,11 @@ fn get_object_description_delta(
     second: ObjectDescription,
 ) -> ObjectDescriptionDelta {
     ObjectDescriptionDelta {
-        name: get_delta(first.map(|o| &o.name), second.name),
         shape: get_delta(first.map(|o| &o.shape), second.shape),
         location: get_delta(first.map(|o| &o.location), second.location),
         rotation: get_delta(first.map(|o| &o.rotation), second.rotation),
         mobility: get_delta(first.map(|o| &o.mobility), second.mobility),
-        kind: get_delta(first.map(|o| &o.kind), second.kind),
+        associated_data: get_delta(first.map(|o| &o.associated_data), second.associated_data),
     }
 }
 
@@ -87,7 +86,7 @@ fn delta_contains_changes(delta: &ObjectDescriptionDelta) -> bool {
         || delta.location.is_some()
         || delta.rotation.is_some()
         || delta.mobility.is_some()
-        || delta.kind.is_some()
+        || delta.associated_data.is_some()
 }
 
 #[cfg(test)]

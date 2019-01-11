@@ -117,6 +117,17 @@ impl ObjectBuilder {
         self
     }
 
+    /// # Examples
+    /// ```
+    /// use myelin_environment::object::ObjectBuilder;
+    ///
+    /// let builder = ObjectBuilder::default().associated_data("Foo".into_bytes());
+    /// ```
+    pub fn associated_data(&mut self, associated_data: Vec<u8>) -> &mut Self {
+        self.associated_data = associated_data;
+        self
+    }
+
     /// Build the [`ObjectDescription`] with all specified settings
     /// # Errors
     /// If a non-optional member has not specified while building

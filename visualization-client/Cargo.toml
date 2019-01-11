@@ -21,6 +21,7 @@ myelin-geometry = { path = "../geometry" }
 myelin-object-data = { path = "../object-data" }
 serde = "1.0"
 serde_json = "1.0"
+bincode = "1.0"
 
 [dependencies.web-sys]
 version = "0.3.0"

@@ -5,6 +5,7 @@ use crate::WorldGenerator;
 use myelin_environment::object::*;
 use myelin_environment::Simulation;
 use myelin_geometry::*;
+use myelin_object_data::{AssociatedObjectData, Kind};
 use std::f64::consts::FRAC_PI_2;
 use std::fmt;
 
@@ -128,6 +129,11 @@ impl HardcodedGenerator {
     }
 
     fn populate_with_water(&self, simulation: &mut dyn Simulation) {
+        let object_data = AssociatedObjectData {
+            name: None,
+            kind: Kind::Water,
+        };
+
         let object_description = ObjectBuilder::default()
             .shape(
                 PolygonBuilder::default()
@@ -141,7 +147,9 @@ impl HardcodedGenerator {
             )
             .location(500.0, 500.0)
             .mobility(Mobility::Immovable)
-            .kind(Kind::Water)
+            .associated_data(
+                bincode::serialize(&object_data).expect("Unable to encode object_data"),
+            )
             .build()
             .expect("Failed to build water");
 
@@ -200,6 +208,11 @@ impl HardcodedGenerator {
 }
 
 fn build_terrain(location: (f64, f64), width: f64, length: f64) -> ObjectDescription {
+    let object_data = AssociatedObjectData {
+        name: None,
+        kind: Kind::Terrain,
+    };
+
     let x_offset = width / 2.0;
     let y_offset = length / 2.0;
     ObjectBuilder::default()
@@ -214,12 +227,17 @@ fn build_terrain(location: (f64, f64), width: f64, length: f64) -> ObjectDescrip
         )
         .location(location.0, location.1)
         .mobility(Mobility::Immovable)
-        .kind(Kind::Terrain)
+        .associated_data(bincode::serialize(&object_data).expect("Unable to encode object_data"))
         .build()
         .expect("Failed to build terrain")
 }
 
 fn build_plant(half_of_width_and_height: f64, x: f64, y: f64) -> ObjectDescription {
+    let object_data = AssociatedObjectData {
+        name: None,
+        kind: Kind::Plant,
+    };
+
     ObjectBuilder::default()
         .shape(
             PolygonBuilder::default()
@@ -232,15 +250,19 @@ fn build_plant(half_of_width_and_height: f64, x: f64, y: f64) -> ObjectDescripti
         )
         .location(x, y)
         .mobility(Mobility::Immovable)
-        .kind(Kind::Plant)
         .passable(true)
+        .associated_data(bincode::serialize(&object_data).expect("Unable to encode object_data"))
         .build()
         .expect("Failed to build plant")
 }
 
 fn build_organism(x: f64, y: f64, name: Option<String>) -> ObjectDescription {
+    let object_data = AssociatedObjectData {
+        name,
+        kind: Kind::Organism,
+    };
+
     ObjectBuilder::default()
-        .name(name)
         .shape(
             PolygonBuilder::default()
                 .vertex(25.0, 0.0)
@@ -253,7 +275,7 @@ fn build_organism(x: f64, y: f64, name: Option<String>) -> ObjectDescription {
         .location(x, y)
         .rotation(Radians::try_new(FRAC_PI_2).unwrap())
         .mobility(Mobility::Movable(Vector::default()))
-        .kind(Kind::Organism)
+        .associated_data(bincode::serialize(&object_data).expect("Unable to encode object_data"))
         .build()
         .expect("Failed to build organism")
 }
