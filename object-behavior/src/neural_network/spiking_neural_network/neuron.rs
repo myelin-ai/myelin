@@ -238,6 +238,7 @@ mod tests {
         let membrane_potential = neuron.step(elapsed_time, &inputs);
         assert!(membrane_potential.is_some());
     }
+
     #[test]
     fn spike_goes_away_after_many_small_time_steps() {
         let mut neuron = SpikingNeuron::default();
