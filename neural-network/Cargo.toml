@@ -1,5 +1,5 @@
 [package]
-name = "neural-network"
+name = "myelin-neural-network"
 version = "0.1.0"
 authors = ["Jan Nils Ferner <jan@myelin.ch>"]
 edition = "2018"
