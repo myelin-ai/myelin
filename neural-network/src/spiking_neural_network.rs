@@ -118,7 +118,7 @@ impl SpikingNeuralNetwork {
             let neuron = self.neurons.get_mut(neuron_handle.0).ok_or(()).unwrap();
             let state = neuron.step(time_since_last_step, &inputs);
             self.last_state.insert(neuron_handle, state);
-            println!("neuron {}: {:?}", neuron_handle.0, state);
+            eprintln!("neuron {}: {:?}", neuron_handle.0, state);
         }
     }
 }
