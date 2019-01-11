@@ -43,8 +43,6 @@ impl Debug for SimulationImpl {
 
 #[derive(Debug)]
 struct NonPhysicalObjectData {
-    pub(crate) name: Option<String>,
-    pub(crate) kind: Kind,
     pub(crate) behavior: RefCell<Box<dyn ObjectBehavior>>,
     pub(crate) associated_data: Vec<u8>,
 }
@@ -105,12 +103,10 @@ impl SimulationImpl {
         let physics_body = self.world.body(body_handle)?;
         let non_physical_object_data = self.non_physical_object_data.get(&body_handle)?;
         Some(ObjectDescription {
-            name: non_physical_object_data.name.clone(),
             shape: physics_body.shape,
             location: physics_body.location,
             rotation: physics_body.rotation,
             mobility: physics_body.mobility,
-            kind: non_physical_object_data.kind,
             passable: self.world.is_body_passable(body_handle),
             associated_data: non_physical_object_data.associated_data.clone(),
         })
@@ -201,8 +197,6 @@ impl Simulation for SimulationImpl {
         let body_handle = self.world.add_body(physical_body);
 
         let non_physical_object_data = NonPhysicalObjectData {
-            name: object_description.name,
-            kind: object_description.kind,
             behavior: RefCell::new(object_behavior),
             associated_data: object_description.associated_data.clone(),
         };

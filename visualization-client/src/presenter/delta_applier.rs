@@ -89,7 +89,7 @@ fn apply_object_description_delta(
         };
     }
 
-    apply_delta!(name, shape, location, rotation, mobility, kind);
+    apply_delta!(shape, location, rotation, mobility, associated_data);
 }
 
 #[cfg(test)]

@@ -74,9 +74,6 @@ impl Clone for Action {
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[non_exhaustive]
 pub struct ObjectDescription {
-    /// The name of the object
-    pub name: Option<String>,
-
     /// The vertices defining the shape of the object
     /// in relation to its [`position`]
     ///
@@ -93,9 +90,6 @@ pub struct ObjectDescription {
     /// as a two dimensional vector relative to the
     /// objects center
     pub mobility: Mobility,
-
-    /// The object's kind
-    pub kind: Kind,
 
     /// Whether the object is passable or not
     pub passable: bool,

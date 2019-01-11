@@ -9,8 +9,6 @@ pub struct ObjectBuilderError {
     pub missing_shape: bool,
     /// Flag signaling that .location(...) was never called
     pub missing_location: bool,
-    /// Flag signaling that .kind(...) was never called
-    pub missing_kind: bool,
     /// Flag signaling that .mobility(...) was never called
     pub missing_mobility: bool,
 }
@@ -44,31 +42,15 @@ pub struct ObjectBuilderError {
 /// ```
 #[derive(Default, Debug)]
 pub struct ObjectBuilder {
-    name: Option<String>,
     shape: Option<Polygon>,
     location: Option<Point>,
     rotation: Option<Radians>,
     mobility: Option<Mobility>,
-    kind: Option<Kind>,
     passable: bool,
     associated_data: Vec<u8>,
 }
 
 impl ObjectBuilder {
-    /// # Examples
-    /// ```
-    /// use myelin_environment::object::ObjectBuilder;
-    ///
-    /// ObjectBuilder::default().name(String::from("Foo"));
-    /// ```
-    pub fn name<T>(&mut self, name: T) -> &mut Self
-    where
-        T: Into<Option<String>>,
-    {
-        self.name = name.into();
-        self
-    }
-
     /// # Examples
     /// ```
     /// use myelin_environment::object::ObjectBuilder;
@@ -97,17 +79,6 @@ impl ObjectBuilder {
     /// ```
     pub fn location(&mut self, x: f64, y: f64) -> &mut Self {
         self.location = Some(Point { x, y });
-        self
-    }
-
-    /// # Examples
-    /// ```
-    /// use myelin_environment::object::{Kind, ObjectBuilder};
-    ///
-    /// ObjectBuilder::default().kind(Kind::Plant);
-    /// ```
-    pub fn kind(&mut self, kind: Kind) -> &mut Self {
-        self.kind = Some(kind);
         self
     }
 
@@ -178,16 +149,13 @@ impl ObjectBuilder {
         let error = ObjectBuilderError {
             missing_shape: self.shape.is_none(),
             missing_location: self.location.is_none(),
-            missing_kind: self.kind.is_none(),
             missing_mobility: self.mobility.is_none(),
         };
 
         let object = ObjectDescription {
-            name: self.name.clone(),
             shape: self.shape.take().ok_or_else(|| error.clone())?,
             rotation: self.rotation.take().unwrap_or_else(Default::default),
             location: self.location.take().ok_or_else(|| error.clone())?,
-            kind: self.kind.take().ok_or_else(|| error.clone())?,
             mobility: self.mobility.take().ok_or_else(|| error.clone())?,
             passable: self.passable,
             associated_data: self.associated_data.clone(),
@@ -200,23 +168,19 @@ impl ObjectBuilder {
 impl From<ObjectDescription> for ObjectBuilder {
     fn from(object_description: ObjectDescription) -> Self {
         let ObjectDescription {
-            name,
             shape,
             location,
             rotation,
             mobility,
-            kind,
             passable,
             associated_data,
         } = object_description;
 
         ObjectBuilder {
-            name,
             shape: Some(shape),
             location: Some(location),
             rotation: Some(rotation),
             mobility: Some(mobility),
-            kind: Some(kind),
             passable,
             associated_data,
         }
