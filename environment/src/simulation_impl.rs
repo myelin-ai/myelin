@@ -46,6 +46,7 @@ struct NonPhysicalObjectData {
     pub(crate) name: Option<String>,
     pub(crate) kind: Kind,
     pub(crate) behavior: RefCell<Box<dyn ObjectBehavior>>,
+    pub(crate) associated_data: Vec<u8>,
 }
 
 /// An error that can occur whenever an action is performed
@@ -111,6 +112,7 @@ impl SimulationImpl {
             mobility: physics_body.mobility,
             kind: non_physical_object_data.kind,
             passable: self.world.is_body_passable(body_handle),
+            associated_data: non_physical_object_data.associated_data.clone(),
         })
     }
 
@@ -202,6 +204,7 @@ impl Simulation for SimulationImpl {
             name: object_description.name,
             kind: object_description.kind,
             behavior: RefCell::new(object_behavior),
+            associated_data: object_description.associated_data.clone(),
         };
         self.non_physical_object_data
             .insert(body_handle, non_physical_object_data);

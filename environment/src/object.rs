@@ -99,6 +99,9 @@ pub struct ObjectDescription {
 
     /// Whether the object is passable or not
     pub passable: bool,
+
+    /// Arbitrary data associated with this object
+    pub associated_data: Vec<u8>,
 }
 
 /// An object's mobility and, if present, its

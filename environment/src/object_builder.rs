@@ -51,6 +51,7 @@ pub struct ObjectBuilder {
     mobility: Option<Mobility>,
     kind: Option<Kind>,
     passable: bool,
+    associated_data: Vec<u8>,
 }
 
 impl ObjectBuilder {
@@ -189,6 +190,7 @@ impl ObjectBuilder {
             kind: self.kind.take().ok_or_else(|| error.clone())?,
             mobility: self.mobility.take().ok_or_else(|| error.clone())?,
             passable: self.passable,
+            associated_data: self.associated_data.clone(),
         };
 
         Ok(object)
@@ -205,6 +207,7 @@ impl From<ObjectDescription> for ObjectBuilder {
             mobility,
             kind,
             passable,
+            associated_data,
         } = object_description;
 
         ObjectBuilder {
@@ -215,6 +218,7 @@ impl From<ObjectDescription> for ObjectBuilder {
             mobility: Some(mobility),
             kind: Some(kind),
             passable,
+            associated_data,
         }
     }
 }
