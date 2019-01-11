@@ -1,5 +1,5 @@
 use super::constant;
-use crate::neural_network::*;
+use crate::*;
 use std::f64::consts::E;
 
 /// A spiking neuron

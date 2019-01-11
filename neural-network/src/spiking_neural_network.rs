@@ -3,7 +3,7 @@
 pub(crate) mod constant;
 mod neuron;
 pub use self::neuron::*;
-use crate::neural_network::*;
+use crate::*;
 
 use slab::Slab;
 use std::collections::HashMap;
