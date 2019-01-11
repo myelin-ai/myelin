@@ -46,19 +46,12 @@ impl NameProvider for NameProviderImpl {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::read_to_string;
-    use std::path::Path;
 
     #[test]
     fn add_file_for_kind_works_with_one_name() {
         let mut builder = NameProviderBuilder::default();
 
-        let path = Path::new("./test-data/object-names/plants.txt");
-        let names = read_to_string(path)
-            .expect("Error while reading file")
-            .lines()
-            .map(String::from)
-            .collect();
+        let names = vec![String::from("Malus domestica")];
         builder.add_names(names, Kind::Plant);
 
         let mut name_provider = builder.build();
