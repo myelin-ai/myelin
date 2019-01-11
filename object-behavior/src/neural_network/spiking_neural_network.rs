@@ -239,15 +239,15 @@ mod tests {
         let inputs = HashMap::new();
         neural_network.step(elapsed_time, &inputs);
 
-        let neuron_membrane_potential = neural_network
-            .membrane_potential_of_neuron(neuron_handle)
-            .unwrap();
         let sensor_membrane_potential = neural_network
             .membrane_potential_of_neuron(sensor_handle)
             .unwrap();
+        let neuron_membrane_potential = neural_network
+            .membrane_potential_of_neuron(neuron_handle)
+            .unwrap();
 
-        assert!(neuron_membrane_potential.is_none());
         assert!(sensor_membrane_potential.is_none());
+        assert!(neuron_membrane_potential.is_none());
     }
 
     #[test]
@@ -268,15 +268,15 @@ mod tests {
         for _ in 0..100 {
             neural_network.step(elapsed_time, &inputs);
 
-            let neuron_membrane_potential = neural_network
-                .membrane_potential_of_neuron(neuron_handle)
-                .unwrap();
             let sensor_membrane_potential = neural_network
                 .membrane_potential_of_neuron(sensor_handle)
                 .unwrap();
+            let neuron_membrane_potential = neural_network
+                .membrane_potential_of_neuron(neuron_handle)
+                .unwrap();
 
-            assert!(neuron_membrane_potential.is_none());
             assert!(sensor_membrane_potential.is_none());
+            assert!(neuron_membrane_potential.is_none());
         }
     }
 
@@ -315,15 +315,15 @@ mod tests {
         };
         neural_network.step(elapsed_time, &inputs);
 
-        let neuron_membrane_potential = neural_network
-            .membrane_potential_of_neuron(neuron_handle)
-            .unwrap();
         let sensor_membrane_potential = neural_network
             .membrane_potential_of_neuron(sensor_handle)
             .unwrap();
+        let neuron_membrane_potential = neural_network
+            .membrane_potential_of_neuron(neuron_handle)
+            .unwrap();
 
-        assert!(neuron_membrane_potential.is_none());
         assert!(sensor_membrane_potential.is_some());
+        assert!(neuron_membrane_potential.is_none());
     }
 
     #[test]
@@ -344,14 +344,14 @@ mod tests {
         };
         neural_network.step(elapsed_time, &inputs);
 
-        let neuron_membrane_potential = neural_network
-            .membrane_potential_of_neuron(neuron_handle)
-            .unwrap();
         let sensor_membrane_potential = neural_network
             .membrane_potential_of_neuron(sensor_handle)
             .unwrap();
+        let neuron_membrane_potential = neural_network
+            .membrane_potential_of_neuron(neuron_handle)
+            .unwrap();
 
-        assert!(neuron_membrane_potential.is_none());
         assert!(sensor_membrane_potential.is_some());
+        assert!(neuron_membrane_potential.is_none());
     }
 }
