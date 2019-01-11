@@ -1,7 +1,7 @@
 pipeline {
   agent any
   options {
-    disableConcurrentBuilds()
+    lock resource: 'Myelin_Build', inversePrecedence: true
   }
   stages {
     stage('Clean') {
