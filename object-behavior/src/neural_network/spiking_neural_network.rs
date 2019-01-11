@@ -249,4 +249,109 @@ mod tests {
         assert!(neuron_membrane_potential.is_none());
         assert!(sensor_membrane_potential.is_none());
     }
+
+    #[test]
+    fn connected_neurons_with_no_input_do_not_fire() {
+        let mut neural_network = SpikingNeuralNetwork::default();
+        let sensor_handle = neural_network.push_neuron();
+        let neuron_handle = neural_network.push_neuron();
+        let connection = Connection {
+            from: Handle(sensor_handle.0),
+            to: Handle(neuron_handle.0),
+            weight: Weight(1.0),
+        };
+        neural_network.add_connection(connection).unwrap();
+
+        let elapsed_time = Milliseconds(1.0);
+        let inputs = HashMap::new();
+
+        for _ in 0..100 {
+            neural_network.step(elapsed_time, &inputs);
+
+            let neuron_membrane_potential = neural_network
+                .membrane_potential_of_neuron(neuron_handle)
+                .unwrap();
+            let sensor_membrane_potential = neural_network
+                .membrane_potential_of_neuron(sensor_handle)
+                .unwrap();
+
+            assert!(neuron_membrane_potential.is_none());
+            assert!(sensor_membrane_potential.is_none());
+        }
+    }
+
+    #[test]
+    fn high_input_causes_firing() {
+        let mut neural_network = SpikingNeuralNetwork::default();
+        let sensor_handle = neural_network.push_neuron();
+
+        let elapsed_time = Milliseconds(1.0);
+        let inputs = hashmap! {
+            sensor_handle => self::constant::THRESHOLD_POTENTIAL
+        };
+        neural_network.step(elapsed_time, &inputs);
+
+        let sensor_membrane_potential = neural_network
+            .membrane_potential_of_neuron(sensor_handle)
+            .unwrap();
+        assert!(sensor_membrane_potential.is_some());
+    }
+
+    #[test]
+    fn weak_connection_does_not_propagate_firing() {
+        let mut neural_network = SpikingNeuralNetwork::default();
+        let sensor_handle = neural_network.push_neuron();
+        let neuron_handle = neural_network.push_neuron();
+        let connection = Connection {
+            from: Handle(sensor_handle.0),
+            to: Handle(neuron_handle.0),
+            weight: Weight(0.000001),
+        };
+        neural_network.add_connection(connection).unwrap();
+
+        let elapsed_time = Milliseconds(1.0);
+        let inputs = hashmap! {
+            sensor_handle => self::constant::THRESHOLD_POTENTIAL
+        };
+        neural_network.step(elapsed_time, &inputs);
+
+        let neuron_membrane_potential = neural_network
+            .membrane_potential_of_neuron(neuron_handle)
+            .unwrap();
+        let sensor_membrane_potential = neural_network
+            .membrane_potential_of_neuron(sensor_handle)
+            .unwrap();
+
+        assert!(neuron_membrane_potential.is_none());
+        assert!(sensor_membrane_potential.is_some());
+    }
+
+    #[test]
+    fn strong_connection_does_not_propagate_firing_instantly() {
+        let mut neural_network = SpikingNeuralNetwork::default();
+        let sensor_handle = neural_network.push_neuron();
+        let neuron_handle = neural_network.push_neuron();
+        let connection = Connection {
+            from: Handle(sensor_handle.0),
+            to: Handle(neuron_handle.0),
+            weight: Weight(10.0),
+        };
+        neural_network.add_connection(connection).unwrap();
+
+        let elapsed_time = Milliseconds(1.0);
+        let inputs = hashmap! {
+            sensor_handle => self::constant::THRESHOLD_POTENTIAL
+        };
+        neural_network.step(elapsed_time, &inputs);
+
+        let neuron_membrane_potential = neural_network
+            .membrane_potential_of_neuron(neuron_handle)
+            .unwrap();
+        let sensor_membrane_potential = neural_network
+            .membrane_potential_of_neuron(sensor_handle)
+            .unwrap();
+
+        assert!(neuron_membrane_potential.is_none());
+        assert!(sensor_membrane_potential.is_some());
+    }
 }
