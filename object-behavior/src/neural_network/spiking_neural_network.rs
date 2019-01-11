@@ -72,11 +72,14 @@ impl SpikingNeuralNetwork {
             const EXTERNAL_CONNECTION_WEIGHT: Weight = Weight(1.0);
             inputs.push((input, EXTERNAL_CONNECTION_WEIGHT));
 
-            self.step_neuron(
-                handle_of_neuron_receiving_input,
-                time_since_last_step,
-                &inputs,
-            );
+            let neuron = self
+                .neurons
+                .get_mut(handle_of_neuron_receiving_input.0)
+                .ok_or(())
+                .unwrap();
+            let state = neuron.step(time_since_last_step, &inputs);
+            self.last_state
+                .insert(handle_of_neuron_receiving_input, state);
         }
         for &neuron_handle in self
             .neuron_handles
@@ -84,7 +87,9 @@ impl SpikingNeuralNetwork {
             .filter(|handle| !external_inputs.contains_key(handle))
         {
             let inputs = self.cached_incoming_connection_inputs(neuron_handle);
-            self.step_neuron(neuron_handle, time_since_last_step, &inputs);
+            let neuron = self.neurons.get_mut(neuron_handle.0).ok_or(()).unwrap();
+            let state = neuron.step(time_since_last_step, &inputs);
+            self.last_state.insert(neuron_handle, state);
         }
     }
 
@@ -107,18 +112,6 @@ impl SpikingNeuralNetwork {
         } else {
             Vec::new()
         }
-    }
-
-    fn step_neuron(
-        &mut self,
-        neuron_handle: Handle,
-        time_since_last_step: Milliseconds,
-        inputs: &[(MembranePotential, Weight)],
-    ) -> Result<()> {
-        let neuron = self.neurons.get_mut(neuron_handle.0).ok_or(())?;
-        let state = neuron.step(time_since_last_step, inputs);
-        self.last_state.insert(neuron_handle, state);
-        Ok(())
     }
 }
 
