@@ -55,12 +55,7 @@ impl NeuralNetwork for SpikingNeuralNetwork {
         let is_origin_same_as_destination = connection.from == connection.to;
         let contains_origin = self.neurons.contains(connection.from.0);
         let contains_destination = self.neurons.contains(connection.to.0);
-        let is_destination_a_sensor = self.sensors.contains(&connection.to);
-        if is_origin_same_as_destination
-            || !contains_origin
-            || !contains_destination
-            || is_destination_a_sensor
-        {
+        if is_origin_same_as_destination || !contains_origin || !contains_destination {
             Err(())
         } else {
             self.incoming_connections
@@ -78,59 +73,59 @@ impl SpikingNeuralNetwork {
         time_since_last_step: Milliseconds,
         external_inputs: &HashMap<Handle, MembranePotential>,
     ) {
-        for (handle_of_neuron_receiving_input, input) in external_inputs {
+        for (&handle_of_neuron_receiving_input, &input) in external_inputs {
+            let mut inputs =
+                self.cached_incoming_connection_inputs(handle_of_neuron_receiving_input);
             const EXTERNAL_CONNECTION_WEIGHT: Weight = Weight(1.0);
-            let mut input_to_neuron = vec![(*input, EXTERNAL_CONNECTION_WEIGHT)];
-            if let Some(incoming_connections) = self
-                .incoming_connections
-                .get(&handle_of_neuron_receiving_input)
-            {
-                let connection_inputs =
-                    incoming_connections
-                        .iter()
-                        .filter_map(|(handle_of_connection, weight)| {
-                            let state_of_connection = self.last_state.get(handle_of_connection)?;
-                            if let Some(state_of_connection) = state_of_connection {
-                                Some((*state_of_connection, *weight))
-                            } else {
-                                None
-                            }
-                        });
-                input_to_neuron.extend(connection_inputs);
-            }
-            let neuron = self
-                .neurons
-                .get_mut(handle_of_neuron_receiving_input.0)
-                .unwrap();
-            let state = neuron.step(time_since_last_step, &input_to_neuron);
-            self.last_state
-                .insert(*handle_of_neuron_receiving_input, state);
+            inputs.push((input, EXTERNAL_CONNECTION_WEIGHT));
+
+            self.step_neuron(
+                handle_of_neuron_receiving_input,
+                time_since_last_step,
+                &inputs,
+            );
         }
-        for neuron_handle in self
+        for &neuron_handle in self
             .neuron_handles
             .iter()
             .filter(|handle| !external_inputs.contains_key(handle))
         {
-            let inputs =
-                if let Some(incoming_connections) = self.incoming_connections.get(&neuron_handle) {
-                    incoming_connections
-                        .iter()
-                        .filter_map(|(handle_of_connection, weight)| {
-                            let state_of_connection = self.last_state.get(handle_of_connection)?;
-                            if let Some(state_of_connection) = state_of_connection {
-                                Some((*state_of_connection, *weight))
-                            } else {
-                                None
-                            }
-                        })
-                        .collect()
-                } else {
-                    Vec::new()
-                };
-            let neuron = self.neurons.get_mut(neuron_handle.0).unwrap();
-            let state = neuron.step(time_since_last_step, &inputs);
-            self.last_state.insert(*neuron_handle, state);
+            let inputs = self.cached_incoming_connection_inputs(neuron_handle);
+            self.step_neuron(neuron_handle, time_since_last_step, &inputs);
         }
+    }
+
+    fn cached_incoming_connection_inputs(
+        &self,
+        neuron_handle: Handle,
+    ) -> Vec<(MembranePotential, Weight)> {
+        if let Some(incoming_connections) = self.incoming_connections.get(&neuron_handle) {
+            incoming_connections
+                .iter()
+                .filter_map(|(handle_of_connection, weight)| {
+                    let &state_of_connection = self.last_state.get(handle_of_connection)?;
+                    if let Some(state_of_connection) = state_of_connection {
+                        Some((state_of_connection, *weight))
+                    } else {
+                        None
+                    }
+                })
+                .collect()
+        } else {
+            Vec::new()
+        }
+    }
+
+    fn step_neuron(
+        &mut self,
+        neuron_handle: Handle,
+        time_since_last_step: Milliseconds,
+        inputs: &[(MembranePotential, Weight)],
+    ) -> Result<()> {
+        let neuron = self.neurons.get_mut(neuron_handle.0).ok_or(())?;
+        let state = neuron.step(time_since_last_step, inputs);
+        self.last_state.insert(neuron_handle, state);
+        Ok(())
     }
 }
 
