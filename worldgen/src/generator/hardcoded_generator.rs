@@ -43,7 +43,8 @@ impl HardcodedGenerator {
     /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
     /// use myelin_environment::Simulation;
     /// use myelin_object_behavior::Static;
-    /// use myelin_worldgen::{FileSystemNameProviderBuilder, HardcodedGenerator, WorldGenerator};
+    /// use myelin_worldgen::{HardcodedGenerator, NameProviderBuilder, WorldGenerator};
+    /// use std::fs::read_to_string;
     /// use std::path::Path;
     /// use std::sync::{Arc, RwLock};
     ///
@@ -68,10 +69,14 @@ impl HardcodedGenerator {
     /// let terrain_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
     /// let water_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
     ///
-    /// let mut name_provider_builder = FileSystemNameProviderBuilder::default();
-    /// name_provider_builder
-    ///     .add_file_for_kind(Path::new("../object-names/organisms.txt"), Kind::Organism)
-    ///     .expect("Error while loading the file");
+    /// let mut name_provider_builder = NameProviderBuilder::default();
+    ///
+    /// let organism_names = read_to_string(Path::new("../object-names/organisms.txt"))
+    ///     .expect("Error while reading file")
+    ///     .lines()
+    ///     .map(String::from)
+    ///     .collect();
+    /// name_provider_builder.add_names(organism_names, Kind::Organism);
     ///
     /// let name_provider = name_provider_builder.build_randomized();
     ///

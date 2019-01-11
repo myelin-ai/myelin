@@ -3,32 +3,26 @@ use myelin_environment::object::Kind;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::collections::HashMap;
-use std::fs::read_to_string;
-use std::io;
-use std::path::Path;
 
-struct FileSystemNameProvider {
+struct NameProviderImpl {
     names: HashMap<Kind, Vec<String>>,
 }
 
 /// Provides names read from files
 #[derive(Default, Debug)]
-pub struct FileSystemNameProviderBuilder {
+pub struct NameProviderBuilder {
     names: HashMap<Kind, Vec<String>>,
 }
 
-impl FileSystemNameProviderBuilder {
+impl NameProviderBuilder {
     /// Add names from a file for a certain kind of object
-    pub fn add_file_for_kind(&mut self, path: &Path, kind: Kind) -> io::Result<()> {
-        let contents = read_to_string(&path)?;
-        let new_names = contents.lines().map(String::from);
-        self.names.entry(kind).or_default().extend(new_names);
-        Ok(())
+    pub fn add_names(&mut self, names: Vec<String>, kind: Kind) {
+        self.names.entry(kind).or_default().extend(names);
     }
 
     /// Build
     pub fn build(self) -> Box<dyn NameProvider> {
-        box FileSystemNameProvider { names: self.names }
+        box NameProviderImpl { names: self.names }
     }
 
     /// Build, but shuffle the names beforehand
@@ -43,7 +37,7 @@ impl FileSystemNameProviderBuilder {
     }
 }
 
-impl NameProvider for FileSystemNameProvider {
+impl NameProvider for NameProviderImpl {
     fn get_name(&mut self, kind: Kind) -> Option<String> {
         self.names.get_mut(&kind)?.pop()
     }
@@ -52,15 +46,20 @@ impl NameProvider for FileSystemNameProvider {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs::read_to_string;
+    use std::path::Path;
 
     #[test]
     fn add_file_for_kind_works_with_one_name() {
-        let mut builder = FileSystemNameProviderBuilder::default();
+        let mut builder = NameProviderBuilder::default();
 
         let path = Path::new("./test-data/object-names/plants.txt");
-        builder
-            .add_file_for_kind(path, Kind::Plant)
-            .expect("Error while reading file");
+        let names = read_to_string(path)
+            .expect("Error while reading file")
+            .lines()
+            .map(String::from)
+            .collect();
+        builder.add_names(names, Kind::Plant);
 
         let mut name_provider = builder.build();
 

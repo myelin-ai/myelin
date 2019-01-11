@@ -15,8 +15,9 @@ use myelin_environment::Simulation;
 use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
 use myelin_object_behavior::Static;
 use myelin_visualization_core::serialization::BincodeSerializer;
-use myelin_worldgen::FileSystemNameProviderBuilder;
+use myelin_worldgen::NameProviderBuilder;
 use myelin_worldgen::{HardcodedGenerator, WorldGenerator};
+use std::fs::read_to_string;
 use std::net::SocketAddr;
 use std::path::Path;
 use std::sync::{Arc, RwLock};
@@ -53,10 +54,14 @@ where
     let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
     let water_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
 
-    let mut name_provider_builder = FileSystemNameProviderBuilder::default();
-    name_provider_builder
-        .add_file_for_kind(Path::new("./object-names/organisms.txt"), Kind::Organism)
-        .expect("Error while loading the file");
+    let mut name_provider_builder = NameProviderBuilder::default();
+
+    let organism_names = read_to_string(Path::new("./object-names/organisms.txt"))
+        .expect("Error while reading file")
+        .lines()
+        .map(String::from)
+        .collect();
+    name_provider_builder.add_names(organism_names, Kind::Organism);
 
     let name_provider = name_provider_builder.build_randomized();
 
