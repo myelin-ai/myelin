@@ -573,6 +573,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "myelin-object-data"
+version = "0.1.0"
+dependencies = [
+ "serde 1.0.80 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_derive 1.0.80 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "myelin-visualization-client"
 version = "0.1.0"
 dependencies = [
@@ -581,6 +589,7 @@ dependencies = [
  "mockiato 0.1.0 (git+https://github.com/myelin-ai/mockiato)",
  "myelin-environment 0.1.0",
  "myelin-geometry 0.1.0",
+ "myelin-object-data 0.1.0",
  "myelin-visualization-core 0.1.0",
  "nameof 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.80 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -633,6 +642,7 @@ dependencies = [
  "myelin-environment 0.1.0",
  "myelin-geometry 0.1.0",
  "myelin-object-behavior 0.1.0",
+ "myelin-object-data 0.1.0",
  "nameof 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]

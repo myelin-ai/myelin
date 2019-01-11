@@ -7,6 +7,7 @@ use crate::view_model;
 use myelin_environment::object::*;
 use myelin_environment::Snapshot;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
+use myelin_object_data::Kind;
 use std::borrow::Borrow;
 use std::error::Error;
 use std::fmt;

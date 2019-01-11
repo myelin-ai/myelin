@@ -198,6 +198,7 @@ impl HardcodedGenerator {
         }
     }
 }
+
 fn build_terrain(location: (f64, f64), width: f64, length: f64) -> ObjectDescription {
     let x_offset = width / 2.0;
     let y_offset = length / 2.0;

@@ -113,20 +113,6 @@ pub enum Mobility {
     Movable(Vector),
 }
 
-/// The part of an object that is responsible for custom
-/// behavior and interactions
-#[derive(Hash, Debug, Eq, PartialEq, Clone, Copy, Serialize, Deserialize)]
-pub enum Kind {
-    /// An intelligent organism featuring a neural network
-    Organism,
-    /// A self-spreading plant, ready for consumption
-    Plant,
-    /// A stationary body of water
-    Water,
-    /// Impassable terrain
-    Terrain,
-}
-
 /// Combination of a linear force and its torque,
 /// resulting in a rotated force applied to an object
 #[derive(Debug, PartialEq, Clone, Default)]
