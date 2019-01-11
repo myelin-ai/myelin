@@ -10,9 +10,13 @@
 
 use serde_derive::{Deserialize, Serialize};
 
+/// The data associated with an object
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AssociatedObjectData {
+    /// The name of an object
     pub name: Option<String>,
+
+    /// The kind of an object
     pub kind: Kind,
 }
 
