@@ -71,12 +71,12 @@ impl HardcodedGenerator {
     ///
     /// let mut name_provider_builder = NameProviderBuilder::default();
     ///
-    /// let organism_names = read_to_string(Path::new("../object-names/organisms.txt"))
+    /// let organism_names: Vec<String> = read_to_string(Path::new("../object-names/organisms.txt"))
     ///     .expect("Error while reading file")
     ///     .lines()
     ///     .map(String::from)
     ///     .collect();
-    /// name_provider_builder.add_names(organism_names, Kind::Organism);
+    /// name_provider_builder.add_names(&organism_names, Kind::Organism);
     ///
     /// let name_provider = name_provider_builder.build_randomized();
     ///
