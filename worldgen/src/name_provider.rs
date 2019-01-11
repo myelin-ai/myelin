@@ -16,8 +16,8 @@ pub struct NameProviderBuilder {
 
 impl NameProviderBuilder {
     /// Add names from a file for a certain kind of object
-    pub fn add_names(&mut self, names: Vec<String>, kind: Kind) {
-        self.names.entry(kind).or_default().extend(names);
+    pub fn add_names(&mut self, names: &[String], kind: Kind) {
+        self.names.entry(kind).or_default().extend_from_slice(names);
     }
 
     /// Build
@@ -52,7 +52,7 @@ mod tests {
         let mut builder = NameProviderBuilder::default();
 
         let names = vec![String::from("Malus domestica")];
-        builder.add_names(names, Kind::Plant);
+        builder.add_names(&names, Kind::Plant);
 
         let mut name_provider = builder.build();
 
