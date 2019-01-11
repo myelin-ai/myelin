@@ -34,13 +34,6 @@ impl NeuralNetwork for SpikingNeuralNetwork {
         self.last_state.get(&neuron).cloned().ok_or(())
     }
 
-    /// Add a new unconnected sensor to the network
-    fn push_sensor(&mut self) -> Handle {
-        let handle = self.push_neuron();
-        self.sensors.push(handle);
-        handle
-    }
-
     /// Add a new unconnected neuron to the network
     fn push_neuron(&mut self) -> Handle {
         let handle = Handle(self.neurons.insert(SpikingNeuron::default()));
@@ -142,10 +135,10 @@ mod tests {
     }
 
     #[test]
-    fn can_push_sensors_and_neurons() {
+    fn can_push_neurons() {
         let mut neural_network = SpikingNeuralNetwork::default();
         let neuron_handle = neural_network.push_neuron();
-        let sensor_handle = neural_network.push_sensor();
+        let sensor_handle = neural_network.push_neuron();
         assert_ne!(neuron_handle.0, sensor_handle.0);
     }
 
@@ -177,16 +170,6 @@ mod tests {
     }
 
     #[test]
-    fn new_sensor_emits_no_potential() {
-        let mut neural_network = SpikingNeuralNetwork::default();
-        let sensor_handle = neural_network.push_sensor();
-        let membrane_potential = neural_network
-            .membrane_potential_of_neuron(sensor_handle)
-            .unwrap();
-        assert!(membrane_potential.is_none());
-    }
-
-    #[test]
     fn returns_err_when_adding_connection_on_empty_network() {
         let mut neural_network = SpikingNeuralNetwork::default();
         let connection = Connection {
@@ -201,25 +184,11 @@ mod tests {
     #[test]
     fn returns_err_when_adding_connection_with_invalid_handles() {
         let mut neural_network = SpikingNeuralNetwork::default();
-        let sensor_handle = neural_network.push_sensor();
+        let sensor_handle = neural_network.push_neuron();
         let neuron_handle = neural_network.push_neuron();
         let connection = Connection {
             from: Handle(sensor_handle.0 + 1),
             to: Handle(neuron_handle.0 + 1),
-            weight: Weight(1.0),
-        };
-        let result = neural_network.add_connection(connection);
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn returns_err_when_adding_connection_sensor_as_destination() {
-        let mut neural_network = SpikingNeuralNetwork::default();
-        let sensor_handle = neural_network.push_sensor();
-        let neuron_handle = neural_network.push_neuron();
-        let connection = Connection {
-            from: Handle(neuron_handle.0),
-            to: Handle(sensor_handle.0),
             weight: Weight(1.0),
         };
         let result = neural_network.add_connection(connection);
@@ -242,7 +211,7 @@ mod tests {
     #[test]
     fn returns_ok_when_adding_connection_with_valid_handles() {
         let mut neural_network = SpikingNeuralNetwork::default();
-        let sensor_handle = neural_network.push_sensor();
+        let sensor_handle = neural_network.push_neuron();
         let neuron_handle = neural_network.push_neuron();
         let connection = Connection {
             from: Handle(sensor_handle.0),
@@ -264,7 +233,7 @@ mod tests {
     #[test]
     fn step_on_unconnected_neurons_emits_no_potential() {
         let mut neural_network = SpikingNeuralNetwork::default();
-        let sensor_handle = neural_network.push_sensor();
+        let sensor_handle = neural_network.push_neuron();
         let neuron_handle = neural_network.push_neuron();
 
         let elapsed_time = Milliseconds(1.0);
