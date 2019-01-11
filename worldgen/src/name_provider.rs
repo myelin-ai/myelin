@@ -28,7 +28,7 @@ impl FileSystemNameProviderBuilder {
 
     /// Build
     pub fn build(self) -> Box<dyn NameProvider> {
-        Box::new(FileSystemNameProvider { names: self.names })
+        box FileSystemNameProvider { names: self.names }
     }
 
     /// Build, but shuffle the names beforehand
