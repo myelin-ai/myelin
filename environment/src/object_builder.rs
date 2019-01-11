@@ -354,6 +354,7 @@ mod test {
             kind: Kind::Terrain,
             mobility: Mobility::Immovable,
             passable: false,
+            associated_data: Vec::new(),
         };
 
         assert_eq!(Ok(expected), result);
@@ -392,6 +393,7 @@ mod test {
             kind: Kind::Terrain,
             mobility: Mobility::Immovable,
             passable: true,
+            associated_data: Vec::new(),
         };
 
         assert_eq!(Ok(expected), result);
@@ -430,6 +432,7 @@ mod test {
             kind: Kind::Terrain,
             mobility: Mobility::Immovable,
             passable: false,
+            associated_data: Vec::new(),
         };
 
         assert_eq!(Ok(expected), result);
@@ -482,6 +485,7 @@ mod test {
             ])
             .unwrap(),
             passable: false,
+            associated_data: Vec::new(),
         };
 
         assert_eq!(Ok(expected), result);
@@ -503,6 +507,7 @@ mod test {
             ])
             .unwrap(),
             passable: true,
+            associated_data: Vec::new(),
         };
 
         assert_eq!(
