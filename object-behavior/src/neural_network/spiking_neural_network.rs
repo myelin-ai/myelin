@@ -24,9 +24,31 @@ impl NeuralNetwork for SpikingNeuralNetwork {
         time_since_last_step: Milliseconds,
         external_inputs: &HashMap<Handle, MembranePotential>,
     ) {
-        self.process_external_inputs(time_since_last_step, external_inputs);
-        // Process all the other neurons, excluding the ones with external inputs
-        // Check incoming values
+        for (&handle_of_neuron_receiving_input, &input) in external_inputs {
+            let mut inputs =
+                self.cached_incoming_connection_inputs(handle_of_neuron_receiving_input);
+            const EXTERNAL_CONNECTION_WEIGHT: Weight = Weight(1.0);
+            inputs.push((input, EXTERNAL_CONNECTION_WEIGHT));
+
+            let neuron = self
+                .neurons
+                .get_mut(handle_of_neuron_receiving_input.0)
+                .ok_or(())
+                .unwrap();
+            let state = neuron.step(time_since_last_step, &inputs);
+            self.last_state
+                .insert(handle_of_neuron_receiving_input, state);
+        }
+        for &neuron_handle in self
+            .neuron_handles
+            .iter()
+            .filter(|handle| !external_inputs.contains_key(handle))
+        {
+            let inputs = self.cached_incoming_connection_inputs(neuron_handle);
+            let neuron = self.neurons.get_mut(neuron_handle.0).ok_or(()).unwrap();
+            let state = neuron.step(time_since_last_step, &inputs);
+            self.last_state.insert(neuron_handle, state);
+        }
     }
 
     /// Returns the last calculated state of the neuron referenced by `handle`
@@ -61,38 +83,6 @@ impl NeuralNetwork for SpikingNeuralNetwork {
 }
 
 impl SpikingNeuralNetwork {
-    fn process_external_inputs(
-        &mut self,
-        time_since_last_step: Milliseconds,
-        external_inputs: &HashMap<Handle, MembranePotential>,
-    ) {
-        for (&handle_of_neuron_receiving_input, &input) in external_inputs {
-            let mut inputs =
-                self.cached_incoming_connection_inputs(handle_of_neuron_receiving_input);
-            const EXTERNAL_CONNECTION_WEIGHT: Weight = Weight(1.0);
-            inputs.push((input, EXTERNAL_CONNECTION_WEIGHT));
-
-            let neuron = self
-                .neurons
-                .get_mut(handle_of_neuron_receiving_input.0)
-                .ok_or(())
-                .unwrap();
-            let state = neuron.step(time_since_last_step, &inputs);
-            self.last_state
-                .insert(handle_of_neuron_receiving_input, state);
-        }
-        for &neuron_handle in self
-            .neuron_handles
-            .iter()
-            .filter(|handle| !external_inputs.contains_key(handle))
-        {
-            let inputs = self.cached_incoming_connection_inputs(neuron_handle);
-            let neuron = self.neurons.get_mut(neuron_handle.0).ok_or(()).unwrap();
-            let state = neuron.step(time_since_last_step, &inputs);
-            self.last_state.insert(neuron_handle, state);
-        }
-    }
-
     fn cached_incoming_connection_inputs(
         &self,
         neuron_handle: Handle,
