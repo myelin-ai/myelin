@@ -1,4 +1,5 @@
-//! [Source](https://books.google.com/books?id=A8H_9S4E0I4C&pg=PA55&lpg=PA55&focus=viewport)
+//! [Source for potential values](https://books.google.com/books?id=A8H_9S4E0I4C&pg=PA55&lpg=PA55&focus=viewport)
+//! [Source for time values](http://www.humanneurophysiology.com/membranepotentials.htm)
 
 use crate::{MembranePotential, Milliseconds};
 
