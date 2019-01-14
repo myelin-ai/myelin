@@ -96,6 +96,7 @@ pub struct ObjectDescription {
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct ObjectDescriptionDelta {
     /// The name of the object
+    #[allow(clippy::option_option)]
     pub name: Option<Option<String>>,
 
     /// The object's kind
