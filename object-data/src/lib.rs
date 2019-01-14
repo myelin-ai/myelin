@@ -36,10 +36,10 @@ pub enum Kind {
 
 /// Serialize associated object data
 pub fn serialize(associated_object_data: &AssociatedObjectData) -> Vec<u8> {
-    bincode::serialize(associated_object_data)
+    bincode::serialize(associated_object_data).expect("Unable to serialize associated object data")
 }
 
 /// Deserialize into associated object data
 pub fn deserialize(data: &[u8]) -> AssociatedObjectData {
-    bincode::deserialize(data).expect("Unable to deserialize associated data")
+    bincode::deserialize(data).expect("Unable to deserialize data")
 }
