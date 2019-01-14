@@ -1,8 +1,7 @@
-use myelin_environment::object::ObjectDescription;
-use myelin_environment::{Id, Snapshot};
-use myelin_visualization_core::view_model_delta::{
-    ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
+use crate::presenter::{
+    ObjectDelta, ObjectDescription, ObjectDescriptionDelta, Snapshot, ViewModelDelta,
 };
+use myelin_environment::Id;
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
 use std::marker::PhantomData;
@@ -89,7 +88,7 @@ fn apply_object_description_delta(
         };
     }
 
-    apply_delta!(shape, location, rotation, mobility, associated_data);
+    apply_delta!(name, kind, shape, location, rotation, mobility);
 }
 
 #[cfg(test)]

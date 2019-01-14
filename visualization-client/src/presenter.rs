@@ -4,10 +4,12 @@ pub(crate) use self::global_polygon_translator::{
 };
 use crate::controller::Presenter;
 use crate::view_model;
-use myelin_environment::Snapshot;
-use myelin_object_data::{Kind, AssociatedObjectData, deserialize_associated_object_data};
-use myelin_visualization_core::view_model_delta::ViewModelDelta;
+use myelin_environment::object::Mobility;
+use myelin_environment::Id;
+use myelin_geometry::*;
+use myelin_object_data::Kind;
 use std::borrow::Borrow;
+use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 
@@ -48,6 +50,75 @@ impl Presenter for CanvasPresenter {
     }
 }
 
+pub type Snapshot = HashMap<Id, ObjectDescription>;
+pub type ViewModelDelta = HashMap<Id, ObjectDelta>;
+
+/// Describes what happened to an individual object in this
+#[derive(Debug)]
+pub enum ObjectDelta {
+    /// The object has been added to the world
+    Created(ObjectDescription),
+    /// At least one property of the object has changed
+    Updated(ObjectDescriptionDelta),
+    /// The object has been removed from the world
+    Deleted,
+}
+
+#[derive(Debug)]
+pub struct ObjectDescription {
+    /// The name of the object
+    pub name: Option<String>,
+
+    /// The object's kind
+    pub kind: Kind,
+
+    /// The vertices defining the shape of the object
+    /// in relation to its [`position`]
+    ///
+    /// [`position`]: ./struct.ObjectDescription.html#structfield.location
+    pub shape: Polygon,
+
+    /// The global location of the center of the object
+    pub location: Point,
+
+    /// The object's rotation
+    pub rotation: Radians,
+
+    /// The current velocity of the object, defined
+    /// as a two dimensional vector relative to the
+    /// objects center
+    pub mobility: Mobility,
+
+    /// Whether the object is passable or not
+    pub passable: bool,
+}
+
+#[derive(Debug)]
+pub struct ObjectDescriptionDelta {
+    /// The name of the object
+    pub name: Option<Option<String>>,
+
+    /// The object's kind
+    pub kind: Option<Kind>,
+
+    /// The vertices defining the shape of the object
+    /// in relation to its [`position`]
+    ///
+    /// [`position`]: ./struct.ObjectDescription.html#structfield.location
+    pub shape: Option<Polygon>,
+
+    /// The current location of the object
+    pub location: Option<Point>,
+
+    /// The current rotation of the object
+    pub rotation: Option<Radians>,
+
+    /// The current velocity of the object, defined
+    /// as a two dimensional vector relative to the
+    /// objects center
+    pub mobility: Option<Mobility>,
+}
+
 fn map_objects(
     snapshot: &Snapshot,
     global_polygon_translator: &dyn GlobalPolygonTranslator,
@@ -61,11 +132,7 @@ fn map_objects(
                 business_object.rotation,
             );
 
-            // TODO: Inject deserializer
-            let associated_object_data: AssociatedObjectData =
-                deserialize_associated_object_data(&business_object.associated_data)
-                    .expect("Deserialization of object data failed");
-            let kind = map_kind(associated_object_data.kind);
+            let kind = map_kind(business_object.kind);
 
             view_model::Object { shape, kind }
         })

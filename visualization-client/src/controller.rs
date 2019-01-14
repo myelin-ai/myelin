@@ -1,11 +1,17 @@
 use crate::input_handler::Controller;
+use crate::presenter;
+use myelin_environment::object::ObjectDescription;
+use myelin_object_data::deserialize_associated_object_data;
+use myelin_object_data::AssociatedObjectData;
 use myelin_visualization_core::serialization::ViewModelDeserializer;
-use myelin_visualization_core::view_model_delta::ViewModelDelta;
+use myelin_visualization_core::view_model_delta::{
+    ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
+};
 use std::error::Error;
 use std::fmt;
 
 pub(crate) trait Presenter: fmt::Debug {
-    fn present_delta(&mut self, delta: ViewModelDelta) -> Result<(), Box<dyn Error>>;
+    fn present_delta(&mut self, delta: presenter::ViewModelDelta) -> Result<(), Box<dyn Error>>;
 }
 
 #[derive(Debug)]
@@ -20,7 +26,8 @@ impl Controller for ControllerImpl {
             .view_model_deserializer
             .deserialize_view_model_delta(message)?;
 
-        self.presenter.present_delta(view_model_delta)?;
+        self.presenter
+            .present_delta(translate_delta(view_model_delta))?;
 
         Ok(())
     }
@@ -35,6 +42,91 @@ impl ControllerImpl {
             presenter,
             view_model_deserializer,
         }
+    }
+}
+
+fn translate_delta(delta: ViewModelDelta) -> presenter::ViewModelDelta {
+    delta
+        .into_iter()
+        .map(|(id, object_delta)| {
+            let object_delta = match object_delta {
+                ObjectDelta::Deleted => presenter::ObjectDelta::Deleted,
+                ObjectDelta::Created(object_description) => presenter::ObjectDelta::Created(
+                    translate_object_description(object_description),
+                ),
+                ObjectDelta::Updated(object_description_delta) => presenter::ObjectDelta::Updated(
+                    translate_object_description_delta(object_description_delta),
+                ),
+            };
+
+            (id, object_delta)
+        })
+        .collect()
+}
+
+fn translate_object_description(
+    object_description: ObjectDescription,
+) -> presenter::ObjectDescription {
+    let associated_object_data =
+        deserialize_associated_object_data(&object_description.associated_data)
+            .expect("Unable to deserialize associated object data");
+
+    let AssociatedObjectData { name, kind } = associated_object_data;
+
+    let ObjectDescription {
+        shape,
+        location,
+        rotation,
+        mobility,
+        passable,
+        ..
+    } = object_description;
+
+    presenter::ObjectDescription {
+        name,
+        kind,
+        shape,
+        location,
+        rotation,
+        mobility,
+        passable,
+    }
+}
+
+fn translate_object_description_delta(
+    object_description_delta: ObjectDescriptionDelta,
+) -> presenter::ObjectDescriptionDelta {
+    let associated_object_data: Option<AssociatedObjectData> = object_description_delta
+        .associated_data
+        .map(|associated_data| {
+            deserialize_associated_object_data(&associated_data)
+                .expect("Unable to deserialize associated data")
+        });
+
+    let (name, kind) = if let Some(associated_object_data) = associated_object_data {
+        (
+            Some(associated_object_data.name),
+            Some(associated_object_data.kind),
+        )
+    } else {
+        (None, None)
+    };
+
+    let ObjectDescriptionDelta {
+        shape,
+        location,
+        rotation,
+        mobility,
+        ..
+    } = object_description_delta;
+
+    presenter::ObjectDescriptionDelta {
+        name,
+        kind,
+        shape,
+        location,
+        rotation,
+        mobility,
     }
 }
 
