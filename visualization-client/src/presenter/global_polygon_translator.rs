@@ -51,7 +51,7 @@ impl GlobalPolygonTranslator for GlobalPolygonTranslatorImpl {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use std::f64::consts::PI;
 
