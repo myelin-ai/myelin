@@ -57,7 +57,7 @@ mod tests {
     use crate::view_model_delta::*;
     use myelin_environment::object::*;
     use myelin_geometry::*;
-    use myelin_object_data::{serialize_associated_object_data, Kind, AssociatedObjectData};
+    use myelin_object_data::{serialize_associated_object_data, AssociatedObjectData, Kind};
 
     const EXPECTED_JSON: &str = r#"{"12":{"Updated":{"shape":{"vertices":[{"x":-5.0,"y":-5.0},{"x":1.0,"y":1.0},{"x":2.0,"y":3.0},{"x":5.0,"y":6.0}]},"location":{"x":3.0,"y":4.0},"rotation":{"value":1.0},"mobility":{"Movable":{"x":2.0,"y":3.0}},"associated_data":[1,3,0,0,0,0,0,0,0,67,97,116,0,0,0,0]}}}"#;
 
@@ -78,7 +78,7 @@ mod tests {
             mobility: Some(Mobility::Movable(Vector { x: 2.0, y: 3.0 })),
             location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
-            associated_data: Some(serialize_associated_object_data(&AssociatedObjectData{
+            associated_data: Some(serialize_associated_object_data(&AssociatedObjectData {
                 name: Some(String::from("Cat")),
                 kind: Kind::Organism,
             })),
@@ -135,7 +135,7 @@ mod tests {
             mobility: Some(Mobility::Movable(Vector { x: 2.0, y: 3.0 })),
             location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
-            associated_data: Some(serialize_associated_object_data(&AssociatedObjectData{
+            associated_data: Some(serialize_associated_object_data(&AssociatedObjectData {
                 name: Some(String::from("Cat")),
                 kind: Kind::Organism,
             })),
