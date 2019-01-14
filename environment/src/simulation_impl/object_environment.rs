@@ -26,7 +26,7 @@ impl<'a> ObjectEnvironment for ObjectEnvironmentImpl<'a> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use crate::object::*;
     use crate::object_builder::ObjectBuilder;

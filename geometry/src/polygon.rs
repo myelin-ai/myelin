@@ -165,7 +165,7 @@ enum Side {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use self::builder::PolygonBuilder;
     use super::*;
     use std::f64::consts::PI;
