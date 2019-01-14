@@ -217,7 +217,7 @@ mod tests {
     #[test]
     fn spikes_with_input_of_threshold() {
         let mut neuron = SpikingNeuron::default();
-        let elapsed_time = Milliseconds(10.0);
+        let elapsed_time = Milliseconds(0.001);
 
         let inputs = [(constant::THRESHOLD_POTENTIAL, Weight(1.0))];
 
@@ -228,7 +228,7 @@ mod tests {
     #[test]
     fn spikes_with_input_of_threshold_when_factoring_in_weight() {
         let mut neuron = SpikingNeuron::default();
-        let elapsed_time = Milliseconds(10.0);
+        let elapsed_time = Milliseconds(0.001);
 
         let inputs = [(
             MembranePotential(constant::THRESHOLD_POTENTIAL.0 / 2.0),
@@ -242,15 +242,32 @@ mod tests {
     #[test]
     fn spike_ends_after_many_small_time_steps() {
         let mut neuron = SpikingNeuron::default();
-        let elapsed_time = Milliseconds(10.0);
+        const SMALL_TIMESTEP: Milliseconds = Milliseconds(0.001);
+        let steps = f64::ceil(constant::SPIKE_DURATION.0 / SMALL_TIMESTEP.0) as u32;
 
         let inputs = [(constant::THRESHOLD_POTENTIAL, Weight(1.0))];
-        neuron.step(elapsed_time, &inputs);
+        neuron.step(SMALL_TIMESTEP, &inputs);
 
-        for _ in 0..100 {
-            neuron.step(elapsed_time, &[]);
+        for _ in 0..steps {
+            neuron.step(SMALL_TIMESTEP, &[]);
         }
-        let membrane_potential = neuron.step(elapsed_time, &[]);
+        let membrane_potential = neuron.step(SMALL_TIMESTEP, &[]);
+        assert!(membrane_potential.is_none());
+    }
+
+    #[test]
+    fn spike_ends_after_many_small_time_steps_when_under_constant_input() {
+        let mut neuron = SpikingNeuron::default();
+        const SMALL_TIMESTEP: Milliseconds = Milliseconds(0.001);
+        let steps = f64::ceil(constant::SPIKE_DURATION.0 / SMALL_TIMESTEP.0) as u32;
+
+        let inputs = [(constant::THRESHOLD_POTENTIAL, Weight(1.0))];
+        neuron.step(SMALL_TIMESTEP, &inputs);
+
+        for _ in 0..steps {
+            neuron.step(SMALL_TIMESTEP, &inputs);
+        }
+        let membrane_potential = neuron.step(SMALL_TIMESTEP, &[]);
         assert!(membrane_potential.is_none());
     }
 
