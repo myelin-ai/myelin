@@ -358,7 +358,7 @@ mod tests {
     }
 
     #[test]
-    fn spike_goes_away_after_many_small_time_steps() {
+    fn spike_ends_after_many_small_time_steps() {
         let mut neural_network = SpikingNeuralNetwork::default();
         let sensor_handle = neural_network.push_neuron();
 

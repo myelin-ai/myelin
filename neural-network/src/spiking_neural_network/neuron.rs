@@ -240,7 +240,7 @@ mod tests {
     }
 
     #[test]
-    fn spike_goes_away_after_many_small_time_steps() {
+    fn spike_ends_after_many_small_time_steps() {
         let mut neuron = SpikingNeuron::default();
         let elapsed_time = Milliseconds(10.0);
 
@@ -255,7 +255,7 @@ mod tests {
     }
 
     #[test]
-    fn spike_goes_away_after_one_big_time_step() {
+    fn spike_ends_after_one_big_time_step() {
         let mut neuron = SpikingNeuron::default();
         let inputs = [(constant::THRESHOLD_POTENTIAL, Weight(1.0))];
         neuron.step(Milliseconds(10.0), &inputs);
