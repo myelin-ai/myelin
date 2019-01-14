@@ -11,7 +11,7 @@
 use serde_derive::{Deserialize, Serialize};
 
 /// The data associated with an object
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct AssociatedObjectData {
     /// The name of an object
     pub name: Option<String>,
@@ -35,11 +35,29 @@ pub enum Kind {
 }
 
 /// Serialize associated object data
-pub fn serialize(associated_object_data: &AssociatedObjectData) -> Vec<u8> {
+pub fn serialize_associated_object_data(associated_object_data: &AssociatedObjectData) -> Vec<u8> {
     bincode::serialize(associated_object_data).expect("Unable to serialize associated object data")
 }
 
 /// Deserialize into associated object data
-pub fn deserialize(data: &[u8]) -> AssociatedObjectData {
+pub fn deserialize_associated_object_data(data: &[u8]) -> AssociatedObjectData {
     bincode::deserialize(data).expect("Unable to deserialize data")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn serialize_and_deserialize_work() {
+        let associated_object_data = AssociatedObjectData {
+            name: Some(String::from("Foo")),
+            kind: Kind::Plant,
+        };
+
+        let serialized_data = serialize_associated_object_data(&associated_object_data);
+        let deserialized_associated_object_data = deserialize_associated_object_data(&serialized_data);
+
+        assert_eq!(associated_object_data, deserialized_associated_object_data);
+    }
 }
