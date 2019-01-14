@@ -63,6 +63,7 @@ fn get_object_description_delta(
     second: ObjectDescription,
 ) -> ObjectDescriptionDelta {
     ObjectDescriptionDelta {
+        name: get_delta(first.map(|o| &o.name), second.name),
         shape: get_delta(first.map(|o| &o.shape), second.shape),
         location: get_delta(first.map(|o| &o.location), second.location),
         rotation: get_delta(first.map(|o| &o.rotation), second.rotation),
@@ -176,6 +177,7 @@ mod tests {
         let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
 
         let expected_delta = ObjectDescriptionDelta {
+            name: None,
             shape: None,
             location: Some(object.location),
             rotation: None,

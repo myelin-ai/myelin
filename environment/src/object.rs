@@ -74,6 +74,9 @@ impl Clone for Action {
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[non_exhaustive]
 pub struct ObjectDescription {
+    /// The name of the object
+    pub name: Option<String>,
+
     /// The vertices defining the shape of the object
     /// in relation to its [`position`]
     ///
@@ -115,7 +118,7 @@ pub enum Mobility {
 
 /// The part of an object that is responsible for custom
 /// behavior and interactions
-#[derive(Debug, Eq, PartialEq, Clone, Copy, Serialize, Deserialize)]
+#[derive(Hash, Debug, Eq, PartialEq, Clone, Copy, Serialize, Deserialize)]
 pub enum Kind {
     /// An intelligent organism featuring a neural network
     Organism,

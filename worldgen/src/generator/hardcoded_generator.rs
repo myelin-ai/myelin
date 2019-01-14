@@ -1,5 +1,6 @@
 //! A generator for a hardcoded simulation
 
+use crate::NameProvider;
 use crate::WorldGenerator;
 use myelin_environment::object::*;
 use myelin_environment::Simulation;
@@ -16,6 +17,7 @@ pub struct HardcodedGenerator {
     organism_factory: OrganismFactory,
     terrain_factory: TerrainFactory,
     water_factory: WaterFactory,
+    name_provider: Box<dyn NameProvider>,
 }
 
 pub type SimulationFactory = Box<dyn Fn() -> Box<dyn Simulation>>;
@@ -41,7 +43,9 @@ impl HardcodedGenerator {
     /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
     /// use myelin_environment::Simulation;
     /// use myelin_object_behavior::Static;
-    /// use myelin_worldgen::{HardcodedGenerator, WorldGenerator};
+    /// use myelin_worldgen::{HardcodedGenerator, NameProviderBuilder, WorldGenerator};
+    /// use std::fs::read_to_string;
+    /// use std::path::Path;
     /// use std::sync::{Arc, RwLock};
     ///
     /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
@@ -65,12 +69,24 @@ impl HardcodedGenerator {
     /// let terrain_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
     /// let water_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
     ///
-    /// let worldgen = HardcodedGenerator::new(
+    /// let mut name_provider_builder = NameProviderBuilder::default();
+    ///
+    /// let organism_names: Vec<String> = read_to_string(Path::new("../object-names/organisms.txt"))
+    ///     .expect("Error while reading file")
+    ///     .lines()
+    ///     .map(String::from)
+    ///     .collect();
+    /// name_provider_builder.add_names(&organism_names, Kind::Organism);
+    ///
+    /// let name_provider = name_provider_builder.build_randomized();
+    ///
+    /// let mut worldgen = HardcodedGenerator::new(
     ///     simulation_factory,
     ///     plant_factory,
     ///     organism_factory,
     ///     terrain_factory,
     ///     water_factory,
+    ///     name_provider,
     /// );
     /// let generated_simulation = worldgen.generate();
     /// ```
@@ -80,6 +96,7 @@ impl HardcodedGenerator {
         organism_factory: OrganismFactory,
         terrain_factory: TerrainFactory,
         water_factory: WaterFactory,
+        name_provider: Box<dyn NameProvider>,
     ) -> Self {
         Self {
             simulation_factory,
@@ -87,6 +104,7 @@ impl HardcodedGenerator {
             organism_factory,
             terrain_factory,
             water_factory,
+            name_provider,
         }
     }
 
@@ -159,12 +177,25 @@ impl HardcodedGenerator {
         }
     }
 
-    fn populate_with_organisms(&self, simulation: &mut dyn Simulation) {
-        simulation.add_object(build_organism(300.0, 800.0), (self.organism_factory)());
-        simulation.add_object(build_organism(400.0, 800.0), (self.organism_factory)());
-        simulation.add_object(build_organism(500.0, 800.0), (self.organism_factory)());
-        simulation.add_object(build_organism(600.0, 800.0), (self.organism_factory)());
-        simulation.add_object(build_organism(700.0, 800.0), (self.organism_factory)());
+    fn populate_with_organisms(&mut self, simulation: &mut dyn Simulation) {
+        let coordinates = [
+            (300.0, 800.0),
+            (400.0, 800.0),
+            (500.0, 800.0),
+            (600.0, 800.0),
+            (700.0, 800.0),
+        ];
+
+        for coordinate in coordinates.iter() {
+            simulation.add_object(
+                build_organism(
+                    coordinate.0,
+                    coordinate.1,
+                    self.name_provider.get_name(Kind::Organism),
+                ),
+                (self.organism_factory)(),
+            );
+        }
     }
 }
 fn build_terrain(location: (f64, f64), width: f64, length: f64) -> ObjectDescription {
@@ -206,8 +237,9 @@ fn build_plant(half_of_width_and_height: f64, x: f64, y: f64) -> ObjectDescripti
         .expect("Failed to build plant")
 }
 
-fn build_organism(x: f64, y: f64) -> ObjectDescription {
+fn build_organism(x: f64, y: f64, name: Option<String>) -> ObjectDescription {
     ObjectBuilder::default()
+        .name(name)
         .shape(
             PolygonBuilder::default()
                 .vertex(25.0, 0.0)
@@ -226,7 +258,7 @@ fn build_organism(x: f64, y: f64) -> ObjectDescription {
 }
 
 impl WorldGenerator for HardcodedGenerator {
-    fn generate(&self) -> Box<dyn Simulation> {
+    fn generate(&mut self) -> Box<dyn Simulation> {
         let mut simulation = (self.simulation_factory)();
         self.populate_with_terrain(&mut *simulation);
         self.populate_with_water(&mut *simulation);
@@ -245,7 +277,8 @@ impl fmt::Debug for HardcodedGenerator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockiato::{any, ExpectedCalls};
+    use crate::NameProviderMock;
+    use mockiato::{any, partial_eq, ExpectedCalls};
     use myelin_environment::object::ObjectBehaviorMock;
     use myelin_environment::SimulationMock;
 
@@ -265,12 +298,19 @@ mod tests {
         let terrain_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
         let water_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
 
-        let generator = HardcodedGenerator::new(
+        let mut name_provider = box NameProviderMock::new();
+        name_provider
+            .expect_get_name(partial_eq(Kind::Organism))
+            .returns(None)
+            .times(5);
+
+        let mut generator = HardcodedGenerator::new(
             simulation_factory,
             plant_factory,
             organism_factory,
             terrain_factory,
             water_factory,
+            name_provider,
         );
 
         let _simulation = generator.generate();

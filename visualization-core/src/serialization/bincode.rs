@@ -66,6 +66,7 @@ mod test {
     #[test]
     fn serializes_full_delta() {
         let object_description_delta = ObjectDescriptionDelta {
+            name: Some(Some(String::from("Cat"))),
             kind: Some(Kind::Organism),
             shape: Some(
                 PolygonBuilder::default()
@@ -110,6 +111,7 @@ mod test {
     #[test]
     fn deserializes_full_viewmodel() {
         let object_description_delta = ObjectDescriptionDelta {
+            name: Some(Some(String::from("Cat"))),
             kind: Some(Kind::Organism),
             shape: Some(
                 PolygonBuilder::default()

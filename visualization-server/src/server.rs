@@ -5,7 +5,7 @@ use crate::constant::*;
 use crate::controller::{ConnectionAcceptor, Controller, ControllerImpl};
 use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
-use myelin_environment::object::ObjectBehavior;
+use myelin_environment::object::{Kind, ObjectBehavior};
 use myelin_environment::simulation_impl::world::{
     IgnoringCollisionFilterImpl, NphysicsRotationTranslatorImpl, NphysicsWorld,
     SingleTimeForceApplierImpl,
@@ -15,8 +15,11 @@ use myelin_environment::Simulation;
 use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
 use myelin_object_behavior::Static;
 use myelin_visualization_core::serialization::BincodeSerializer;
+use myelin_worldgen::NameProviderBuilder;
 use myelin_worldgen::{HardcodedGenerator, WorldGenerator};
+use std::fs::read_to_string;
 use std::net::SocketAddr;
+use std::path::Path;
 use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::Duration;
@@ -51,12 +54,21 @@ where
     let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
     let water_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
 
-    let worldgen = HardcodedGenerator::new(
+    let mut name_provider_builder = NameProviderBuilder::default();
+
+    let organism_names: Vec<String> =
+        load_names_files_from_file(Path::new("./object-names/organisms.txt"));
+    name_provider_builder.add_names(&organism_names, Kind::Organism);
+
+    let name_provider = name_provider_builder.build_randomized();
+
+    let mut worldgen = HardcodedGenerator::new(
         simulation_factory,
         plant_factory,
         organism_factory,
         terrain_factory,
         water_factory,
+        name_provider,
     );
 
     let conection_acceptor_factory_fn = Arc::new(move |current_snapshot_fn| {
@@ -102,6 +114,14 @@ where
     );
 
     controller.run();
+}
+
+fn load_names_files_from_file(path: &Path) -> Vec<String> {
+    read_to_string(path)
+        .expect("Error while reading file")
+        .lines()
+        .map(String::from)
+        .collect()
 }
 
 fn spawn_thread_factory() -> Box<ThreadSpawnFn> {
