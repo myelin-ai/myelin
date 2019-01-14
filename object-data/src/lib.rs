@@ -33,3 +33,13 @@ pub enum Kind {
     /// Impassable terrain
     Terrain,
 }
+
+/// Serialize associated object data
+pub fn serialize(associated_object_data: &AssociatedObjectData) -> Vec<u8> {
+    bincode::serialize(associated_object_data)
+}
+
+/// Deserialize into associated object data
+pub fn deserialize(data: &[u8]) -> AssociatedObjectData {
+    bincode::deserialize(data).expect("Unable to deserialize associated data")
+}

@@ -15,7 +15,6 @@ myelin-geometry = { path = "../geometry" }
 myelin-object-data = { path = "../object-data" }
 nameof = "0.1"
 rand = "0.6.1"
-bincode = "1.0"
 
 [dev-dependencies]
 myelin-object-behavior = { path = "../object-behavior" }

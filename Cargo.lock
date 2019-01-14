@@ -576,6 +576,7 @@ dependencies = [
 name = "myelin-object-data"
 version = "0.1.0"
 dependencies = [
+ "bincode 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.80 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.80 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -584,7 +585,6 @@ dependencies = [
 name = "myelin-visualization-client"
 version = "0.1.0"
 dependencies = [
- "bincode 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "js-sys 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "maplit 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "mockiato 0.1.0 (git+https://github.com/myelin-ai/mockiato)",
@@ -641,7 +641,6 @@ dependencies = [
 name = "myelin-worldgen"
 version = "0.1.0"
 dependencies = [
- "bincode 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "mockiato 0.1.0 (git+https://github.com/myelin-ai/mockiato)",
  "myelin-environment 0.1.0",
  "myelin-geometry 0.1.0",
