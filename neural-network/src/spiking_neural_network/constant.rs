@@ -8,4 +8,5 @@ pub(crate) const ACTION_POTENTIAL: MembranePotential = MembranePotential(40.0);
 
 pub(crate) const PASSIVE_REPOLARIZATION_FACTOR: f64 = 0.01;
 
-pub(crate) const SPIKE_DURATION: Milliseconds = Milliseconds(2.0);
+#[cfg(test)]
+pub(crate) const SPIKE_DURATION: Milliseconds = Milliseconds(1.5);
