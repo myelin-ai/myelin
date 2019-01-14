@@ -209,7 +209,10 @@ mod tests {
             .location(object.location.x, object.location.y)
             .rotation(object.rotation)
             .mobility(object.mobility)
-            .kind(object.kind)
+            .associated_data(AssociatedObjectData {
+                name: None,
+                kind: Kind::Organism,
+            })
             .build()
             .unwrap();
 

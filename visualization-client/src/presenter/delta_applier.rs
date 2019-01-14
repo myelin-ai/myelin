@@ -100,8 +100,12 @@ mod test {
     use std::f64::consts::PI;
 
     fn object_description() -> ObjectDescription {
+        let object_data = AssociatedObjectData {
+            name: None,
+            kind: Kind::Organism,
+        };
+
         ObjectBuilder::default()
-            .kind(Kind::Organism)
             .mobility(Mobility::Immovable)
             .location(10.0, 20.0)
             .shape(
@@ -113,6 +117,7 @@ mod test {
                     .build()
                     .unwrap(),
             )
+            .associated_data(object_data)
             .build()
             .unwrap()
     }
