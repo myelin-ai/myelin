@@ -69,7 +69,7 @@ impl Display for WebsocketClientError {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use std::net::{Ipv4Addr, SocketAddrV4};
     use std::thread;

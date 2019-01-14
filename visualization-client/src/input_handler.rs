@@ -42,7 +42,7 @@ impl InputHandler {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use std::cell::RefCell;
     use std::thread::panicking;

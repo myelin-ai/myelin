@@ -93,7 +93,7 @@ fn apply_object_description_delta(
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use myelin_environment::object::*;
     use myelin_geometry::*;

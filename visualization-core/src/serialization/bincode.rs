@@ -57,7 +57,7 @@ impl ViewModelDeserializer for BincodeDeserializer {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use crate::view_model_delta::*;
     use myelin_environment::object::*;
