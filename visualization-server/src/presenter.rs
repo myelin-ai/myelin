@@ -92,7 +92,7 @@ fn delta_contains_changes(delta: &ObjectDescriptionDelta) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::{Kind, Mobility, ObjectBuilder, ObjectDescription};
+    use myelin_environment::object::{Mobility, ObjectBuilder, ObjectDescription};
     use myelin_geometry::*;
 
     fn object_description() -> ObjectDescription {
@@ -109,7 +109,6 @@ mod tests {
             .mobility(Mobility::Immovable)
             .location(30.0, 40.0)
             .rotation(Radians::default())
-            .kind(Kind::Plant)
             .build()
             .unwrap()
     }
@@ -176,12 +175,8 @@ mod tests {
         let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
 
         let expected_delta = ObjectDescriptionDelta {
-            name: None,
-            shape: None,
             location: Some(object.location),
-            rotation: None,
-            mobility: None,
-            kind: None,
+            ..Default::default()
         };
 
         assert_eq!(
@@ -209,10 +204,7 @@ mod tests {
             .location(object.location.x, object.location.y)
             .rotation(object.rotation)
             .mobility(object.mobility)
-            .associated_data(AssociatedObjectData {
-                name: None,
-                kind: Kind::Organism,
-            })
+            .associated_data(Vec::new())
             .build()
             .unwrap();
 

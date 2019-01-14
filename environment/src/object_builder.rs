@@ -35,7 +35,6 @@ pub struct ObjectBuilderError {
 ///     )
 ///     .location(300.0, 450.0)
 ///     .rotation(Radians::try_new(FRAC_PI_2).unwrap())
-///     .kind(Kind::Organism)
 ///     .mobility(Mobility::Movable(Vector { x: 3.0, y: 5.0 }))
 ///     .build()
 ///     .unwrap();
@@ -121,7 +120,7 @@ impl ObjectBuilder {
     /// ```
     /// use myelin_environment::object::ObjectBuilder;
     ///
-    /// let builder = ObjectBuilder::default().associated_data("Foo".into_bytes());
+    /// let builder = ObjectBuilder::default().associated_data(String::from("Foo").into_bytes());
     /// ```
     pub fn associated_data(&mut self, associated_data: Vec<u8>) -> &mut Self {
         self.associated_data = associated_data;
@@ -151,7 +150,6 @@ impl ObjectBuilder {
     ///     )
     ///     .location(300.0, 450.0)
     ///     .rotation(Radians::try_new(FRAC_PI_2).unwrap())
-    ///     .kind(Kind::Organism)
     ///     .mobility(Mobility::Movable(Vector { x: 3.0, y: 5.0 }))
     ///     .build()
     ///     .unwrap();
@@ -207,39 +205,12 @@ mod test {
         let result = ObjectBuilder::default()
             .location(10.0, 10.0)
             .rotation(Radians::try_new(0.0).unwrap())
-            .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
             .build();
 
         assert_eq!(
             Err(ObjectBuilderError {
                 missing_shape: true,
-                ..Default::default()
-            }),
-            result
-        );
-    }
-
-    #[test]
-    fn test_object_builder_should_error_for_missing_kind() {
-        let result = ObjectBuilder::default()
-            .shape(
-                PolygonBuilder::default()
-                    .vertex(0.0, 0.0)
-                    .vertex(0.0, 1.0)
-                    .vertex(1.0, 0.0)
-                    .vertex(1.0, 1.0)
-                    .build()
-                    .unwrap(),
-            )
-            .location(10.0, 10.0)
-            .rotation(Radians::try_new(0.0).unwrap())
-            .mobility(Mobility::Immovable)
-            .build();
-
-        assert_eq!(
-            Err(ObjectBuilderError {
-                missing_kind: true,
                 ..Default::default()
             }),
             result
@@ -259,7 +230,6 @@ mod test {
                     .unwrap(),
             )
             .rotation(Radians::try_new(0.0).unwrap())
-            .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
             .build();
 
@@ -286,7 +256,6 @@ mod test {
             )
             .rotation(Radians::try_new(0.0).unwrap())
             .location(30.0, 40.0)
-            .kind(Kind::Plant)
             .build();
 
         assert_eq!(
@@ -311,12 +280,10 @@ mod test {
                     .unwrap(),
             )
             .location(30.0, 40.0)
-            .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
             .build();
 
         let expected = ObjectDescription {
-            name: None,
             shape: PolygonBuilder::default()
                 .vertex(0.0, 0.0)
                 .vertex(0.0, 1.0)
@@ -326,7 +293,7 @@ mod test {
                 .unwrap(),
             location: Point { x: 30.0, y: 40.0 },
             rotation: Radians::try_new(0.0).unwrap(),
-            kind: Kind::Terrain,
+
             mobility: Mobility::Immovable,
             passable: false,
             associated_data: Vec::new(),
@@ -349,13 +316,11 @@ mod test {
             )
             .rotation(Radians::try_new(0.0).unwrap())
             .location(30.0, 40.0)
-            .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
             .passable(true)
             .build();
 
         let expected = ObjectDescription {
-            name: None,
             shape: Polygon::try_new(vec![
                 Point { x: 0.0, y: 0.0 },
                 Point { x: 0.0, y: 1.0 },
@@ -365,7 +330,7 @@ mod test {
             .unwrap(),
             location: Point { x: 30.0, y: 40.0 },
             rotation: Radians::try_new(0.0).unwrap(),
-            kind: Kind::Terrain,
+
             mobility: Mobility::Immovable,
             passable: true,
             associated_data: Vec::new(),
@@ -377,7 +342,6 @@ mod test {
     #[test]
     fn test_object_builder_uses_name() {
         let result = ObjectBuilder::default()
-            .name(String::from("Foo"))
             .shape(
                 PolygonBuilder::default()
                     .vertex(0.0, 0.0)
@@ -389,12 +353,10 @@ mod test {
             )
             .rotation(Radians::try_new(0.0).unwrap())
             .location(30.0, 40.0)
-            .kind(Kind::Terrain)
             .mobility(Mobility::Immovable)
             .build();
 
         let expected = ObjectDescription {
-            name: String::from("Foo").into(),
             shape: Polygon::try_new(vec![
                 Point { x: 0.0, y: 0.0 },
                 Point { x: 0.0, y: 1.0 },
@@ -404,7 +366,7 @@ mod test {
             .unwrap(),
             location: Point { x: 30.0, y: 40.0 },
             rotation: Radians::try_new(0.0).unwrap(),
-            kind: Kind::Terrain,
+
             mobility: Mobility::Immovable,
             passable: false,
             associated_data: Vec::new(),
@@ -421,7 +383,6 @@ mod test {
             Err(ObjectBuilderError {
                 missing_shape: true,
                 missing_location: true,
-                missing_kind: true,
                 missing_mobility: true,
             }),
             result
@@ -441,17 +402,15 @@ mod test {
                     .unwrap(),
             )
             .mobility(Mobility::Movable(Vector { x: -12.0, y: 5.0 }))
-            .kind(Kind::Organism)
             .location(30.0, 40.0)
             .rotation(Radians::try_new(1.1).unwrap())
             .build();
 
         let expected = ObjectDescription {
-            name: None,
             location: Point { x: 30.0, y: 40.0 },
             rotation: Radians::try_new(1.1).unwrap(),
             mobility: Mobility::Movable(Vector { x: -12.0, y: 5.0 }),
-            kind: Kind::Organism,
+
             shape: Polygon::try_new(vec![
                 Point { x: 0.0, y: 0.0 },
                 Point { x: 0.0, y: 1.0 },
@@ -469,11 +428,10 @@ mod test {
     #[test]
     fn can_create_object_builder_from_object_description() {
         let object_description = ObjectDescription {
-            name: None,
             location: Point { x: 30.0, y: 40.0 },
             rotation: Radians::try_new(1.1).unwrap(),
             mobility: Mobility::Movable(Vector { x: -12.0, y: 5.0 }),
-            kind: Kind::Organism,
+
             shape: Polygon::try_new(vec![
                 Point { x: 0.0, y: 0.0 },
                 Point { x: 0.0, y: 1.0 },

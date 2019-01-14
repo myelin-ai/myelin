@@ -41,7 +41,9 @@ pub fn serialize_associated_object_data(associated_object_data: &AssociatedObjec
 }
 
 /// Deserialize into associated object data
-pub fn deserialize_associated_object_data(data: &[u8]) -> Result<AssociatedObjectData, Box<dyn Error>> {
+pub fn deserialize_associated_object_data(
+    data: &[u8],
+) -> Result<AssociatedObjectData, Box<dyn Error>> {
     bincode::deserialize(data).map_err(|err| err.into())
 }
 
@@ -57,7 +59,9 @@ mod tests {
         };
 
         let serialized_data = serialize_associated_object_data(&associated_object_data);
-        let deserialized_associated_object_data = deserialize_associated_object_data(&serialized_data).expect("Unable to deserialize data");
+        let deserialized_associated_object_data =
+            deserialize_associated_object_data(&serialized_data)
+                .expect("Unable to deserialize data");
 
         assert_eq!(associated_object_data, deserialized_associated_object_data);
     }

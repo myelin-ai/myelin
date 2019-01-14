@@ -5,7 +5,7 @@ use crate::WorldGenerator;
 use myelin_environment::object::*;
 use myelin_environment::Simulation;
 use myelin_geometry::*;
-use myelin_object_data::{AssociatedObjectData, Kind, serialize_associated_object_data};
+use myelin_object_data::{serialize_associated_object_data, AssociatedObjectData, Kind};
 use std::f64::consts::FRAC_PI_2;
 use std::fmt;
 
@@ -37,7 +37,6 @@ impl HardcodedGenerator {
     /// # Examples
     /// ```
     /// use myelin_environment::object::ObjectBehavior;
-    /// use myelin_object_data::Kind;
     /// use myelin_environment::simulation_impl::world::{
     ///     IgnoringCollisionFilterImpl, NphysicsRotationTranslatorImpl, NphysicsWorld,
     ///     SingleTimeForceApplierImpl,
@@ -45,6 +44,7 @@ impl HardcodedGenerator {
     /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
     /// use myelin_environment::Simulation;
     /// use myelin_object_behavior::Static;
+    /// use myelin_object_data::Kind;
     /// use myelin_worldgen::{HardcodedGenerator, NameProviderBuilder, WorldGenerator};
     /// use std::fs::read_to_string;
     /// use std::path::Path;
@@ -148,9 +148,7 @@ impl HardcodedGenerator {
             )
             .location(500.0, 500.0)
             .mobility(Mobility::Immovable)
-            .associated_data(
-                serialize_associated_object_data(&object_data),
-            )
+            .associated_data(serialize_associated_object_data(&object_data))
             .build()
             .expect("Failed to build water");
 

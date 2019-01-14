@@ -62,7 +62,7 @@ mod tests {
     use crate::view_model_delta::*;
     use myelin_environment::object::*;
     use myelin_geometry::*;
-    use myelin_object_data::{AssociatedObjectData, Kind, serialize_associated_object_data};
+    use myelin_object_data::{serialize_associated_object_data, AssociatedObjectData, Kind};
 
     #[test]
     fn serializes_full_delta() {
