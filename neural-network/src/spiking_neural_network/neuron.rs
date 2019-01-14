@@ -262,4 +262,39 @@ mod tests {
         let membrane_potential = neuron.step(Milliseconds(1_000.0), &[]);
         assert!(membrane_potential.is_none());
     }
+
+    #[test]
+    fn spike_happens_at_the_right_time_when_using_small_timesteps() {
+        let mut neuron = SpikingNeuron::default();
+        let inputs = [(constant::THRESHOLD_POTENTIAL, Weight(1.0))];
+
+        const SMALL_TIME_STEP: Milliseconds = Milliseconds(0.01);
+        neuron.step(SMALL_TIME_STEP, &inputs);
+
+        const TIME_AFTER_WHICH_A_SPIKE_SHOULD_HAVE_OCCURED: Milliseconds = Milliseconds(1.5);
+        let updates_needed_to_reach_spike =
+            f64::ceil(TIME_AFTER_WHICH_A_SPIKE_SHOULD_HAVE_OCCURED.0 / SMALL_TIME_STEP.0) as u32;
+        let states: Vec<_> = (0..updates_needed_to_reach_spike)
+            .map(|_| neuron.step(SMALL_TIME_STEP, &[]))
+            .filter_map(|state| {
+                if let Some(state) = state {
+                    Some(state.0)
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        let is_any_update_a_spike = states.iter().any(|&state| {
+            const MARGIN_OF_ERROR: f64 = 1.0;
+            state >= constant::ACTION_POTENTIAL.0 - MARGIN_OF_ERROR
+        });
+        let hightest_state = states.iter().max_by(|a, b| a.partial_cmp(b).unwrap());
+        assert!(
+            is_any_update_a_spike,
+            "No state in the specified time reached spike, highest state was {:?}, expected {}",
+            hightest_state,
+            constant::ACTION_POTENTIAL.0
+        );
+    }
 }
