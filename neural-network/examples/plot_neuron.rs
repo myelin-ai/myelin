@@ -1,3 +1,5 @@
+//! Run neural-network/scripts/run_plot.sh in order to visualize the neurons' output
+
 use maplit::hashmap;
 use myelin_neural_network::spiking_neural_network::SpikingNeuralNetwork;
 use myelin_neural_network::{
