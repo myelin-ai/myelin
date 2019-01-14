@@ -35,16 +35,44 @@ pub enum Kind {
     Terrain,
 }
 
-/// Serialize associated object data
-pub fn serialize_associated_object_data(associated_object_data: &AssociatedObjectData) -> Vec<u8> {
-    bincode::serialize(associated_object_data).expect("Unable to serialize associated object data")
+/// Handles serialization and deserialization for `AssociatedObjectData`
+///
+/// [`AssociatedObjectData`]: ./struct.AssociatedObjectData.html
+pub trait AssociatedObjectDataSerializer {
+    /// Serialize associated object data
+    fn serialize_associated_object_data(
+        &self,
+        associated_object_data: &AssociatedObjectData,
+    ) -> Vec<u8>;
+
+    /// Deserialize into associated object data
+    fn deserialize_associated_object_data(
+        &self,
+        data: &[u8],
+    ) -> Result<AssociatedObjectData, Box<dyn Error>>;
 }
 
-/// Deserialize into associated object data
-pub fn deserialize_associated_object_data(
-    data: &[u8],
-) -> Result<AssociatedObjectData, Box<dyn Error>> {
-    bincode::deserialize(data).map_err(|err| err.into())
+/// Implements an `AssociatedObjectDataSerializer` using bincode
+///
+/// [`AssociatedObjectDataSerializer`]: ./trait.AssociatedObjectDataSerializer.html
+#[derive(Debug, Default)]
+pub struct AssociatedObjectDataBincodeSerializer {}
+
+impl AssociatedObjectDataSerializer for AssociatedObjectDataBincodeSerializer {
+    fn serialize_associated_object_data(
+        &self,
+        associated_object_data: &AssociatedObjectData,
+    ) -> Vec<u8> {
+        bincode::serialize(associated_object_data)
+            .expect("Unable to serialize associated object data")
+    }
+
+    fn deserialize_associated_object_data(
+        &self,
+        data: &[u8],
+    ) -> Result<AssociatedObjectData, Box<dyn Error>> {
+        bincode::deserialize(data).map_err(|err| err.into())
+    }
 }
 
 #[cfg(test)]
@@ -53,15 +81,17 @@ mod tests {
 
     #[test]
     fn serialize_and_deserialize_work() {
+        let serializer = AssociatedObjectDataBincodeSerializer::default();
+
         let associated_object_data = AssociatedObjectData {
             name: Some(String::from("Foo")),
             kind: Kind::Plant,
         };
 
-        let serialized_data = serialize_associated_object_data(&associated_object_data);
-        let deserialized_associated_object_data =
-            deserialize_associated_object_data(&serialized_data)
-                .expect("Unable to deserialize data");
+        let serialized_data = serializer.serialize_associated_object_data(&associated_object_data);
+        let deserialized_associated_object_data = serializer
+            .deserialize_associated_object_data(&serialized_data)
+            .expect("Unable to deserialize data");
 
         assert_eq!(associated_object_data, deserialized_associated_object_data);
     }
@@ -69,8 +99,12 @@ mod tests {
     #[test]
     #[should_panic]
     fn deserialize_fails_with_invalid_data() {
+        let serializer = AssociatedObjectDataBincodeSerializer::default();
+
         let invalid_data = String::from("banana").into_bytes();
-        deserialize_associated_object_data(&invalid_data).unwrap();
+        serializer
+            .deserialize_associated_object_data(&invalid_data)
+            .unwrap();
     }
 
 }
