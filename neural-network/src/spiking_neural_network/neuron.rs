@@ -37,7 +37,7 @@ impl SpikingNeuron {
         self.elapsed_time_in_current_phase.0 += time_since_last_step.0;
         match &self.current_phase {
             Phase::RestingState => {
-                if self.current_membrane_potential > self.current_threshold {
+                if self.current_membrane_potential >= self.current_threshold {
                     self.current_phase = Phase::Depolarization;
                     self.elapsed_time_in_current_phase = Default::default();
                 }
@@ -60,7 +60,7 @@ impl SpikingNeuron {
                 }
             }
             Phase::RefractoryPeriod => {
-                if self.current_membrane_potential > constant::RESTING_POTENTIAL {
+                if self.current_membrane_potential >= constant::RESTING_POTENTIAL {
                     self.current_phase = Phase::RestingState;
                     self.elapsed_time_in_current_phase = Default::default();
                 }
