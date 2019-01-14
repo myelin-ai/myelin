@@ -5,8 +5,7 @@ pub(crate) use self::global_polygon_translator::{
 use crate::controller::Presenter;
 use crate::view_model;
 use myelin_environment::Snapshot;
-use myelin_object_data::AssociatedObjectData;
-use myelin_object_data::Kind;
+use myelin_object_data::{Kind, AssociatedObjectData, deserialize_associated_object_data};
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
 use std::borrow::Borrow;
 use std::error::Error;
@@ -62,8 +61,9 @@ fn map_objects(
                 business_object.rotation,
             );
 
+            // TODO: Inject deserializer
             let associated_object_data: AssociatedObjectData =
-                bincode::deserialize(&business_object.associated_data)
+                deserialize_associated_object_data(&business_object.associated_data)
                     .expect("Deserialization of object data failed");
             let kind = map_kind(associated_object_data.kind);
 

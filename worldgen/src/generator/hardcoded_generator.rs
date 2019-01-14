@@ -5,7 +5,7 @@ use crate::WorldGenerator;
 use myelin_environment::object::*;
 use myelin_environment::Simulation;
 use myelin_geometry::*;
-use myelin_object_data::{AssociatedObjectData, Kind};
+use myelin_object_data::{AssociatedObjectData, Kind, serialize_associated_object_data};
 use std::f64::consts::FRAC_PI_2;
 use std::fmt;
 
@@ -148,7 +148,7 @@ impl HardcodedGenerator {
             .location(500.0, 500.0)
             .mobility(Mobility::Immovable)
             .associated_data(
-                bincode::serialize(&object_data).expect("Unable to encode object_data"),
+                serialize_associated_object_data(&object_data),
             )
             .build()
             .expect("Failed to build water");
@@ -227,7 +227,7 @@ fn build_terrain(location: (f64, f64), width: f64, length: f64) -> ObjectDescrip
         )
         .location(location.0, location.1)
         .mobility(Mobility::Immovable)
-        .associated_data(bincode::serialize(&object_data).expect("Unable to encode object_data"))
+        .associated_data(serialize_associated_object_data(&object_data))
         .build()
         .expect("Failed to build terrain")
 }
@@ -251,7 +251,7 @@ fn build_plant(half_of_width_and_height: f64, x: f64, y: f64) -> ObjectDescripti
         .location(x, y)
         .mobility(Mobility::Immovable)
         .passable(true)
-        .associated_data(bincode::serialize(&object_data).expect("Unable to encode object_data"))
+        .associated_data(serialize_associated_object_data(&object_data))
         .build()
         .expect("Failed to build plant")
 }
@@ -275,7 +275,7 @@ fn build_organism(x: f64, y: f64, name: Option<String>) -> ObjectDescription {
         .location(x, y)
         .rotation(Radians::try_new(FRAC_PI_2).unwrap())
         .mobility(Mobility::Movable(Vector::default()))
-        .associated_data(bincode::serialize(&object_data).expect("Unable to encode object_data"))
+        .associated_data(serialize_associated_object_data(&object_data))
         .build()
         .expect("Failed to build organism")
 }
