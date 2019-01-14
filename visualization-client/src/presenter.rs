@@ -54,7 +54,7 @@ pub type Snapshot = HashMap<Id, ObjectDescription>;
 pub type ViewModelDelta = HashMap<Id, ObjectDelta>;
 
 /// Describes what happened to an individual object in this
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ObjectDelta {
     /// The object has been added to the world
     Created(ObjectDescription),
@@ -64,7 +64,7 @@ pub enum ObjectDelta {
     Deleted,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ObjectDescription {
     /// The name of the object
     pub name: Option<String>,
@@ -93,7 +93,7 @@ pub struct ObjectDescription {
     pub passable: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct ObjectDescriptionDelta {
     /// The name of the object
     pub name: Option<Option<String>>,
@@ -170,8 +170,6 @@ mod tests {
     use crate::presenter::global_polygon_translator::GlobalPolygonTranslatorMock;
     use crate::view_model;
     use mockiato::{partial_eq, partial_eq_owned, unordered_vec_eq};
-    use myelin_geometry::*;
-    use myelin_visualization_core::view_model_delta::ObjectDelta;
     use std::cell::RefCell;
     use std::collections::VecDeque;
     use std::fmt::{self, Debug};
@@ -236,41 +234,39 @@ mod tests {
     }
 
     fn object_description() -> ObjectDescription {
-        ObjectBuilder::default()
-            .shape(
-                PolygonBuilder::default()
-                    .vertex(-10.0, -10.0)
-                    .vertex(10.0, -10.0)
-                    .vertex(10.0, 10.0)
-                    .vertex(-10.0, 10.0)
-                    .build()
-                    .unwrap(),
-            )
-            .mobility(Mobility::Immovable)
-            .location(30.0, 40.0)
-            .rotation(Radians::default())
-            .kind(Kind::Plant)
-            .build()
-            .unwrap()
+        ObjectDescription {
+            name: None,
+            kind: Kind::Plant,
+            shape: PolygonBuilder::default()
+                .vertex(-10.0, -10.0)
+                .vertex(10.0, -10.0)
+                .vertex(10.0, 10.0)
+                .vertex(-10.0, 10.0)
+                .build()
+                .unwrap(),
+            mobility: Mobility::Immovable,
+            location: Point { x: 30.0, y: 40.0 },
+            rotation: Radians::default(),
+            passable: false,
+        }
     }
 
     fn object_description2() -> ObjectDescription {
-        ObjectBuilder::default()
-            .shape(
-                PolygonBuilder::default()
-                    .vertex(-20.0, -20.0)
-                    .vertex(20.0, -20.0)
-                    .vertex(20.0, 20.0)
-                    .vertex(-20.0, 20.0)
-                    .build()
-                    .unwrap(),
-            )
-            .mobility(Mobility::Immovable)
-            .location(30.0, 50.0)
-            .rotation(Radians::default())
-            .kind(Kind::Plant)
-            .build()
-            .unwrap()
+        ObjectDescription {
+            name: None,
+            kind: Kind::Plant,
+            shape: PolygonBuilder::default()
+                .vertex(-20.0, -20.0)
+                .vertex(20.0, -20.0)
+                .vertex(20.0, 20.0)
+                .vertex(-20.0, 20.0)
+                .build()
+                .unwrap(),
+            mobility: Mobility::Immovable,
+            location: Point { x: 30.0, y: 50.0 },
+            rotation: Radians::default(),
+            passable: false,
+        }
     }
 
     #[test]

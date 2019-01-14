@@ -134,6 +134,7 @@ fn translate_object_description_delta(
 mod tests {
     use super::*;
     use myelin_geometry::*;
+    use myelin_object_data::{serialize_associated_object_data, Kind};
     use myelin_visualization_core::view_model_delta::{ObjectDelta, ObjectDescriptionDelta};
     use std::cell::RefCell;
     use std::error::Error;
@@ -141,12 +142,12 @@ mod tests {
 
     #[derive(Debug)]
     struct PresenterMock {
-        expected_view_model_delta: ViewModelDelta,
+        expected_view_model_delta: presenter::ViewModelDelta,
         present_delta_was_called: RefCell<bool>,
     }
 
     impl PresenterMock {
-        fn new(expected_view_model_delta: ViewModelDelta) -> Self {
+        fn new(expected_view_model_delta: presenter::ViewModelDelta) -> Self {
             Self {
                 present_delta_was_called: RefCell::new(false),
                 expected_view_model_delta,
@@ -155,7 +156,10 @@ mod tests {
     }
 
     impl Presenter for PresenterMock {
-        fn present_delta(&mut self, delta: ViewModelDelta) -> Result<(), Box<dyn Error>> {
+        fn present_delta(
+            &mut self,
+            delta: presenter::ViewModelDelta,
+        ) -> Result<(), Box<dyn Error>> {
             *self.present_delta_was_called.borrow_mut() = true;
             assert_eq!(self.expected_view_model_delta, delta);
             Ok(())
@@ -214,7 +218,6 @@ mod tests {
 
     fn object_description_delta() -> ObjectDescriptionDelta {
         ObjectDescriptionDelta {
-            name: Some(Some(String::from("Cat"))),
             shape: Some(
                 PolygonBuilder::default()
                     .vertex(-5.0, -5.0)
@@ -227,20 +230,46 @@ mod tests {
             location: Some(Point { x: 20.0, y: 40.0 }),
             rotation: Some(Radians::try_new(6.0).unwrap()),
             mobility: None,
-            kind: None,
+            associated_data: Some(serialize_associated_object_data(&AssociatedObjectData {
+                name: Some(String::from("Cat")),
+                kind: Kind::Organism,
+            })),
+        }
+    }
+
+    fn presenter_object_description_delta() -> presenter::ObjectDescriptionDelta {
+        presenter::ObjectDescriptionDelta {
+            name: Some(Some(String::from("Cat"))),
+            kind: Some(Kind::Organism),
+            shape: Some(
+                PolygonBuilder::default()
+                    .vertex(-5.0, -5.0)
+                    .vertex(5.0, -5.0)
+                    .vertex(5.0, 5.0)
+                    .vertex(-5.0, 5.0)
+                    .build()
+                    .expect("Created invalid vertex"),
+            ),
+            location: Some(Point { x: 20.0, y: 40.0 }),
+            rotation: Some(Radians::try_new(6.0).unwrap()),
+            ..Default::default()
         }
     }
 
     #[test]
     fn deserializes_and_calls_presenter() {
         let data = vec![100, 124, 135, 253, 234, 122];
+        let presenter_view_model_delta = hashmap! {
+            123 => presenter::ObjectDelta::Updated(presenter_object_description_delta())
+        };
+
         let view_model_delta = hashmap! {
             123 => ObjectDelta::Updated(object_description_delta())
         };
 
         let view_model_deserializer =
             ViewModelDeserializerMock::new(data.clone(), view_model_delta.clone());
-        let presenter = PresenterMock::new(view_model_delta.clone());
+        let presenter = PresenterMock::new(presenter_view_model_delta.clone());
         let mut controller = ControllerImpl::new(box presenter, box view_model_deserializer);
 
         controller.on_message(&data).unwrap();

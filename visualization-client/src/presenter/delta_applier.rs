@@ -94,31 +94,27 @@ fn apply_object_description_delta(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::*;
+    use myelin_environment::object::Mobility;
     use myelin_geometry::*;
+    use myelin_object_data::Kind;
     use std::f64::consts::PI;
 
     fn object_description() -> ObjectDescription {
-        let object_data = AssociatedObjectData {
+        ObjectDescription {
             name: None,
             kind: Kind::Organism,
-        };
-
-        ObjectBuilder::default()
-            .mobility(Mobility::Immovable)
-            .location(10.0, 20.0)
-            .shape(
-                PolygonBuilder::default()
-                    .vertex(-50.0, -50.0)
-                    .vertex(50.0, -50.0)
-                    .vertex(50.0, 50.0)
-                    .vertex(-50.0, 50.0)
-                    .build()
-                    .unwrap(),
-            )
-            .associated_data(object_data)
-            .build()
-            .unwrap()
+            location: Point { x: 10.0, y: 20.0 },
+            shape: PolygonBuilder::default()
+                .vertex(-50.0, -50.0)
+                .vertex(50.0, -50.0)
+                .vertex(50.0, 50.0)
+                .vertex(-50.0, 50.0)
+                .build()
+                .unwrap(),
+            mobility: Mobility::Movable(Vector::default()),
+            rotation: Radians::default(),
+            passable: false,
+        }
     }
 
     fn polygon() -> Polygon {
