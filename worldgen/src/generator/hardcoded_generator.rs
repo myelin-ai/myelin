@@ -36,7 +36,8 @@ impl HardcodedGenerator {
     ///
     /// # Examples
     /// ```
-    /// use myelin_environment::object::{Kind, ObjectBehavior};
+    /// use myelin_environment::object::ObjectBehavior;
+    /// use myelin_object_data::Kind;
     /// use myelin_environment::simulation_impl::world::{
     ///     IgnoringCollisionFilterImpl, NphysicsRotationTranslatorImpl, NphysicsWorld,
     ///     SingleTimeForceApplierImpl,
