@@ -65,4 +65,12 @@ mod tests {
 
         assert_eq!(associated_object_data, deserialized_associated_object_data);
     }
+
+    #[test]
+    #[should_panic]
+    fn deserialize_fails_with_invalid_data() {
+        let invalid_data = String::from("banana").into_bytes();
+        deserialize_associated_object_data(&invalid_data).unwrap();
+    }
+
 }
