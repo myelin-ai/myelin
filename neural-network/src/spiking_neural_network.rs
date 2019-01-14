@@ -362,15 +362,17 @@ mod tests {
         let mut neural_network = SpikingNeuralNetwork::default();
         let sensor_handle = neural_network.push_neuron();
 
-        let elapsed_time = Milliseconds(1.0);
+        const SMALL_TIMESTEP: Milliseconds = Milliseconds(0.001);
+        let steps = f64::ceil(constant::SPIKE_DURATION.0 / SMALL_TIMESTEP.0) as u32;
+
         let inputs = hashmap! {
             sensor_handle => self::constant::THRESHOLD_POTENTIAL
         };
-        neural_network.step(elapsed_time, &inputs);
+        neural_network.step(SMALL_TIMESTEP, &inputs);
 
         let no_inputs = HashMap::new();
-        for _ in 0..10 {
-            neural_network.step(elapsed_time, &no_inputs);
+        for _ in 0..steps {
+            neural_network.step(SMALL_TIMESTEP, &no_inputs);
         }
 
         let sensor_membrane_potential = neural_network
