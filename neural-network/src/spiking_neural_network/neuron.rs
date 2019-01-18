@@ -22,7 +22,10 @@ impl SpikingNeuron {
         }
     }
 
-    /// Update the state of the neuron and return it
+    /// Update the internal state of the neuron
+    /// `time_since_last_step`: The time in milliseconds that passed since this method was last called
+    /// `inputs`: The membrane potentials of other connected neurons that influence this neuron right now.
+    /// It is assumed that these inputs occure after `time_since_last_step` has passed.
     pub fn step(
         &mut self,
         time_since_last_step: Milliseconds,
