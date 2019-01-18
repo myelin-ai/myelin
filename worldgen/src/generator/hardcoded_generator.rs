@@ -5,7 +5,7 @@ use crate::WorldGenerator;
 use myelin_environment::object::*;
 use myelin_environment::Simulation;
 use myelin_geometry::*;
-use myelin_object_data::{serialize_associated_object_data, AssociatedObjectData, Kind};
+use myelin_object_data::{AssociatedObjectData, AssociatedObjectDataSerializer, Kind};
 use std::f64::consts::FRAC_PI_2;
 use std::fmt;
 
@@ -19,6 +19,7 @@ pub struct HardcodedGenerator {
     terrain_factory: TerrainFactory,
     water_factory: WaterFactory,
     name_provider: Box<dyn NameProvider>,
+    associated_object_data_serializer: Box<dyn AssociatedObjectDataSerializer>,
 }
 
 pub type SimulationFactory = Box<dyn Fn() -> Box<dyn Simulation>>;
@@ -99,6 +100,7 @@ impl HardcodedGenerator {
         terrain_factory: TerrainFactory,
         water_factory: WaterFactory,
         name_provider: Box<dyn NameProvider>,
+        associated_object_data_serializer: Box<dyn AssociatedObjectDataSerializer>,
     ) -> Self {
         Self {
             simulation_factory,
@@ -107,24 +109,25 @@ impl HardcodedGenerator {
             terrain_factory,
             water_factory,
             name_provider,
+            associated_object_data_serializer,
         }
     }
 
     fn populate_with_terrain(&self, simulation: &mut dyn Simulation) {
         simulation.add_object(
-            build_terrain((25.0, 500.0), 50.0, 1000.0),
+            build_terrain((25.0, 500.0), 50.0, 1000.0, self.associated_object_data_serializer.as_ref()),
             (self.terrain_factory)(),
         );
         simulation.add_object(
-            build_terrain((500.0, 25.0), 1000.0, 50.0),
+            build_terrain((500.0, 25.0), 1000.0, 50.0, self.associated_object_data_serializer.as_ref()),
             (self.terrain_factory)(),
         );
         simulation.add_object(
-            build_terrain((975.0, 500.0), 50.0, 1000.0),
+            build_terrain((975.0, 500.0), 50.0, 1000.0, self.associated_object_data_serializer.as_ref()),
             (self.terrain_factory)(),
         );
         simulation.add_object(
-            build_terrain((500.0, 975.0), 1000.0, 50.0),
+            build_terrain((500.0, 975.0), 1000.0, 50.0, self.associated_object_data_serializer.as_ref()),
             (self.terrain_factory)(),
         );
     }
@@ -148,7 +151,7 @@ impl HardcodedGenerator {
             )
             .location(500.0, 500.0)
             .mobility(Mobility::Immovable)
-            .associated_data(serialize_associated_object_data(&object_data))
+            .associated_data(self.associated_object_data_serializer.serialize(&object_data))
             .build()
             .expect("Failed to build water");
 
@@ -174,11 +177,13 @@ impl HardcodedGenerator {
                     HALF_OF_PLANT_WIDTH_AND_HEIGHT,
                     left_horizontal_position,
                     vertical_position,
+                    self.associated_object_data_serializer.as_ref(),
                 ));
                 add_plant(build_plant(
                     HALF_OF_PLANT_WIDTH_AND_HEIGHT,
                     right_horizontal_position,
                     vertical_position,
+                    self.associated_object_data_serializer.as_ref(),
                 ));
             }
         }
@@ -199,6 +204,7 @@ impl HardcodedGenerator {
                     coordinate.0,
                     coordinate.1,
                     self.name_provider.get_name(Kind::Organism),
+                    self.associated_object_data_serializer.as_ref(),
                 ),
                 (self.organism_factory)(),
             );
@@ -206,7 +212,7 @@ impl HardcodedGenerator {
     }
 }
 
-fn build_terrain(location: (f64, f64), width: f64, length: f64) -> ObjectDescription {
+fn build_terrain(location: (f64, f64), width: f64, length: f64, associated_object_data_serializer: &dyn AssociatedObjectDataSerializer) -> ObjectDescription {
     let object_data = AssociatedObjectData {
         name: None,
         kind: Kind::Terrain,
@@ -226,12 +232,12 @@ fn build_terrain(location: (f64, f64), width: f64, length: f64) -> ObjectDescrip
         )
         .location(location.0, location.1)
         .mobility(Mobility::Immovable)
-        .associated_data(serialize_associated_object_data(&object_data))
+        .associated_data(associated_object_data_serializer.serialize(&object_data))
         .build()
         .expect("Failed to build terrain")
 }
 
-fn build_plant(half_of_width_and_height: f64, x: f64, y: f64) -> ObjectDescription {
+fn build_plant(half_of_width_and_height: f64, x: f64, y: f64, associated_object_data_serializer: &dyn AssociatedObjectDataSerializer) -> ObjectDescription {
     let object_data = AssociatedObjectData {
         name: None,
         kind: Kind::Plant,
@@ -250,12 +256,12 @@ fn build_plant(half_of_width_and_height: f64, x: f64, y: f64) -> ObjectDescripti
         .location(x, y)
         .mobility(Mobility::Immovable)
         .passable(true)
-        .associated_data(serialize_associated_object_data(&object_data))
+        .associated_data(associated_object_data_serializer.serialize(&object_data))
         .build()
         .expect("Failed to build plant")
 }
 
-fn build_organism(x: f64, y: f64, name: Option<String>) -> ObjectDescription {
+fn build_organism(x: f64, y: f64, name: Option<String>, associated_object_data_serializer: &dyn AssociatedObjectDataSerializer) -> ObjectDescription {
     let object_data = AssociatedObjectData {
         name,
         kind: Kind::Organism,
@@ -274,7 +280,7 @@ fn build_organism(x: f64, y: f64, name: Option<String>) -> ObjectDescription {
         .location(x, y)
         .rotation(Radians::try_new(FRAC_PI_2).unwrap())
         .mobility(Mobility::Movable(Vector::default()))
-        .associated_data(serialize_associated_object_data(&object_data))
+        .associated_data(associated_object_data_serializer.serialize(&object_data))
         .build()
         .expect("Failed to build organism")
 }
@@ -303,6 +309,7 @@ mod tests {
     use mockiato::{any, partial_eq, ExpectedCalls};
     use myelin_environment::object::ObjectBehaviorMock;
     use myelin_environment::SimulationMock;
+    use myelin_object_data::AssociatedObjectDataSerializerMock;
 
     #[test]
     fn generates_simulation() {
@@ -318,6 +325,7 @@ mod tests {
         let plant_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
         let organism_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
         let terrain_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
+
         let water_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
 
         let mut name_provider = box NameProviderMock::new();
@@ -326,6 +334,8 @@ mod tests {
             .returns(None)
             .times(5);
 
+        let associated_object_data_serializer = box AssociatedObjectDataSerializerMock::new();
+
         let mut generator = HardcodedGenerator::new(
             simulation_factory,
             plant_factory,
@@ -333,6 +343,7 @@ mod tests {
             terrain_factory,
             water_factory,
             name_provider,
+            associated_object_data_serializer,
         );
 
         let _simulation = generator.generate();

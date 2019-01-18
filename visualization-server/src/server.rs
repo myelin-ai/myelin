@@ -25,6 +25,7 @@ use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::Duration;
 use uuid::Uuid;
+use myelin_object_data::AssociatedObjectDataBincodeSerializer;
 
 /// Starts the simulation and a websocket server, that broadcasts
 /// `ViewModel`s on each step to all clients.
@@ -63,6 +64,8 @@ where
 
     let name_provider = name_provider_builder.build_randomized();
 
+    let associated_object_data_serializer = box AssociatedObjectDataBincodeSerializer::default();
+
     let mut worldgen = HardcodedGenerator::new(
         simulation_factory,
         plant_factory,
@@ -70,6 +73,7 @@ where
         terrain_factory,
         water_factory,
         name_provider,
+        associated_object_data_serializer,
     );
 
     let conection_acceptor_factory_fn = Arc::new(move |current_snapshot_fn| {

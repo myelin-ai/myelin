@@ -62,14 +62,10 @@ mod tests {
     use crate::view_model_delta::*;
     use myelin_environment::object::*;
     use myelin_geometry::*;
-    use myelin_object_data::{serialize_associated_object_data, AssociatedObjectData, Kind};
 
     #[test]
     fn serializes_full_delta() {
-        let object_data = AssociatedObjectData {
-            name: Some(String::from("Cat")),
-            kind: Kind::Organism,
-        };
+        let associated_data = String::from("Cat").into_bytes();
 
         let object_description_delta = ObjectDescriptionDelta {
             shape: Some(
@@ -84,7 +80,7 @@ mod tests {
             mobility: Some(Mobility::Movable(Vector { x: 2.0, y: 3.0 })),
             location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
-            associated_data: Some(serialize_associated_object_data(&object_data)),
+            associated_data: Some(associated_data),
         };
 
         let view_model_delta = hashmap! { 12 => ObjectDelta::Updated(object_description_delta) };
@@ -115,11 +111,6 @@ mod tests {
 
     #[test]
     fn deserializes_full_viewmodel() {
-        let object_data = AssociatedObjectData {
-            name: Some(String::from("Cat")),
-            kind: Kind::Organism,
-        };
-
         let object_description_delta = ObjectDescriptionDelta {
             shape: Some(
                 PolygonBuilder::default()
@@ -133,7 +124,7 @@ mod tests {
             mobility: Some(Mobility::Movable(Vector { x: 2.0, y: 3.0 })),
             location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
-            associated_data: Some(serialize_associated_object_data(&object_data)),
+            associated_data: Some(String::from("Cat").into_bytes()),
         };
 
         let expected = hashmap! { 12 => ObjectDelta::Updated(object_description_delta) };

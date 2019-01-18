@@ -9,6 +9,7 @@ use myelin_visualization_core::serialization::BincodeDeserializer;
 use std::panic::{set_hook, PanicInfo};
 use wasm_bindgen::prelude::*;
 use web_sys::{console, HtmlCanvasElement};
+use myelin_object_data::{AssociatedObjectDataBincodeSerializer, AssociatedObjectDataBincodeDeserializer};
 
 fn panic_hook(info: &PanicInfo<'_>) {
     // The space works around an issue in Safari's Inspector:
@@ -34,5 +35,7 @@ pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
             box GlobalPolygonTranslatorImpl::new(),
         ),
         box BincodeDeserializer::default(),
+        box AssociatedObjectDataBincodeSerializer::default(),
+        box AssociatedObjectDataBincodeDeserializer::default(),
     ))
 }
