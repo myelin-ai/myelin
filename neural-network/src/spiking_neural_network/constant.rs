@@ -9,10 +9,16 @@ pub(crate) const ACTION_POTENTIAL: MembranePotential = MembranePotential(40.0);
 
 pub(crate) const PASSIVE_REPOLARIZATION_FACTOR: f64 = 0.01;
 
+#[cfg(test)]
 pub(crate) const DEPOLARIZATION_DURATION: Milliseconds = Milliseconds(0.7);
+
+#[cfg(test)]
 pub(crate) const ACTION_POTENTIAL_DURATION: Milliseconds = Milliseconds(0.1);
+
+#[cfg(test)]
 pub(crate) const REPOLARIZATION_DURATION: Milliseconds = Milliseconds(0.7);
-pub(crate) const REFRACTORY_PERIOD_DURATION: Milliseconds = Milliseconds(3.5);
+
+pub(crate) const _REFRACTORY_PERIOD_DURATION: Milliseconds = Milliseconds(3.5);
 
 #[cfg(test)]
 pub(crate) const SPIKE_DURATION: Milliseconds = Milliseconds(
