@@ -23,8 +23,8 @@ impl NeuralNetwork for SpikingNeuralNetwork {
         time_since_last_step: Milliseconds,
         external_inputs: &HashMap<Handle, MembranePotential>,
     ) {
-        self.update_neurons_connected_to_inputs(time_since_last_step, external_inputs);
-        self.update_neurons_not_connected_to_inputs(time_since_last_step, external_inputs);
+        self.update_neurons_connected_to_external_inputs(time_since_last_step, external_inputs);
+        self.update_neurons_not_connected_to_external_inputs(time_since_last_step, external_inputs);
     }
 
     /// Returns the last calculated state of the neuron referenced by `handle`
@@ -83,7 +83,7 @@ impl SpikingNeuralNetwork {
         }
     }
 
-    fn update_neurons_connected_to_inputs(
+    fn update_neurons_connected_to_external_inputs(
         &mut self,
         time_since_last_step: Milliseconds,
         external_inputs: &HashMap<Handle, MembranePotential>,
@@ -103,7 +103,7 @@ impl SpikingNeuralNetwork {
         }
     }
 
-    fn update_neurons_not_connected_to_inputs(
+    fn update_neurons_not_connected_to_external_inputs(
         &mut self,
         time_since_last_step: Milliseconds,
         external_inputs: &HashMap<Handle, MembranePotential>,
