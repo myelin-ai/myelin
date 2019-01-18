@@ -76,6 +76,15 @@ fn main() {
         .map(|(x, y)| format!("{},{}", x, y))
         .collect();
 
-    println!("Sensor\t{}", sensor_points.join("\t"));
-    println!("Neuron\t{}", neuron_points.join("\t"));
+    const TAB_ESCAPE_SEQUENCE: &str = "\t";
+    println!(
+        "Sensor{}{}",
+        TAB_ESCAPE_SEQUENCE,
+        sensor_points.join(TAB_ESCAPE_SEQUENCE)
+    );
+    println!(
+        "Neuron{}{}",
+        TAB_ESCAPE_SEQUENCE,
+        neuron_points.join(TAB_ESCAPE_SEQUENCE)
+    );
 }
