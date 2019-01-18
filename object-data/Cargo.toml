@@ -13,3 +13,7 @@ edition = "2018"
 serde = "1.0"
 serde_derive = "1.0"
 bincode = "1.0"
+mockiato = { git = "https://github.com/myelin-ai/mockiato", optional = true }
+
+[features]
+use-mocks = ["mockiato"]
