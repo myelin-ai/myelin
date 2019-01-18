@@ -29,11 +29,10 @@ impl NeuralNetwork for SpikingNeuralNetwork {
 
     /// Returns the last calculated state of the neuron referenced by `handle`
     fn membrane_potential_of_neuron(&self, neuron: Handle) -> Result<Option<MembranePotential>> {
-        if let Some(neuron) = self.neurons.get(neuron.0) {
-            Ok(neuron.membrane_potential())
-        } else {
-            Err(())
-        }
+        self.neurons
+            .get(neuron.0)
+            .ok_or(())
+            .map(|neuron| neuron.membrane_potential())
     }
 
     /// Add a new unconnected neuron to the network
