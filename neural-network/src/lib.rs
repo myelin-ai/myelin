@@ -17,16 +17,13 @@ use std::fmt::Debug;
 pub struct Handle(pub usize);
 
 /// A modifier of incoming spikes
-#[derive(Default, Debug, PartialOrd, PartialEq, Clone, Copy)]
-pub struct Weight(pub f64);
+pub type Weight = f64;
 
 /// A representation of time
-#[derive(Default, Debug, PartialOrd, PartialEq, Clone, Copy)]
-pub struct Milliseconds(pub f64);
+pub type Milliseconds = f64;
 
 /// The state of a neuron at a given time
-#[derive(Default, Debug, PartialOrd, PartialEq, Clone, Copy)]
-pub struct MembranePotential(pub f64);
+pub type MembranePotential = f64;
 
 /// The result type used when working with handles
 pub type Result<T> = std::result::Result<T, ()>;

@@ -91,7 +91,7 @@ impl SpikingNeuralNetwork {
         for (&handle_of_neuron_receiving_input, &input) in external_inputs {
             let mut inputs =
                 self.cached_incoming_connection_inputs(handle_of_neuron_receiving_input);
-            const EXTERNAL_CONNECTION_WEIGHT: Weight = Weight(1.0);
+            const EXTERNAL_CONNECTION_WEIGHT: Weight = 1.0;
             inputs.push((input, EXTERNAL_CONNECTION_WEIGHT));
 
             let neuron = self
@@ -173,7 +173,7 @@ mod tests {
         let connection = Connection {
             from: Handle(0),
             to: Handle(1),
-            weight: Weight(1.0),
+            weight: 1.0,
         };
         let result = neural_network.add_connection(connection);
         assert!(result.is_err());
@@ -187,7 +187,7 @@ mod tests {
         let connection = Connection {
             from: Handle(sensor_handle.0 + 1),
             to: Handle(neuron_handle.0 + 1),
-            weight: Weight(1.0),
+            weight: 1.0,
         };
         let result = neural_network.add_connection(connection);
         assert!(result.is_err());
@@ -200,7 +200,7 @@ mod tests {
         let connection = Connection {
             from: Handle(neuron_handle.0),
             to: Handle(neuron_handle.0),
-            weight: Weight(1.0),
+            weight: 1.0,
         };
         let result = neural_network.add_connection(connection);
         assert!(result.is_err());
@@ -214,7 +214,7 @@ mod tests {
         let connection = Connection {
             from: Handle(sensor_handle.0),
             to: Handle(neuron_handle.0),
-            weight: Weight(1.0),
+            weight: 1.0,
         };
         let result = neural_network.add_connection(connection);
         assert!(result.is_ok());
@@ -223,7 +223,7 @@ mod tests {
     #[test]
     fn step_works_on_empty_network() {
         let mut neural_network = SpikingNeuralNetwork::default();
-        let elapsed_time = Milliseconds(1.0);
+        let elapsed_time = 1.0;
         let inputs = HashMap::new();
         neural_network.step(elapsed_time, &inputs);
     }
@@ -234,7 +234,7 @@ mod tests {
         let sensor_handle = neural_network.push_neuron();
         let neuron_handle = neural_network.push_neuron();
 
-        let elapsed_time = Milliseconds(1.0);
+        let elapsed_time = 1.0;
         let inputs = HashMap::new();
         neural_network.step(elapsed_time, &inputs);
 
@@ -257,11 +257,11 @@ mod tests {
         let connection = Connection {
             from: Handle(sensor_handle.0),
             to: Handle(neuron_handle.0),
-            weight: Weight(1.0),
+            weight: 1.0,
         };
         neural_network.add_connection(connection).unwrap();
 
-        let elapsed_time = Milliseconds(1.0);
+        let elapsed_time = 1.0;
         let inputs = HashMap::new();
 
         for _ in 0..100 {
@@ -284,7 +284,7 @@ mod tests {
         let mut neural_network = SpikingNeuralNetwork::default();
         let sensor_handle = neural_network.push_neuron();
 
-        let elapsed_time = Milliseconds(1.0);
+        let elapsed_time = 1.0;
         let inputs = hashmap! {
             sensor_handle => self::constant::THRESHOLD_POTENTIAL
         };
@@ -304,11 +304,11 @@ mod tests {
         let connection = Connection {
             from: Handle(sensor_handle.0),
             to: Handle(neuron_handle.0),
-            weight: Weight(0.1),
+            weight: 0.1,
         };
         neural_network.add_connection(connection).unwrap();
 
-        let elapsed_time = Milliseconds(1.0);
+        let elapsed_time = 1.0;
         let inputs = hashmap! {
             sensor_handle => self::constant::THRESHOLD_POTENTIAL
         };
@@ -333,11 +333,11 @@ mod tests {
         let connection = Connection {
             from: Handle(sensor_handle.0),
             to: Handle(neuron_handle.0),
-            weight: Weight(1.0),
+            weight: 1.0,
         };
         neural_network.add_connection(connection).unwrap();
 
-        let elapsed_time = Milliseconds(1.0);
+        let elapsed_time = 1.0;
         let inputs = hashmap! {
             sensor_handle => self::constant::THRESHOLD_POTENTIAL
         };
@@ -359,8 +359,8 @@ mod tests {
         let mut neural_network = SpikingNeuralNetwork::default();
         let sensor_handle = neural_network.push_neuron();
 
-        const SMALL_TIMESTEP: Milliseconds = Milliseconds(0.001);
-        let steps = f64::ceil(constant::SPIKE_DURATION.0 / SMALL_TIMESTEP.0) as u32;
+        const SMALL_TIMESTEP: Milliseconds = 0.001;
+        let steps = f64::ceil(constant::SPIKE_DURATION / SMALL_TIMESTEP) as u32;
 
         let inputs = hashmap! {
             sensor_handle => self::constant::THRESHOLD_POTENTIAL
