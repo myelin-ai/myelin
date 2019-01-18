@@ -189,7 +189,8 @@ mod tests {
     fn emits_no_potential_without_inputs() {
         let mut neuron = SpikingNeuron::default();
         let elapsed_time = Milliseconds(1.0);
-        let membrane_potential = neuron.step(elapsed_time, &[]);
+        neuron.step(elapsed_time, &[]);
+        let membrane_potential = neuron.membrane_potential();
         assert!(membrane_potential.is_none());
     }
 
@@ -199,7 +200,8 @@ mod tests {
         let elapsed_time = Milliseconds(10.0);
         let inputs = [(constant::ACTION_POTENTIAL, Weight(0.0))];
 
-        let membrane_potential = neuron.step(elapsed_time, &inputs);
+        neuron.step(elapsed_time, &inputs);
+        let membrane_potential = neuron.membrane_potential();
         assert!(membrane_potential.is_none());
     }
 
@@ -212,7 +214,8 @@ mod tests {
             MembranePotential(constant::THRESHOLD_POTENTIAL.0 - 0.1),
             Weight(1.0),
         )];
-        let membrane_potential = neuron.step(elapsed_time, &nearly_threshold);
+        neuron.step(elapsed_time, &nearly_threshold);
+        let membrane_potential = neuron.membrane_potential();
         assert!(membrane_potential.is_none());
     }
 
@@ -223,7 +226,8 @@ mod tests {
 
         let inputs = [(MembranePotential(1000.0), Weight(1000.0))];
 
-        let membrane_potential = neuron.step(elapsed_time, &inputs);
+        neuron.step(elapsed_time, &inputs);
+        let membrane_potential = neuron.membrane_potential();
         assert!(membrane_potential.is_some());
     }
 
@@ -234,7 +238,8 @@ mod tests {
 
         let inputs = [(constant::THRESHOLD_POTENTIAL, Weight(1.0))];
 
-        let membrane_potential = neuron.step(elapsed_time, &inputs);
+        neuron.step(elapsed_time, &inputs);
+        let membrane_potential = neuron.membrane_potential();
         assert!(membrane_potential.is_some());
     }
 
@@ -248,7 +253,8 @@ mod tests {
             Weight(2.0),
         )];
 
-        let membrane_potential = neuron.step(elapsed_time, &inputs);
+        neuron.step(elapsed_time, &inputs);
+        let membrane_potential = neuron.membrane_potential();
         assert!(membrane_potential.is_some());
     }
 
@@ -264,7 +270,8 @@ mod tests {
         for _ in 0..steps {
             neuron.step(SMALL_TIMESTEP, &[]);
         }
-        let membrane_potential = neuron.step(SMALL_TIMESTEP, &[]);
+        neuron.step(SMALL_TIMESTEP, &[]);
+        let membrane_potential = neuron.membrane_potential();
         assert!(membrane_potential.is_none());
     }
 
@@ -280,7 +287,8 @@ mod tests {
         for _ in 0..steps {
             neuron.step(SMALL_TIMESTEP, &inputs);
         }
-        let membrane_potential = neuron.step(SMALL_TIMESTEP, &[]);
+        neuron.step(SMALL_TIMESTEP, &[]);
+        let membrane_potential = neuron.membrane_potential();
         assert!(membrane_potential.is_none());
     }
 
@@ -289,7 +297,8 @@ mod tests {
         let mut neuron = SpikingNeuron::default();
         let inputs = [(constant::THRESHOLD_POTENTIAL, Weight(1.0))];
         neuron.step(Milliseconds(10.0), &inputs);
-        let membrane_potential = neuron.step(Milliseconds(1_000.0), &[]);
+        neuron.step(Milliseconds(1_000.0), &[]);
+        let membrane_potential = neuron.membrane_potential();
         assert!(membrane_potential.is_none());
     }
 
@@ -305,7 +314,10 @@ mod tests {
         let updates_needed_to_reach_spike =
             f64::ceil(TIME_AFTER_WHICH_A_SPIKE_SHOULD_HAVE_OCCURED.0 / SMALL_TIME_STEP.0) as u32;
         let states: Vec<_> = (0..updates_needed_to_reach_spike)
-            .map(|_| neuron.step(SMALL_TIME_STEP, &[]))
+            .map(|_| {
+                neuron.step(SMALL_TIME_STEP, &[]);
+                neuron.membrane_potential()
+            })
             .filter_map(|state| {
                 if let Some(state) = state {
                     Some(state.0)
