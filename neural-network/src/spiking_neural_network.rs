@@ -13,7 +13,6 @@ use std::collections::HashMap;
 pub struct SpikingNeuralNetwork {
     neurons: Slab<SpikingNeuron>,
     neuron_handles: Vec<Handle>,
-    last_state: HashMap<Handle, Option<MembranePotential>>,
     incoming_connections: HashMap<Handle, Vec<(Handle, Weight)>>,
 }
 
@@ -30,14 +29,17 @@ impl NeuralNetwork for SpikingNeuralNetwork {
 
     /// Returns the last calculated state of the neuron referenced by `handle`
     fn membrane_potential_of_neuron(&self, neuron: Handle) -> Result<Option<MembranePotential>> {
-        self.last_state.get(&neuron).cloned().ok_or(())
+        if let Some(neuron) = self.neurons.get(neuron.0) {
+            Ok(neuron.membrane_potential())
+        } else {
+            Err(())
+        }
     }
 
     /// Add a new unconnected neuron to the network
     fn push_neuron(&mut self) -> Handle {
         let handle = Handle(self.neurons.insert(SpikingNeuron::default()));
         self.neuron_handles.push(handle);
-        self.last_state.insert(handle, None);
         handle
     }
 
@@ -69,12 +71,12 @@ impl SpikingNeuralNetwork {
             incoming_connections
                 .iter()
                 .filter_map(|(handle_of_connection, weight)| {
-                    let &state_of_connection = self.last_state.get(handle_of_connection)?;
-                    if let Some(state_of_connection) = state_of_connection {
-                        Some((state_of_connection, *weight))
-                    } else {
-                        None
-                    }
+                    self.membrane_potential_of_neuron(*handle_of_connection)
+                        .expect(
+                            "Internal error: Stored connection handle does not correspond to any \
+                             neuron",
+                        )
+                        .map(|state_of_connection| (state_of_connection, *weight))
                 })
                 .collect()
         } else {
@@ -98,9 +100,7 @@ impl SpikingNeuralNetwork {
                 .get_mut(handle_of_neuron_receiving_input.0)
                 .ok_or(())
                 .unwrap();
-            let state = neuron.step(time_since_last_step, &inputs);
-            self.last_state
-                .insert(handle_of_neuron_receiving_input, state);
+            neuron.step(time_since_last_step, &inputs);
         }
     }
 
@@ -116,9 +116,7 @@ impl SpikingNeuralNetwork {
         {
             let inputs = self.cached_incoming_connection_inputs(neuron_handle);
             let neuron = self.neurons.get_mut(neuron_handle.0).ok_or(()).unwrap();
-            let state = neuron.step(time_since_last_step, &inputs);
-            self.last_state.insert(neuron_handle, state);
-            eprintln!("neuron {}: {:?}", neuron_handle.0, state);
+            neuron.step(time_since_last_step, &inputs);
         }
     }
 }
