@@ -222,9 +222,9 @@ mod tests {
         let mut neuron = SpikingNeuron::default();
         let elapsed_time = 10.0;
 
-        const ARBITRARY_THRESHOLD_NUDGE: MembranePotential = 0.1;
+        const ARBITRARY_THRESHOLD_DECREMENT: MembranePotential = 0.1;
         let nearly_threshold = [(
-            constant::THRESHOLD_POTENTIAL - ARBITRARY_THRESHOLD_NUDGE,
+            constant::THRESHOLD_POTENTIAL - ARBITRARY_THRESHOLD_DECREMENT,
             1.0,
         )];
         neuron.step(elapsed_time, &nearly_threshold);
