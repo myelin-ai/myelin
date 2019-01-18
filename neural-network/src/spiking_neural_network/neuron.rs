@@ -127,6 +127,7 @@ impl SpikingNeuron {
 
     fn handle_hyperpolarization(&mut self, inputs: &[(MembranePotential, Weight)]) {
         self.handle_repolarization(inputs);
+        self.current_membrane_potential.0 += sum_inputs(inputs).0;;
     }
 
     fn is_above_threshold(&self) -> bool {
