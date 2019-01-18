@@ -110,7 +110,7 @@ impl SpikingNeuron {
     }
 
     fn is_above_threshold(&self) -> bool {
-        self.current_membrane_potential >= self.current_threshold
+        self.current_membrane_potential >= constant::THRESHOLD_POTENTIAL
     }
 
     fn output(&self) -> Option<MembranePotential> {
