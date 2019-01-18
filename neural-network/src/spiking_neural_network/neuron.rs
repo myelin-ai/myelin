@@ -54,6 +54,12 @@ impl SpikingNeuron {
                 self.elapsed_time_in_current_phase = Default::default();
             }
             Phase::Repolarization => {
+                if self.current_membrane_potential <= self.current_threshold {
+                    self.current_phase = Phase::Hyperpolarization;
+                    self.elapsed_time_in_current_phase = Default::default();
+                }
+            }
+            Phase::Hyperpolarization => {
                 if self.current_membrane_potential <= constant::RESTING_POTENTIAL {
                     self.current_phase = Phase::RefractoryPeriod;
                     self.elapsed_time_in_current_phase = Default::default();
@@ -78,6 +84,7 @@ impl SpikingNeuron {
             Phase::Depolarization => self.handle_depolarization(inputs),
             Phase::ActionPotential => self.handle_action_potential(inputs),
             Phase::Repolarization => self.handle_repolarization(inputs),
+            Phase::Hyperpolarization => self.handle_hyperpolarization(inputs),
             Phase::RefractoryPeriod => self.handle_refractory_period(inputs),
         }
     }
@@ -109,6 +116,10 @@ impl SpikingNeuron {
             - 3.0
     }
 
+    fn handle_hyperpolarization(&mut self, inputs: &[(MembranePotential, Weight)]) {
+        self.handle_repolarization(inputs);
+    }
+
     fn is_above_threshold(&self) -> bool {
         self.current_membrane_potential >= constant::THRESHOLD_POTENTIAL
     }
@@ -134,6 +145,7 @@ enum Phase {
     Depolarization,
     ActionPotential,
     Repolarization,
+    Hyperpolarization,
     RefractoryPeriod,
 }
 
