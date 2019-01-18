@@ -187,7 +187,7 @@ mod tests {
 
     #[test]
     fn membrane_potential_is_none_when_no_step_is_called() {
-        let mut neuron = SpikingNeuron::default();
+        let neuron = SpikingNeuron::default();
         let membrane_potential = neuron.membrane_potential();
         assert!(membrane_potential.is_none());
     }
