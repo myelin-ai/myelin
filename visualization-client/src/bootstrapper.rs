@@ -5,11 +5,13 @@ use crate::controller::ControllerImpl;
 use crate::input_handler::InputHandler;
 use crate::presenter::{CanvasPresenter, DeltaApplierImpl, GlobalPolygonTranslatorImpl};
 use crate::view::CanvasView;
+use myelin_object_data::{
+    AssociatedObjectDataBincodeDeserializer, AssociatedObjectDataBincodeSerializer,
+};
 use myelin_visualization_core::serialization::BincodeDeserializer;
 use std::panic::{set_hook, PanicInfo};
 use wasm_bindgen::prelude::*;
 use web_sys::{console, HtmlCanvasElement};
-use myelin_object_data::{AssociatedObjectDataBincodeSerializer, AssociatedObjectDataBincodeDeserializer};
 
 fn panic_hook(info: &PanicInfo<'_>) {
     // The space works around an issue in Safari's Inspector:

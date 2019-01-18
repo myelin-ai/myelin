@@ -45,10 +45,7 @@ pub enum Kind {
 #[cfg_attr(feature = "use-mocks", mockable)]
 pub trait AssociatedObjectDataSerializer: Debug {
     /// Serialize associated object data
-    fn serialize(
-        &self,
-        associated_object_data: &AssociatedObjectData,
-    ) -> Vec<u8>;
+    fn serialize(&self, associated_object_data: &AssociatedObjectData) -> Vec<u8>;
 }
 
 /// Handles deserialization for `AssociatedObjectData`
@@ -57,10 +54,7 @@ pub trait AssociatedObjectDataSerializer: Debug {
 #[cfg_attr(feature = "use-mocks", mockable)]
 pub trait AssociatedObjectDataDeserializer: Debug {
     /// Deserialize into associated object data
-    fn deserialize(
-        &self,
-        data: &[u8],
-    ) -> Result<AssociatedObjectData, Box<dyn Error>>;
+    fn deserialize(&self, data: &[u8]) -> Result<AssociatedObjectData, Box<dyn Error>>;
 }
 
 /// Implements an `AssociatedObjectDataSerializer` using bincode
@@ -70,10 +64,7 @@ pub trait AssociatedObjectDataDeserializer: Debug {
 pub struct AssociatedObjectDataBincodeSerializer {}
 
 impl AssociatedObjectDataSerializer for AssociatedObjectDataBincodeSerializer {
-    fn serialize(
-        &self,
-        associated_object_data: &AssociatedObjectData,
-    ) -> Vec<u8> {
+    fn serialize(&self, associated_object_data: &AssociatedObjectData) -> Vec<u8> {
         bincode::serialize(associated_object_data)
             .expect("Unable to serialize associated object data")
     }
@@ -86,10 +77,7 @@ impl AssociatedObjectDataSerializer for AssociatedObjectDataBincodeSerializer {
 pub struct AssociatedObjectDataBincodeDeserializer {}
 
 impl AssociatedObjectDataDeserializer for AssociatedObjectDataBincodeDeserializer {
-    fn deserialize(
-        &self,
-        data: &[u8],
-    ) -> Result<AssociatedObjectData, Box<dyn Error>> {
+    fn deserialize(&self, data: &[u8]) -> Result<AssociatedObjectData, Box<dyn Error>> {
         bincode::deserialize(data).map_err(|err| err.into())
     }
 }
@@ -122,9 +110,7 @@ mod tests {
         let deserializer = AssociatedObjectDataBincodeDeserializer::default();
 
         let invalid_data = String::from("banana").into_bytes();
-        deserializer
-            .deserialize(&invalid_data)
-            .unwrap();
+        deserializer.deserialize(&invalid_data).unwrap();
     }
 
 }

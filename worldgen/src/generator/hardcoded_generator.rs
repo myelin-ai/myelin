@@ -115,19 +115,39 @@ impl HardcodedGenerator {
 
     fn populate_with_terrain(&self, simulation: &mut dyn Simulation) {
         simulation.add_object(
-            build_terrain((25.0, 500.0), 50.0, 1000.0, self.associated_object_data_serializer.as_ref()),
+            build_terrain(
+                (25.0, 500.0),
+                50.0,
+                1000.0,
+                self.associated_object_data_serializer.as_ref(),
+            ),
             (self.terrain_factory)(),
         );
         simulation.add_object(
-            build_terrain((500.0, 25.0), 1000.0, 50.0, self.associated_object_data_serializer.as_ref()),
+            build_terrain(
+                (500.0, 25.0),
+                1000.0,
+                50.0,
+                self.associated_object_data_serializer.as_ref(),
+            ),
             (self.terrain_factory)(),
         );
         simulation.add_object(
-            build_terrain((975.0, 500.0), 50.0, 1000.0, self.associated_object_data_serializer.as_ref()),
+            build_terrain(
+                (975.0, 500.0),
+                50.0,
+                1000.0,
+                self.associated_object_data_serializer.as_ref(),
+            ),
             (self.terrain_factory)(),
         );
         simulation.add_object(
-            build_terrain((500.0, 975.0), 1000.0, 50.0, self.associated_object_data_serializer.as_ref()),
+            build_terrain(
+                (500.0, 975.0),
+                1000.0,
+                50.0,
+                self.associated_object_data_serializer.as_ref(),
+            ),
             (self.terrain_factory)(),
         );
     }
@@ -151,7 +171,10 @@ impl HardcodedGenerator {
             )
             .location(500.0, 500.0)
             .mobility(Mobility::Immovable)
-            .associated_data(self.associated_object_data_serializer.serialize(&object_data))
+            .associated_data(
+                self.associated_object_data_serializer
+                    .serialize(&object_data),
+            )
             .build()
             .expect("Failed to build water");
 
@@ -212,7 +235,12 @@ impl HardcodedGenerator {
     }
 }
 
-fn build_terrain(location: (f64, f64), width: f64, length: f64, associated_object_data_serializer: &dyn AssociatedObjectDataSerializer) -> ObjectDescription {
+fn build_terrain(
+    location: (f64, f64),
+    width: f64,
+    length: f64,
+    associated_object_data_serializer: &dyn AssociatedObjectDataSerializer,
+) -> ObjectDescription {
     let object_data = AssociatedObjectData {
         name: None,
         kind: Kind::Terrain,
@@ -237,7 +265,12 @@ fn build_terrain(location: (f64, f64), width: f64, length: f64, associated_objec
         .expect("Failed to build terrain")
 }
 
-fn build_plant(half_of_width_and_height: f64, x: f64, y: f64, associated_object_data_serializer: &dyn AssociatedObjectDataSerializer) -> ObjectDescription {
+fn build_plant(
+    half_of_width_and_height: f64,
+    x: f64,
+    y: f64,
+    associated_object_data_serializer: &dyn AssociatedObjectDataSerializer,
+) -> ObjectDescription {
     let object_data = AssociatedObjectData {
         name: None,
         kind: Kind::Plant,
@@ -261,7 +294,12 @@ fn build_plant(half_of_width_and_height: f64, x: f64, y: f64, associated_object_
         .expect("Failed to build plant")
 }
 
-fn build_organism(x: f64, y: f64, name: Option<String>, associated_object_data_serializer: &dyn AssociatedObjectDataSerializer) -> ObjectDescription {
+fn build_organism(
+    x: f64,
+    y: f64,
+    name: Option<String>,
+    associated_object_data_serializer: &dyn AssociatedObjectDataSerializer,
+) -> ObjectDescription {
     let object_data = AssociatedObjectData {
         name,
         kind: Kind::Organism,

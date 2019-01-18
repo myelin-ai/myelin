@@ -14,6 +14,7 @@ use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl}
 use myelin_environment::Simulation;
 use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
 use myelin_object_behavior::Static;
+use myelin_object_data::AssociatedObjectDataBincodeSerializer;
 use myelin_object_data::Kind;
 use myelin_visualization_core::serialization::BincodeSerializer;
 use myelin_worldgen::NameProviderBuilder;
@@ -25,7 +26,6 @@ use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::Duration;
 use uuid::Uuid;
-use myelin_object_data::AssociatedObjectDataBincodeSerializer;
 
 /// Starts the simulation and a websocket server, that broadcasts
 /// `ViewModel`s on each step to all clients.
