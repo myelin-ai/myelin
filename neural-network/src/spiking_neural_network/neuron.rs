@@ -186,6 +186,13 @@ mod tests {
     }
 
     #[test]
+    fn membrane_potential_is_none_when_no_step_is_called() {
+        let mut neuron = SpikingNeuron::default();
+        let membrane_potential = neuron.membrane_potential();
+        assert!(membrane_potential.is_none());
+    }
+
+    #[test]
     fn emits_no_potential_without_inputs() {
         let mut neuron = SpikingNeuron::default();
         let elapsed_time = Milliseconds(1.0);
