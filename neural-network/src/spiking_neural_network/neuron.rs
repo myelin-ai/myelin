@@ -27,10 +27,19 @@ impl SpikingNeuron {
         &mut self,
         time_since_last_step: Milliseconds,
         inputs: &[(MembranePotential, Weight)],
-    ) -> Option<MembranePotential> {
+    ) {
         self.update_phase(time_since_last_step);
         self.handle_phase(inputs, time_since_last_step);
-        self.output()
+    }
+
+    /// Returns the neuron's current membrane potential if it is above its current threshold
+    /// Call [`step`] to update this value
+    pub fn membrane_potential(&self) -> Option<MembranePotential> {
+        if self.is_above_threshold() {
+            Some(self.current_membrane_potential)
+        } else {
+            None
+        }
     }
 
     fn update_phase(&mut self, time_since_last_step: Milliseconds) {
@@ -122,14 +131,6 @@ impl SpikingNeuron {
 
     fn is_above_threshold(&self) -> bool {
         self.current_membrane_potential >= constant::THRESHOLD_POTENTIAL
-    }
-
-    fn output(&self) -> Option<MembranePotential> {
-        if self.is_above_threshold() {
-            Some(self.current_membrane_potential)
-        } else {
-            None
-        }
     }
 }
 
