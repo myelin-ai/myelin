@@ -2,13 +2,13 @@
 
 use maplit::hashmap;
 use myelin_neural_network::spiking_neural_network::SpikingNeuralNetwork;
-use myelin_neural_network::{Connection, Handle, Milliseconds, NeuralNetwork};
+use myelin_neural_network::{Connection, Handle, MembranePotential, Milliseconds, NeuralNetwork};
 use std::collections::HashMap;
 
 fn main() {
     const TIME_TO_SIMULATE: Milliseconds = 10.0;
     const TIMESTEP: Milliseconds = 0.001;
-    const CONSTANT_INPUT: bool = true;
+    const IS_INPUT_CONSTANT: bool = true;
 
     let mut neural_network = SpikingNeuralNetwork::default();
     let sensor_handle = neural_network.push_neuron();
@@ -20,15 +20,19 @@ fn main() {
     };
 
     neural_network.add_connection(connection).unwrap();
+
+    /// constant duplicated because the one used internally is pub(crate)
+    pub(crate) const THRESHOLD_POTENTIAL: MembranePotential = -55.0;
+
     let threshold_inputs = hashmap! {
-        sensor_handle => -55.0
+        sensor_handle => THRESHOLD_POTENTIAL
     };
     neural_network.step(TIMESTEP, &threshold_inputs);
 
     let steps = f64::ceil(TIME_TO_SIMULATE / TIMESTEP) as u32;
     let points: Vec<_> = (0..steps)
         .map(|i| {
-            let inputs = if CONSTANT_INPUT {
+            let inputs = if IS_INPUT_CONSTANT {
                 threshold_inputs.clone()
             } else {
                 HashMap::new()
