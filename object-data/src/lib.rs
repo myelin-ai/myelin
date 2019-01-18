@@ -10,6 +10,7 @@
 
 use serde_derive::{Deserialize, Serialize};
 use std::error::Error;
+use std::fmt::Debug;
 
 #[cfg(feature = "use-mocks")]
 use mockiato::mockable;
@@ -42,7 +43,7 @@ pub enum Kind {
 ///
 /// [`AssociatedObjectData`]: ./struct.AssociatedObjectData.html
 #[cfg_attr(feature = "use-mocks", mockable)]
-pub trait AssociatedObjectDataSerializer {
+pub trait AssociatedObjectDataSerializer: Debug {
     /// Serialize associated object data
     fn serialize(
         &self,
@@ -54,7 +55,7 @@ pub trait AssociatedObjectDataSerializer {
 ///
 /// [`AssociatedObjectData`]: ./struct.AssociatedObjectData.html
 #[cfg_attr(feature = "use-mocks", mockable)]
-pub trait AssociatedObjectDataDeserializer {
+pub trait AssociatedObjectDataDeserializer: Debug {
     /// Deserialize into associated object data
     fn deserialize(
         &self,
