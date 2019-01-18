@@ -185,10 +185,10 @@ impl HardcodedGenerator {
         const HALF_OF_PLANT_WIDTH_AND_HEIGHT: f64 = 10.0;
         const PADDING: f64 = 1.0;
         const DISPLACEMENT: f64 = HALF_OF_PLANT_WIDTH_AND_HEIGHT * 2.0 + PADDING;
-        const NUMBER_OF_PLANT_COLUMNS: u32 = 10;
-        const NUMBER_OF_PLANT_ROWS: u32 = 7;
-        for i in 0..=NUMBER_OF_PLANT_COLUMNS {
-            for j in 0..=NUMBER_OF_PLANT_ROWS {
+        const NUMBER_OF_PLANT_COLUMNS: u32 = 11;
+        const NUMBER_OF_PLANT_ROWS: u32 = 8;
+        for i in 0..NUMBER_OF_PLANT_COLUMNS {
+            for j in 0..NUMBER_OF_PLANT_ROWS {
                 let left_horizontal_position = 103.0 + f64::from(i) * DISPLACEMENT;
                 let right_horizontal_position = 687.0 + f64::from(i) * DISPLACEMENT;
                 let vertical_position = 103.0 + f64::from(j) * DISPLACEMENT;
@@ -344,7 +344,7 @@ impl fmt::Debug for HardcodedGenerator {
 mod tests {
     use super::*;
     use crate::NameProviderMock;
-    use mockiato::{any, partial_eq, ExpectedCalls};
+    use mockiato::{any, partial_eq, partial_eq_owned, ExpectedCalls};
     use myelin_environment::object::ObjectBehaviorMock;
     use myelin_environment::SimulationMock;
     use myelin_object_data::AssociatedObjectDataSerializerMock;
@@ -372,7 +372,27 @@ mod tests {
             .returns(None)
             .times(5);
 
-        let associated_object_data_serializer = box AssociatedObjectDataSerializerMock::new();
+        let mut associated_object_data_serializer = box AssociatedObjectDataSerializerMock::new();
+
+        associated_object_data_serializer.expect_serialize(partial_eq_owned(AssociatedObjectData {
+            name: None,
+            kind: Kind::Terrain,
+        })).returns(Vec::new()).times(4);
+
+        associated_object_data_serializer.expect_serialize(partial_eq_owned(AssociatedObjectData {
+            name: None,
+            kind: Kind::Water,
+        })).returns(Vec::new()).times(1);
+
+        associated_object_data_serializer.expect_serialize(partial_eq_owned(AssociatedObjectData {
+            name: None,
+            kind: Kind::Plant,
+        })).returns(Vec::new()).times(176);
+
+        associated_object_data_serializer.expect_serialize(partial_eq_owned(AssociatedObjectData {
+            name: None,
+            kind: Kind::Organism,
+        })).returns(Vec::new()).times(5);
 
         let mut generator = HardcodedGenerator::new(
             simulation_factory,
