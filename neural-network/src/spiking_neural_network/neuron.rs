@@ -115,7 +115,7 @@ impl SpikingNeuron {
 
     fn output(&self) -> Option<MembranePotential> {
         if self.is_above_threshold() {
-            Some(MembranePotential(self.current_membrane_potential.0))
+            Some(self.current_membrane_potential)
         } else {
             None
         }
