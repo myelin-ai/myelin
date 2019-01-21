@@ -60,7 +60,11 @@ impl CanvasView {
                 .set_fill_style(&JsValue::from_str(&name_label.font_color));
             self.context.set_text_align(constant::alignment::CENTER);
             self.context
-                .fill_text(&name_label.text, name_label.location.x, name_label.location.y)
+                .fill_text(
+                    &name_label.text,
+                    name_label.location.x,
+                    name_label.location.y,
+                )
                 .expect(&format!("Unable to display name {:?}", name_label.text));
         }
     }
