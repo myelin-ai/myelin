@@ -3,7 +3,7 @@
 
 pub use self::object_environment::ObjectEnvironmentImpl;
 use crate::object::*;
-use crate::{Simulation, Snapshot};
+use crate::{Id, Simulation, Snapshot};
 use myelin_geometry::*;
 use ncollide2d::world::CollisionObjectHandle;
 use std::cell::RefCell;
@@ -127,11 +127,7 @@ impl SimulationImpl {
                 .apply_force(body_handle, force)
                 .map(|_| ())
                 .ok_or(ActionError::InvalidHandle),
-            Action::Destroy(object_id) => self
-                .world
-                .remove_body(BodyHandle(object_id))
-                .map(|_| ())
-                .ok_or(ActionError::InvalidHandle),
+            Action::Destroy(object_id) => self.destroy(object_id),
             Action::DestroySelf => self
                 .world
                 .remove_body(body_handle)
@@ -139,6 +135,13 @@ impl SimulationImpl {
                 .map(|_| ())
                 .ok_or(ActionError::InvalidHandle),
         }
+    }
+
+    fn destroy(&mut self, object_id: Id) -> Result<(), ActionError> {
+        self.world
+            .remove_body(BodyHandle(object_id))
+            .map(|_| ())
+            .ok_or(ActionError::InvalidHandle)
     }
 }
 
