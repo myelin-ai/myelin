@@ -1,22 +1,19 @@
 [package]
-name = "myelin-object-behavior"
+name = "myelin-neural-network"
 version = "0.1.0"
-authors = [
-    "Jan Nils Ferner <jan@myelin.ch>",
-    "Mathias Fischler <mathias@myelin.ch>",
-    "Ruben Schmidmeister <ruben@myelin.ch>",
-    "Jeremy Stucki <jeremy@myelin.ch>",
-]
+authors = ["Jan Nils Ferner <jan@myelin.ch>"]
 edition = "2018"
 
 [dependencies]
 mockiato = { git = "https://github.com/myelin-ai/mockiato", optional = true }
 myelin-environment = { path = "../environment" }
 myelin-geometry = { path = "../geometry" }
-rand = "0.5.5"
-log = "0.4"
+slab = "0.4"
 
 [dev-dependencies]
 maplit = "1.0"
 myelin-environment = { path = "../environment", features = ["use-mocks"] }
 mockiato = { git = "https://github.com/myelin-ai/mockiato" }
+
+[features]
+use-mocks = ["mockiato"]
