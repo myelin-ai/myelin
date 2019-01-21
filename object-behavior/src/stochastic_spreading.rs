@@ -71,7 +71,7 @@ impl StochasticSpreading {
                 .build()
                 .unwrap();
             let object_behavior = Box::new(self.clone());
-            Some(Action::Reproduce(object_description, object_behavior))
+            Some(Action::Spawn(object_description, object_behavior))
         } else {
             None
         }
@@ -248,14 +248,14 @@ mod tests {
             .returns(HashMap::new());
         let action = object.step(&own_description, &environment);
         match action {
-            Some(Action::Reproduce(object_description, _)) => {
+            Some(Action::Spawn(object_description, _)) => {
                 let expected_object_description = object_description_at_location(
                     40.0 - EXPECTED_PADDING,
                     40.0 - EXPECTED_PADDING,
                 );
                 assert_eq!(expected_object_description, object_description);
             }
-            action => panic!("Expected Action::Reproduce, got {:#?}", action),
+            action => panic!("Expected Action::Spawn, got {:#?}", action),
         }
     }
 
@@ -355,12 +355,12 @@ mod tests {
 
         let action = object.step(&own_description, &environment);
         match action {
-            Some(Action::Reproduce(object_description, _)) => {
+            Some(Action::Spawn(object_description, _)) => {
                 let expected_object_description =
                     object_description_at_location(60.0 + EXPECTED_PADDING, 50.0);
                 assert_eq!(expected_object_description, object_description);
             }
-            action => panic!("Expected Action::Reproduce, got {:#?}", action),
+            action => panic!("Expected Action::Spawn, got {:#?}", action),
         }
     }
 
@@ -404,12 +404,12 @@ mod tests {
 
         let action = object.step(&own_description, &environment);
         match action {
-            Some(Action::Reproduce(object_description, _)) => {
+            Some(Action::Spawn(object_description, _)) => {
                 let expected_object_description =
                     object_description_at_location(50.0, 60.0 + EXPECTED_PADDING);
                 assert_eq!(expected_object_description, object_description);
             }
-            action => panic!("Expected Action::Reproduce, got {:#?}", action),
+            action => panic!("Expected Action::Spawn, got {:#?}", action),
         }
     }
 
@@ -443,12 +443,12 @@ mod tests {
 
         let action = object.step(&own_description, &environment);
         match action {
-            Some(Action::Reproduce(object_description, _)) => {
+            Some(Action::Spawn(object_description, _)) => {
                 let expected_object_description =
                     object_description_at_location(60.0 + EXPECTED_PADDING, 50.0);
                 assert_eq!(expected_object_description, object_description);
             }
-            action => panic!("Expected Action::Reproduce, got {:#?}", action),
+            action => panic!("Expected Action::Spawn, got {:#?}", action),
         }
     }
 
