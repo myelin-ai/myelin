@@ -7,6 +7,8 @@ pub(crate) const RESTING_POTENTIAL: MembranePotential = -70.0;
 pub(crate) const THRESHOLD_POTENTIAL: MembranePotential = -55.0;
 pub(crate) const ACTION_POTENTIAL: MembranePotential = 40.0;
 
+/// Represents potassium leak conductance.
+/// This value was selected arbitrarily.
 pub(crate) const PASSIVE_REPOLARIZATION_FACTOR: f64 = 0.01;
 
 #[cfg(test)]
