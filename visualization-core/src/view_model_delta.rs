@@ -25,10 +25,6 @@ pub enum ObjectDelta {
 /// [`ObjectDescription`]: ../../environment/object/struct.ObjectDescription.html
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ObjectDescriptionDelta {
-    /// The name of the object
-    #[allow(clippy::option_option)]
-    pub name: Option<Option<String>>,
-
     /// The vertices defining the shape of the object
     /// in relation to its [`position`]
     ///
@@ -46,6 +42,6 @@ pub struct ObjectDescriptionDelta {
     /// objects center
     pub mobility: Option<Mobility>,
 
-    /// The object's kind
-    pub kind: Option<Kind>,
+    /// Arbitrary data associated with this object
+    pub associated_data: Option<Vec<u8>>,
 }

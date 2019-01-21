@@ -74,9 +74,6 @@ impl Clone for Action {
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[non_exhaustive]
 pub struct ObjectDescription {
-    /// The name of the object
-    pub name: Option<String>,
-
     /// The vertices defining the shape of the object
     /// in relation to its [`position`]
     ///
@@ -94,11 +91,11 @@ pub struct ObjectDescription {
     /// objects center
     pub mobility: Mobility,
 
-    /// The object's kind
-    pub kind: Kind,
-
     /// Whether the object is passable or not
     pub passable: bool,
+
+    /// Arbitrary data associated with this object
+    pub associated_data: Vec<u8>,
 }
 
 /// An object's mobility and, if present, its
@@ -114,20 +111,6 @@ pub enum Mobility {
     ///
     /// [`MovableObject`]: ./trait.MovableObject.html
     Movable(Vector),
-}
-
-/// The part of an object that is responsible for custom
-/// behavior and interactions
-#[derive(Hash, Debug, Eq, PartialEq, Clone, Copy, Serialize, Deserialize)]
-pub enum Kind {
-    /// An intelligent organism featuring a neural network
-    Organism,
-    /// A self-spreading plant, ready for consumption
-    Plant,
-    /// A stationary body of water
-    Water,
-    /// Impassable terrain
-    Terrain,
 }
 
 /// Combination of a linear force and its torque,

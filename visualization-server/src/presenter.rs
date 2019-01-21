@@ -63,12 +63,11 @@ fn get_object_description_delta(
     second: ObjectDescription,
 ) -> ObjectDescriptionDelta {
     ObjectDescriptionDelta {
-        name: get_delta(first.map(|o| &o.name), second.name),
         shape: get_delta(first.map(|o| &o.shape), second.shape),
         location: get_delta(first.map(|o| &o.location), second.location),
         rotation: get_delta(first.map(|o| &o.rotation), second.rotation),
         mobility: get_delta(first.map(|o| &o.mobility), second.mobility),
-        kind: get_delta(first.map(|o| &o.kind), second.kind),
+        associated_data: get_delta(first.map(|o| &o.associated_data), second.associated_data),
     }
 }
 
@@ -87,13 +86,13 @@ fn delta_contains_changes(delta: &ObjectDescriptionDelta) -> bool {
         || delta.location.is_some()
         || delta.rotation.is_some()
         || delta.mobility.is_some()
-        || delta.kind.is_some()
+        || delta.associated_data.is_some()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::{Kind, Mobility, ObjectBuilder, ObjectDescription};
+    use myelin_environment::object::{Mobility, ObjectBuilder, ObjectDescription};
     use myelin_geometry::*;
 
     fn object_description() -> ObjectDescription {
@@ -110,7 +109,6 @@ mod tests {
             .mobility(Mobility::Immovable)
             .location(30.0, 40.0)
             .rotation(Radians::default())
-            .kind(Kind::Plant)
             .build()
             .unwrap()
     }
@@ -177,12 +175,8 @@ mod tests {
         let delta = delta_presenter.calculate_deltas(&first_snapshot, &second_snapshot);
 
         let expected_delta = ObjectDescriptionDelta {
-            name: None,
-            shape: None,
             location: Some(object.location),
-            rotation: None,
-            mobility: None,
-            kind: None,
+            ..Default::default()
         };
 
         assert_eq!(
@@ -210,7 +204,7 @@ mod tests {
             .location(object.location.x, object.location.y)
             .rotation(object.rotation)
             .mobility(object.mobility)
-            .kind(object.kind)
+            .associated_data(Vec::new())
             .build()
             .unwrap();
 

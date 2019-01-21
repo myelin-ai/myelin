@@ -36,7 +36,6 @@ mod tests {
 
     fn object_description() -> ObjectDescription {
         ObjectBuilder::default()
-            .kind(Kind::Organism)
             .location(10.0, 10.0)
             .mobility(Mobility::Immovable)
             .shape(

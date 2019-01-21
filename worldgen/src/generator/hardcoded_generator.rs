@@ -5,6 +5,9 @@ use crate::WorldGenerator;
 use myelin_environment::object::*;
 use myelin_environment::Simulation;
 use myelin_geometry::*;
+use myelin_object_data::{
+    AdditionalObjectDescription, AdditionalObjectDescriptionSerializer, Kind,
+};
 use std::f64::consts::FRAC_PI_2;
 use std::fmt;
 
@@ -18,6 +21,7 @@ pub struct HardcodedGenerator {
     terrain_factory: TerrainFactory,
     water_factory: WaterFactory,
     name_provider: Box<dyn NameProvider>,
+    associated_object_data_serializer: Box<dyn AdditionalObjectDescriptionSerializer>,
 }
 
 pub type SimulationFactory = Box<dyn Fn() -> Box<dyn Simulation>>;
@@ -35,7 +39,7 @@ impl HardcodedGenerator {
     ///
     /// # Examples
     /// ```
-    /// use myelin_environment::object::{Kind, ObjectBehavior};
+    /// use myelin_environment::object::ObjectBehavior;
     /// use myelin_environment::simulation_impl::world::{
     ///     IgnoringCollisionFilterImpl, NphysicsRotationTranslatorImpl, NphysicsWorld,
     ///     SingleTimeForceApplierImpl,
@@ -43,6 +47,7 @@ impl HardcodedGenerator {
     /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
     /// use myelin_environment::Simulation;
     /// use myelin_object_behavior::Static;
+    /// use myelin_object_data::{AdditionalObjectDescriptionBincodeSerializer, Kind};
     /// use myelin_worldgen::{HardcodedGenerator, NameProviderBuilder, WorldGenerator};
     /// use std::fs::read_to_string;
     /// use std::path::Path;
@@ -80,6 +85,9 @@ impl HardcodedGenerator {
     ///
     /// let name_provider = name_provider_builder.build_randomized();
     ///
+    /// let associated_object_data_serializer =
+    ///     Box::new(AdditionalObjectDescriptionBincodeSerializer::default());
+    ///
     /// let mut worldgen = HardcodedGenerator::new(
     ///     simulation_factory,
     ///     plant_factory,
@@ -87,6 +95,7 @@ impl HardcodedGenerator {
     ///     terrain_factory,
     ///     water_factory,
     ///     name_provider,
+    ///     associated_object_data_serializer,
     /// );
     /// let generated_simulation = worldgen.generate();
     /// ```
@@ -97,6 +106,7 @@ impl HardcodedGenerator {
         terrain_factory: TerrainFactory,
         water_factory: WaterFactory,
         name_provider: Box<dyn NameProvider>,
+        associated_object_data_serializer: Box<dyn AdditionalObjectDescriptionSerializer>,
     ) -> Self {
         Self {
             simulation_factory,
@@ -105,29 +115,35 @@ impl HardcodedGenerator {
             terrain_factory,
             water_factory,
             name_provider,
+            associated_object_data_serializer,
         }
     }
 
     fn populate_with_terrain(&self, simulation: &mut dyn Simulation) {
         simulation.add_object(
-            build_terrain((25.0, 500.0), 50.0, 1000.0),
+            self.build_terrain((25.0, 500.0), 50.0, 1000.0),
             (self.terrain_factory)(),
         );
         simulation.add_object(
-            build_terrain((500.0, 25.0), 1000.0, 50.0),
+            self.build_terrain((500.0, 25.0), 1000.0, 50.0),
             (self.terrain_factory)(),
         );
         simulation.add_object(
-            build_terrain((975.0, 500.0), 50.0, 1000.0),
+            self.build_terrain((975.0, 500.0), 50.0, 1000.0),
             (self.terrain_factory)(),
         );
         simulation.add_object(
-            build_terrain((500.0, 975.0), 1000.0, 50.0),
+            self.build_terrain((500.0, 975.0), 1000.0, 50.0),
             (self.terrain_factory)(),
         );
     }
 
     fn populate_with_water(&self, simulation: &mut dyn Simulation) {
+        let object_data = AdditionalObjectDescription {
+            name: None,
+            kind: Kind::Water,
+        };
+
         let object_description = ObjectBuilder::default()
             .shape(
                 PolygonBuilder::default()
@@ -141,7 +157,10 @@ impl HardcodedGenerator {
             )
             .location(500.0, 500.0)
             .mobility(Mobility::Immovable)
-            .kind(Kind::Water)
+            .associated_data(
+                self.associated_object_data_serializer
+                    .serialize(&object_data),
+            )
             .build()
             .expect("Failed to build water");
 
@@ -152,10 +171,10 @@ impl HardcodedGenerator {
         const HALF_OF_PLANT_WIDTH_AND_HEIGHT: f64 = 10.0;
         const PADDING: f64 = 1.0;
         const DISPLACEMENT: f64 = HALF_OF_PLANT_WIDTH_AND_HEIGHT * 2.0 + PADDING;
-        const NUMBER_OF_PLANT_COLUMNS: u32 = 10;
-        const NUMBER_OF_PLANT_ROWS: u32 = 7;
-        for i in 0..=NUMBER_OF_PLANT_COLUMNS {
-            for j in 0..=NUMBER_OF_PLANT_ROWS {
+        const NUMBER_OF_PLANT_COLUMNS: u32 = 11;
+        const NUMBER_OF_PLANT_ROWS: u32 = 8;
+        for i in 0..NUMBER_OF_PLANT_COLUMNS {
+            for j in 0..NUMBER_OF_PLANT_ROWS {
                 let left_horizontal_position = 103.0 + f64::from(i) * DISPLACEMENT;
                 let right_horizontal_position = 687.0 + f64::from(i) * DISPLACEMENT;
                 let vertical_position = 103.0 + f64::from(j) * DISPLACEMENT;
@@ -163,12 +182,12 @@ impl HardcodedGenerator {
                 let mut add_plant = |plant: ObjectDescription| {
                     simulation.add_object(plant, (self.plant_factory)());
                 };
-                add_plant(build_plant(
+                add_plant(self.build_plant(
                     HALF_OF_PLANT_WIDTH_AND_HEIGHT,
                     left_horizontal_position,
                     vertical_position,
                 ));
-                add_plant(build_plant(
+                add_plant(self.build_plant(
                     HALF_OF_PLANT_WIDTH_AND_HEIGHT,
                     right_horizontal_position,
                     vertical_position,
@@ -187,74 +206,96 @@ impl HardcodedGenerator {
         ];
 
         for coordinate in coordinates.iter() {
+            let name = self.name_provider.get_name(Kind::Organism);
+
             simulation.add_object(
-                build_organism(
-                    coordinate.0,
-                    coordinate.1,
-                    self.name_provider.get_name(Kind::Organism),
-                ),
+                self.build_organism(coordinate.0, coordinate.1, name),
                 (self.organism_factory)(),
             );
         }
     }
-}
-fn build_terrain(location: (f64, f64), width: f64, length: f64) -> ObjectDescription {
-    let x_offset = width / 2.0;
-    let y_offset = length / 2.0;
-    ObjectBuilder::default()
-        .shape(
-            PolygonBuilder::default()
-                .vertex(-x_offset, -y_offset)
-                .vertex(x_offset, -y_offset)
-                .vertex(x_offset, y_offset)
-                .vertex(-x_offset, y_offset)
-                .build()
-                .expect("Generated an invalid vertex"),
-        )
-        .location(location.0, location.1)
-        .mobility(Mobility::Immovable)
-        .kind(Kind::Terrain)
-        .build()
-        .expect("Failed to build terrain")
-}
 
-fn build_plant(half_of_width_and_height: f64, x: f64, y: f64) -> ObjectDescription {
-    ObjectBuilder::default()
-        .shape(
-            PolygonBuilder::default()
-                .vertex(-half_of_width_and_height, -half_of_width_and_height)
-                .vertex(half_of_width_and_height, -half_of_width_and_height)
-                .vertex(half_of_width_and_height, half_of_width_and_height)
-                .vertex(-half_of_width_and_height, half_of_width_and_height)
-                .build()
-                .expect("Generated an invalid vertex"),
-        )
-        .location(x, y)
-        .mobility(Mobility::Immovable)
-        .kind(Kind::Plant)
-        .passable(true)
-        .build()
-        .expect("Failed to build plant")
-}
+    fn build_terrain(&self, location: (f64, f64), width: f64, length: f64) -> ObjectDescription {
+        let object_data = AdditionalObjectDescription {
+            name: None,
+            kind: Kind::Terrain,
+        };
 
-fn build_organism(x: f64, y: f64, name: Option<String>) -> ObjectDescription {
-    ObjectBuilder::default()
-        .name(name)
-        .shape(
-            PolygonBuilder::default()
-                .vertex(25.0, 0.0)
-                .vertex(-25.0, 20.0)
-                .vertex(-5.0, 0.0)
-                .vertex(-25.0, -20.0)
-                .build()
-                .expect("Generated an invalid vertex"),
-        )
-        .location(x, y)
-        .rotation(Radians::try_new(FRAC_PI_2).unwrap())
-        .mobility(Mobility::Movable(Vector::default()))
-        .kind(Kind::Organism)
-        .build()
-        .expect("Failed to build organism")
+        let x_offset = width / 2.0;
+        let y_offset = length / 2.0;
+        ObjectBuilder::default()
+            .shape(
+                PolygonBuilder::default()
+                    .vertex(-x_offset, -y_offset)
+                    .vertex(x_offset, -y_offset)
+                    .vertex(x_offset, y_offset)
+                    .vertex(-x_offset, y_offset)
+                    .build()
+                    .expect("Generated an invalid vertex"),
+            )
+            .location(location.0, location.1)
+            .mobility(Mobility::Immovable)
+            .associated_data(
+                self.associated_object_data_serializer
+                    .serialize(&object_data),
+            )
+            .build()
+            .expect("Failed to build terrain")
+    }
+
+    fn build_plant(&self, half_of_width_and_height: f64, x: f64, y: f64) -> ObjectDescription {
+        let object_data = AdditionalObjectDescription {
+            name: None,
+            kind: Kind::Plant,
+        };
+
+        ObjectBuilder::default()
+            .shape(
+                PolygonBuilder::default()
+                    .vertex(-half_of_width_and_height, -half_of_width_and_height)
+                    .vertex(half_of_width_and_height, -half_of_width_and_height)
+                    .vertex(half_of_width_and_height, half_of_width_and_height)
+                    .vertex(-half_of_width_and_height, half_of_width_and_height)
+                    .build()
+                    .expect("Generated an invalid vertex"),
+            )
+            .location(x, y)
+            .mobility(Mobility::Immovable)
+            .passable(true)
+            .associated_data(
+                self.associated_object_data_serializer
+                    .serialize(&object_data),
+            )
+            .build()
+            .expect("Failed to build plant")
+    }
+
+    fn build_organism(&self, x: f64, y: f64, name: Option<String>) -> ObjectDescription {
+        let object_data = AdditionalObjectDescription {
+            name,
+            kind: Kind::Organism,
+        };
+
+        ObjectBuilder::default()
+            .shape(
+                PolygonBuilder::default()
+                    .vertex(25.0, 0.0)
+                    .vertex(-25.0, 20.0)
+                    .vertex(-5.0, 0.0)
+                    .vertex(-25.0, -20.0)
+                    .build()
+                    .expect("Generated an invalid vertex"),
+            )
+            .location(x, y)
+            .rotation(Radians::try_new(FRAC_PI_2).unwrap())
+            .mobility(Mobility::Movable(Vector::default()))
+            .associated_data(
+                self.associated_object_data_serializer
+                    .serialize(&object_data),
+            )
+            .build()
+            .expect("Failed to build organism")
+    }
 }
 
 impl WorldGenerator for HardcodedGenerator {
@@ -278,9 +319,10 @@ impl fmt::Debug for HardcodedGenerator {
 mod tests {
     use super::*;
     use crate::NameProviderMock;
-    use mockiato::{any, partial_eq, ExpectedCalls};
+    use mockiato::{any, partial_eq, partial_eq_owned, ExpectedCalls};
     use myelin_environment::object::ObjectBehaviorMock;
     use myelin_environment::SimulationMock;
+    use myelin_object_data::AdditionalObjectDescriptionSerializerMock;
 
     #[test]
     fn generates_simulation() {
@@ -296,12 +338,48 @@ mod tests {
         let plant_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
         let organism_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
         let terrain_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
+
         let water_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
 
         let mut name_provider = box NameProviderMock::new();
         name_provider
             .expect_get_name(partial_eq(Kind::Organism))
             .returns(None)
+            .times(5);
+
+        let mut associated_object_data_serializer =
+            box AdditionalObjectDescriptionSerializerMock::new();
+
+        associated_object_data_serializer
+            .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
+                name: None,
+                kind: Kind::Terrain,
+            }))
+            .returns(Vec::new())
+            .times(4);
+
+        associated_object_data_serializer
+            .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
+                name: None,
+                kind: Kind::Water,
+            }))
+            .returns(Vec::new())
+            .times(1);
+
+        associated_object_data_serializer
+            .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
+                name: None,
+                kind: Kind::Plant,
+            }))
+            .returns(Vec::new())
+            .times(176);
+
+        associated_object_data_serializer
+            .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
+                name: None,
+                kind: Kind::Organism,
+            }))
+            .returns(Vec::new())
             .times(5);
 
         let mut generator = HardcodedGenerator::new(
@@ -311,6 +389,7 @@ mod tests {
             terrain_factory,
             water_factory,
             name_provider,
+            associated_object_data_serializer,
         );
 
         let _simulation = generator.generate();

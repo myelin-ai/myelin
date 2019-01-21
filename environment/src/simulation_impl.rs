@@ -43,9 +43,8 @@ impl Debug for SimulationImpl {
 
 #[derive(Debug)]
 struct NonPhysicalObjectData {
-    pub(crate) name: Option<String>,
-    pub(crate) kind: Kind,
     pub(crate) behavior: RefCell<Box<dyn ObjectBehavior>>,
+    pub(crate) associated_data: Vec<u8>,
 }
 
 /// An error that can occur whenever an action is performed
@@ -104,13 +103,12 @@ impl SimulationImpl {
         let physics_body = self.world.body(body_handle)?;
         let non_physical_object_data = self.non_physical_object_data.get(&body_handle)?;
         Some(ObjectDescription {
-            name: non_physical_object_data.name.clone(),
             shape: physics_body.shape,
             location: physics_body.location,
             rotation: physics_body.rotation,
             mobility: physics_body.mobility,
-            kind: non_physical_object_data.kind,
             passable: self.world.is_body_passable(body_handle),
+            associated_data: non_physical_object_data.associated_data.clone(),
         })
     }
 
@@ -199,9 +197,8 @@ impl Simulation for SimulationImpl {
         let body_handle = self.world.add_body(physical_body);
 
         let non_physical_object_data = NonPhysicalObjectData {
-            name: object_description.name,
-            kind: object_description.kind,
             behavior: RefCell::new(object_behavior),
+            associated_data: object_description.associated_data.clone(),
         };
         self.non_physical_object_data
             .insert(body_handle, non_physical_object_data);
@@ -434,7 +431,6 @@ mod tests {
             .location(expected_location.x, expected_location.y)
             .rotation(expected_rotation)
             .shape(expected_shape)
-            .kind(Kind::Organism)
             .mobility(expected_mobility)
             .passable(expected_passable)
             .build()
@@ -477,7 +473,6 @@ mod tests {
             .location(expected_location.x, expected_location.y)
             .rotation(expected_rotation)
             .shape(expected_shape)
-            .kind(Kind::Organism)
             .mobility(expected_mobility)
             .passable(expected_passable)
             .build()
@@ -524,11 +519,9 @@ mod tests {
         let object_behavior = ObjectBehaviorMock::new();
 
         let expected_object_description = ObjectBuilder::default()
-            .name(String::from("Foo"))
             .location(expected_location.x, expected_location.y)
             .rotation(expected_rotation)
             .shape(expected_shape)
-            .kind(Kind::Organism)
             .mobility(expected_mobility)
             .passable(expected_passable)
             .build()
@@ -584,7 +577,6 @@ mod tests {
             .location(expected_location.x, expected_location.y)
             .rotation(expected_rotation)
             .shape(expected_shape)
-            .kind(Kind::Organism)
             .mobility(expected_mobility)
             .build()
             .unwrap();
@@ -646,7 +638,6 @@ mod tests {
             .location(expected_location.x, expected_location.y)
             .rotation(expected_rotation)
             .shape(expected_shape)
-            .kind(Kind::Organism)
             .mobility(expected_mobility)
             .passable(expected_passable)
             .build()
@@ -702,7 +693,6 @@ mod tests {
             .location(expected_location.x, expected_location.y)
             .rotation(expected_rotation)
             .shape(expected_shape)
-            .kind(Kind::Organism)
             .mobility(expected_mobility)
             .passable(expected_passable)
             .build()
@@ -763,7 +753,6 @@ mod tests {
             .location(expected_location.x, expected_location.y)
             .rotation(expected_rotation)
             .shape(expected_shape)
-            .kind(Kind::Organism)
             .mobility(expected_mobility)
             .passable(expected_passable)
             .build()
@@ -806,7 +795,6 @@ mod tests {
             .location(expected_location.x, expected_location.y)
             .rotation(expected_rotation)
             .shape(expected_shape)
-            .kind(Kind::Organism)
             .mobility(expected_mobility)
             .build()
             .unwrap();
@@ -895,7 +883,6 @@ mod tests {
             .location(expected_location.x, expected_location.y)
             .rotation(expected_rotation)
             .shape(expected_shape)
-            .kind(Kind::Organism)
             .mobility(expected_mobility)
             .build()
             .unwrap();

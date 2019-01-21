@@ -465,7 +465,6 @@ mod tests {
             )
             .location(x, y)
             .mobility(Mobility::Immovable)
-            .kind(Kind::Plant)
             .build()
             .unwrap()
     }

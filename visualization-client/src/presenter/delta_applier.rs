@@ -1,8 +1,7 @@
-use myelin_environment::object::ObjectDescription;
-use myelin_environment::{Id, Snapshot};
-use myelin_visualization_core::view_model_delta::{
-    ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
+use crate::presenter::{
+    ObjectDelta, ObjectDescription, ObjectDescriptionDelta, Snapshot, ViewModelDelta,
 };
+use myelin_environment::Id;
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
 use std::marker::PhantomData;
@@ -89,32 +88,33 @@ fn apply_object_description_delta(
         };
     }
 
-    apply_delta!(name, shape, location, rotation, mobility, kind);
+    apply_delta!(name, kind, shape, location, rotation, mobility);
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::*;
+    use myelin_environment::object::Mobility;
     use myelin_geometry::*;
+    use myelin_object_data::Kind;
     use std::f64::consts::PI;
 
     fn object_description() -> ObjectDescription {
-        ObjectBuilder::default()
-            .kind(Kind::Organism)
-            .mobility(Mobility::Immovable)
-            .location(10.0, 20.0)
-            .shape(
-                PolygonBuilder::default()
-                    .vertex(-50.0, -50.0)
-                    .vertex(50.0, -50.0)
-                    .vertex(50.0, 50.0)
-                    .vertex(-50.0, 50.0)
-                    .build()
-                    .unwrap(),
-            )
-            .build()
-            .unwrap()
+        ObjectDescription {
+            name: None,
+            kind: Kind::Organism,
+            location: Point { x: 10.0, y: 20.0 },
+            shape: PolygonBuilder::default()
+                .vertex(-50.0, -50.0)
+                .vertex(50.0, -50.0)
+                .vertex(50.0, 50.0)
+                .vertex(-50.0, 50.0)
+                .build()
+                .unwrap(),
+            mobility: Mobility::Movable(Vector::default()),
+            rotation: Radians::default(),
+            passable: false,
+        }
     }
 
     fn polygon() -> Polygon {

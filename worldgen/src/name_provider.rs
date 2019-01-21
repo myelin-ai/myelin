@@ -1,5 +1,5 @@
 use crate::NameProvider;
-use myelin_environment::object::Kind;
+use myelin_object_data::Kind;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::collections::HashMap;
