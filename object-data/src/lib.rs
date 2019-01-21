@@ -17,7 +17,7 @@ use mockiato::mockable;
 
 /// The data associated with an object
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
-pub struct AssociatedObjectData {
+pub struct AdditionalObjectDescription {
     /// The name of an object
     pub name: Option<String>,
 
@@ -39,45 +39,45 @@ pub enum Kind {
     Terrain,
 }
 
-/// Handles serialization for `AssociatedObjectData`
+/// Handles serialization for `AdditionalObjectDescription`
 ///
-/// [`AssociatedObjectData`]: ./struct.AssociatedObjectData.html
+/// [`AdditionalObjectDescription`]: ./struct.AdditionalObjectDescription.html
 #[cfg_attr(feature = "use-mocks", mockable)]
-pub trait AssociatedObjectDataSerializer: Debug {
+pub trait AdditionalObjectDescriptionSerializer: Debug {
     /// Serialize associated object data
-    fn serialize(&self, associated_object_data: &AssociatedObjectData) -> Vec<u8>;
+    fn serialize(&self, associated_object_data: &AdditionalObjectDescription) -> Vec<u8>;
 }
 
-/// Handles deserialization for `AssociatedObjectData`
+/// Handles deserialization for `AdditionalObjectDescription`
 ///
-/// [`AssociatedObjectData`]: ./struct.AssociatedObjectData.html
+/// [`AdditionalObjectDescription`]: ./struct.AdditionalObjectDescription.html
 #[cfg_attr(feature = "use-mocks", mockable)]
-pub trait AssociatedObjectDataDeserializer: Debug {
+pub trait AdditionalObjectDescriptionDeserializer: Debug {
     /// Deserialize into associated object data
-    fn deserialize(&self, data: &[u8]) -> Result<AssociatedObjectData, Box<dyn Error>>;
+    fn deserialize(&self, data: &[u8]) -> Result<AdditionalObjectDescription, Box<dyn Error>>;
 }
 
-/// Implements an `AssociatedObjectDataSerializer` using bincode
+/// Implements an `AdditionalObjectDescriptionSerializer` using bincode
 ///
-/// [`AssociatedObjectDataSerializer`]: ./trait.AssociatedObjectDataSerializer.html
+/// [`AdditionalObjectDescriptionSerializer`]: ./trait.AdditionalObjectDescriptionSerializer.html
 #[derive(Debug, Default)]
-pub struct AssociatedObjectDataBincodeSerializer {}
+pub struct AdditionalObjectDescriptionBincodeSerializer {}
 
-impl AssociatedObjectDataSerializer for AssociatedObjectDataBincodeSerializer {
-    fn serialize(&self, associated_object_data: &AssociatedObjectData) -> Vec<u8> {
+impl AdditionalObjectDescriptionSerializer for AdditionalObjectDescriptionBincodeSerializer {
+    fn serialize(&self, associated_object_data: &AdditionalObjectDescription) -> Vec<u8> {
         bincode::serialize(associated_object_data)
             .expect("Unable to serialize associated object data")
     }
 }
 
-/// Implements an `AssociatedObjectDataDeserializer` using bincode
+/// Implements an `AdditionalObjectDescriptionDeserializer` using bincode
 ///
-/// [`AssociatedObjectDataDeserializer`]: ./trait.AssociatedObjectDataDeserializer.html
+/// [`AdditionalObjectDescriptionDeserializer`]: ./trait.AdditionalObjectDescriptionDeserializer.html
 #[derive(Debug, Default)]
-pub struct AssociatedObjectDataBincodeDeserializer {}
+pub struct AdditionalObjectDescriptionBincodeDeserializer {}
 
-impl AssociatedObjectDataDeserializer for AssociatedObjectDataBincodeDeserializer {
-    fn deserialize(&self, data: &[u8]) -> Result<AssociatedObjectData, Box<dyn Error>> {
+impl AdditionalObjectDescriptionDeserializer for AdditionalObjectDescriptionBincodeDeserializer {
+    fn deserialize(&self, data: &[u8]) -> Result<AdditionalObjectDescription, Box<dyn Error>> {
         bincode::deserialize(data).map_err(|err| err.into())
     }
 }
@@ -88,10 +88,10 @@ mod tests {
 
     #[test]
     fn serialize_and_deserialize_work() {
-        let serializer = AssociatedObjectDataBincodeSerializer::default();
-        let deserializer = AssociatedObjectDataBincodeDeserializer::default();
+        let serializer = AdditionalObjectDescriptionBincodeSerializer::default();
+        let deserializer = AdditionalObjectDescriptionBincodeDeserializer::default();
 
-        let associated_object_data = AssociatedObjectData {
+        let associated_object_data = AdditionalObjectDescription {
             name: Some(String::from("Foo")),
             kind: Kind::Plant,
         };
@@ -106,7 +106,7 @@ mod tests {
 
     #[test]
     fn deserialize_fails_with_invalid_data() {
-        let deserializer = AssociatedObjectDataBincodeDeserializer::default();
+        let deserializer = AdditionalObjectDescriptionBincodeDeserializer::default();
 
         let invalid_data = String::from("banana").into_bytes();
         assert!(deserializer.deserialize(&invalid_data).is_err());

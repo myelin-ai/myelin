@@ -2,7 +2,8 @@ use crate::input_handler::Controller;
 use crate::presenter;
 use myelin_environment::object::ObjectDescription;
 use myelin_object_data::{
-    AssociatedObjectData, AssociatedObjectDataDeserializer, AssociatedObjectDataSerializer,
+    AdditionalObjectDescription, AdditionalObjectDescriptionDeserializer,
+    AdditionalObjectDescriptionSerializer,
 };
 use myelin_visualization_core::serialization::ViewModelDeserializer;
 use myelin_visualization_core::view_model_delta::{
@@ -19,8 +20,8 @@ pub(crate) trait Presenter: fmt::Debug {
 pub(crate) struct ControllerImpl {
     presenter: Box<dyn Presenter>,
     view_model_deserializer: Box<dyn ViewModelDeserializer>,
-    associated_object_data_serializer: Box<dyn AssociatedObjectDataSerializer>,
-    associated_object_data_deserializer: Box<dyn AssociatedObjectDataDeserializer>,
+    associated_object_data_serializer: Box<dyn AdditionalObjectDescriptionSerializer>,
+    associated_object_data_deserializer: Box<dyn AdditionalObjectDescriptionDeserializer>,
 }
 
 impl Controller for ControllerImpl {
@@ -42,8 +43,8 @@ impl ControllerImpl {
     pub(crate) fn new(
         presenter: Box<dyn Presenter>,
         view_model_deserializer: Box<dyn ViewModelDeserializer>,
-        associated_object_data_serializer: Box<dyn AssociatedObjectDataSerializer>,
-        associated_object_data_deserializer: Box<dyn AssociatedObjectDataDeserializer>,
+        associated_object_data_serializer: Box<dyn AdditionalObjectDescriptionSerializer>,
+        associated_object_data_deserializer: Box<dyn AdditionalObjectDescriptionDeserializer>,
     ) -> Self {
         Self {
             presenter,
@@ -56,7 +57,7 @@ impl ControllerImpl {
 
 fn translate_delta(
     delta: ViewModelDelta,
-    associated_object_data_deserializer: &dyn AssociatedObjectDataDeserializer,
+    associated_object_data_deserializer: &dyn AdditionalObjectDescriptionDeserializer,
 ) -> presenter::ViewModelDelta {
     delta
         .into_iter()
@@ -84,13 +85,13 @@ fn translate_delta(
 
 fn translate_object_description(
     object_description: ObjectDescription,
-    associated_object_data_deserializer: &dyn AssociatedObjectDataDeserializer,
+    associated_object_data_deserializer: &dyn AdditionalObjectDescriptionDeserializer,
 ) -> presenter::ObjectDescription {
     let associated_object_data = associated_object_data_deserializer
         .deserialize(&object_description.associated_data)
         .expect("Unable to deserialize associated object data");
 
-    let AssociatedObjectData { name, kind } = associated_object_data;
+    let AdditionalObjectDescription { name, kind } = associated_object_data;
 
     let ObjectDescription {
         shape,
@@ -114,9 +115,9 @@ fn translate_object_description(
 
 fn translate_object_description_delta(
     object_description_delta: ObjectDescriptionDelta,
-    associated_object_data_deserializer: &dyn AssociatedObjectDataDeserializer,
+    associated_object_data_deserializer: &dyn AdditionalObjectDescriptionDeserializer,
 ) -> presenter::ObjectDescriptionDelta {
-    let associated_object_data: Option<AssociatedObjectData> = object_description_delta
+    let associated_object_data: Option<AdditionalObjectDescription> = object_description_delta
         .associated_data
         .map(|associated_data| {
             associated_object_data_deserializer
@@ -156,7 +157,7 @@ mod tests {
     use super::*;
     use mockiato::partial_eq_owned;
     use myelin_geometry::*;
-    use myelin_object_data::{AssociatedObjectDataSerializerMock, Kind};
+    use myelin_object_data::{AdditionalObjectDescriptionSerializerMock, Kind};
     use myelin_visualization_core::view_model_delta::{ObjectDelta, ObjectDescriptionDelta};
     use std::cell::RefCell;
     use std::error::Error;
@@ -240,10 +241,11 @@ mod tests {
     }
 
     fn object_description_delta() -> ObjectDescriptionDelta {
-        let mut associated_object_data_serializer = AssociatedObjectDataSerializerMock::new();
+        let mut associated_object_data_serializer =
+            AdditionalObjectDescriptionSerializerMock::new();
 
         associated_object_data_serializer
-            .expect_serialize(partial_eq_owned(AssociatedObjectData {
+            .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
                 name: Some(String::from("Cat")),
                 kind: Kind::Organism,
             }))
@@ -263,7 +265,7 @@ mod tests {
             rotation: Some(Radians::try_new(6.0).unwrap()),
             mobility: None,
             associated_data: Some(associated_object_data_serializer.serialize(
-                &AssociatedObjectData {
+                &AdditionalObjectDescription {
                     name: Some(String::from("Cat")),
                     kind: Kind::Organism,
                 },
@@ -291,12 +293,12 @@ mod tests {
     }
 
     #[derive(Debug, Default)]
-    struct AssociatedObjectDataDeserializerMock {
-        expect_deserialize: Option<(Vec<u8>, AssociatedObjectData)>,
+    struct AdditionalObjectDescriptionDeserializerMock {
+        expect_deserialize: Option<(Vec<u8>, AdditionalObjectDescription)>,
         expect_deserialize_called: AtomicBool,
     }
 
-    impl Drop for AssociatedObjectDataDeserializerMock {
+    impl Drop for AdditionalObjectDescriptionDeserializerMock {
         fn drop(&mut self) {
             if !panicking()
                 && self.expect_deserialize.is_some()
@@ -307,8 +309,8 @@ mod tests {
         }
     }
 
-    impl AssociatedObjectDataDeserializerMock {
-        fn new(parameter: Vec<u8>, return_value: AssociatedObjectData) -> Self {
+    impl AdditionalObjectDescriptionDeserializerMock {
+        fn new(parameter: Vec<u8>, return_value: AdditionalObjectDescription) -> Self {
             Self {
                 expect_deserialize: Some((parameter, return_value)),
                 expect_deserialize_called: Default::default(),
@@ -316,8 +318,8 @@ mod tests {
         }
     }
 
-    impl AssociatedObjectDataDeserializer for AssociatedObjectDataDeserializerMock {
-        fn deserialize(&self, data: &[u8]) -> Result<AssociatedObjectData, Box<dyn Error>> {
+    impl AdditionalObjectDescriptionDeserializer for AdditionalObjectDescriptionDeserializerMock {
+        fn deserialize(&self, data: &[u8]) -> Result<AdditionalObjectDescription, Box<dyn Error>> {
             if let Some((parameter, return_value)) = &self.expect_deserialize {
                 if parameter.as_slice() != data {
                     panic!("Was called with {:?}, but expected {:?}", data, parameter)
@@ -343,13 +345,13 @@ mod tests {
         };
 
         let associated_ojbect_data_bytes = String::from("A very pretty looking cat").into_bytes();
-        let associated_object_data = AssociatedObjectData {
+        let associated_object_data = AdditionalObjectDescription {
             name: Some(String::from("Cat")),
             kind: Kind::Organism,
         };
 
-        let associated_object_data_serializer = AssociatedObjectDataSerializerMock::new();
-        let associated_object_data_deserializer = AssociatedObjectDataDeserializerMock::new(
+        let associated_object_data_serializer = AdditionalObjectDescriptionSerializerMock::new();
+        let associated_object_data_deserializer = AdditionalObjectDescriptionDeserializerMock::new(
             associated_ojbect_data_bytes,
             associated_object_data,
         );

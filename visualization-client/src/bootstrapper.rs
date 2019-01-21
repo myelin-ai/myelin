@@ -6,7 +6,7 @@ use crate::input_handler::InputHandler;
 use crate::presenter::{CanvasPresenter, DeltaApplierImpl, GlobalPolygonTranslatorImpl};
 use crate::view::CanvasView;
 use myelin_object_data::{
-    AssociatedObjectDataBincodeDeserializer, AssociatedObjectDataBincodeSerializer,
+    AdditionalObjectDescriptionBincodeDeserializer, AdditionalObjectDescriptionBincodeSerializer,
 };
 use myelin_visualization_core::serialization::BincodeDeserializer;
 use std::panic::{set_hook, PanicInfo};
@@ -37,7 +37,7 @@ pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
             box GlobalPolygonTranslatorImpl::new(),
         ),
         box BincodeDeserializer::default(),
-        box AssociatedObjectDataBincodeSerializer::default(),
-        box AssociatedObjectDataBincodeDeserializer::default(),
+        box AdditionalObjectDescriptionBincodeSerializer::default(),
+        box AdditionalObjectDescriptionBincodeDeserializer::default(),
     ))
 }

@@ -5,7 +5,9 @@ use crate::WorldGenerator;
 use myelin_environment::object::*;
 use myelin_environment::Simulation;
 use myelin_geometry::*;
-use myelin_object_data::{AssociatedObjectData, AssociatedObjectDataSerializer, Kind};
+use myelin_object_data::{
+    AdditionalObjectDescription, AdditionalObjectDescriptionSerializer, Kind,
+};
 use std::f64::consts::FRAC_PI_2;
 use std::fmt;
 
@@ -19,7 +21,7 @@ pub struct HardcodedGenerator {
     terrain_factory: TerrainFactory,
     water_factory: WaterFactory,
     name_provider: Box<dyn NameProvider>,
-    associated_object_data_serializer: Box<dyn AssociatedObjectDataSerializer>,
+    associated_object_data_serializer: Box<dyn AdditionalObjectDescriptionSerializer>,
 }
 
 pub type SimulationFactory = Box<dyn Fn() -> Box<dyn Simulation>>;
@@ -45,7 +47,7 @@ impl HardcodedGenerator {
     /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
     /// use myelin_environment::Simulation;
     /// use myelin_object_behavior::Static;
-    /// use myelin_object_data::{AssociatedObjectDataBincodeSerializer, Kind};
+    /// use myelin_object_data::{AdditionalObjectDescriptionBincodeSerializer, Kind};
     /// use myelin_worldgen::{HardcodedGenerator, NameProviderBuilder, WorldGenerator};
     /// use std::fs::read_to_string;
     /// use std::path::Path;
@@ -84,7 +86,7 @@ impl HardcodedGenerator {
     /// let name_provider = name_provider_builder.build_randomized();
     ///
     /// let associated_object_data_serializer =
-    ///     Box::new(AssociatedObjectDataBincodeSerializer::default());
+    ///     Box::new(AdditionalObjectDescriptionBincodeSerializer::default());
     ///
     /// let mut worldgen = HardcodedGenerator::new(
     ///     simulation_factory,
@@ -104,7 +106,7 @@ impl HardcodedGenerator {
         terrain_factory: TerrainFactory,
         water_factory: WaterFactory,
         name_provider: Box<dyn NameProvider>,
-        associated_object_data_serializer: Box<dyn AssociatedObjectDataSerializer>,
+        associated_object_data_serializer: Box<dyn AdditionalObjectDescriptionSerializer>,
     ) -> Self {
         Self {
             simulation_factory,
@@ -157,7 +159,7 @@ impl HardcodedGenerator {
     }
 
     fn populate_with_water(&self, simulation: &mut dyn Simulation) {
-        let object_data = AssociatedObjectData {
+        let object_data = AdditionalObjectDescription {
             name: None,
             kind: Kind::Water,
         };
@@ -243,9 +245,9 @@ fn build_terrain(
     location: (f64, f64),
     width: f64,
     length: f64,
-    associated_object_data_serializer: &dyn AssociatedObjectDataSerializer,
+    associated_object_data_serializer: &dyn AdditionalObjectDescriptionSerializer,
 ) -> ObjectDescription {
-    let object_data = AssociatedObjectData {
+    let object_data = AdditionalObjectDescription {
         name: None,
         kind: Kind::Terrain,
     };
@@ -273,9 +275,9 @@ fn build_plant(
     half_of_width_and_height: f64,
     x: f64,
     y: f64,
-    associated_object_data_serializer: &dyn AssociatedObjectDataSerializer,
+    associated_object_data_serializer: &dyn AdditionalObjectDescriptionSerializer,
 ) -> ObjectDescription {
-    let object_data = AssociatedObjectData {
+    let object_data = AdditionalObjectDescription {
         name: None,
         kind: Kind::Plant,
     };
@@ -302,9 +304,9 @@ fn build_organism(
     x: f64,
     y: f64,
     name: Option<String>,
-    associated_object_data_serializer: &dyn AssociatedObjectDataSerializer,
+    associated_object_data_serializer: &dyn AdditionalObjectDescriptionSerializer,
 ) -> ObjectDescription {
-    let object_data = AssociatedObjectData {
+    let object_data = AdditionalObjectDescription {
         name,
         kind: Kind::Organism,
     };
@@ -351,7 +353,7 @@ mod tests {
     use mockiato::{any, partial_eq, partial_eq_owned, ExpectedCalls};
     use myelin_environment::object::ObjectBehaviorMock;
     use myelin_environment::SimulationMock;
-    use myelin_object_data::AssociatedObjectDataSerializerMock;
+    use myelin_object_data::AdditionalObjectDescriptionSerializerMock;
 
     #[test]
     fn generates_simulation() {
@@ -376,10 +378,11 @@ mod tests {
             .returns(None)
             .times(5);
 
-        let mut associated_object_data_serializer = box AssociatedObjectDataSerializerMock::new();
+        let mut associated_object_data_serializer =
+            box AdditionalObjectDescriptionSerializerMock::new();
 
         associated_object_data_serializer
-            .expect_serialize(partial_eq_owned(AssociatedObjectData {
+            .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
                 name: None,
                 kind: Kind::Terrain,
             }))
@@ -387,7 +390,7 @@ mod tests {
             .times(4);
 
         associated_object_data_serializer
-            .expect_serialize(partial_eq_owned(AssociatedObjectData {
+            .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
                 name: None,
                 kind: Kind::Water,
             }))
@@ -395,7 +398,7 @@ mod tests {
             .times(1);
 
         associated_object_data_serializer
-            .expect_serialize(partial_eq_owned(AssociatedObjectData {
+            .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
                 name: None,
                 kind: Kind::Plant,
             }))
@@ -403,7 +406,7 @@ mod tests {
             .times(176);
 
         associated_object_data_serializer
-            .expect_serialize(partial_eq_owned(AssociatedObjectData {
+            .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
                 name: None,
                 kind: Kind::Organism,
             }))
