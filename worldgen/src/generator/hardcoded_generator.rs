@@ -209,11 +209,7 @@ impl HardcodedGenerator {
             let name = self.name_provider.get_name(Kind::Organism);
 
             simulation.add_object(
-                self.build_organism(
-                    coordinate.0,
-                    coordinate.1,
-                    name,
-                ),
+                self.build_organism(coordinate.0, coordinate.1, name),
                 (self.organism_factory)(),
             );
         }
