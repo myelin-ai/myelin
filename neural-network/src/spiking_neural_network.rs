@@ -68,20 +68,27 @@ impl SpikingNeuralNetwork {
     ) -> Vec<(MembranePotential, Weight)> {
         self.incoming_connections
             .get(&neuron_handle)
-            .map(|incoming_connections| {
-                incoming_connections
-                    .iter()
-                    .filter_map(|(handle_of_connection, weight)| {
-                        self.membrane_potential_of_neuron(*handle_of_connection)
-                            .expect(
-                                "Internal error: Stored connection handle does not correspond to \
-                                 any neuron",
-                            )
-                            .map(|state_of_connection| (state_of_connection, *weight))
-                    })
-                    .collect()
+            .map(|neurons_and_weights| {
+                self.neurons_and_weights_to_membrane_potential_and_weight(neurons_and_weights)
             })
             .unwrap_or_default()
+    }
+
+    fn neurons_and_weights_to_membrane_potential_and_weight(
+        &self,
+        neurons: &[(Handle, Weight)],
+    ) -> Vec<(MembranePotential, Weight)> {
+        neurons
+            .iter()
+            .filter_map(|(handle_of_connection, weight)| {
+                self.membrane_potential_of_neuron(*handle_of_connection)
+                    .expect(
+                        "Internal error: Stored connection handle does not correspond to any \
+                         neuron",
+                    )
+                    .map(|state_of_connection| (state_of_connection, *weight))
+            })
+            .collect()
     }
 
     fn update_neurons_connected_to_external_inputs(
