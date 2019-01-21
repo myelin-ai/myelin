@@ -29,7 +29,7 @@ pub type MembranePotential = f64;
 pub type Result<T> = std::result::Result<T, ()>;
 
 /// A neural network that supports construction from multiple neurons and arbitrary connections between them
-#[cfg_attr(test, mockable)]
+#[cfg_attr(any(test, feature = "use-mocks"), mockable)]
 pub trait NeuralNetwork: Debug {
     /// Update the state of all neurons
     fn step(
