@@ -410,4 +410,22 @@ mod tests {
         presenter.present_delta(view_model_delta_1).unwrap();
         presenter.present_delta(view_model_delta_2).unwrap();
     }
+
+    #[test]
+    fn calculate_name_position_works() {
+        let position = calculate_name_position(&object_description());
+        assert_eq!(view_model::Point {
+            x: 30.0,
+            y: 20.0,
+        }, position);
+    }
+
+    #[test]
+    fn calculate_name_position_works2() {
+        let position = calculate_name_position(&object_description2());
+        assert_eq!(view_model::Point {
+            x: 30.0,
+            y: 20.0,
+        }, position);
+    }
 }
