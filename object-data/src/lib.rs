@@ -105,12 +105,11 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
     fn deserialize_fails_with_invalid_data() {
         let deserializer = AssociatedObjectDataBincodeDeserializer::default();
 
         let invalid_data = String::from("banana").into_bytes();
-        deserializer.deserialize(&invalid_data).unwrap();
+        assert!(deserializer.deserialize(&invalid_data).is_err());
     }
 
 }
