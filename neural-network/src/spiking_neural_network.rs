@@ -66,21 +66,22 @@ impl SpikingNeuralNetwork {
         &self,
         neuron_handle: Handle,
     ) -> Vec<(MembranePotential, Weight)> {
-        if let Some(incoming_connections) = self.incoming_connections.get(&neuron_handle) {
-            incoming_connections
-                .iter()
-                .filter_map(|(handle_of_connection, weight)| {
-                    self.membrane_potential_of_neuron(*handle_of_connection)
-                        .expect(
-                            "Internal error: Stored connection handle does not correspond to any \
-                             neuron",
-                        )
-                        .map(|state_of_connection| (state_of_connection, *weight))
-                })
-                .collect()
-        } else {
-            Vec::new()
-        }
+        self.incoming_connections
+            .get(&neuron_handle)
+            .map(|incoming_connections| {
+                incoming_connections
+                    .iter()
+                    .filter_map(|(handle_of_connection, weight)| {
+                        self.membrane_potential_of_neuron(*handle_of_connection)
+                            .expect(
+                                "Internal error: Stored connection handle does not correspond to \
+                                 any neuron",
+                            )
+                            .map(|state_of_connection| (state_of_connection, *weight))
+                    })
+                    .collect()
+            })
+            .unwrap_or_default()
     }
 
     fn update_neurons_connected_to_external_inputs(
