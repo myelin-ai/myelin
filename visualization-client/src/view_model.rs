@@ -2,7 +2,7 @@
 pub struct Object {
     pub shape: Polygon,
     pub kind: Kind,
-    pub name: Option<(Point, String)>,
+    pub name_label: Option<Label>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -22,4 +22,11 @@ pub enum Kind {
     Plant,
     Water,
     Terrain,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Label {
+    pub text: String,
+    pub location: Point,
+    pub font_color: String,
 }
