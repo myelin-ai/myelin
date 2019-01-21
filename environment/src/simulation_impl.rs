@@ -3,7 +3,7 @@
 
 pub use self::object_environment::ObjectEnvironmentImpl;
 use crate::object::*;
-use crate::{Simulation, Snapshot};
+use crate::{Id, Simulation, Snapshot};
 use myelin_geometry::*;
 use ncollide2d::world::CollisionObjectHandle;
 use std::cell::RefCell;
@@ -62,6 +62,8 @@ impl fmt::Display for ActionError {
 
 impl Error for ActionError {}
 
+type ActionResult = Result<(), ActionError>;
+
 impl SimulationImpl {
     /// Create a new SimulationImpl by injecting a [`World`]
     /// # Examples
@@ -112,33 +114,53 @@ impl SimulationImpl {
         })
     }
 
-    fn handle_action(
-        &mut self,
-        body_handle: BodyHandle,
-        action: Action,
-    ) -> Result<(), ActionError> {
+    fn handle_action(&mut self, body_handle: BodyHandle, action: Action) -> ActionResult {
         match action {
-            Action::Reproduce(object_description, object_behavior) => {
-                self.add_object(object_description, object_behavior);
-                Ok(())
+            Action::Spawn(object_description, object_behavior) => {
+                self.spawn(object_description, object_behavior)
             }
-            Action::ApplyForce(force) => self
-                .world
-                .apply_force(body_handle, force)
-                .map(|_| ())
-                .ok_or(ActionError::InvalidHandle),
-            Action::Destroy(object_id) => self
-                .world
-                .remove_body(BodyHandle(object_id))
-                .map(|_| ())
-                .ok_or(ActionError::InvalidHandle),
-            Action::Die => self
-                .world
-                .remove_body(body_handle)
-                .and(self.non_physical_object_data.remove(&body_handle))
-                .map(|_| ())
-                .ok_or(ActionError::InvalidHandle),
+            Action::ApplyForce(force) => self.apply_force(body_handle, force),
+            Action::Destroy(object_id) => self.destroy(object_id),
+            Action::DestroySelf => self.destroy_self(body_handle),
         }
+    }
+
+    fn spawn(
+        &mut self,
+        object_description: ObjectDescription,
+        object_behavior: Box<dyn ObjectBehavior>,
+    ) -> ActionResult {
+        self.add_object(object_description, object_behavior);
+        Ok(())
+    }
+
+    fn apply_force(&mut self, body_handle: BodyHandle, force: Force) -> ActionResult {
+        self.world
+            .apply_force(body_handle, force)
+            .to_action_result()
+    }
+
+    fn destroy(&mut self, object_id: Id) -> ActionResult {
+        self.world
+            .remove_body(BodyHandle(object_id))
+            .to_action_result()
+    }
+
+    fn destroy_self(&mut self, body_handle: BodyHandle) -> ActionResult {
+        self.world
+            .remove_body(body_handle)
+            .and(self.non_physical_object_data.remove(&body_handle))
+            .to_action_result()
+    }
+}
+
+trait HandleOption {
+    fn to_action_result(self) -> ActionResult;
+}
+
+impl<T> HandleOption for Option<T> {
+    fn to_action_result(self) -> ActionResult {
+        self.map(|_| ()).ok_or(ActionError::InvalidHandle)
     }
 }
 
@@ -545,7 +567,7 @@ mod tests {
     // returning the same handle twice.
     #[ignore]
     #[test]
-    fn reproducing_spawns_object() {
+    fn spawns_object() {
         let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_location = location();
@@ -588,7 +610,7 @@ mod tests {
 
         object_behavior
             .expect_step(partial_eq_owned(expected_object_description.clone()), any())
-            .returns(Some(Action::Reproduce(
+            .returns(Some(Action::Spawn(
                 expected_object_description.clone(),
                 box child_object_behavior,
             )));
@@ -600,7 +622,7 @@ mod tests {
     }
 
     #[test]
-    fn dying_removes_object() {
+    fn destroying_self_removes_object() {
         let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_location = location();
@@ -645,7 +667,7 @@ mod tests {
 
         object_behavior
             .expect_step(partial_eq_owned(expected_object_description.clone()), any())
-            .returns(Some(Action::Die));
+            .returns(Some(Action::DestroySelf));
 
         simulation.add_object(expected_object_description.clone(), box object_behavior);
 
