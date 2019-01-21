@@ -127,34 +127,41 @@ fn map_objects(
 ) -> Vec<view_model::Object> {
     snapshot
         .values()
-        .map(|business_object| {
-            let shape = global_polygon_translator.to_global_polygon(
-                &business_object.shape,
-                business_object.location,
-                business_object.rotation,
-            );
-
-            let kind = map_kind(business_object.kind);
-
-            view_model::Object {
-                shape,
-                kind,
-                name: business_object
-                    .name
-                    .clone()
-                    .and_then(|name| Some((calculate_name_position(&business_object), name))),
-            }
+        .map(|business_object| view_model::Object {
+            shape: translate_shape_into_view_model(&business_object, global_polygon_translator),
+            kind: translate_kind_into_view_model(&business_object.kind),
+            name: translate_name_into_view_model(&business_object),
         })
         .collect()
 }
 
-fn map_kind(kind: Kind) -> view_model::Kind {
+fn translate_shape_into_view_model(
+    business_object: &ObjectDescription,
+    global_polygon_translator: &dyn GlobalPolygonTranslator,
+) -> view_model::Polygon {
+    global_polygon_translator.to_global_polygon(
+        &business_object.shape,
+        business_object.location,
+        business_object.rotation,
+    )
+}
+
+fn translate_kind_into_view_model(kind: &Kind) -> view_model::Kind {
     match kind {
         Kind::Organism => view_model::Kind::Organism,
         Kind::Plant => view_model::Kind::Plant,
         Kind::Water => view_model::Kind::Water,
         Kind::Terrain => view_model::Kind::Terrain,
     }
+}
+
+fn translate_name_into_view_model(
+    business_object: &ObjectDescription,
+) -> Option<(view_model::Point, String)> {
+    business_object
+        .name
+        .clone()
+        .and_then(|name| Some((calculate_name_position(&business_object), name)))
 }
 
 fn calculate_name_position(business_object: &ObjectDescription) -> view_model::Point {
@@ -414,18 +421,12 @@ mod tests {
     #[test]
     fn calculate_name_position_works() {
         let position = calculate_name_position(&object_description());
-        assert_eq!(view_model::Point {
-            x: 30.0,
-            y: 20.0,
-        }, position);
+        assert_eq!(view_model::Point { x: 30.0, y: 20.0 }, position);
     }
 
     #[test]
     fn calculate_name_position_works2() {
         let position = calculate_name_position(&object_description2());
-        assert_eq!(view_model::Point {
-            x: 30.0,
-            y: 20.0,
-        }, position);
+        assert_eq!(view_model::Point { x: 30.0, y: 20.0 }, position);
     }
 }
