@@ -154,13 +154,13 @@ fn translate_object_description_delta(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use mockiato::{partial_eq_owned};
     use myelin_geometry::*;
-    use myelin_object_data::{
-        AssociatedObjectDataDeserializerMock, AssociatedObjectDataSerializerMock, Kind,
-    };
+    use myelin_object_data::{AssociatedObjectDataSerializerMock, Kind};
     use myelin_visualization_core::view_model_delta::{ObjectDelta, ObjectDescriptionDelta};
     use std::cell::RefCell;
     use std::error::Error;
+    use std::sync::atomic::{AtomicBool, Ordering};
     use std::thread::panicking;
 
     #[derive(Debug)]
@@ -240,7 +240,14 @@ mod tests {
     }
 
     fn object_description_delta() -> ObjectDescriptionDelta {
-        let associated_object_data_serializer = AssociatedObjectDataSerializerMock::new();
+        let mut associated_object_data_serializer = AssociatedObjectDataSerializerMock::new();
+
+        associated_object_data_serializer
+            .expect_serialize(partial_eq_owned(AssociatedObjectData {
+                name: Some(String::from("Cat")),
+                kind: Kind::Organism,
+            }))
+            .returns(String::from("A very pretty looking cat").into_bytes());
 
         ObjectDescriptionDelta {
             shape: Some(
@@ -283,6 +290,46 @@ mod tests {
         }
     }
 
+    #[derive(Debug, Default)]
+    struct AssociatedObjectDataDeserializerMock {
+        expect_deserialize: Option<(Vec<u8>, AssociatedObjectData)>,
+        expect_deserialize_called: AtomicBool,
+    }
+
+    impl Drop for AssociatedObjectDataDeserializerMock {
+        fn drop(&mut self) {
+            if !panicking() {
+                if self.expect_deserialize.is_some() && !self.expect_deserialize_called.load(Ordering::SeqCst) {
+                    panic!("Expected method was not called")
+                }
+            }
+        }
+    }
+
+    impl AssociatedObjectDataDeserializerMock {
+        fn new(parameter: Vec<u8>, return_value: AssociatedObjectData) -> Self {
+            Self {
+                expect_deserialize: Some((parameter, return_value)),
+                expect_deserialize_called: Default::default(),
+            }
+        }
+    }
+
+    impl AssociatedObjectDataDeserializer for AssociatedObjectDataDeserializerMock {
+        fn deserialize(&self, data: &[u8]) -> Result<AssociatedObjectData, Box<dyn Error>> {
+            if let Some((parameter, return_value)) = &self.expect_deserialize {
+                if parameter.as_slice() != data {
+                    panic!("Was called with {:?}, but expected {:?}", data, parameter)
+                } else {
+                    self.expect_deserialize_called.store(true, Ordering::SeqCst);
+                    Ok(return_value.clone())
+                }
+            } else {
+                panic!("Call was not expected")
+            }
+        }
+    }
+
     #[test]
     fn deserializes_and_calls_presenter() {
         let data = vec![100, 124, 135, 253, 234, 122];
@@ -294,8 +341,20 @@ mod tests {
             123 => ObjectDelta::Updated(object_description_delta())
         };
 
-        let associated_object_data_serializer = AssociatedObjectDataSerializerMock::new();
-        let associated_object_data_deserializer = AssociatedObjectDataDeserializerMock::new();
+        let associated_ojbect_data_bytes = String::from("A very pretty looking cat").into_bytes();
+        let associated_object_data = AssociatedObjectData {
+            name: Some(String::from("Cat")),
+            kind: Kind::Organism,
+        };
+
+        let mut associated_object_data_serializer = AssociatedObjectDataSerializerMock::new();
+        associated_object_data_serializer
+            .expect_serialize(partial_eq_owned(associated_object_data.clone()))
+            .returns(associated_ojbect_data_bytes.clone());
+
+        let associated_object_data_deserializer = AssociatedObjectDataDeserializerMock::new(
+            associated_ojbect_data_bytes, associated_object_data
+        );
 
         let view_model_deserializer =
             ViewModelDeserializerMock::new(data.clone(), view_model_delta.clone());
@@ -309,4 +368,5 @@ mod tests {
 
         controller.on_message(&data).unwrap();
     }
+
 }

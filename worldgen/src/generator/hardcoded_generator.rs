@@ -374,25 +374,37 @@ mod tests {
 
         let mut associated_object_data_serializer = box AssociatedObjectDataSerializerMock::new();
 
-        associated_object_data_serializer.expect_serialize(partial_eq_owned(AssociatedObjectData {
-            name: None,
-            kind: Kind::Terrain,
-        })).returns(Vec::new()).times(4);
+        associated_object_data_serializer
+            .expect_serialize(partial_eq_owned(AssociatedObjectData {
+                name: None,
+                kind: Kind::Terrain,
+            }))
+            .returns(Vec::new())
+            .times(4);
 
-        associated_object_data_serializer.expect_serialize(partial_eq_owned(AssociatedObjectData {
-            name: None,
-            kind: Kind::Water,
-        })).returns(Vec::new()).times(1);
+        associated_object_data_serializer
+            .expect_serialize(partial_eq_owned(AssociatedObjectData {
+                name: None,
+                kind: Kind::Water,
+            }))
+            .returns(Vec::new())
+            .times(1);
 
-        associated_object_data_serializer.expect_serialize(partial_eq_owned(AssociatedObjectData {
-            name: None,
-            kind: Kind::Plant,
-        })).returns(Vec::new()).times(176);
+        associated_object_data_serializer
+            .expect_serialize(partial_eq_owned(AssociatedObjectData {
+                name: None,
+                kind: Kind::Plant,
+            }))
+            .returns(Vec::new())
+            .times(176);
 
-        associated_object_data_serializer.expect_serialize(partial_eq_owned(AssociatedObjectData {
-            name: None,
-            kind: Kind::Organism,
-        })).returns(Vec::new()).times(5);
+        associated_object_data_serializer
+            .expect_serialize(partial_eq_owned(AssociatedObjectData {
+                name: None,
+                kind: Kind::Organism,
+            }))
+            .returns(Vec::new())
+            .times(5);
 
         let mut generator = HardcodedGenerator::new(
             simulation_factory,

@@ -16,7 +16,7 @@ use std::fmt::Debug;
 use mockiato::mockable;
 
 /// The data associated with an object
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct AssociatedObjectData {
     /// The name of an object
     pub name: Option<String>,
