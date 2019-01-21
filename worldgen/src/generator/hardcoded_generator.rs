@@ -45,7 +45,7 @@ impl HardcodedGenerator {
     /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
     /// use myelin_environment::Simulation;
     /// use myelin_object_behavior::Static;
-    /// use myelin_object_data::{Kind, AssociatedObjectDataBincodeSerializer};
+    /// use myelin_object_data::{AssociatedObjectDataBincodeSerializer, Kind};
     /// use myelin_worldgen::{HardcodedGenerator, NameProviderBuilder, WorldGenerator};
     /// use std::fs::read_to_string;
     /// use std::path::Path;
@@ -83,7 +83,8 @@ impl HardcodedGenerator {
     ///
     /// let name_provider = name_provider_builder.build_randomized();
     ///
-    /// let associated_object_data_serializer = Box::new(AssociatedObjectDataBincodeSerializer::default());
+    /// let associated_object_data_serializer =
+    ///     Box::new(AssociatedObjectDataBincodeSerializer::default());
     ///
     /// let mut worldgen = HardcodedGenerator::new(
     ///     simulation_factory,

@@ -298,12 +298,11 @@ mod tests {
 
     impl Drop for AssociatedObjectDataDeserializerMock {
         fn drop(&mut self) {
-            if !panicking() {
-                if self.expect_deserialize.is_some()
-                    && !self.expect_deserialize_called.load(Ordering::SeqCst)
-                {
-                    panic!("Expected method was not called")
-                }
+            if !panicking()
+                && self.expect_deserialize.is_some()
+                && !self.expect_deserialize_called.load(Ordering::SeqCst)
+            {
+                panic!("Expected method was not called")
             }
         }
     }
