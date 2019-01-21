@@ -137,23 +137,30 @@ impl SimulationImpl {
     fn apply_force(&mut self, body_handle: BodyHandle, force: Force) -> ActionResult {
         self.world
             .apply_force(body_handle, force)
-            .map(|_| ())
-            .ok_or(ActionError::InvalidHandle)
+            .to_action_result()
     }
 
     fn destroy(&mut self, object_id: Id) -> ActionResult {
         self.world
             .remove_body(BodyHandle(object_id))
-            .map(|_| ())
-            .ok_or(ActionError::InvalidHandle)
+            .to_action_result()
     }
 
     fn destroy_self(&mut self, body_handle: BodyHandle) -> ActionResult {
         self.world
             .remove_body(body_handle)
             .and(self.non_physical_object_data.remove(&body_handle))
-            .map(|_| ())
-            .ok_or(ActionError::InvalidHandle)
+            .to_action_result()
+    }
+}
+
+trait HandleOption {
+    fn to_action_result(self) -> ActionResult;
+}
+
+impl<T> HandleOption for Option<T> {
+    fn to_action_result(self) -> ActionResult {
+        self.map(|_| ()).ok_or(ActionError::InvalidHandle)
     }
 }
 
