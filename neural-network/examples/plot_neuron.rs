@@ -1,4 +1,4 @@
-//! Run neural-network/scripts/run_plot.sh in order to visualize the neurons' output
+//! Run neural-network/scripts/plot.py in order to visualize the neurons' output
 
 use maplit::hashmap;
 use myelin_neural_network::spiking_neural_network::SpikingNeuralNetwork;
