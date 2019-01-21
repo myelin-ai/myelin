@@ -54,6 +54,14 @@ impl CanvasView {
         let color = map_kind_to_color(&object.kind);
         self.context.set_fill_style(&JsValue::from_str(color));
         self.context.fill();
+
+        if let Some((ref position, ref name)) = object.name {
+            self.context.set_fill_style(&JsValue::from_str(constant::color::BLACK));
+            self.context.set_text_align(constant::alignment::CENTER);
+            self.context
+                .fill_text(name, position.x, position.y)
+                .expect("Unable to display name");
+        }
     }
 }
 

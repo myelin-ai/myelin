@@ -2,6 +2,7 @@
 pub struct Object {
     pub shape: Polygon,
     pub kind: Kind,
+    pub name: Option<(Point, String)>,
 }
 
 #[derive(Debug, PartialEq, Clone)]

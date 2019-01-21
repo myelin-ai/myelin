@@ -3,6 +3,7 @@ pub(crate) use self::global_polygon_translator::{
     GlobalPolygonTranslator, GlobalPolygonTranslatorImpl,
 };
 use crate::controller::Presenter;
+use crate::view::constant::offset::NAME_OFFSET;
 use crate::view_model;
 use myelin_environment::object::Mobility;
 use myelin_environment::Id;
@@ -135,7 +136,14 @@ fn map_objects(
 
             let kind = map_kind(business_object.kind);
 
-            view_model::Object { shape, kind }
+            view_model::Object {
+                shape,
+                kind,
+                name: business_object
+                    .name
+                    .clone()
+                    .and_then(|name| Some((calculate_name_position(&business_object), name))),
+            }
         })
         .collect()
 }
@@ -146,6 +154,18 @@ fn map_kind(kind: Kind) -> view_model::Kind {
         Kind::Plant => view_model::Kind::Plant,
         Kind::Water => view_model::Kind::Water,
         Kind::Terrain => view_model::Kind::Terrain,
+    }
+}
+
+fn calculate_name_position(business_object: &ObjectDescription) -> view_model::Point {
+    let aabb = business_object.shape.aabb();
+
+    let top = aabb.upper_left.y;
+    let horizontal_center = aabb.upper_left.x + (aabb.lower_right.x - aabb.upper_left.x) / 2.0;
+
+    view_model::Point {
+        x: business_object.location.x + horizontal_center + NAME_OFFSET.x,
+        y: business_object.location.y + top + NAME_OFFSET.y,
     }
 }
 
@@ -304,6 +324,7 @@ mod tests {
         let expected_view_model_1 = vec![view_model::Object {
             shape: view_model_polygon_1.clone(),
             kind: view_model::Kind::Plant,
+            name: None,
         }];
         let view_model_delta_1 = hashmap! {
             12 => ObjectDelta::Created(object_description_1.clone())
@@ -317,10 +338,12 @@ mod tests {
             view_model::Object {
                 shape: view_model_polygon_1.clone(),
                 kind: view_model::Kind::Plant,
+                name: None,
             },
             view_model::Object {
                 shape: view_model_polygon_2.clone(),
                 kind: view_model::Kind::Plant,
+                name: None,
             },
         ];
         let view_model_delta_2 = hashmap! {
