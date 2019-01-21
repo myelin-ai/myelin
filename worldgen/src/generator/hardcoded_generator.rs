@@ -121,39 +121,19 @@ impl HardcodedGenerator {
 
     fn populate_with_terrain(&self, simulation: &mut dyn Simulation) {
         simulation.add_object(
-            build_terrain(
-                (25.0, 500.0),
-                50.0,
-                1000.0,
-                self.associated_object_data_serializer.as_ref(),
-            ),
+            self.build_terrain((25.0, 500.0), 50.0, 1000.0),
             (self.terrain_factory)(),
         );
         simulation.add_object(
-            build_terrain(
-                (500.0, 25.0),
-                1000.0,
-                50.0,
-                self.associated_object_data_serializer.as_ref(),
-            ),
+            self.build_terrain((500.0, 25.0), 1000.0, 50.0),
             (self.terrain_factory)(),
         );
         simulation.add_object(
-            build_terrain(
-                (975.0, 500.0),
-                50.0,
-                1000.0,
-                self.associated_object_data_serializer.as_ref(),
-            ),
+            self.build_terrain((975.0, 500.0), 50.0, 1000.0),
             (self.terrain_factory)(),
         );
         simulation.add_object(
-            build_terrain(
-                (500.0, 975.0),
-                1000.0,
-                50.0,
-                self.associated_object_data_serializer.as_ref(),
-            ),
+            self.build_terrain((500.0, 975.0), 1000.0, 50.0),
             (self.terrain_factory)(),
         );
     }
@@ -202,17 +182,15 @@ impl HardcodedGenerator {
                 let mut add_plant = |plant: ObjectDescription| {
                     simulation.add_object(plant, (self.plant_factory)());
                 };
-                add_plant(build_plant(
+                add_plant(self.build_plant(
                     HALF_OF_PLANT_WIDTH_AND_HEIGHT,
                     left_horizontal_position,
                     vertical_position,
-                    self.associated_object_data_serializer.as_ref(),
                 ));
-                add_plant(build_plant(
+                add_plant(self.build_plant(
                     HALF_OF_PLANT_WIDTH_AND_HEIGHT,
                     right_horizontal_position,
                     vertical_position,
-                    self.associated_object_data_serializer.as_ref(),
                 ));
             }
         }
@@ -229,104 +207,97 @@ impl HardcodedGenerator {
 
         for coordinate in coordinates.iter() {
             simulation.add_object(
-                build_organism(
+                self.build_organism(
                     coordinate.0,
                     coordinate.1,
                     self.name_provider.get_name(Kind::Organism),
-                    self.associated_object_data_serializer.as_ref(),
                 ),
                 (self.organism_factory)(),
             );
         }
     }
-}
 
-fn build_terrain(
-    location: (f64, f64),
-    width: f64,
-    length: f64,
-    associated_object_data_serializer: &dyn AdditionalObjectDescriptionSerializer,
-) -> ObjectDescription {
-    let object_data = AdditionalObjectDescription {
-        name: None,
-        kind: Kind::Terrain,
-    };
+    fn build_terrain(&self, location: (f64, f64), width: f64, length: f64) -> ObjectDescription {
+        let object_data = AdditionalObjectDescription {
+            name: None,
+            kind: Kind::Terrain,
+        };
 
-    let x_offset = width / 2.0;
-    let y_offset = length / 2.0;
-    ObjectBuilder::default()
-        .shape(
-            PolygonBuilder::default()
-                .vertex(-x_offset, -y_offset)
-                .vertex(x_offset, -y_offset)
-                .vertex(x_offset, y_offset)
-                .vertex(-x_offset, y_offset)
-                .build()
-                .expect("Generated an invalid vertex"),
-        )
-        .location(location.0, location.1)
-        .mobility(Mobility::Immovable)
-        .associated_data(associated_object_data_serializer.serialize(&object_data))
-        .build()
-        .expect("Failed to build terrain")
-}
+        let x_offset = width / 2.0;
+        let y_offset = length / 2.0;
+        ObjectBuilder::default()
+            .shape(
+                PolygonBuilder::default()
+                    .vertex(-x_offset, -y_offset)
+                    .vertex(x_offset, -y_offset)
+                    .vertex(x_offset, y_offset)
+                    .vertex(-x_offset, y_offset)
+                    .build()
+                    .expect("Generated an invalid vertex"),
+            )
+            .location(location.0, location.1)
+            .mobility(Mobility::Immovable)
+            .associated_data(
+                self.associated_object_data_serializer
+                    .serialize(&object_data),
+            )
+            .build()
+            .expect("Failed to build terrain")
+    }
 
-fn build_plant(
-    half_of_width_and_height: f64,
-    x: f64,
-    y: f64,
-    associated_object_data_serializer: &dyn AdditionalObjectDescriptionSerializer,
-) -> ObjectDescription {
-    let object_data = AdditionalObjectDescription {
-        name: None,
-        kind: Kind::Plant,
-    };
+    fn build_plant(&self, half_of_width_and_height: f64, x: f64, y: f64) -> ObjectDescription {
+        let object_data = AdditionalObjectDescription {
+            name: None,
+            kind: Kind::Plant,
+        };
 
-    ObjectBuilder::default()
-        .shape(
-            PolygonBuilder::default()
-                .vertex(-half_of_width_and_height, -half_of_width_and_height)
-                .vertex(half_of_width_and_height, -half_of_width_and_height)
-                .vertex(half_of_width_and_height, half_of_width_and_height)
-                .vertex(-half_of_width_and_height, half_of_width_and_height)
-                .build()
-                .expect("Generated an invalid vertex"),
-        )
-        .location(x, y)
-        .mobility(Mobility::Immovable)
-        .passable(true)
-        .associated_data(associated_object_data_serializer.serialize(&object_data))
-        .build()
-        .expect("Failed to build plant")
-}
+        ObjectBuilder::default()
+            .shape(
+                PolygonBuilder::default()
+                    .vertex(-half_of_width_and_height, -half_of_width_and_height)
+                    .vertex(half_of_width_and_height, -half_of_width_and_height)
+                    .vertex(half_of_width_and_height, half_of_width_and_height)
+                    .vertex(-half_of_width_and_height, half_of_width_and_height)
+                    .build()
+                    .expect("Generated an invalid vertex"),
+            )
+            .location(x, y)
+            .mobility(Mobility::Immovable)
+            .passable(true)
+            .associated_data(
+                self.associated_object_data_serializer
+                    .serialize(&object_data),
+            )
+            .build()
+            .expect("Failed to build plant")
+    }
 
-fn build_organism(
-    x: f64,
-    y: f64,
-    name: Option<String>,
-    associated_object_data_serializer: &dyn AdditionalObjectDescriptionSerializer,
-) -> ObjectDescription {
-    let object_data = AdditionalObjectDescription {
-        name,
-        kind: Kind::Organism,
-    };
+    fn build_organism(&self, x: f64, y: f64, name: Option<String>) -> ObjectDescription {
+        let object_data = AdditionalObjectDescription {
+            name,
+            kind: Kind::Organism,
+        };
 
-    ObjectBuilder::default()
-        .shape(
-            PolygonBuilder::default()
-                .vertex(25.0, 0.0)
-                .vertex(-25.0, 20.0)
-                .vertex(-5.0, 0.0)
-                .vertex(-25.0, -20.0)
-                .build()
-                .expect("Generated an invalid vertex"),
-        )
-        .location(x, y)
-        .rotation(Radians::try_new(FRAC_PI_2).unwrap())
-        .mobility(Mobility::Movable(Vector::default()))
-        .associated_data(associated_object_data_serializer.serialize(&object_data))
-        .build()
-        .expect("Failed to build organism")
+        ObjectBuilder::default()
+            .shape(
+                PolygonBuilder::default()
+                    .vertex(25.0, 0.0)
+                    .vertex(-25.0, 20.0)
+                    .vertex(-5.0, 0.0)
+                    .vertex(-25.0, -20.0)
+                    .build()
+                    .expect("Generated an invalid vertex"),
+            )
+            .location(x, y)
+            .rotation(Radians::try_new(FRAC_PI_2).unwrap())
+            .mobility(Mobility::Movable(Vector::default()))
+            .associated_data(
+                self.associated_object_data_serializer
+                    .serialize(&object_data),
+            )
+            .build()
+            .expect("Failed to build organism")
+    }
 }
 
 impl WorldGenerator for HardcodedGenerator {
