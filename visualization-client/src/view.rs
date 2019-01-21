@@ -65,7 +65,7 @@ impl CanvasView {
                     name_label.location.x,
                     name_label.location.y,
                 )
-                .expect(&format!("Unable to display name {:?}", name_label.text));
+                .unwrap_or_else(|_| panic!("Unable to display name {:?}", name_label.text));
         }
     }
 }

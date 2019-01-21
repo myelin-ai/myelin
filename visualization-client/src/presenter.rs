@@ -129,7 +129,7 @@ fn map_objects(
         .values()
         .map(|business_object| view_model::Object {
             shape: translate_shape_into_view_model(&business_object, global_polygon_translator),
-            kind: translate_kind_into_view_model(&business_object.kind),
+            kind: translate_kind_into_view_model(business_object.kind),
             name_label: translate_name_into_view_model(&business_object),
         })
         .collect()
@@ -146,7 +146,7 @@ fn translate_shape_into_view_model(
     )
 }
 
-fn translate_kind_into_view_model(kind: &Kind) -> view_model::Kind {
+fn translate_kind_into_view_model(kind: Kind) -> view_model::Kind {
     match kind {
         Kind::Organism => view_model::Kind::Organism,
         Kind::Plant => view_model::Kind::Plant,
