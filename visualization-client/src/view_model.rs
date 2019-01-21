@@ -24,12 +24,15 @@ pub enum Kind {
     Terrain,
 }
 
-/// A label
-///
-/// The location is absolute
+/// A text label that can be drawn anywhere on the screen
 #[derive(Debug, PartialEq, Clone)]
 pub struct Label {
+    /// The text to draw
     pub text: String,
+
+    /// The absolute location
     pub location: Point,
+
+    /// The font color to use
     pub font_color: String,
 }
