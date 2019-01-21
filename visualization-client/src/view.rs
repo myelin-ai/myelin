@@ -56,7 +56,7 @@ impl CanvasView {
         self.context.fill();
 
         if let Some((ref position, ref name)) = object.name {
-            self.context.set_fill_style(&JsValue::from_str(constant::color::BLACK));
+            self.context.set_fill_style(&JsValue::from_str(constant::color::LABEL));
             self.context.set_text_align(constant::alignment::CENTER);
             self.context
                 .fill_text(name, position.x, position.y)
@@ -119,9 +119,9 @@ impl fmt::Display for Pixels {
 
 fn map_kind_to_color(kind: &Kind) -> &'static str {
     match kind {
-        Kind::Organism => constant::color::ORANGE,
-        Kind::Plant => constant::color::GREEN,
-        Kind::Water => constant::color::BLUE,
-        Kind::Terrain => constant::color::BROWN,
+        Kind::Organism => constant::color::ORGANISM,
+        Kind::Plant => constant::color::PLANT,
+        Kind::Water => constant::color::WATER,
+        Kind::Terrain => constant::color::TERRAIN,
     }
 }
