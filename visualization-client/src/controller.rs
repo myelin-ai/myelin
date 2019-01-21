@@ -154,7 +154,7 @@ fn translate_object_description_delta(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockiato::{partial_eq_owned};
+    use mockiato::partial_eq_owned;
     use myelin_geometry::*;
     use myelin_object_data::{AssociatedObjectDataSerializerMock, Kind};
     use myelin_visualization_core::view_model_delta::{ObjectDelta, ObjectDescriptionDelta};
@@ -299,7 +299,9 @@ mod tests {
     impl Drop for AssociatedObjectDataDeserializerMock {
         fn drop(&mut self) {
             if !panicking() {
-                if self.expect_deserialize.is_some() && !self.expect_deserialize_called.load(Ordering::SeqCst) {
+                if self.expect_deserialize.is_some()
+                    && !self.expect_deserialize_called.load(Ordering::SeqCst)
+                {
                     panic!("Expected method was not called")
                 }
             }
@@ -349,7 +351,8 @@ mod tests {
 
         let associated_object_data_serializer = AssociatedObjectDataSerializerMock::new();
         let associated_object_data_deserializer = AssociatedObjectDataDeserializerMock::new(
-            associated_ojbect_data_bytes, associated_object_data
+            associated_ojbect_data_bytes,
+            associated_object_data,
         );
 
         let view_model_deserializer =
