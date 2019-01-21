@@ -62,6 +62,8 @@ impl fmt::Display for ActionError {
 
 impl Error for ActionError {}
 
+type ActionResult = Result<(), ActionError>;
+
 impl SimulationImpl {
     /// Create a new SimulationImpl by injecting a [`World`]
     /// # Examples
@@ -112,34 +114,44 @@ impl SimulationImpl {
         })
     }
 
-    fn handle_action(
-        &mut self,
-        body_handle: BodyHandle,
-        action: Action,
-    ) -> Result<(), ActionError> {
+    fn handle_action(&mut self, body_handle: BodyHandle, action: Action) -> ActionResult {
         match action {
             Action::Spawn(object_description, object_behavior) => {
-                self.add_object(object_description, object_behavior);
-                Ok(())
+                self.spawn(object_description, object_behavior)
             }
-            Action::ApplyForce(force) => self
-                .world
-                .apply_force(body_handle, force)
-                .map(|_| ())
-                .ok_or(ActionError::InvalidHandle),
+            Action::ApplyForce(force) => self.apply_force(body_handle, force),
             Action::Destroy(object_id) => self.destroy(object_id),
-            Action::DestroySelf => self
-                .world
-                .remove_body(body_handle)
-                .and(self.non_physical_object_data.remove(&body_handle))
-                .map(|_| ())
-                .ok_or(ActionError::InvalidHandle),
+            Action::DestroySelf => self.destroy_self(body_handle),
         }
     }
 
-    fn destroy(&mut self, object_id: Id) -> Result<(), ActionError> {
+    fn spawn(
+        &mut self,
+        object_description: ObjectDescription,
+        object_behavior: Box<dyn ObjectBehavior>,
+    ) -> ActionResult {
+        self.add_object(object_description, object_behavior);
+        Ok(())
+    }
+
+    fn apply_force(&mut self, body_handle: BodyHandle, force: Force) -> ActionResult {
+        self.world
+            .apply_force(body_handle, force)
+            .map(|_| ())
+            .ok_or(ActionError::InvalidHandle)
+    }
+
+    fn destroy(&mut self, object_id: Id) -> ActionResult {
         self.world
             .remove_body(BodyHandle(object_id))
+            .map(|_| ())
+            .ok_or(ActionError::InvalidHandle)
+    }
+
+    fn destroy_self(&mut self, body_handle: BodyHandle) -> ActionResult {
+        self.world
+            .remove_body(body_handle)
+            .and(self.non_physical_object_data.remove(&body_handle))
             .map(|_| ())
             .ok_or(ActionError::InvalidHandle)
     }
