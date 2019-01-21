@@ -47,22 +47,22 @@ pub enum Action {
     /// Apply the specified force to the object
     ApplyForce(Force),
     /// Create a new object at the specified location
-    Reproduce(ObjectDescription, Box<dyn ObjectBehavior>),
+    Spawn(ObjectDescription, Box<dyn ObjectBehavior>),
     /// Destroys another object
     Destroy(Id),
     /// Destroy the object
-    Die,
+    DestroySelf,
 }
 
 impl Clone for Action {
     fn clone(&self) -> Action {
         match self {
             Action::ApplyForce(force) => Action::ApplyForce(force.clone()),
-            Action::Reproduce(object_description, object_behavior) => {
-                Action::Reproduce(object_description.clone(), object_behavior.clone_box())
+            Action::Spawn(object_description, object_behavior) => {
+                Action::Spawn(object_description.clone(), object_behavior.clone_box())
             }
             Action::Destroy(body_handle) => Action::Destroy(*body_handle),
-            Action::Die => Action::Die,
+            Action::DestroySelf => Action::DestroySelf,
         }
     }
 }

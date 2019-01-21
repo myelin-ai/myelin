@@ -118,7 +118,7 @@ impl SimulationImpl {
         action: Action,
     ) -> Result<(), ActionError> {
         match action {
-            Action::Reproduce(object_description, object_behavior) => {
+            Action::Spawn(object_description, object_behavior) => {
                 self.add_object(object_description, object_behavior);
                 Ok(())
             }
@@ -132,7 +132,7 @@ impl SimulationImpl {
                 .remove_body(BodyHandle(object_id))
                 .map(|_| ())
                 .ok_or(ActionError::InvalidHandle),
-            Action::Die => self
+            Action::DestroySelf => self
                 .world
                 .remove_body(body_handle)
                 .and(self.non_physical_object_data.remove(&body_handle))
@@ -588,7 +588,7 @@ mod tests {
 
         object_behavior
             .expect_step(partial_eq_owned(expected_object_description.clone()), any())
-            .returns(Some(Action::Reproduce(
+            .returns(Some(Action::Spawn(
                 expected_object_description.clone(),
                 box child_object_behavior,
             )));
@@ -645,7 +645,7 @@ mod tests {
 
         object_behavior
             .expect_step(partial_eq_owned(expected_object_description.clone()), any())
-            .returns(Some(Action::Die));
+            .returns(Some(Action::DestroySelf));
 
         simulation.add_object(expected_object_description.clone(), box object_behavior);
 
