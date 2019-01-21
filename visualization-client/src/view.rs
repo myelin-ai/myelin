@@ -60,7 +60,7 @@ impl CanvasView {
             self.context.set_text_align(constant::alignment::CENTER);
             self.context
                 .fill_text(name, position.x, position.y)
-                .expect("Unable to display name");
+                .expect("Unable to display name {:?}", name);
         }
     }
 }
