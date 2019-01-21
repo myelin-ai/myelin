@@ -52,13 +52,10 @@ impl Error for WebsocketClientError {
 
 impl SocketError for WebsocketClientError {
     fn is_broken_pipe(&self) -> bool {
-        if let WebSocketError::IoError(ref err) = &self.0 {
-            if let IoErrorKind::BrokenPipe = err.kind() {
-                return true;
-            }
-        };
-
-        false
+        match &self.0 {
+            WebSocketError::IoError(IoErrorKind::BrokenPipe(_)) => true,
+            _ => false,
+        }
     }
 }
 
