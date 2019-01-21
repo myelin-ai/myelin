@@ -38,7 +38,6 @@ mod tests {
             )
             .location(300.0, 450.0)
             .rotation(Radians::try_new(FRAC_PI_2).unwrap())
-            .kind(Kind::Organism)
             .mobility(Mobility::Movable(Vector { x: 3.0, y: 5.0 }))
             .build()
             .unwrap();

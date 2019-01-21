@@ -65,9 +65,9 @@ mod tests {
 
     #[test]
     fn serializes_full_delta() {
+        let associated_data = String::from("Cat").into_bytes();
+
         let object_description_delta = ObjectDescriptionDelta {
-            name: Some(Some(String::from("Cat"))),
-            kind: Some(Kind::Organism),
             shape: Some(
                 PolygonBuilder::default()
                     .vertex(-5.0, -5.0)
@@ -80,6 +80,7 @@ mod tests {
             mobility: Some(Mobility::Movable(Vector { x: 2.0, y: 3.0 })),
             location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
+            associated_data: Some(associated_data),
         };
 
         let view_model_delta = hashmap! { 12 => ObjectDelta::Updated(object_description_delta) };
@@ -111,8 +112,6 @@ mod tests {
     #[test]
     fn deserializes_full_viewmodel() {
         let object_description_delta = ObjectDescriptionDelta {
-            name: Some(Some(String::from("Cat"))),
-            kind: Some(Kind::Organism),
             shape: Some(
                 PolygonBuilder::default()
                     .vertex(-5.0, -5.0)
@@ -125,6 +124,7 @@ mod tests {
             mobility: Some(Mobility::Movable(Vector { x: 2.0, y: 3.0 })),
             location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
+            associated_data: Some(String::from("Cat").into_bytes()),
         };
 
         let expected = hashmap! { 12 => ObjectDelta::Updated(object_description_delta) };

@@ -2,7 +2,7 @@
 
 mod hardcoded_generator;
 pub use self::hardcoded_generator::HardcodedGenerator;
-use myelin_environment::object::Kind;
+use myelin_object_data::Kind;
 
 #[cfg(test)]
 use mockiato::mockable;

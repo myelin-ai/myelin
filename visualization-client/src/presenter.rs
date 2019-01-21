@@ -4,10 +4,12 @@ pub(crate) use self::global_polygon_translator::{
 };
 use crate::controller::Presenter;
 use crate::view_model;
-use myelin_environment::object::*;
-use myelin_environment::Snapshot;
-use myelin_visualization_core::view_model_delta::ViewModelDelta;
+use myelin_environment::object::Mobility;
+use myelin_environment::Id;
+use myelin_geometry::*;
+use myelin_object_data::Kind;
 use std::borrow::Borrow;
+use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 
@@ -46,6 +48,76 @@ impl Presenter for CanvasPresenter {
 
         Ok(())
     }
+}
+
+pub type Snapshot = HashMap<Id, ObjectDescription>;
+pub type ViewModelDelta = HashMap<Id, ObjectDelta>;
+
+/// Describes what happened to an individual object in this
+#[derive(Debug, Clone, PartialEq)]
+pub enum ObjectDelta {
+    /// The object has been added to the world
+    Created(ObjectDescription),
+    /// At least one property of the object has changed
+    Updated(ObjectDescriptionDelta),
+    /// The object has been removed from the world
+    Deleted,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ObjectDescription {
+    /// The name of the object
+    pub name: Option<String>,
+
+    /// The object's kind
+    pub kind: Kind,
+
+    /// The vertices defining the shape of the object
+    /// in relation to its [`position`]
+    ///
+    /// [`position`]: ./struct.ObjectDescription.html#structfield.location
+    pub shape: Polygon,
+
+    /// The global location of the center of the object
+    pub location: Point,
+
+    /// The object's rotation
+    pub rotation: Radians,
+
+    /// The current velocity of the object, defined
+    /// as a two dimensional vector relative to the
+    /// objects center
+    pub mobility: Mobility,
+
+    /// Whether the object is passable or not
+    pub passable: bool,
+}
+
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct ObjectDescriptionDelta {
+    /// The name of the object
+    #[allow(clippy::option_option)]
+    pub name: Option<Option<String>>,
+
+    /// The object's kind
+    pub kind: Option<Kind>,
+
+    /// The vertices defining the shape of the object
+    /// in relation to its [`position`]
+    ///
+    /// [`position`]: ./struct.ObjectDescription.html#structfield.location
+    pub shape: Option<Polygon>,
+
+    /// The current location of the object
+    pub location: Option<Point>,
+
+    /// The current rotation of the object
+    pub rotation: Option<Radians>,
+
+    /// The current velocity of the object, defined
+    /// as a two dimensional vector relative to the
+    /// objects center
+    pub mobility: Option<Mobility>,
 }
 
 fn map_objects(
@@ -99,8 +171,6 @@ mod tests {
     use crate::presenter::global_polygon_translator::GlobalPolygonTranslatorMock;
     use crate::view_model;
     use mockiato::{partial_eq, partial_eq_owned, unordered_vec_eq};
-    use myelin_geometry::*;
-    use myelin_visualization_core::view_model_delta::ObjectDelta;
     use std::cell::RefCell;
     use std::collections::VecDeque;
     use std::fmt::{self, Debug};
@@ -165,41 +235,39 @@ mod tests {
     }
 
     fn object_description() -> ObjectDescription {
-        ObjectBuilder::default()
-            .shape(
-                PolygonBuilder::default()
-                    .vertex(-10.0, -10.0)
-                    .vertex(10.0, -10.0)
-                    .vertex(10.0, 10.0)
-                    .vertex(-10.0, 10.0)
-                    .build()
-                    .unwrap(),
-            )
-            .mobility(Mobility::Immovable)
-            .location(30.0, 40.0)
-            .rotation(Radians::default())
-            .kind(Kind::Plant)
-            .build()
-            .unwrap()
+        ObjectDescription {
+            name: None,
+            kind: Kind::Plant,
+            shape: PolygonBuilder::default()
+                .vertex(-10.0, -10.0)
+                .vertex(10.0, -10.0)
+                .vertex(10.0, 10.0)
+                .vertex(-10.0, 10.0)
+                .build()
+                .unwrap(),
+            mobility: Mobility::Immovable,
+            location: Point { x: 30.0, y: 40.0 },
+            rotation: Radians::default(),
+            passable: false,
+        }
     }
 
     fn object_description2() -> ObjectDescription {
-        ObjectBuilder::default()
-            .shape(
-                PolygonBuilder::default()
-                    .vertex(-20.0, -20.0)
-                    .vertex(20.0, -20.0)
-                    .vertex(20.0, 20.0)
-                    .vertex(-20.0, 20.0)
-                    .build()
-                    .unwrap(),
-            )
-            .mobility(Mobility::Immovable)
-            .location(30.0, 50.0)
-            .rotation(Radians::default())
-            .kind(Kind::Plant)
-            .build()
-            .unwrap()
+        ObjectDescription {
+            name: None,
+            kind: Kind::Plant,
+            shape: PolygonBuilder::default()
+                .vertex(-20.0, -20.0)
+                .vertex(20.0, -20.0)
+                .vertex(20.0, 20.0)
+                .vertex(-20.0, 20.0)
+                .build()
+                .unwrap(),
+            mobility: Mobility::Immovable,
+            location: Point { x: 30.0, y: 50.0 },
+            rotation: Radians::default(),
+            passable: false,
+        }
     }
 
     #[test]

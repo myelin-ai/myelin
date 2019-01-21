@@ -5,7 +5,7 @@ use crate::constant::*;
 use crate::controller::{ConnectionAcceptor, Controller, ControllerImpl};
 use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
-use myelin_environment::object::{Kind, ObjectBehavior};
+use myelin_environment::object::ObjectBehavior;
 use myelin_environment::simulation_impl::world::{
     IgnoringCollisionFilterImpl, NphysicsRotationTranslatorImpl, NphysicsWorld,
     SingleTimeForceApplierImpl,
@@ -14,6 +14,8 @@ use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl}
 use myelin_environment::Simulation;
 use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
 use myelin_object_behavior::Static;
+use myelin_object_data::AdditionalObjectDescriptionBincodeSerializer;
+use myelin_object_data::Kind;
 use myelin_visualization_core::serialization::BincodeSerializer;
 use myelin_worldgen::NameProviderBuilder;
 use myelin_worldgen::{HardcodedGenerator, WorldGenerator};
@@ -62,6 +64,9 @@ where
 
     let name_provider = name_provider_builder.build_randomized();
 
+    let associated_object_data_serializer =
+        box AdditionalObjectDescriptionBincodeSerializer::default();
+
     let mut worldgen = HardcodedGenerator::new(
         simulation_factory,
         plant_factory,
@@ -69,6 +74,7 @@ where
         terrain_factory,
         water_factory,
         name_provider,
+        associated_object_data_serializer,
     );
 
     let conection_acceptor_factory_fn = Arc::new(move |current_snapshot_fn| {

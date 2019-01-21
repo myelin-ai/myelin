@@ -333,7 +333,6 @@ mod tests {
                 .location(50.0, 50.0)
                 .rotation(Radians::try_new(1.0).unwrap())
                 .mobility(Mobility::Movable(Vector { x: 3.0, y: -4.0 }))
-                .kind(Kind::Plant)
                 .build()
                 .unwrap(),
         );
@@ -342,12 +341,8 @@ mod tests {
 
     fn delta() -> ViewModelDelta {
         let updated_object = ObjectDescriptionDelta {
-            name: None,
-            shape: None,
             location: Some(Point { x: 12.0, y: 32.0 }),
-            rotation: None,
-            mobility: None,
-            kind: None,
+            ..Default::default()
         };
 
         hashmap! {

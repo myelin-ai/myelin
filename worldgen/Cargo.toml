@@ -12,9 +12,12 @@ edition = "2018"
 [dependencies]
 myelin-environment = { path = "../environment" }
 myelin-geometry = { path = "../geometry" }
+myelin-object-data = { path = "../object-data" }
 nameof = "0.1"
 rand = "0.6.1"
 
 [dev-dependencies]
 myelin-object-behavior = { path = "../object-behavior" }
 mockiato = { git = "https://github.com/myelin-ai/mockiato" }
+myelin-environment = { path = "../environment", features = ["use-mocks"] }
+myelin-object-data = { path = "../object-data", features = ["use-mocks"] }
