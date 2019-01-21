@@ -517,15 +517,15 @@ dependencies = [
 [[package]]
 name = "mockiato"
 version = "0.1.0"
-source = "git+https://github.com/myelin-ai/mockiato#6af959cb5467d314010fe41d9b6b19bdb49f2684"
+source = "git+https://github.com/myelin-ai/mockiato#7f97a02f911537e47db87dd262b45dd99fcb902c"
 dependencies = [
- "mockiato_codegen 0.1.0 (git+https://github.com/myelin-ai/mockiato)",
+ "mockiato-codegen 0.1.0 (git+https://github.com/myelin-ai/mockiato)",
 ]
 
 [[package]]
-name = "mockiato_codegen"
+name = "mockiato-codegen"
 version = "0.1.0"
-source = "git+https://github.com/myelin-ai/mockiato#6af959cb5467d314010fe41d9b6b19bdb49f2684"
+source = "git+https://github.com/myelin-ai/mockiato#7f97a02f911537e47db87dd262b45dd99fcb902c"
 dependencies = [
  "heck 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "proc-macro2 0.4.20 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1748,7 +1748,7 @@ dependencies = [
 "checksum mio-uds 0.6.7 (registry+https://github.com/rust-lang/crates.io-index)" = "966257a94e196b11bb43aca423754d87429960a768de9414f3691d6957abf125"
 "checksum miow 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "8c1f2f3b1cf331de6896aabf6e9d55dca90356cc9960cca7eaaf408a355ae919"
 "checksum mockiato 0.1.0 (git+https://github.com/myelin-ai/mockiato)" = "<none>"
-"checksum mockiato_codegen 0.1.0 (git+https://github.com/myelin-ai/mockiato)" = "<none>"
+"checksum mockiato-codegen 0.1.0 (git+https://github.com/myelin-ai/mockiato)" = "<none>"
 "checksum nalgebra 0.16.8 (registry+https://github.com/rust-lang/crates.io-index)" = "a32c7df534ab70fe18fee35fce38ea6733000014fac2819518f19ed6de814d41"
 "checksum nameof 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "f96fc5201ec197ce9d6bfcae0967bd455aa9d8d12927bcb63b8db53c077b225a"
 "checksum nameof 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "2e90fbc8c7ae00979152d976d59e1d98a47d9967cae51af4b94b188ad3ca2e68"
