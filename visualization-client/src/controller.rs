@@ -347,11 +347,7 @@ mod tests {
             kind: Kind::Organism,
         };
 
-        let mut associated_object_data_serializer = AssociatedObjectDataSerializerMock::new();
-        associated_object_data_serializer
-            .expect_serialize(partial_eq_owned(associated_object_data.clone()))
-            .returns(associated_ojbect_data_bytes.clone());
-
+        let associated_object_data_serializer = AssociatedObjectDataSerializerMock::new();
         let associated_object_data_deserializer = AssociatedObjectDataDeserializerMock::new(
             associated_ojbect_data_bytes, associated_object_data
         );
