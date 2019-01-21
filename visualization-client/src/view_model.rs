@@ -24,6 +24,9 @@ pub enum Kind {
     Terrain,
 }
 
+/// A label
+///
+/// The location is absolute
 #[derive(Debug, PartialEq, Clone)]
 pub struct Label {
     pub text: String,
