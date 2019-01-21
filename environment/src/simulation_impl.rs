@@ -548,7 +548,7 @@ mod tests {
     // returning the same handle twice.
     #[ignore]
     #[test]
-    fn reproducing_spawns_object() {
+    fn spawns_object() {
         let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_location = location();
@@ -603,7 +603,7 @@ mod tests {
     }
 
     #[test]
-    fn dying_removes_object() {
+    fn destroying_self_removes_object() {
         let mut world = box WorldMock::new();
         let expected_shape = shape();
         let expected_location = location();
