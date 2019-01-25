@@ -1,4 +1,5 @@
 Abby
+Alissia
 Angel
 Annie
 Baby
@@ -35,6 +36,7 @@ Harley
 Jack
 Jasmine
 Jasper
+Jenny
 Kiki
 Kitty
 Leo
