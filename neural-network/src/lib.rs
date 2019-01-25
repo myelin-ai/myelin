@@ -1,5 +1,14 @@
 //! Neural networks and their components
 
+#![deny(
+    rust_2018_idioms,
+    missing_debug_implementations,
+    missing_docs,
+    intra_doc_link_resolution_failure,
+    clippy::doc_markdown,
+    clippy::unimplemented
+)]
+
 mod connection;
 pub mod spiking_neural_network;
 pub use self::connection::*;
@@ -12,7 +21,7 @@ use mockiato::mockable;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-/// A handle to a [`Neuron`]
+/// A handle to a neuron
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct Handle(pub usize);
 

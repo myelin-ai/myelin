@@ -39,6 +39,8 @@ impl SpikingNeuron {
 
     /// Returns the neuron's current membrane potential if it is above its current threshold
     /// Call [`step`] to update this value
+    ///
+    /// [`step`]: #tySpikingNeuron.step
     pub fn membrane_potential(&self) -> Option<MembranePotential> {
         if self.is_above_threshold() {
             Some(self.current_membrane_potential)
