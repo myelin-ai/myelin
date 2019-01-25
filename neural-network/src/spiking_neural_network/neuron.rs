@@ -336,13 +336,7 @@ mod tests {
                 neuron.step(SMALL_TIME_STEP, &[]);
                 neuron.membrane_potential()
             })
-            .filter_map(|state| {
-                if let Some(state) = state {
-                    Some(state)
-                } else {
-                    None
-                }
-            })
+            .filter_map(|state| state)
             .collect();
 
         let is_any_update_a_spike = states.iter().any(|&state| {
