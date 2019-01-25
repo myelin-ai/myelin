@@ -68,20 +68,17 @@ impl SimulationImpl {
     /// # Examples
     /// ```
     /// use myelin_environment::simulation_impl::world::{
-    ///     IgnoringCollisionFilterImpl, NphysicsRotationTranslatorImpl, NphysicsWorld,
-    ///     SingleTimeForceApplierImpl,
+    ///     NphysicsRotationTranslatorImpl, NphysicsWorld, SingleTimeForceApplierImpl,
     /// };
     /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
     /// use std::sync::{Arc, RwLock};
     ///
     /// let rotation_translator = NphysicsRotationTranslatorImpl::default();
     /// let force_applier = SingleTimeForceApplierImpl::default();
-    /// let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterImpl::default()));
     /// let world = Box::new(NphysicsWorld::with_timestep(
     ///     1.0,
     ///     Box::new(rotation_translator),
     ///     Box::new(force_applier),
-    ///     collision_filter,
     /// ));
     /// let simulation = SimulationImpl::new(
     ///     world,
