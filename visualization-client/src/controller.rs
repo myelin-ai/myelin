@@ -125,14 +125,14 @@ fn translate_object_description_delta(
                 .expect("Unable to deserialize associated data")
         });
 
-    let (name, kind) = if let Some(associated_object_data) = associated_object_data {
-        (
-            Some(associated_object_data.name),
-            Some(associated_object_data.kind),
-        )
-    } else {
-        (None, None)
-    };
+    let (name, kind) = associated_object_data
+        .map(|associated_object_data| {
+            (
+                Some(associated_object_data.name),
+                Some(associated_object_data.kind),
+            )
+        })
+        .unwrap_or_default();
 
     let ObjectDescriptionDelta {
         shape,
