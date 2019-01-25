@@ -3,6 +3,7 @@ pub(crate) use self::global_polygon_translator::{
     GlobalPolygonTranslator, GlobalPolygonTranslatorImpl,
 };
 use crate::controller::Presenter;
+use crate::view::constant;
 use crate::view_model;
 use myelin_environment::object::Mobility;
 use myelin_environment::Id;
@@ -126,26 +127,55 @@ fn map_objects(
 ) -> Vec<view_model::Object> {
     snapshot
         .values()
-        .map(|business_object| {
-            let shape = global_polygon_translator.to_global_polygon(
-                &business_object.shape,
-                business_object.location,
-                business_object.rotation,
-            );
-
-            let kind = map_kind(business_object.kind);
-
-            view_model::Object { shape, kind }
+        .map(|business_object| view_model::Object {
+            shape: translate_shape_into_view_model(&business_object, global_polygon_translator),
+            kind: translate_kind_into_view_model(business_object.kind),
+            name_label: translate_name_into_view_model(&business_object),
         })
         .collect()
 }
 
-fn map_kind(kind: Kind) -> view_model::Kind {
+fn translate_shape_into_view_model(
+    business_object: &ObjectDescription,
+    global_polygon_translator: &dyn GlobalPolygonTranslator,
+) -> view_model::Polygon {
+    global_polygon_translator.to_global_polygon(
+        &business_object.shape,
+        business_object.location,
+        business_object.rotation,
+    )
+}
+
+fn translate_kind_into_view_model(kind: Kind) -> view_model::Kind {
     match kind {
         Kind::Organism => view_model::Kind::Organism,
         Kind::Plant => view_model::Kind::Plant,
         Kind::Water => view_model::Kind::Water,
         Kind::Terrain => view_model::Kind::Terrain,
+    }
+}
+
+fn translate_name_into_view_model(
+    business_object: &ObjectDescription,
+) -> Option<view_model::Label> {
+    business_object.name.clone().and_then(|name| {
+        Some(view_model::Label {
+            text: name,
+            location: calculate_name_position(&business_object),
+            font_color: String::from(constant::color::LABEL),
+        })
+    })
+}
+
+fn calculate_name_position(business_object: &ObjectDescription) -> view_model::Point {
+    let aabb = business_object.shape.aabb();
+
+    let top = aabb.upper_left.y;
+    let horizontal_center = aabb.upper_left.x + (aabb.lower_right.x - aabb.upper_left.x) / 2.0;
+
+    view_model::Point {
+        x: business_object.location.x + horizontal_center + constant::offset::NAME_OFFSET.x,
+        y: business_object.location.y + top + constant::offset::NAME_OFFSET.y,
     }
 }
 
@@ -304,6 +334,7 @@ mod tests {
         let expected_view_model_1 = vec![view_model::Object {
             shape: view_model_polygon_1.clone(),
             kind: view_model::Kind::Plant,
+            name_label: None,
         }];
         let view_model_delta_1 = hashmap! {
             12 => ObjectDelta::Created(object_description_1.clone())
@@ -317,10 +348,12 @@ mod tests {
             view_model::Object {
                 shape: view_model_polygon_1.clone(),
                 kind: view_model::Kind::Plant,
+                name_label: None,
             },
             view_model::Object {
                 shape: view_model_polygon_2.clone(),
                 kind: view_model::Kind::Plant,
+                name_label: None,
             },
         ];
         let view_model_delta_2 = hashmap! {
@@ -386,5 +419,17 @@ mod tests {
 
         presenter.present_delta(view_model_delta_1).unwrap();
         presenter.present_delta(view_model_delta_2).unwrap();
+    }
+
+    #[test]
+    fn calculate_name_position_works() {
+        let position = calculate_name_position(&object_description());
+        assert_eq!(view_model::Point { x: 30.0, y: 20.0 }, position);
+    }
+
+    #[test]
+    fn calculate_name_position_works2() {
+        let position = calculate_name_position(&object_description2());
+        assert_eq!(view_model::Point { x: 30.0, y: 20.0 }, position);
     }
 }
