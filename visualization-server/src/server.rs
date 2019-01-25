@@ -7,8 +7,7 @@ use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
 use myelin_environment::object::ObjectBehavior;
 use myelin_environment::simulation_impl::world::{
-    IgnoringCollisionFilterImpl, NphysicsRotationTranslatorImpl, NphysicsWorld,
-    SingleTimeForceApplierImpl,
+    NphysicsRotationTranslatorImpl, NphysicsWorld, SingleTimeForceApplierImpl,
 };
 use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
 use myelin_environment::Simulation;
@@ -22,7 +21,7 @@ use myelin_worldgen::{HardcodedGenerator, WorldGenerator};
 use std::fs::read_to_string;
 use std::net::SocketAddr;
 use std::path::Path;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use uuid::Uuid;
@@ -38,12 +37,10 @@ where
     let simulation_factory = box || -> Box<dyn Simulation> {
         let rotation_translator = NphysicsRotationTranslatorImpl::default();
         let force_applier = SingleTimeForceApplierImpl::default();
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterImpl::default()));
         let world = NphysicsWorld::with_timestep(
             SIMULATED_TIMESTEP_IN_SI_UNITS,
             box rotation_translator,
             box force_applier,
-            collision_filter,
         );
         box SimulationImpl::new(box world, box |simulation| {
             box ObjectEnvironmentImpl::new(simulation)
