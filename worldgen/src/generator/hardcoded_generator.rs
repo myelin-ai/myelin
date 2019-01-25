@@ -41,8 +41,7 @@ impl HardcodedGenerator {
     /// ```
     /// use myelin_environment::object::ObjectBehavior;
     /// use myelin_environment::simulation_impl::world::{
-    ///     IgnoringCollisionFilterImpl, NphysicsRotationTranslatorImpl, NphysicsWorld,
-    ///     SingleTimeForceApplierImpl,
+    ///     NphysicsRotationTranslatorImpl, NphysicsWorld, SingleTimeForceApplierImpl,
     /// };
     /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
     /// use myelin_environment::Simulation;
@@ -56,12 +55,10 @@ impl HardcodedGenerator {
     /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
     ///     let rotation_translator = NphysicsRotationTranslatorImpl::default();
     ///     let force_applier = SingleTimeForceApplierImpl::default();
-    ///     let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterImpl::default()));
     ///     let world = Box::new(NphysicsWorld::with_timestep(
     ///         1.0,
     ///         Box::new(rotation_translator),
     ///         Box::new(force_applier),
-    ///         collision_filter,
     ///     ));
     ///     Box::new(SimulationImpl::new(
     ///         world,

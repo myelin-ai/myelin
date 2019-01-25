@@ -5,7 +5,6 @@ pub use self::object_environment::ObjectEnvironmentImpl;
 use crate::object::*;
 use crate::{Id, Simulation, Snapshot};
 use myelin_geometry::*;
-use ncollide2d::world::CollisionObjectHandle;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::error::Error;
@@ -69,20 +68,17 @@ impl SimulationImpl {
     /// # Examples
     /// ```
     /// use myelin_environment::simulation_impl::world::{
-    ///     IgnoringCollisionFilterImpl, NphysicsRotationTranslatorImpl, NphysicsWorld,
-    ///     SingleTimeForceApplierImpl,
+    ///     NphysicsRotationTranslatorImpl, NphysicsWorld, SingleTimeForceApplierImpl,
     /// };
     /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
     /// use std::sync::{Arc, RwLock};
     ///
     /// let rotation_translator = NphysicsRotationTranslatorImpl::default();
     /// let force_applier = SingleTimeForceApplierImpl::default();
-    /// let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterImpl::default()));
     /// let world = Box::new(NphysicsWorld::with_timestep(
     ///     1.0,
     ///     Box::new(rotation_translator),
     ///     Box::new(force_applier),
-    ///     collision_filter,
     /// ));
     /// let simulation = SimulationImpl::new(
     ///     world,
@@ -351,27 +347,6 @@ pub struct PhysicalBody {
 /// instances that [`World`] provides you
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct BodyHandle(pub usize);
-
-/// Deprecated: Tracking issue: #295
-///
-/// A unique identifier that represents either a [`BodyHandle`]
-/// or a SensorHandle
-///
-/// You are allowed to construct this handle from either subhandles.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct AnyHandle(pub usize);
-
-impl From<BodyHandle> for AnyHandle {
-    fn from(body_handle: BodyHandle) -> Self {
-        AnyHandle(body_handle.0)
-    }
-}
-
-impl From<CollisionObjectHandle> for AnyHandle {
-    fn from(collision_object_handle: CollisionObjectHandle) -> Self {
-        AnyHandle(collision_object_handle.0)
-    }
-}
 
 #[cfg(test)]
 mod tests {
