@@ -41,8 +41,7 @@ impl HardcodedGenerator {
     /// ```
     /// use myelin_environment::object::ObjectBehavior;
     /// use myelin_environment::simulation_impl::world::{
-    ///     NphysicsRotationTranslatorImpl, NphysicsWorld,
-    ///     SingleTimeForceApplierImpl,
+    ///     NphysicsRotationTranslatorImpl, NphysicsWorld, SingleTimeForceApplierImpl,
     /// };
     /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
     /// use myelin_environment::Simulation;
