@@ -6,7 +6,7 @@
     missing_docs,
     intra_doc_link_resolution_failure,
     clippy::doc_markdown,
-    clippy::unimplemented,
+    clippy::unimplemented
 )]
 
 use serde_derive::{Deserialize, Serialize};
