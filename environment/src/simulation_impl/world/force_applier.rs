@@ -71,12 +71,9 @@ impl ForceGenerator<f64> for GenericSingleTimeForceApplierWrapper {
 mod tests {
     use super::*;
     use crate::object::*;
-    use crate::simulation_impl::world::collision_filter::IgnoringCollisionFilterMock;
     use crate::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
     use crate::simulation_impl::world::{NphysicsWorld, PhysicalBody, World};
     use myelin_geometry::*;
-    use std::collections::VecDeque;
-    use std::sync::{Arc, RwLock};
 
     const DEFAULT_TIMESTEP: f64 = 1.0;
 
@@ -84,12 +81,10 @@ mod tests {
     fn can_be_injected() {
         let rotation_translator = NphysicsRotationTranslatorImpl::default();
         let force_applier = SingleTimeForceApplierImpl::default();
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let _world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter,
         );
     }
 
@@ -97,21 +92,14 @@ mod tests {
     fn force_does_nothing_before_step() {
         let rotation_translator = NphysicsRotationTranslatorImpl::default();
         let force_applier = SingleTimeForceApplierImpl::default();
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter.clone(),
         );
 
         let expected_object = physical_body();
         let handle = world.add_body(expected_object.clone());
-
-        collision_filter
-            .write()
-            .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         let force = Force {
             linear: Vector {
@@ -260,20 +248,13 @@ mod tests {
     fn test_force(body: &PhysicalBody, expected_body: &PhysicalBody, force: Force) {
         let rotation_translator = NphysicsRotationTranslatorImpl::default();
         let force_applier = SingleTimeForceApplierImpl::default();
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter.clone(),
         );
 
         let handle = world.add_body(body.clone());
-
-        collision_filter
-            .write()
-            .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         const BODY_HANDLE_ERROR: &str = "Invalid object handle";
         world.apply_force(handle, force).expect(BODY_HANDLE_ERROR);

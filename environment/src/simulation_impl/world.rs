@@ -4,16 +4,12 @@
 //!
 //! [`World`]: ./trait.World.html
 //! [`Objects`]: ../object/struct.Body.html
-pub use self::collision_filter::*;
 use self::force_applier::GenericSingleTimeForceApplierWrapper;
 pub use self::force_applier::*;
 use self::physics_world_wrapper::PhysicsWorldWrapper;
 pub use self::rotation_translator::*;
 use super::{BodyHandle, PhysicalBody, World};
 use crate::object::*;
-use crate::simulation_impl::world::collision_filter::{
-    IgnoringCollisionFilter, IgnoringCollisionFilterWrapper,
-};
 
 use myelin_geometry::*;
 use nalgebra::base::{Scalar, Vector2};
@@ -30,15 +26,15 @@ use nphysics2d::volumetric::Volumetric;
 use nphysics2d::world::World as PhysicsWorld;
 use std::error::Error;
 use std::fmt;
-use std::sync::{Arc, RwLock};
 
 #[cfg(test)]
 use mockiato::mockable;
 
-mod collision_filter;
 mod force_applier;
 mod physics_world_wrapper;
 mod rotation_translator;
+
+use std::collections::HashSet;
 
 /// An implementation of [`World`] that uses nphysics
 /// in the background.
@@ -49,7 +45,7 @@ pub struct NphysicsWorld {
     physics_world: PhysicsWorldWrapper,
     rotation_translator: Box<dyn NphysicsRotationTranslator>,
     force_generator_handle: ForceGeneratorHandle,
-    collision_filter: Arc<RwLock<dyn IgnoringCollisionFilter>>,
+    passable_bodies: HashSet<BodyHandle>,
 }
 
 impl NphysicsWorld {
@@ -76,7 +72,6 @@ impl NphysicsWorld {
         timestep: f64,
         rotation_translator: Box<dyn NphysicsRotationTranslator>,
         force_applier: Box<dyn SingleTimeForceApplier>,
-        collision_filter: Arc<RwLock<dyn IgnoringCollisionFilter>>,
     ) -> Self {
         let mut physics_world = PhysicsWorldWrapper(PhysicsWorld::new());
 
@@ -84,22 +79,13 @@ impl NphysicsWorld {
         let generic_wrapper = GenericSingleTimeForceApplierWrapper::new(force_applier);
         let force_generator_handle = physics_world.add_force_generator(generic_wrapper);
 
-        const IGNORING_COLLISION_FILTER_NAME: &str = "Collision Filter";
-
-        physics_world
-            .collision_world_mut()
-            .register_broad_phase_pair_filter(
-                IGNORING_COLLISION_FILTER_NAME,
-                IgnoringCollisionFilterWrapper {
-                    collision_filter: collision_filter.clone(),
-                },
-            );
+        let passable_bodies = HashSet::new();
 
         Self {
             physics_world,
             rotation_translator,
             force_generator_handle,
-            collision_filter,
+            passable_bodies,
         }
     }
 
@@ -170,10 +156,7 @@ impl NphysicsWorld {
 
     fn passable(&self, collider: &Collider<f64>) -> bool {
         let body_handle = to_body_handle(collider.handle());
-        self.collision_filter
-            .read()
-            .expect("RwLock was poisoned")
-            .is_handle_ignored(body_handle.into())
+        self.passable_bodies.contains(&body_handle)
     }
 }
 
@@ -297,10 +280,7 @@ impl World for NphysicsWorld {
         let body_handle = to_body_handle(handle);
 
         if body.passable {
-            self.collision_filter
-                .write()
-                .expect("Lock was poisoned")
-                .add_ignored_handle(body_handle.into());
+            self.passable_bodies.insert(body_handle);
         }
 
         body_handle
@@ -312,10 +292,7 @@ impl World for NphysicsWorld {
         let collider_handle = to_collider_handle(body_handle);
         let nphysics_body_handle = self.physics_world.collider_body_handle(collider_handle)?;
         if physical_body.passable {
-            self.collision_filter
-                .write()
-                .expect("RwLock was poisoned")
-                .remove_ignored_handle(body_handle.into());
+            self.passable_bodies.remove(&body_handle);
         }
         self.physics_world.remove_bodies(&[nphysics_body_handle]);
         Some(physical_body)
@@ -345,10 +322,7 @@ impl World for NphysicsWorld {
     }
 
     fn is_body_passable(&self, body_handle: BodyHandle) -> bool {
-        self.collision_filter
-            .read()
-            .expect("RwLock was poisoned")
-            .is_handle_ignored(body_handle.into())
+        self.passable_bodies.contains(&body_handle)
     }
 
     fn bodies_in_area(&self, area: Aabb) -> Vec<BodyHandle> {
@@ -386,11 +360,9 @@ fn to_ncollide_point(point: Point) -> NcollidePoint<f64> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::simulation_impl::world::collision_filter::IgnoringCollisionFilterMock;
     use mockiato::partial_eq;
     use nphysics2d::object::BodySet;
     use nphysics2d::solver::IntegrationParameters;
-    use std::collections::VecDeque;
     use std::f64::consts::FRAC_PI_2;
     use std::sync::RwLock;
     use std::thread::panicking;
@@ -401,12 +373,10 @@ mod tests {
     fn returns_none_when_calling_body_with_invalid_handle() {
         let rotation_translator = NphysicsRotationTranslatorMock::new();
         let force_applier = SingleTimeForceApplierMock::default();
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter,
         );
         let invalid_handle = BodyHandle(1337);
         let body = world.body(invalid_handle);
@@ -417,12 +387,10 @@ mod tests {
     fn returns_none_when_removing_invalid_object() {
         let rotation_translator = NphysicsRotationTranslatorMock::new();
         let force_applier = SingleTimeForceApplierMock::default();
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter,
         );
         let invalid_handle = BodyHandle(123);
         let physical_body = world.remove_body(invalid_handle);
@@ -433,21 +401,14 @@ mod tests {
     fn can_return_rigid_object_with_valid_handle() {
         let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let force_applier = SingleTimeForceApplierMock::default();
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter.clone(),
         );
         let movable_body = movable_body();
 
         let handle = world.add_body(movable_body);
-
-        collision_filter
-            .write()
-            .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         world.body(handle);
     }
@@ -456,21 +417,14 @@ mod tests {
     fn can_return_grounded_object_with_valid_handle() {
         let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let force_applier = SingleTimeForceApplierMock::default();
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter.clone(),
         );
         let body = immovable_body();
 
         let handle = world.add_body(body);
-
-        collision_filter
-            .write()
-            .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         world.body(handle);
     }
@@ -479,21 +433,14 @@ mod tests {
     fn removing_object_returns_physical_body() {
         let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let force_applier = SingleTimeForceApplierMock::default();
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter.clone(),
         );
         let expected_body = movable_body();
 
         let handle = world.add_body(expected_body.clone());
-
-        collision_filter
-            .write()
-            .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         let physical_body = world.remove_body(handle).expect("Invalid handle");
         assert_eq!(expected_body, physical_body);
@@ -503,21 +450,14 @@ mod tests {
     fn removed_object_cannot_be_accessed() {
         let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let force_applier = SingleTimeForceApplierMock::default();
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter.clone(),
         );
         let expected_body = movable_body();
 
         let handle = world.add_body(expected_body.clone());
-
-        collision_filter
-            .write()
-            .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         let _physical_body = world.remove_body(handle).expect("Invalid handle");
         let removed_body = world.body(handle);
@@ -537,26 +477,16 @@ mod tests {
             .times(2);
 
         let force_applier = SingleTimeForceApplierMock::default();
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter.clone(),
         );
         let rigid_object = movable_body();
         let grounded_object = immovable_body();
 
         let rigid_handle = world.add_body(rigid_object);
         let grounded_handle = world.add_body(grounded_object);
-
-        collision_filter
-            .write()
-            .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![
-                (rigid_handle.into(), false),
-                (grounded_handle.into(), false),
-            ]));
 
         let _rigid_body = world.body(rigid_handle);
         let _grounded_body = world.body(grounded_handle);
@@ -566,20 +496,13 @@ mod tests {
     fn returns_correct_rigid_body() {
         let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let force_applier = SingleTimeForceApplierMock::default();
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter.clone(),
         );
         let expected_body = movable_body();
         let handle = world.add_body(expected_body.clone());
-
-        collision_filter
-            .write()
-            .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         let actual_body = world.body(handle);
 
@@ -590,20 +513,13 @@ mod tests {
     fn returns_correct_grounded_body() {
         let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let force_applier = SingleTimeForceApplierMock::default();
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter.clone(),
         );
         let expected_body = immovable_body();
         let handle = world.add_body(expected_body.clone());
-
-        collision_filter
-            .write()
-            .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         let actual_body = world.body(handle);
 
@@ -615,21 +531,14 @@ mod tests {
         let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let mut force_applier = SingleTimeForceApplierMock::default();
         force_applier.expect_apply_and_return(true);
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter.clone(),
         );
 
         let local_object = movable_body();
         let handle = world.add_body(local_object.clone());
-
-        collision_filter
-            .write()
-            .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         world.step();
         world.step();
@@ -648,22 +557,15 @@ mod tests {
         let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let mut force_applier = SingleTimeForceApplierMock::default();
         force_applier.expect_apply_and_return(true);
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter.clone(),
         );
         world.set_simulated_timestep(2.0);
 
         let local_object = movable_body();
         let handle = world.add_body(local_object.clone());
-
-        collision_filter
-            .write()
-            .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         world.step();
         world.step();
@@ -682,20 +584,13 @@ mod tests {
         let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let mut force_applier = SingleTimeForceApplierMock::default();
         force_applier.expect_apply_and_return(true);
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter.clone(),
         );
         let expected_body = immovable_body();
         let handle = world.add_body(expected_body.clone());
-
-        collision_filter
-            .write()
-            .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         world.step();
         world.step();
@@ -709,12 +604,10 @@ mod tests {
         let rotation_translator = rotation_translator_for_adding_and_reading_body();
         let mut force_applier = SingleTimeForceApplierMock::default();
         force_applier.expect_apply_and_return(true);
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter.clone(),
         );
         let body = immovable_body();
         let still_body = PhysicalBody {
@@ -722,11 +615,6 @@ mod tests {
             ..body
         };
         let handle = world.add_body(still_body.clone());
-
-        collision_filter
-            .write()
-            .expect("RwLock was poisoned")
-            .expect_is_handle_ignored_and_return(VecDeque::from(vec![(handle.into(), false)]));
 
         world.step();
         world.step();
@@ -745,12 +633,10 @@ mod tests {
         };
         force_applier.expect_register_force(expected_force.clone());
 
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter,
         );
         let expected_body = movable_body();
         let handle = world.add_body(expected_body.clone());
@@ -763,12 +649,10 @@ mod tests {
         let rotation_translator = rotation_translator_for_adding_body();
         let mut force_applier = SingleTimeForceApplierMock::default();
         force_applier.expect_apply_and_return(true);
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter,
         );
         let expected_body = movable_body();
         let handle = world.add_body(expected_body);
@@ -787,12 +671,10 @@ mod tests {
         let mut force_applier = SingleTimeForceApplierMock::default();
         force_applier.expect_apply_and_return(true);
 
-        let collision_filter = Arc::new(RwLock::new(IgnoringCollisionFilterMock::default()));
         let mut world = NphysicsWorld::with_timestep(
             DEFAULT_TIMESTEP,
             box rotation_translator,
             box force_applier,
-            collision_filter,
         );
         let expected_body = movable_body();
         let _handle = world.add_body(expected_body.clone());
