@@ -140,11 +140,11 @@ mod tests {
 
     fn mock_client_factory_fn(expected_call: Option<ClientMock>) -> Arc<ClientFactoryFn> {
         Arc::new(move |_client_stream, _current_snapshot_fn| {
-            if let Some(ref return_value) = expected_call {
-                box return_value.clone()
-            } else {
-                panic!("No call to client_factory_fn was expected")
-            }
+            let return_value = &expected_call
+                .clone()
+                .expect("No call to client_factory_fn was expected");
+
+            box return_value.clone()
         })
     }
 

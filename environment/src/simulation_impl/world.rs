@@ -762,17 +762,17 @@ mod tests {
                 .write()
                 .expect("RwLock was poisoned") = true;
 
-            if let Some((ref expected_force,)) = self.expect_register_force {
-                // handles cannot be compared
-                if force != *expected_force {
-                    panic!(
-                        "register_force() was called with {:?}, expected {:?}",
-                        force, expected_force
-                    )
-                }
-            } else {
-                panic!("register_force() was called unexpectedly")
-            }
+            let expected_force = self
+                .expect_register_force
+                .clone()
+                .expect("register_force() was called unexpectedly")
+                .0;
+
+            assert_eq!(
+                expected_force, force,
+                "register_force() was called with {:?}, expected {:?}",
+                force, expected_force
+            );
         }
     }
 
