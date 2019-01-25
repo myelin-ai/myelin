@@ -21,7 +21,7 @@ use mockiato::mockable;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-/// A handle to a [`Neuron`]
+/// A handle to a neuron
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct Handle(pub usize);
 

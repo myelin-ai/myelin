@@ -352,8 +352,10 @@ pub struct PhysicalBody {
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct BodyHandle(pub usize);
 
+/// Deprecated: Tracking issue: #295
+///
 /// A unique identifier that represents either a [`BodyHandle`]
-/// or a [`SensorHandle`]
+/// or a SensorHandle
 ///
 /// You are allowed to construct this handle from either subhandles.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
