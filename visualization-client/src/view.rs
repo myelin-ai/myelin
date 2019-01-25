@@ -54,6 +54,24 @@ impl CanvasView {
         let color = map_kind_to_color(&object.kind);
         self.context.set_fill_style(&JsValue::from_str(color));
         self.context.fill();
+
+        if let Some(ref name_label) = object.name_label {
+            self.context
+                .set_fill_style(&JsValue::from_str(&name_label.font_color));
+            self.context.set_text_align(constant::alignment::CENTER);
+            self.context
+                .fill_text(
+                    &name_label.text,
+                    name_label.location.x,
+                    name_label.location.y,
+                )
+                .unwrap_or_else(|error| {
+                    panic!(
+                        "Unable to display name {:?}. Error: {:?}",
+                        name_label.text, error
+                    )
+                });
+        }
     }
 }
 
@@ -111,9 +129,9 @@ impl fmt::Display for Pixels {
 
 fn map_kind_to_color(kind: &Kind) -> &'static str {
     match kind {
-        Kind::Organism => constant::color::ORANGE,
-        Kind::Plant => constant::color::GREEN,
-        Kind::Water => constant::color::BLUE,
-        Kind::Terrain => constant::color::BROWN,
+        Kind::Organism => constant::color::ORGANISM,
+        Kind::Plant => constant::color::PLANT,
+        Kind::Water => constant::color::WATER,
+        Kind::Terrain => constant::color::TERRAIN,
     }
 }
