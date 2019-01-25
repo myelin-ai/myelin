@@ -7,8 +7,7 @@ use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
 use myelin_environment::object::ObjectBehavior;
 use myelin_environment::simulation_impl::world::{
-    NphysicsRotationTranslatorImpl, NphysicsWorld,
-    SingleTimeForceApplierImpl,
+    NphysicsRotationTranslatorImpl, NphysicsWorld, SingleTimeForceApplierImpl,
 };
 use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
 use myelin_environment::Simulation;
@@ -22,7 +21,7 @@ use myelin_worldgen::{HardcodedGenerator, WorldGenerator};
 use std::fs::read_to_string;
 use std::net::SocketAddr;
 use std::path::Path;
-use std::sync::{Arc};
+use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use uuid::Uuid;
