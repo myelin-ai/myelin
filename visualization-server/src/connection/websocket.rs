@@ -56,7 +56,7 @@ impl SocketError for WebsocketClientError {
             WebSocketError::IoError(err) => match err.kind() {
                 IoErrorKind::BrokenPipe => true,
                 _ => false,
-            }
+            },
             _ => false,
         }
     }
