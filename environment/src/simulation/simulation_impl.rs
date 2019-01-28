@@ -5,6 +5,7 @@ pub mod world;
 
 use self::world::{BodyHandle, PhysicalBody, World};
 use crate::prelude::*;
+use crate::world_interactor::Interactable;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::error::Error;
@@ -15,7 +16,7 @@ use std::fmt::{self, Debug};
 /// [`SimulationImpl`]: ./struct.SimulationImpl.html
 /// [`WorldInteractor`]: ./../object/trait.WorldInteractor.html
 pub type WorldInteractorFactoryFn =
-    dyn for<'a> Fn(&'a dyn Simulation) -> Box<dyn WorldInteractor + 'a>;
+    dyn for<'a> Fn(&'a dyn Interactable) -> Box<dyn WorldInteractor + 'a>;
 
 /// Implementation of [`Simulation`] that uses a physical
 /// [`World`] in order to apply physics to objects.
@@ -235,6 +236,13 @@ impl Simulation for SimulationImpl {
             .collect()
     }
 
+    fn set_simulated_timestep(&mut self, timestep: f64) {
+        assert!(timestep >= 0.0, "Cannot set timestep to a negative value");
+        self.world.set_simulated_timestep(timestep)
+    }
+}
+
+impl Interactable for SimulationImpl {
     fn objects_in_area(&self, area: Aabb) -> Snapshot {
         self.world
             .bodies_in_area(area)
@@ -248,11 +256,6 @@ impl Simulation for SimulationImpl {
             })
             .collect()
     }
-
-    fn set_simulated_timestep(&mut self, timestep: f64) {
-        assert!(timestep >= 0.0, "Cannot set timestep to a negative value");
-        self.world.set_simulated_timestep(timestep)
-    }
 }
 
 #[cfg(test)]
@@ -261,12 +264,12 @@ mod tests {
     use crate::object::ObjectBehaviorMock;
     use crate::object_builder::ObjectBuilder;
     use crate::simulation::simulation_impl::world::WorldMock;
-    use crate::world_interactor::{WorldInteractor, WorldInteractorMock};
+    use crate::world_interactor::{WorldInteractor, Interactable, WorldInteractorMock};
     use mockiato::{any, partial_eq, partial_eq_owned};
     use myelin_geometry::PolygonBuilder;
 
     fn object_environment_factory_fn<'a>(
-        _simulation: &'a dyn Simulation,
+        _interactable: &'a dyn Interactable,
     ) -> Box<dyn WorldInteractor + 'a> {
         box WorldInteractorMock::new()
     }

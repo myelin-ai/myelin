@@ -9,6 +9,12 @@ use mockiato::mockable;
 mod world_interactor_impl;
 pub use self::world_interactor_impl::*;
 
+mod interactable;
+pub use self::interactable::*;
+
+/// Time in milliseconds.
+pub type Milliseconds = f64;
+
 /// Provides information to an [`ObjectBehavior`] about
 /// the world it is placed in.
 ///

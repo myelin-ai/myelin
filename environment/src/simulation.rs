@@ -27,9 +27,7 @@ pub trait Simulation: Debug {
     );
     /// Returns a read-only description of all objects currently inhabiting the simulation.
     fn objects(&self) -> Snapshot;
-    /// Returns read-only descriptions for all objects either completely
-    /// contained or intersecting with the given area.
-    fn objects_in_area(&self, area: Aabb) -> Snapshot;
+
     /// Sets how much time in seconds is simulated for each step.
     /// # Examples
     /// If you want to run a simulation with 60 steps per second, you
