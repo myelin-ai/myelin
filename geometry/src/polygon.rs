@@ -1,12 +1,11 @@
 //! Types relating to 2D convex polygons and their construction
 
 pub use self::builder::*;
-use self::convex_hull::ConvexHull;
+use crate::ConvexHull;
 use super::*;
 use itertools::Itertools;
 
 mod builder;
-mod convex_hull;
 
 /// A convex polygon.
 ///

@@ -30,3 +30,6 @@ pub use self::vector::*;
 
 mod point;
 pub use self::point::*;
+
+mod convex_hull;
+pub use self::convex_hull::*;
