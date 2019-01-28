@@ -23,7 +23,7 @@ mockiato = { git = "https://github.com/myelin-ai/mockiato", optional = true }
 [dependencies.nphysics2d]
 # version = "0.9.1"
 git = "https://github.com/myelin-ai/nphysics"
-rev = "interferences"
+rev = "master"
 default-features = false
 features = ["use-wasm-bindgen"]
 
