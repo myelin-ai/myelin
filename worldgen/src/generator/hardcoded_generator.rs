@@ -278,7 +278,7 @@ impl HardcodedGenerator {
                 PolygonBuilder::default()
                     .vertex(25.0, 0.0)
                     .vertex(-25.0, 20.0)
-                    .vertex(-5.0, 0.0)
+                    .vertex(-30.0, 0.0)
                     .vertex(-25.0, -20.0)
                     .build()
                     .expect("Generated an invalid polygon"),
