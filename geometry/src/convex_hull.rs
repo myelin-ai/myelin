@@ -86,19 +86,23 @@ impl<'a> ConvexHull<'a> {
     ///
     /// [Jarvis March]: https://www.algorithm-archive.org/contents/jarvis_march/jarvis_march.html
     fn find_next_point(&mut self) -> Option<Point> {
-        let mut endpoint = *self.points.first().unwrap();
+        let first_point = *self.points.first().unwrap();
 
-        for &point in self.points.iter().skip(1) {
-            if endpoint == self.current_point
-                || !is_counter_clockwise_turn(point, self.current_point, endpoint)
-            {
-                endpoint = point;
-            }
-        }
+        self.current_point = self
+            .points
+            .iter()
+            .skip(1)
+            .fold(first_point, |endpoint, &point| {
+                if endpoint == self.current_point
+                    || !is_counter_clockwise_turn(point, self.current_point, endpoint)
+                {
+                    point
+                } else {
+                    endpoint
+                }
+            });
 
-        self.current_point = endpoint;
-
-        if self.leftmost_point == endpoint {
+        if self.leftmost_point == self.current_point {
             None
         } else {
             Some(self.current_point)
