@@ -1,7 +1,8 @@
 //! Entrypoint for the Simulaton API handling the world itself
 
-pub mod simulation_impl;
+mod simulation_impl;
 
+pub use self::simulation_impl::*;
 use crate::prelude::*;
 use std::collections::HashMap;
 use std::fmt::Debug;

@@ -1,9 +1,11 @@
 //! Definitions for the underlying [`World`] used internally by [`Simulation`]
 
+mod nphysics_world;
+
+pub use self::nphysics_world::*;
 use crate::object::*;
 use myelin_geometry::*;
 use std::fmt::Debug;
-pub mod nphysics_world;
 
 /// A container for [`PhysicalBodies`] that will apply
 /// physical laws to them on [`step`]

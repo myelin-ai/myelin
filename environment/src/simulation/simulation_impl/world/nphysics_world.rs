@@ -48,7 +48,7 @@ impl NphysicsWorld {
     /// # Examples
     /// ```
     /// use myelin_environment::prelude::*;
-    /// use myelin_environment::simulation::simulation_impl::world::nphysics_world::{
+    /// use myelin_environment::simulation::world::{
     ///     rotation_translator::NphysicsRotationTranslatorImpl, NphysicsWorld,
     ///     SingleTimeForceApplierImpl,
     /// };
