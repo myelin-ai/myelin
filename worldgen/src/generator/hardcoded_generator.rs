@@ -21,7 +21,7 @@ pub struct HardcodedGenerator {
     terrain_factory: TerrainFactory,
     water_factory: WaterFactory,
     name_provider: Box<dyn NameProvider>,
-    associated_object_data_serializer: Box<dyn AdditionalObjectDescriptionSerializer>,
+    additional_object_description_serializer: Box<dyn AdditionalObjectDescriptionSerializer>,
 }
 
 pub type SimulationFactory = Box<dyn Fn() -> Box<dyn Simulation>>;
@@ -82,7 +82,7 @@ impl HardcodedGenerator {
     ///
     /// let name_provider = name_provider_builder.build_randomized();
     ///
-    /// let associated_object_data_serializer =
+    /// let additional_object_description_serializer =
     ///     Box::new(AdditionalObjectDescriptionBincodeSerializer::default());
     ///
     /// let mut worldgen = HardcodedGenerator::new(
@@ -92,7 +92,7 @@ impl HardcodedGenerator {
     ///     terrain_factory,
     ///     water_factory,
     ///     name_provider,
-    ///     associated_object_data_serializer,
+    ///     additional_object_description_serializer,
     /// );
     /// let generated_simulation = worldgen.generate();
     /// ```
@@ -103,7 +103,7 @@ impl HardcodedGenerator {
         terrain_factory: TerrainFactory,
         water_factory: WaterFactory,
         name_provider: Box<dyn NameProvider>,
-        associated_object_data_serializer: Box<dyn AdditionalObjectDescriptionSerializer>,
+        additional_object_description_serializer: Box<dyn AdditionalObjectDescriptionSerializer>,
     ) -> Self {
         Self {
             simulation_factory,
@@ -112,7 +112,7 @@ impl HardcodedGenerator {
             terrain_factory,
             water_factory,
             name_provider,
-            associated_object_data_serializer,
+            additional_object_description_serializer,
         }
     }
 
@@ -155,7 +155,7 @@ impl HardcodedGenerator {
             .location(500.0, 500.0)
             .mobility(Mobility::Immovable)
             .associated_data(
-                self.associated_object_data_serializer
+                self.additional_object_description_serializer
                     .serialize(&object_data),
             )
             .build()
@@ -233,7 +233,7 @@ impl HardcodedGenerator {
             .location(location.0, location.1)
             .mobility(Mobility::Immovable)
             .associated_data(
-                self.associated_object_data_serializer
+                self.additional_object_description_serializer
                     .serialize(&object_data),
             )
             .build()
@@ -260,7 +260,7 @@ impl HardcodedGenerator {
             .mobility(Mobility::Immovable)
             .passable(true)
             .associated_data(
-                self.associated_object_data_serializer
+                self.additional_object_description_serializer
                     .serialize(&object_data),
             )
             .build()
@@ -287,7 +287,7 @@ impl HardcodedGenerator {
             .rotation(Radians::try_new(FRAC_PI_2).unwrap())
             .mobility(Mobility::Movable(Vector::default()))
             .associated_data(
-                self.associated_object_data_serializer
+                self.additional_object_description_serializer
                     .serialize(&object_data),
             )
             .build()
@@ -344,10 +344,10 @@ mod tests {
             .returns(None)
             .times(5);
 
-        let mut associated_object_data_serializer =
+        let mut additional_object_description_serializer =
             box AdditionalObjectDescriptionSerializerMock::new();
 
-        associated_object_data_serializer
+        additional_object_description_serializer
             .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
                 name: None,
                 kind: Kind::Terrain,
@@ -355,7 +355,7 @@ mod tests {
             .returns(Vec::new())
             .times(4);
 
-        associated_object_data_serializer
+        additional_object_description_serializer
             .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
                 name: None,
                 kind: Kind::Water,
@@ -363,7 +363,7 @@ mod tests {
             .returns(Vec::new())
             .times(1);
 
-        associated_object_data_serializer
+        additional_object_description_serializer
             .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
                 name: None,
                 kind: Kind::Plant,
@@ -371,7 +371,7 @@ mod tests {
             .returns(Vec::new())
             .times(176);
 
-        associated_object_data_serializer
+        additional_object_description_serializer
             .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
                 name: None,
                 kind: Kind::Organism,
@@ -386,7 +386,7 @@ mod tests {
             terrain_factory,
             water_factory,
             name_provider,
-            associated_object_data_serializer,
+            additional_object_description_serializer,
         );
 
         let _simulation = generator.generate();

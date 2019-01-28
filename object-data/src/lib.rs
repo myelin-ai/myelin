@@ -46,7 +46,7 @@ pub enum Kind {
 #[cfg_attr(feature = "use-mocks", mockable)]
 pub trait AdditionalObjectDescriptionSerializer: Debug {
     /// Serialize associated object data
-    fn serialize(&self, associated_object_data: &AdditionalObjectDescription) -> Vec<u8>;
+    fn serialize(&self, additional_object_description: &AdditionalObjectDescription) -> Vec<u8>;
 }
 
 /// Handles deserialization for `AdditionalObjectDescription`
@@ -65,8 +65,8 @@ pub trait AdditionalObjectDescriptionDeserializer: Debug {
 pub struct AdditionalObjectDescriptionBincodeSerializer {}
 
 impl AdditionalObjectDescriptionSerializer for AdditionalObjectDescriptionBincodeSerializer {
-    fn serialize(&self, associated_object_data: &AdditionalObjectDescription) -> Vec<u8> {
-        bincode::serialize(associated_object_data)
+    fn serialize(&self, additional_object_description: &AdditionalObjectDescription) -> Vec<u8> {
+        bincode::serialize(additional_object_description)
             .expect("Unable to serialize associated object data")
     }
 }
@@ -92,17 +92,20 @@ mod tests {
         let serializer = AdditionalObjectDescriptionBincodeSerializer::default();
         let deserializer = AdditionalObjectDescriptionBincodeDeserializer::default();
 
-        let associated_object_data = AdditionalObjectDescription {
+        let additional_object_description = AdditionalObjectDescription {
             name: Some(String::from("Foo")),
             kind: Kind::Plant,
         };
 
-        let serialized_data = serializer.serialize(&associated_object_data);
-        let deserialized_associated_object_data = deserializer
+        let serialized_data = serializer.serialize(&additional_object_description);
+        let deserialized_additional_object_description = deserializer
             .deserialize(&serialized_data)
             .expect("Unable to deserialize data");
 
-        assert_eq!(associated_object_data, deserialized_associated_object_data);
+        assert_eq!(
+            additional_object_description,
+            deserialized_additional_object_description
+        );
     }
 
     #[test]
