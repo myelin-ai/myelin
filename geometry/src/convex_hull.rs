@@ -1,6 +1,6 @@
 use crate::Point;
 
-/// Finds the [Convex Hull] for a given set of [`Point`]s.
+/// Finds the [Convex Hull] for a given set of [`Point`]s in counter clockwise order.
 ///
 /// ## Examples
 ///
