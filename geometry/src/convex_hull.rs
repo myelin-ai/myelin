@@ -7,20 +7,21 @@ use crate::Point;
 /// ```
 /// use myelin_geometry::{ConvexHull, Point};
 ///
-/// let convex_hull = ConvexHull::new(&[
+/// let convex_hull = ConvexHull::try_new(&[
 ///     Point { x: 0.0, y: 0.0 },
 ///     Point { x: 20.0, y: 0.0 },
 ///     Point { x: 10.0, y: 5.0 },
 ///     Point { x: 10.0, y: 10.0 },
-/// ]);
+/// ])
+/// .unwrap();
 ///
 /// let expected_convex_hull_points = &[
 ///     Point { x: 0.0, y: 0.0 },
 ///     Point { x: 20.0, y: 0.0 },
 ///     Point { x: 10.0, y: 10.0 },
 /// ];
-/// let convex_hull_points: Vec<_> = convex_hull.unwrap().collect();
 ///
+/// let convex_hull_points: Vec<_> = convex_hull.collect();
 /// assert_eq!(expected_convex_hull_points, convex_hull_points.as_slice());
 /// ```
 ///
@@ -149,6 +150,26 @@ mod tests {
             Point { x: 10.0, y: 0.0 },
             Point { x: 15.0, y: 0.0 },
             Point { x: 20.0, y: 5.0 },
+            Point { x: 10.0, y: 10.0 },
+        ];
+
+        let hull: Vec<_> = ConvexHull::try_new(&points).unwrap().collect();
+
+        assert_eq!(expected_hull, hull);
+    }
+
+    #[test]
+    fn convex_hull_iterator_works_with_concave_points() {
+        let points = vec![
+            Point { x: 0.0, y: 0.0 },
+            Point { x: 20.0, y: 0.0 },
+            Point { x: 10.0, y: 5.0 },
+            Point { x: 10.0, y: 10.0 },
+        ];
+
+        let expected_hull = vec![
+            Point { x: 0.0, y: 0.0 },
+            Point { x: 20.0, y: 0.0 },
             Point { x: 10.0, y: 10.0 },
         ];
 
