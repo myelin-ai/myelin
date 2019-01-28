@@ -68,6 +68,7 @@ impl<'a> ConvexHull<'a> {
     }
 }
 
+/// Source: <http://jeffe.cs.illinois.edu/teaching/373/notes/x05-convexhull.pdf> (Page 2)
 fn is_counter_clockwise_turn(p1: &Point, p2: &Point, p3: &Point) -> bool {
     (p3.y - p1.y) * (p2.x - p1.x) >= (p2.y - p1.y) * (p3.x - p1.x)
 }
