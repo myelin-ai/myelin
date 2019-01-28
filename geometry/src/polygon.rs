@@ -1,8 +1,8 @@
 //! Types relating to 2D convex polygons and their construction
 
 pub use self::builder::*;
-use crate::ConvexHull;
 use super::*;
+use crate::ConvexHull;
 use itertools::Itertools;
 
 mod builder;
@@ -156,7 +156,7 @@ fn calculate_facing_side(a: Vector, b: Vector, point: Vector) -> Side {
 }
 
 fn is_convex_polygon(vertices: &[Point]) -> bool {
-    let convex_hull_vertice_count = ConvexHull::new(vertices).unwrap().count();
+    let convex_hull_vertice_count = ConvexHull::try_new(vertices).unwrap().count();
     convex_hull_vertice_count == vertices.len()
 }
 

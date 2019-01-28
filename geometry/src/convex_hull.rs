@@ -43,7 +43,7 @@ enum ConvexHullState {
 impl<'a> ConvexHull<'a> {
     /// ## Errors
     /// Returns an error when zero points are given.
-    pub fn new(points: &'a [Point]) -> Result<Self, ()> {
+    pub fn try_new(points: &'a [Point]) -> Result<Self, ()> {
         if points.is_empty() {
             Err(())
         } else {
@@ -112,7 +112,7 @@ mod tests {
 
     #[test]
     fn constructor_fails_with_zero_points() {
-        assert!(ConvexHull::new(&[]).is_err());
+        assert!(ConvexHull::try_new(&[]).is_err());
     }
 
     #[test]
@@ -125,7 +125,7 @@ mod tests {
             Point { x: 10.0, y: 10.0 },
         ];
 
-        let hull: Vec<_> = ConvexHull::new(&points).unwrap().collect();
+        let hull: Vec<_> = ConvexHull::try_new(&points).unwrap().collect();
 
         assert_eq!(points, hull);
     }
@@ -148,7 +148,7 @@ mod tests {
             Point { x: 10.0, y: 10.0 },
         ];
 
-        let hull: Vec<_> = ConvexHull::new(&points).unwrap().collect();
+        let hull: Vec<_> = ConvexHull::try_new(&points).unwrap().collect();
 
         assert_eq!(expected_hull, hull);
     }
