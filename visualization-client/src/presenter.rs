@@ -5,9 +5,7 @@ pub(crate) use self::global_polygon_translator::{
 use crate::controller::Presenter;
 use crate::view::constant;
 use crate::view_model;
-use myelin_environment::object::Mobility;
-use myelin_environment::Id;
-use myelin_geometry::*;
+use myelin_environment::prelude::*;
 use myelin_object_data::Kind;
 use std::borrow::Borrow;
 use std::collections::HashMap;
@@ -197,6 +195,7 @@ impl CanvasPresenter {
 #[cfg(test)]
 mod tests {
     use super::delta_applier::DeltaApplierError;
+    use super::ObjectDescription;
     use super::*;
     use crate::presenter::global_polygon_translator::GlobalPolygonTranslatorMock;
     use crate::view_model;

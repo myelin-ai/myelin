@@ -20,8 +20,6 @@ impl ObjectBehavior for Static {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::prelude::*;
-    use myelin_geometry::*;
     use std::f64::consts::FRAC_PI_2;
 
     #[test]

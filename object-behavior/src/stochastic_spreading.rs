@@ -1,7 +1,6 @@
 //! Types relating to a behavior that reproduces at random intervals
 
 use myelin_environment::prelude::*;
-use myelin_geometry::*;
 use std::fmt;
 
 mod random_chance_checker_impl;

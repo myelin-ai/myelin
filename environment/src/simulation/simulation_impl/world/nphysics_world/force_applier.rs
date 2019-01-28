@@ -69,11 +69,11 @@ impl ForceGenerator<f64> for GenericSingleTimeForceApplierWrapper {
 
 #[cfg(test)]
 mod tests {
+    use self::nphysics_world::rotation_translator::NphysicsRotationTranslatorImpl;
+    use self::nphysics_world::{NphysicsWorld, PhysicalBody, World};
     use super::*;
-    use crate::object::*;
-    use crate::simulation_impl::world::rotation_translator::NphysicsRotationTranslatorImpl;
-    use crate::simulation_impl::world::{NphysicsWorld, PhysicalBody, World};
-    use myelin_geometry::*;
+    use crate::simulation::simulation_impl::world::nphysics_world;
+    use crate::prelude::*;
 
     const DEFAULT_TIMESTEP: f64 = 1.0;
 

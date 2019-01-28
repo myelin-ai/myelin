@@ -19,8 +19,7 @@ pub struct ObjectBuilderError {
 ///
 /// # Examples
 /// ```
-/// use myelin_environment::object::*;
-/// use myelin_geometry::*;
+/// use myelin_environment::prelude::*;
 /// use std::f64::consts::FRAC_PI_2;
 ///
 /// let object = ObjectBuilder::default()
@@ -52,8 +51,7 @@ pub struct ObjectBuilder {
 impl ObjectBuilder {
     /// # Examples
     /// ```
-    /// use myelin_environment::object::ObjectBuilder;
-    /// use myelin_geometry::PolygonBuilder;
+    /// use myelin_environment::prelude::*;
     ///
     /// ObjectBuilder::default().shape(
     ///     PolygonBuilder::default()
@@ -72,7 +70,7 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
-    /// use myelin_environment::object::ObjectBuilder;
+    /// use myelin_environment::prelude::*;
     ///
     /// ObjectBuilder::default().location(3.0, 2.0);
     /// ```
@@ -83,8 +81,7 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
-    /// use myelin_environment::object::{Mobility, ObjectBuilder};
-    /// use myelin_geometry::Vector;
+    /// use myelin_environment::prelude::*;
     ///
     /// ObjectBuilder::default().mobility(Mobility::Movable(Vector { x: -12.0, y: 4.0 }));
     /// ```
@@ -95,8 +92,7 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
-    /// use myelin_environment::object::ObjectBuilder;
-    /// use myelin_geometry::Radians;
+    /// use myelin_environment::prelude::*;
     ///
     /// ObjectBuilder::default().rotation(Radians::try_new(4.5).unwrap());
     /// ```
@@ -107,7 +103,7 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
-    /// use myelin_environment::object::ObjectBuilder;
+    /// use myelin_environment::prelude::*;
     ///
     /// let builder = ObjectBuilder::default();
     /// ```
@@ -118,7 +114,7 @@ impl ObjectBuilder {
 
     /// # Examples
     /// ```
-    /// use myelin_environment::object::ObjectBuilder;
+    /// use myelin_environment::prelude::*;
     ///
     /// let builder = ObjectBuilder::default().associated_data(String::from("Foo").into_bytes());
     /// ```
@@ -134,8 +130,7 @@ impl ObjectBuilder {
     /// setting has been omitted
     /// # Examples
     /// ```
-    /// use myelin_environment::object::*;
-    /// use myelin_geometry::*;
+    /// use myelin_environment::prelude::*;
     /// use std::f64::consts::FRAC_PI_2;
     ///
     /// let object = ObjectBuilder::default()

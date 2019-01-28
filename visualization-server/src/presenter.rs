@@ -1,6 +1,5 @@
 use crate::controller::Presenter;
-use myelin_environment::object::ObjectDescription;
-use myelin_environment::{Id, Snapshot};
+use myelin_environment::prelude::*;
 use myelin_visualization_core::view_model_delta::{
     ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
 };
@@ -92,8 +91,6 @@ fn delta_contains_changes(delta: &ObjectDescriptionDelta) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::{Mobility, ObjectBuilder, ObjectDescription};
-    use myelin_geometry::*;
 
     fn object_description() -> ObjectDescription {
         ObjectBuilder::default()

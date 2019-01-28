@@ -1,5 +1,4 @@
-use myelin_environment::Simulation;
-use myelin_environment::Snapshot;
+use myelin_environment::prelude::*;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
 use std::boxed::FnBox;
 use std::fmt::{self, Debug};
@@ -96,9 +95,6 @@ impl ControllerImpl {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::*;
-    use myelin_environment::SimulationMock;
-    use myelin_geometry::PolygonBuilder;
     use std::collections::HashMap;
     use std::sync::Mutex;
 

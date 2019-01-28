@@ -3,10 +3,7 @@
 //!
 //! [`ObjectBuilder`]: crate::object_builder::ObjectBuilder
 
-pub use crate::object_builder::*;
-use crate::world_interactor::WorldInteractor;
-use crate::Id;
-use myelin_geometry::*;
+use crate::prelude::*;
 use std::fmt::Debug;
 
 #[cfg(any(test, feature = "use-mocks"))]

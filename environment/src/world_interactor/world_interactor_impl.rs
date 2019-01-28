@@ -1,6 +1,4 @@
-use super::WorldInteractor;
-use crate::{Simulation, Snapshot};
-use myelin_geometry::Aabb;
+use crate::prelude::*;
 
 /// Default implementation of [`WorldInteractor`].
 ///
@@ -28,9 +26,6 @@ impl<'a> WorldInteractor for WorldInteractorImpl<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::object::*;
-    use crate::object_builder::ObjectBuilder;
-    use crate::SimulationMock;
     use mockiato::partial_eq;
     use myelin_geometry::{Point, PolygonBuilder};
 

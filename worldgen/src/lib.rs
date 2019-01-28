@@ -18,7 +18,7 @@ extern crate nameof;
 
 pub use self::generator::*;
 pub use self::name_provider::*;
-use myelin_environment::Simulation;
+use myelin_environment::prelude::*;
 
 mod generator;
 mod name_provider;

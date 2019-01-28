@@ -1,9 +1,10 @@
 //! Trait and implementation for [`WorldInteractor`]
 
-use crate::Snapshot;
-use mockiato::mockable;
-use myelin_geometry::Aabb;
+use crate::prelude::*;
 use std::fmt::Debug;
+
+#[cfg(any(test, feature = "use-mocks"))]
+use mockiato::mockable;
 
 mod world_interactor_impl;
 pub use self::world_interactor_impl::*;
