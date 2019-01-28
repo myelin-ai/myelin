@@ -72,8 +72,8 @@ mod tests {
     use self::nphysics_world::rotation_translator::NphysicsRotationTranslatorImpl;
     use self::nphysics_world::{NphysicsWorld, PhysicalBody, World};
     use super::*;
-    use crate::simulation::simulation_impl::world::nphysics_world;
     use crate::prelude::*;
+    use crate::simulation::simulation_impl::world::nphysics_world;
 
     const DEFAULT_TIMESTEP: f64 = 1.0;
 
