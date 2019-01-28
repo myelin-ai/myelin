@@ -41,8 +41,12 @@ enum ConvexHullState {
 }
 
 impl<'a> ConvexHull<'a> {
+    /// Constructs a new [`ConvexHull`] from a given set of points.
+    ///
     /// ## Errors
     /// Returns an error when zero points are given.
+    ///
+    /// [`ConvexHull`]: ./struct.ConvexHull.html
     pub fn try_new(points: &'a [Point]) -> Result<Self, ()> {
         if points.is_empty() {
             Err(())

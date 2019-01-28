@@ -25,8 +25,8 @@ impl Polygon {
     ///
     /// # Errors
     /// This method will return an error if the number of configured
-    /// vertices is less than three, as the resulting [`Polygon`]
-    /// would not be two-dimensional.
+    /// vertices is less than three (as the resulting [`Polygon`]
+    /// would not be two-dimensional), or if the resulting [`Polygon`] is not convex.
     ///
     /// [`Polygon`]: ./struct.Polygon.html
     /// [`Point`]: ./struct.Point.html
