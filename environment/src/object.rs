@@ -19,7 +19,7 @@ pub trait ObjectBehavior: Debug + ObjectBehaviorClone {
     fn step(
         &mut self,
         own_description: &ObjectDescription,
-        environment: &dyn ObjectEnvironment,
+        environment: &dyn WorldInteractor,
     ) -> Option<Action>;
 }
 
@@ -28,7 +28,7 @@ pub trait ObjectBehavior: Debug + ObjectBehaviorClone {
 ///
 /// [`ObjectBehavior`]: ./trait.ObjectBehavior.html
 #[cfg_attr(any(test, feature = "use-mocks"), mockable)]
-pub trait ObjectEnvironment: Debug {
+pub trait WorldInteractor: Debug {
     /// Scans for objects in the area defined by an [`Aabb`].
     ///
     /// Returns all objects either completely contained or intersecting

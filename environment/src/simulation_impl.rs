@@ -1,7 +1,7 @@
 //! A `Simulation` that outsources all physical
 //! behaviour into a separate `World` type
 
-pub use self::object_environment::ObjectEnvironmentImpl;
+pub use self::object_environment::WorldInteractorImpl;
 use crate::object::*;
 use crate::{Id, Simulation, Snapshot};
 use myelin_geometry::*;
@@ -13,12 +13,12 @@ use std::fmt::{self, Debug};
 mod object_environment;
 pub mod world;
 
-/// Factory used by [`SimulationImpl`] to create an [`ObjectEnvironment`].
+/// Factory used by [`SimulationImpl`] to create an [`WorldInteractor`].
 ///
 /// [`SimulationImpl`]: ./struct.SimulationImpl.html
-/// [`ObjectEnvironment`]: ./../object/trait.ObjectEnvironment.html
-pub type ObjectEnvironmentFactoryFn =
-    dyn for<'a> Fn(&'a dyn Simulation) -> Box<dyn ObjectEnvironment + 'a>;
+/// [`WorldInteractor`]: ./../object/trait.WorldInteractor.html
+pub type WorldInteractorFactoryFn =
+    dyn for<'a> Fn(&'a dyn Simulation) -> Box<dyn WorldInteractor + 'a>;
 
 /// Implementation of [`Simulation`] that uses a physical
 /// [`World`] in order to apply physics to objects.
@@ -28,7 +28,7 @@ pub type ObjectEnvironmentFactoryFn =
 pub struct SimulationImpl {
     world: Box<dyn World>,
     non_physical_object_data: HashMap<BodyHandle, NonPhysicalObjectData>,
-    object_environment_factory_fn: Box<ObjectEnvironmentFactoryFn>,
+    object_environment_factory_fn: Box<WorldInteractorFactoryFn>,
 }
 
 impl Debug for SimulationImpl {
@@ -70,7 +70,7 @@ impl SimulationImpl {
     /// use myelin_environment::simulation_impl::world::{
     ///     NphysicsRotationTranslatorImpl, NphysicsWorld, SingleTimeForceApplierImpl,
     /// };
-    /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
+    /// use myelin_environment::simulation_impl::{WorldInteractorImpl, SimulationImpl};
     /// use std::sync::{Arc, RwLock};
     ///
     /// let rotation_translator = NphysicsRotationTranslatorImpl::default();
@@ -82,13 +82,13 @@ impl SimulationImpl {
     /// ));
     /// let simulation = SimulationImpl::new(
     ///     world,
-    ///     Box::new(|simulation| Box::new(ObjectEnvironmentImpl::new(simulation))),
+    ///     Box::new(|simulation| Box::new(WorldInteractorImpl::new(simulation))),
     /// );
     /// ```
     /// [`World`]: ./trait.World.html
     pub fn new(
         world: Box<dyn World>,
-        object_environment_factory_fn: Box<ObjectEnvironmentFactoryFn>,
+        object_environment_factory_fn: Box<WorldInteractorFactoryFn>,
     ) -> Self {
         Self {
             world,
@@ -351,15 +351,15 @@ pub struct BodyHandle(pub usize);
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::object::{ObjectBehaviorMock, ObjectEnvironmentMock};
+    use crate::object::{ObjectBehaviorMock, WorldInteractorMock};
     use crate::object_builder::ObjectBuilder;
     use mockiato::{any, partial_eq, partial_eq_owned};
     use myelin_geometry::PolygonBuilder;
 
     fn object_environment_factory_fn<'a>(
         _simulation: &'a dyn Simulation,
-    ) -> Box<dyn ObjectEnvironment + 'a> {
-        box ObjectEnvironmentMock::new()
+    ) -> Box<dyn WorldInteractor + 'a> {
+        box WorldInteractorMock::new()
     }
 
     #[test]

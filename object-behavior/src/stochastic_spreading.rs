@@ -47,7 +47,7 @@ impl StochasticSpreading {
     fn spread(
         &mut self,
         own_description: &ObjectDescription,
-        environment: &dyn ObjectEnvironment,
+        environment: &dyn WorldInteractor,
     ) -> Option<Action> {
         let possible_spreading_locations =
             calculate_possible_spreading_locations(&own_description.shape);
@@ -127,7 +127,7 @@ fn calculate_possible_spreading_locations(polygon: &Polygon) -> Vec<Point> {
 fn can_spread_at_location(
     own_description: &ObjectDescription,
     location: Point,
-    environment: &dyn ObjectEnvironment,
+    environment: &dyn WorldInteractor,
 ) -> bool {
     let target_area = own_description
         .shape
@@ -144,7 +144,7 @@ impl ObjectBehavior for StochasticSpreading {
     fn step(
         &mut self,
         own_description: &ObjectDescription,
-        environment: &dyn ObjectEnvironment,
+        environment: &dyn WorldInteractor,
     ) -> Option<Action> {
         if self.should_spread() {
             self.spread(own_description, environment)
@@ -211,7 +211,7 @@ where
 mod tests {
     use super::*;
     use mockiato::partial_eq;
-    use myelin_environment::object::ObjectEnvironmentMock;
+    use myelin_environment::object::WorldInteractorMock;
     use std::collections::HashMap;
 
     const SPREADING_CHANGE: f64 = 1.0 / (60.0 * 30.0);
@@ -226,7 +226,7 @@ mod tests {
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
-        let action = object.step(&own_description, &ObjectEnvironmentMock::new());
+        let action = object.step(&own_description, &WorldInteractorMock::new());
         assert!(action.is_none());
     }
 
@@ -242,7 +242,7 @@ mod tests {
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
-        let mut environment = ObjectEnvironmentMock::new();
+        let mut environment = WorldInteractorMock::new();
         environment
             .expect_find_objects_in_area(partial_eq(Aabb::new((34.0, 34.0), (44.0, 44.0))))
             .returns(HashMap::new());
@@ -273,7 +273,7 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
-        let mut environment = ObjectEnvironmentMock::new();
+        let mut environment = WorldInteractorMock::new();
         environment
             .expect_find_objects_in_area(partial_eq(Aabb::new((34.0, 34.0), (44.0, 44.0))))
             .returns(hashmap! {
@@ -333,7 +333,7 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
-        let mut environment = ObjectEnvironmentMock::new();
+        let mut environment = WorldInteractorMock::new();
         environment
             .expect_find_objects_in_area(partial_eq(Aabb::new((34.0, 34.0), (44.0, 44.0))))
             .returns(hashmap! {
@@ -377,7 +377,7 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
-        let mut environment = ObjectEnvironmentMock::new();
+        let mut environment = WorldInteractorMock::new();
         environment
             .expect_find_objects_in_area(partial_eq(Aabb::new((45.0, 34.0), (55.0, 44.0))))
             .returns(hashmap! {
@@ -426,7 +426,7 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
-        let mut environment = ObjectEnvironmentMock::new();
+        let mut environment = WorldInteractorMock::new();
         environment
             .expect_find_objects_in_area(partial_eq(Aabb::new((45.0, 34.0), (55.0, 44.0))))
             .returns(hashmap! {

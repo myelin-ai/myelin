@@ -1,25 +1,25 @@
-use crate::object::ObjectEnvironment;
+use crate::object::WorldInteractor;
 use crate::{Simulation, Snapshot};
 use myelin_geometry::Aabb;
 
-/// Default implementation of [`ObjectEnvironment`].
+/// Default implementation of [`WorldInteractor`].
 ///
-/// [`ObjectEnvironment`]: ./../object/trait.ObjectEnvironment.html
+/// [`WorldInteractor`]: ./../object/trait.WorldInteractor.html
 #[derive(Debug)]
-pub struct ObjectEnvironmentImpl<'a> {
+pub struct WorldInteractorImpl<'a> {
     simulation: &'a dyn Simulation,
 }
 
-impl<'a> ObjectEnvironmentImpl<'a> {
-    /// Creates a new instance of [`ObjectEnvironmentImpl`].
+impl<'a> WorldInteractorImpl<'a> {
+    /// Creates a new instance of [`WorldInteractorImpl`].
     ///
-    /// [`ObjectEnvironmentImpl`]: ./struct.ObjectEnvironmentImpl.html
+    /// [`WorldInteractorImpl`]: ./struct.WorldInteractorImpl.html
     pub fn new(simulation: &'a dyn Simulation) -> Self {
         Self { simulation }
     }
 }
 
-impl<'a> ObjectEnvironment for ObjectEnvironmentImpl<'a> {
+impl<'a> WorldInteractor for WorldInteractorImpl<'a> {
     fn find_objects_in_area(&self, area: Aabb) -> Snapshot {
         self.simulation.objects_in_area(area)
     }
@@ -62,7 +62,7 @@ mod tests {
         simulation
             .expect_objects_in_area(partial_eq(area))
             .returns(objects.clone());
-        let object_environment = ObjectEnvironmentImpl::new(&simulation);
+        let object_environment = WorldInteractorImpl::new(&simulation);
 
         assert_eq!(objects, object_environment.find_objects_in_area(area));
     }

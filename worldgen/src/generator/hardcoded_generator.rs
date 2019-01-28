@@ -43,7 +43,7 @@ impl HardcodedGenerator {
     /// use myelin_environment::simulation_impl::world::{
     ///     NphysicsRotationTranslatorImpl, NphysicsWorld, SingleTimeForceApplierImpl,
     /// };
-    /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
+    /// use myelin_environment::simulation_impl::{SimulationImpl, WorldInteractorImpl};
     /// use myelin_environment::Simulation;
     /// use myelin_object_behavior::Static;
     /// use myelin_object_data::{AdditionalObjectDescriptionBincodeSerializer, Kind};
@@ -62,7 +62,7 @@ impl HardcodedGenerator {
     ///     ));
     ///     Box::new(SimulationImpl::new(
     ///         world,
-    ///         Box::new(|simulation| Box::new(ObjectEnvironmentImpl::new(simulation))),
+    ///         Box::new(|simulation| Box::new(WorldInteractorImpl::new(simulation))),
     ///     ))
     /// });
     ///

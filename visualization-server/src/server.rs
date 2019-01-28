@@ -9,7 +9,7 @@ use myelin_environment::object::ObjectBehavior;
 use myelin_environment::simulation_impl::world::{
     NphysicsRotationTranslatorImpl, NphysicsWorld, SingleTimeForceApplierImpl,
 };
-use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
+use myelin_environment::simulation_impl::{SimulationImpl, WorldInteractorImpl};
 use myelin_environment::Simulation;
 use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
 use myelin_object_behavior::Static;
@@ -43,7 +43,7 @@ where
             box force_applier,
         );
         box SimulationImpl::new(box world, box |simulation| {
-            box ObjectEnvironmentImpl::new(simulation)
+            box WorldInteractorImpl::new(simulation)
         })
     };
     let plant_factory = box || -> Box<dyn ObjectBehavior> {

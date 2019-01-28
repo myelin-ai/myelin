@@ -11,7 +11,7 @@ impl ObjectBehavior for Static {
     fn step(
         &mut self,
         _own_description: &ObjectDescription,
-        _environment: &dyn ObjectEnvironment,
+        _environment: &dyn WorldInteractor,
     ) -> Option<Action> {
         None
     }
@@ -20,7 +20,7 @@ impl ObjectBehavior for Static {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::ObjectEnvironmentMock;
+    use myelin_environment::object::WorldInteractorMock;
     use myelin_geometry::*;
     use std::f64::consts::FRAC_PI_2;
 
@@ -42,7 +42,7 @@ mod tests {
             .build()
             .unwrap();
         let mut object = Static::default();
-        let action = object.step(&own_description, &ObjectEnvironmentMock::new());
+        let action = object.step(&own_description, &WorldInteractorMock::new());
         assert!(action.is_none());
     }
 }
