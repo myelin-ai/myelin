@@ -1,4 +1,4 @@
-use crate::object::WorldInteractor;
+use super::WorldInteractor;
 use crate::{Simulation, Snapshot};
 use myelin_geometry::Aabb;
 

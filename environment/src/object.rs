@@ -4,7 +4,8 @@
 //! [`ObjectBuilder`]: crate::object_builder::ObjectBuilder
 
 pub use crate::object_builder::*;
-use crate::{Id, Snapshot};
+use crate::world_interactor::WorldInteractor;
+use crate::Id;
 use myelin_geometry::*;
 use std::fmt::Debug;
 
@@ -21,21 +22,6 @@ pub trait ObjectBehavior: Debug + ObjectBehaviorClone {
         own_description: &ObjectDescription,
         environment: &dyn WorldInteractor,
     ) -> Option<Action>;
-}
-
-/// Provides information to an [`ObjectBehavior`] about
-/// the world it is placed in.
-///
-/// [`ObjectBehavior`]: ./trait.ObjectBehavior.html
-#[cfg_attr(any(test, feature = "use-mocks"), mockable)]
-pub trait WorldInteractor: Debug {
-    /// Scans for objects in the area defined by an [`Aabb`].
-    ///
-    /// Returns all objects either completely contained or intersecting
-    /// with the area.
-    ///
-    /// [`Aabb`]: ./struct.Aabb.html
-    fn find_objects_in_area(&self, area: Aabb) -> Snapshot;
 }
 
 /// Possible actions performed by an [`Object`]
