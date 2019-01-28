@@ -1,6 +1,6 @@
 //! Types relating to a behavior that reproduces at random intervals
 
-use myelin_environment::object::*;
+use myelin_environment::prelude::*;
 use myelin_geometry::*;
 use std::fmt;
 
@@ -211,7 +211,7 @@ where
 mod tests {
     use super::*;
     use mockiato::partial_eq;
-    use myelin_environment::object::WorldInteractorMock;
+    use myelin_environment::prelude::WorldInteractorMock;
     use std::collections::HashMap;
 
     const SPREADING_CHANGE: f64 = 1.0 / (60.0 * 30.0);

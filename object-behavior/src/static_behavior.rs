@@ -1,6 +1,6 @@
 //! Contains the [`Static`] behavior.
 
-use myelin_environment::object::*;
+use myelin_environment::prelude::*;
 
 /// A purely static and non-interactive behavior.
 /// This type will never perform any actions.
@@ -20,7 +20,7 @@ impl ObjectBehavior for Static {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::WorldInteractorMock;
+    use myelin_environment::prelude::*;
     use myelin_geometry::*;
     use std::f64::consts::FRAC_PI_2;
 

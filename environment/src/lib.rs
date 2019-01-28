@@ -27,6 +27,7 @@ pub mod object;
 mod object_builder;
 pub mod simulation_impl;
 pub mod world_interactor;
+pub mod prelude;
 
 use crate::object::{ObjectBehavior, ObjectDescription};
 use myelin_geometry::Aabb;

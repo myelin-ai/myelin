@@ -9,7 +9,8 @@ use myelin_environment::object::ObjectBehavior;
 use myelin_environment::simulation_impl::world::{
     NphysicsRotationTranslatorImpl, NphysicsWorld, SingleTimeForceApplierImpl,
 };
-use myelin_environment::simulation_impl::{SimulationImpl, WorldInteractorImpl};
+use myelin_environment::simulation_impl::SimulationImpl;
+use myelin_environment::world_interactor::WorldInteractorImpl;
 use myelin_environment::Simulation;
 use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
 use myelin_object_behavior::Static;
