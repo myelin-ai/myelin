@@ -2,7 +2,7 @@ use crate::Vector;
 use std::ops::{Add, Sub};
 
 /// A point in space
-#[derive(Debug, PartialEq, Copy, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, PartialOrd, Copy, Clone, Default, Serialize, Deserialize)]
 pub struct Point {
     /// The x coordinate of the Point
     pub x: f64,

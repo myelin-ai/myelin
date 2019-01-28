@@ -1,9 +1,12 @@
 //! Types relating to 2D convex polygons and their construction
 
-use super::*;
-mod builder;
 pub use self::builder::*;
+use self::convex_hull::ConvexHull;
+use super::*;
 use itertools::Itertools;
+
+mod builder;
+mod convex_hull;
 
 /// A convex polygon.
 ///
@@ -31,7 +34,8 @@ impl Polygon {
     pub fn try_new(vertices: Vec<Point>) -> Result<Self, ()> {
         const MINIMUM_VERTICES_IN_EUCLIDEAN_GEOMETRY: usize = 3;
 
-        if vertices.len() >= MINIMUM_VERTICES_IN_EUCLIDEAN_GEOMETRY {
+        if vertices.len() >= MINIMUM_VERTICES_IN_EUCLIDEAN_GEOMETRY && is_convex_polygon(&vertices)
+        {
             Ok(Self { vertices })
         } else {
             Err(())
@@ -150,6 +154,11 @@ fn calculate_facing_side(a: Vector, b: Vector, point: Vector) -> Side {
     } else {
         Side::OnTheLine
     }
+}
+
+fn is_convex_polygon(vertices: &[Point]) -> bool {
+    let convex_hull_vertice_count = ConvexHull::new(vertices).unwrap().count();
+    convex_hull_vertice_count == vertices.len()
 }
 
 /// The side that a [`Point`] lies on, from the
