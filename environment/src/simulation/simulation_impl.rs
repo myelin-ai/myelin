@@ -25,7 +25,7 @@ pub type WorldInteractorFactoryFn =
 pub struct SimulationImpl {
     world: Box<dyn World>,
     non_physical_object_data: HashMap<BodyHandle, NonPhysicalObjectData>,
-    object_environment_factory_fn: Box<WorldInteractorFactoryFn>,
+    world_interactor_factory_fn: Box<WorldInteractorFactoryFn>,
 }
 
 impl Debug for SimulationImpl {
@@ -88,12 +88,12 @@ impl SimulationImpl {
     /// [`World`]: ./trait.World.html
     pub fn new(
         world: Box<dyn World>,
-        object_environment_factory_fn: Box<WorldInteractorFactoryFn>,
+        world_interactor_factory_fn: Box<WorldInteractorFactoryFn>,
     ) -> Self {
         Self {
             world,
             non_physical_object_data: HashMap::new(),
-            object_environment_factory_fn,
+            world_interactor_factory_fn,
         }
     }
 
@@ -177,7 +177,7 @@ impl Simulation for SimulationImpl {
         let mut actions = Vec::new();
 
         {
-            let environment = (self.object_environment_factory_fn)(self);
+            let world_interactor = (self.world_interactor_factory_fn)(self);
             for (object_handle, non_physical_object_data) in &self.non_physical_object_data {
                 // This is safe because the keys of self.objects and
                 // object_handle_to_objects_within_sensor are identical
@@ -185,7 +185,7 @@ impl Simulation for SimulationImpl {
                 let action = non_physical_object_data
                     .behavior
                     .borrow_mut()
-                    .step(&own_description, environment.as_ref());
+                    .step(&own_description, world_interactor.as_ref());
                 if let Some(action) = action {
                     actions.push((*object_handle, action));
                 }
@@ -265,7 +265,7 @@ mod tests {
     use mockiato::{any, partial_eq, partial_eq_owned};
     use myelin_geometry::PolygonBuilder;
 
-    fn object_environment_factory_fn<'a>(
+    fn world_interactor_factory_fn<'a>(
         _simulation: &'a dyn Simulation,
     ) -> Box<dyn WorldInteractor + 'a> {
         box WorldInteractorMock::new()
@@ -275,7 +275,7 @@ mod tests {
     fn propagates_step() {
         let mut world = box WorldMock::new();
         world.expect_step();
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
         simulation.step();
     }
 
@@ -284,7 +284,7 @@ mod tests {
         let mut world = box WorldMock::new();
         const EXPECTED_TIMESTEP: f64 = 1.0;
         world.expect_set_simulated_timestep(partial_eq(EXPECTED_TIMESTEP));
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
         simulation.set_simulated_timestep(EXPECTED_TIMESTEP);
     }
 
@@ -292,7 +292,7 @@ mod tests {
     #[test]
     fn panics_on_negative_timestep() {
         let world = box WorldMock::new();
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
         const INVALID_TIMESTEP: f64 = -0.1;
         simulation.set_simulated_timestep(INVALID_TIMESTEP);
     }
@@ -302,14 +302,14 @@ mod tests {
         let mut world = box WorldMock::new();
         const EXPECTED_TIMESTEP: f64 = 0.0;
         world.expect_set_simulated_timestep(partial_eq(EXPECTED_TIMESTEP));
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
         simulation.set_simulated_timestep(EXPECTED_TIMESTEP);
     }
 
     #[test]
     fn returns_no_objects_when_empty() {
         let world = box WorldMock::new();
-        let simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
         let objects = simulation.objects();
         assert!(objects.is_empty())
     }
@@ -345,7 +345,7 @@ mod tests {
             .unwrap();
         let object_behavior = ObjectBehaviorMock::new();
 
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
         simulation.add_object(object_description, box object_behavior);
     }
 
@@ -391,7 +391,7 @@ mod tests {
             .expect_step(partial_eq_owned(expected_object_description.clone()), any())
             .returns(None);
 
-        let mut simulation = SimulationImpl::new(box world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(box world, box world_interactor_factory_fn);
         simulation.add_object(expected_object_description, box object_behavior);
         simulation.step();
     }
@@ -423,7 +423,7 @@ mod tests {
             .expect_is_body_passable(partial_eq(returned_handle))
             .returns(expected_passable);
 
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
         let object_behavior = ObjectBehaviorMock::new();
 
         let expected_object_description = ObjectBuilder::default()
@@ -477,7 +477,7 @@ mod tests {
             .returns(Some(expected_physical_body));
         world.expect_step();
 
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
@@ -538,7 +538,7 @@ mod tests {
             .expect_is_body_passable(partial_eq(returned_handle))
             .returns(expected_passable);
 
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
@@ -593,7 +593,7 @@ mod tests {
             .expect_remove_body(partial_eq(handle_two))
             .returns(Some(expected_physical_body));
 
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
@@ -653,7 +653,7 @@ mod tests {
             )
             .returns(Some(()));
 
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
@@ -697,7 +697,7 @@ mod tests {
             .expect_add_body(partial_eq(expected_physical_body.clone()))
             .returns(returned_handle);
         world.expect_body(partial_eq(returned_handle)).returns(None);
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
 
         let object_description = ObjectBuilder::default()
             .location(expected_location.x, expected_location.y)
@@ -735,7 +735,7 @@ mod tests {
             .expect_is_body_passable(partial_eq(returned_handle))
             .returns(expected_physical_body.passable);
 
-        let mut simulation = SimulationImpl::new(box world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(box world, box world_interactor_factory_fn);
 
         let object_behavior = ObjectBehaviorMock::new();
         simulation.add_object(object_description.clone(), box object_behavior);
@@ -764,7 +764,7 @@ mod tests {
             .returns(vec![returned_handle]);
         world.expect_body(partial_eq(returned_handle)).returns(None);
 
-        let mut simulation = SimulationImpl::new(box world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(box world, box world_interactor_factory_fn);
 
         let object_behavior = ObjectBehaviorMock::new();
         simulation.add_object(object_description.clone(), box object_behavior);
