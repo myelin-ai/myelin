@@ -438,4 +438,36 @@ mod tests {
             ])
         );
     }
+
+    #[test]
+    fn try_new_does_not_work_with_concave_polygon() {
+        assert_eq!(
+            Err(()),
+            Polygon::try_new(vec![
+                Point { x: 10.0, y: 10.0 },
+                Point { x: 5.0, y: 5.0 },
+                Point { x: 10.0, y: 5.0 },
+                Point { x: 15.0, y: 0.0 },
+                Point { x: 10.0, y: 0.0 },
+            ])
+        );
+    }
+
+    #[test]
+    fn try_new_works_with_convex_polygon() {
+        let vertices = vec![
+            Point { x: 10.0, y: 10.0 },
+            Point { x: 5.0, y: 5.0 },
+            Point { x: 20.0, y: 5.0 },
+            Point { x: 15.0, y: 0.0 },
+            Point { x: 10.0, y: 0.0 },
+        ];
+
+        assert_eq!(
+            Ok(Polygon {
+                vertices: vertices.clone(),
+            }),
+            Polygon::try_new(vertices)
+        );
+    }
 }
