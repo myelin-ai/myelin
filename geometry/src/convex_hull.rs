@@ -77,6 +77,9 @@ impl<'a> Iterator for ConvexHull<'a> {
 }
 
 impl<'a> ConvexHull<'a> {
+    /// Implementation of [Jarvis March]
+    ///
+    /// [Jarvis March]: https://www.algorithm-archive.org/contents/jarvis_march/jarvis_march.html
     fn find_next_point(&mut self) -> Option<Point> {
         let mut endpoint = *self.points.first().unwrap();
 
