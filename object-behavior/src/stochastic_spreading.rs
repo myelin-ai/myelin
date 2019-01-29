@@ -146,7 +146,7 @@ impl ObjectBehavior for StochasticSpreading {
         world_interactor: &dyn WorldInteractor,
     ) -> Option<Action> {
         if self.should_spread() {
-            self.spread(own_description, environment)
+            self.spread(own_description, world_interactor)
         } else {
             None
         }
@@ -241,11 +241,11 @@ mod tests {
         let mut object =
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
-        let mut environment = WorldInteractorMock::new();
-        environment
+        let mut world_interactor = WorldInteractorMock::new();
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((34.0, 34.0), (44.0, 44.0))))
             .returns(HashMap::new());
-        let action = object.step(&own_description, &environment);
+        let action = object.step(&own_description, &world_interactor);
         match action {
             Some(Action::Spawn(object_description, _)) => {
                 let expected_object_description = object_description_at_location(
@@ -272,49 +272,49 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
-        let mut environment = WorldInteractorMock::new();
-        environment
+        let mut world_interactor = WorldInteractorMock::new();
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((34.0, 34.0), (44.0, 44.0))))
             .returns(hashmap! {
                 0 => object_description_at_location(39.0, 39.0),
             });
-        environment
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((45.0, 34.0), (55.0, 44.0))))
             .returns(hashmap! {
                 1 => object_description_at_location(50.0, 39.0)
             });
-        environment
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 34.0), (66.0, 44.0))))
             .returns(hashmap! {
                2 => object_description_at_location(60.0, 39.0),
             });
-        environment
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 45.0), (66.0, 55.0))))
             .returns(hashmap! {
                3 => object_description_at_location(61.0, 50.0),
             });
-        environment
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 56.0), (66.0, 66.0))))
             .returns(hashmap! {
                4 => object_description_at_location(61.0, 61.0),
             });
-        environment
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((45.0, 56.0), (55.0, 66.0))))
             .returns(hashmap! {
                5 => object_description_at_location(50.0, 61.0),
             });
-        environment
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((34.0, 56.0), (44.0, 66.0))))
             .returns(hashmap! {
                6 => object_description_at_location(39.0, 61.0),
             });
-        environment
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((34.0, 45.0), (44.0, 55.0))))
             .returns(hashmap! {
                7 => object_description_at_location(39.0, 50.0),
             });
 
-        let action = object.step(&own_description, &environment);
+        let action = object.step(&own_description, &world_interactor);
         assert!(action.is_none());
     }
 
@@ -332,27 +332,27 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
-        let mut environment = WorldInteractorMock::new();
-        environment
+        let mut world_interactor = WorldInteractorMock::new();
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((34.0, 34.0), (44.0, 44.0))))
             .returns(hashmap! {
                 0 => object_description_at_location(39.0, 39.0),
             });
-        environment
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((45.0, 34.0), (55.0, 44.0))))
             .returns(hashmap! {
                 1 => object_description_at_location(50.0, 39.0)
             });
-        environment
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 34.0), (66.0, 44.0))))
             .returns(hashmap! {
                2 => object_description_at_location(60.0, 39.0),
             });
-        environment
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 45.0), (66.0, 55.0))))
             .returns(HashMap::new());
 
-        let action = object.step(&own_description, &environment);
+        let action = object.step(&own_description, &world_interactor);
         match action {
             Some(Action::Spawn(object_description, _)) => {
                 let expected_object_description =
@@ -376,32 +376,32 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
-        let mut environment = WorldInteractorMock::new();
-        environment
+        let mut world_interactor = WorldInteractorMock::new();
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((45.0, 34.0), (55.0, 44.0))))
             .returns(hashmap! {
                 1 => object_description_at_location(50.0, 39.0)
             });
-        environment
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 34.0), (66.0, 44.0))))
             .returns(hashmap! {
                2 => object_description_at_location(60.0, 39.0),
             });
-        environment
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 45.0), (66.0, 55.0))))
             .returns(hashmap! {
                3 => object_description_at_location(61.0, 50.0),
             });
-        environment
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 56.0), (66.0, 66.0))))
             .returns(hashmap! {
                4 => object_description_at_location(61.0, 61.0),
             });
-        environment
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((45.0, 56.0), (55.0, 66.0))))
             .returns(HashMap::new());
 
-        let action = object.step(&own_description, &environment);
+        let action = object.step(&own_description, &world_interactor);
         match action {
             Some(Action::Spawn(object_description, _)) => {
                 let expected_object_description =
@@ -425,22 +425,22 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
-        let mut environment = WorldInteractorMock::new();
-        environment
+        let mut world_interactor = WorldInteractorMock::new();
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((45.0, 34.0), (55.0, 44.0))))
             .returns(hashmap! {
                 1 => object_description_at_location(50.0, 39.0)
             });
-        environment
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 34.0), (66.0, 44.0))))
             .returns(hashmap! {
                2 => object_description_at_location(60.0, 39.0),
             });
-        environment
+        world_interactor
             .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 45.0), (66.0, 55.0))))
             .returns(HashMap::new());
 
-        let action = object.step(&own_description, &environment);
+        let action = object.step(&own_description, &world_interactor);
         match action {
             Some(Action::Spawn(object_description, _)) => {
                 let expected_object_description =
