@@ -1,5 +1,8 @@
 [package]
 name = "myelin-object-behavior"
+description = """
+Implementation of the behaviours and interactions between
+objects that can be placed in a simulation"""
 version = "0.1.0"
 authors = [
     "Jan Nils Ferner <jan@myelin.ch>",

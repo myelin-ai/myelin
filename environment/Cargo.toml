@@ -1,5 +1,9 @@
 [package]
 name = "myelin-environment"
+description = """
+This crate contains the physical environment of
+the simulation, as well as the objects that reside
+within it"""
 version = "0.1.0"
 authors = [
     "Jan Nils Ferner <jan@myelin.ch>",

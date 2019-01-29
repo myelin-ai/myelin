@@ -1,4 +1,4 @@
-//! This crate containes the physical environment of
+//! This crate contains the physical environment of
 //! the simulation, as well as the objects that reside
 //! within it.
 
