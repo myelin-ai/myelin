@@ -46,7 +46,7 @@ impl StochasticSpreading {
     fn spread(
         &mut self,
         own_description: &ObjectDescription,
-        environment: &dyn WorldInteractor,
+        world_interactor: &dyn WorldInteractor,
     ) -> Option<Action> {
         let possible_spreading_locations =
             calculate_possible_spreading_locations(&own_description.shape);
@@ -63,7 +63,7 @@ impl StochasticSpreading {
             .skip(first_try_index)
             .take(possible_spreading_locations.len())
             .map(|&point| own_description.location + point)
-            .find(|&location| can_spread_at_location(&own_description, location, environment));
+            .find(|&location| can_spread_at_location(&own_description, location, world_interactor));
         if let Some(spreading_location) = spreading_location {
             let object_description = ObjectBuilder::from(own_description.clone())
                 .location(spreading_location.x, spreading_location.y)
@@ -126,7 +126,7 @@ fn calculate_possible_spreading_locations(polygon: &Polygon) -> Vec<Point> {
 fn can_spread_at_location(
     own_description: &ObjectDescription,
     location: Point,
-    environment: &dyn WorldInteractor,
+    world_interactor: &dyn WorldInteractor,
 ) -> bool {
     let target_area = own_description
         .shape
@@ -134,7 +134,7 @@ fn can_spread_at_location(
         .rotate_around_point(own_description.rotation, own_description.location)
         .aabb();
 
-    let objects_in_area = environment.find_objects_in_area(target_area);
+    let objects_in_area = world_interactor.find_objects_in_area(target_area);
 
     objects_in_area.is_empty()
 }
@@ -143,7 +143,7 @@ impl ObjectBehavior for StochasticSpreading {
     fn step(
         &mut self,
         own_description: &ObjectDescription,
-        environment: &dyn WorldInteractor,
+        world_interactor: &dyn WorldInteractor,
     ) -> Option<Action> {
         if self.should_spread() {
             self.spread(own_description, environment)
