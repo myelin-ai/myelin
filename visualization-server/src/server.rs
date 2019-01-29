@@ -5,12 +5,12 @@ use crate::constant::*;
 use crate::controller::{ConnectionAcceptor, Controller, ControllerImpl};
 use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
-use myelin_environment::object::ObjectBehavior;
-use myelin_environment::simulation_impl::world::{
-    NphysicsRotationTranslatorImpl, NphysicsWorld, SingleTimeForceApplierImpl,
+use myelin_environment::prelude::*;
+use myelin_environment::simulation::world::{
+    rotation_translator::NphysicsRotationTranslatorImpl, NphysicsWorld, SingleTimeForceApplierImpl,
 };
-use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
-use myelin_environment::Simulation;
+use myelin_environment::simulation::SimulationImpl;
+use myelin_environment::world_interactor::WorldInteractorImpl;
 use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
 use myelin_object_behavior::Static;
 use myelin_object_data::AdditionalObjectDescriptionBincodeSerializer;
@@ -43,7 +43,7 @@ where
             box force_applier,
         );
         box SimulationImpl::new(box world, box |simulation| {
-            box ObjectEnvironmentImpl::new(simulation)
+            box WorldInteractorImpl::new(simulation)
         })
     };
     let plant_factory = box || -> Box<dyn ObjectBehavior> {

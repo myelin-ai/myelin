@@ -1,6 +1,6 @@
 //! Contains the [`Static`] behavior.
 
-use myelin_environment::object::*;
+use myelin_environment::prelude::*;
 
 /// A purely static and non-interactive behavior.
 /// This type will never perform any actions.
@@ -11,7 +11,7 @@ impl ObjectBehavior for Static {
     fn step(
         &mut self,
         _own_description: &ObjectDescription,
-        _environment: &dyn ObjectEnvironment,
+        _world_interactor: &dyn WorldInteractor,
     ) -> Option<Action> {
         None
     }
@@ -20,8 +20,6 @@ impl ObjectBehavior for Static {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::ObjectEnvironmentMock;
-    use myelin_geometry::*;
     use std::f64::consts::FRAC_PI_2;
 
     #[test]
@@ -42,7 +40,7 @@ mod tests {
             .build()
             .unwrap();
         let mut object = Static::default();
-        let action = object.step(&own_description, &ObjectEnvironmentMock::new());
+        let action = object.step(&own_description, &WorldInteractorMock::new());
         assert!(action.is_none());
     }
 }

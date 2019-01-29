@@ -4,14 +4,17 @@
 //!
 //! [`World`]: ./trait.World.html
 //! [`Objects`]: ../object/struct.Body.html
+mod force_applier;
+mod physics_world_wrapper;
+pub mod rotation_translator;
+
 use self::force_applier::GenericSingleTimeForceApplierWrapper;
 pub use self::force_applier::*;
 use self::physics_world_wrapper::PhysicsWorldWrapper;
-pub use self::rotation_translator::*;
+use self::rotation_translator::*;
 use super::{BodyHandle, PhysicalBody, World};
-use crate::object::*;
 
-use myelin_geometry::*;
+use crate::prelude::*;
 use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::bounding_volume::AABB as NcollideAabb;
 use ncollide2d::math::Point as NcollidePoint;
@@ -24,15 +27,7 @@ use nphysics2d::object::{
 };
 use nphysics2d::volumetric::Volumetric;
 use nphysics2d::world::World as PhysicsWorld;
-use std::error::Error;
 use std::fmt;
-
-#[cfg(test)]
-use mockiato::mockable;
-
-mod force_applier;
-mod physics_world_wrapper;
-mod rotation_translator;
 
 use std::collections::HashSet;
 
@@ -52,8 +47,10 @@ impl NphysicsWorld {
     /// Instantiates a new empty world
     /// # Examples
     /// ```
-    /// use myelin_environment::simulation_impl::world::{
-    ///     NphysicsRotationTranslatorImpl, NphysicsWorld, SingleTimeForceApplierImpl,
+    /// use myelin_environment::prelude::*;
+    /// use myelin_environment::simulation::world::{
+    ///     rotation_translator::NphysicsRotationTranslatorImpl, NphysicsWorld,
+    ///     SingleTimeForceApplierImpl,
     /// };
     /// use std::sync::{Arc, RwLock};
     ///
@@ -153,38 +150,6 @@ impl NphysicsWorld {
         self.passable_bodies.contains(&body_handle)
     }
 }
-
-/// This trait translates the rotation from [`Radians`] to the range (-π; π] defined by nphysics
-///
-/// [`Radians`]: ../../object/struct.Radians.html
-#[cfg_attr(test, mockable)]
-pub trait NphysicsRotationTranslator: fmt::Debug {
-    /// Converts an `orientation` into a representation that is suitable for nphysics
-    fn to_nphysics_rotation(&self, orientation: Radians) -> f64;
-
-    /// Converts a rotation that originates from nphysics into [`Radians`]
-    ///
-    /// [`Radians`]: ../../object/struct.Radians.html
-    fn to_radians(
-        &self,
-        nphysics_rotation: f64,
-    ) -> Result<Radians, NphysicsRotationTranslatorError>;
-}
-
-/// The reason why a rotation could not be translated
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum NphysicsRotationTranslatorError {
-    /// The given nphysics value was not in the range (-π; π]
-    InvalidNphysicsValue,
-}
-
-impl fmt::Display for NphysicsRotationTranslatorError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Given nphysics value is not in the range (-pi; pi]")
-    }
-}
-
-impl Error for NphysicsRotationTranslatorError {}
 
 /// A [`ForceGenerator`] that applies a given force exactly once
 pub trait SingleTimeForceApplier: fmt::Debug + ForceGenerator<f64> {

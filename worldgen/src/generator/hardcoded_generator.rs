@@ -2,9 +2,7 @@
 
 use crate::NameProvider;
 use crate::WorldGenerator;
-use myelin_environment::object::*;
-use myelin_environment::Simulation;
-use myelin_geometry::*;
+use myelin_environment::prelude::*;
 use myelin_object_data::{
     AdditionalObjectDescription, AdditionalObjectDescriptionSerializer, Kind,
 };
@@ -39,12 +37,13 @@ impl HardcodedGenerator {
     ///
     /// # Examples
     /// ```
-    /// use myelin_environment::object::ObjectBehavior;
-    /// use myelin_environment::simulation_impl::world::{
-    ///     NphysicsRotationTranslatorImpl, NphysicsWorld, SingleTimeForceApplierImpl,
+    /// use myelin_environment::prelude::*;
+    /// use myelin_environment::simulation::world::{
+    ///     rotation_translator::NphysicsRotationTranslatorImpl, NphysicsWorld,
+    ///     SingleTimeForceApplierImpl,
     /// };
-    /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
-    /// use myelin_environment::Simulation;
+    /// use myelin_environment::simulation::SimulationImpl;
+    /// use myelin_environment::world_interactor::WorldInteractorImpl;
     /// use myelin_object_behavior::Static;
     /// use myelin_object_data::{AdditionalObjectDescriptionBincodeSerializer, Kind};
     /// use myelin_worldgen::{HardcodedGenerator, NameProviderBuilder, WorldGenerator};
@@ -62,7 +61,7 @@ impl HardcodedGenerator {
     ///     ));
     ///     Box::new(SimulationImpl::new(
     ///         world,
-    ///         Box::new(|simulation| Box::new(ObjectEnvironmentImpl::new(simulation))),
+    ///         Box::new(|simulation| Box::new(WorldInteractorImpl::new(simulation))),
     ///     ))
     /// });
     ///
@@ -317,8 +316,6 @@ mod tests {
     use super::*;
     use crate::NameProviderMock;
     use mockiato::{any, partial_eq, partial_eq_owned, ExpectedCalls};
-    use myelin_environment::object::ObjectBehaviorMock;
-    use myelin_environment::SimulationMock;
     use myelin_object_data::AdditionalObjectDescriptionSerializerMock;
 
     #[test]

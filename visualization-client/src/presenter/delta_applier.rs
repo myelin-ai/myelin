@@ -1,7 +1,7 @@
 use crate::presenter::{
     ObjectDelta, ObjectDescription, ObjectDescriptionDelta, Snapshot, ViewModelDelta,
 };
-use myelin_environment::Id;
+use myelin_environment::prelude::*;
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
 use std::marker::PhantomData;
@@ -94,8 +94,6 @@ fn apply_object_description_delta(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_environment::object::Mobility;
-    use myelin_geometry::*;
     use myelin_object_data::Kind;
     use std::f64::consts::PI;
 

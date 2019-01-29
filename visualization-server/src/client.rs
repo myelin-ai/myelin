@@ -3,7 +3,7 @@ use crate::connection::SocketError;
 use crate::connection_acceptor::Client;
 use crate::controller::{CurrentSnapshotFn, Presenter};
 use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperError};
-use myelin_environment::Snapshot;
+use myelin_environment::prelude::*;
 use myelin_visualization_core::serialization::ViewModelSerializer;
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
@@ -125,8 +125,6 @@ mod tests {
     use crate::fixed_interval_sleeper::FixedIntervalSleeperMock;
     use mockiato::partial_eq;
     use mockiato::partial_eq_owned;
-    use myelin_environment::object::*;
-    use myelin_geometry::*;
     use myelin_visualization_core::view_model_delta::{
         ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
     };

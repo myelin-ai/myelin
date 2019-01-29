@@ -1,24 +1,21 @@
 //! A `Simulation` that outsources all physical
 //! behaviour into a separate `World` type
 
-pub use self::object_environment::ObjectEnvironmentImpl;
-use crate::object::*;
-use crate::{Id, Simulation, Snapshot};
-use myelin_geometry::*;
+pub mod world;
+
+use self::world::{BodyHandle, PhysicalBody, World};
+use crate::prelude::*;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::{self, Debug};
 
-mod object_environment;
-pub mod world;
-
-/// Factory used by [`SimulationImpl`] to create an [`ObjectEnvironment`].
+/// Factory used by [`SimulationImpl`] to create an [`WorldInteractor`].
 ///
 /// [`SimulationImpl`]: ./struct.SimulationImpl.html
-/// [`ObjectEnvironment`]: ./../object/trait.ObjectEnvironment.html
-pub type ObjectEnvironmentFactoryFn =
-    dyn for<'a> Fn(&'a dyn Simulation) -> Box<dyn ObjectEnvironment + 'a>;
+/// [`WorldInteractor`]: ./../object/trait.WorldInteractor.html
+pub type WorldInteractorFactoryFn =
+    dyn for<'a> Fn(&'a dyn Simulation) -> Box<dyn WorldInteractor + 'a>;
 
 /// Implementation of [`Simulation`] that uses a physical
 /// [`World`] in order to apply physics to objects.
@@ -28,7 +25,7 @@ pub type ObjectEnvironmentFactoryFn =
 pub struct SimulationImpl {
     world: Box<dyn World>,
     non_physical_object_data: HashMap<BodyHandle, NonPhysicalObjectData>,
-    object_environment_factory_fn: Box<ObjectEnvironmentFactoryFn>,
+    world_interactor_factory_fn: Box<WorldInteractorFactoryFn>,
 }
 
 impl Debug for SimulationImpl {
@@ -67,10 +64,13 @@ impl SimulationImpl {
     /// Create a new SimulationImpl by injecting a [`World`]
     /// # Examples
     /// ```
-    /// use myelin_environment::simulation_impl::world::{
-    ///     NphysicsRotationTranslatorImpl, NphysicsWorld, SingleTimeForceApplierImpl,
+    /// use myelin_environment::prelude::*;
+    /// use myelin_environment::simulation::world::{
+    ///     rotation_translator::NphysicsRotationTranslatorImpl, NphysicsWorld,
+    ///     SingleTimeForceApplierImpl,
     /// };
-    /// use myelin_environment::simulation_impl::{ObjectEnvironmentImpl, SimulationImpl};
+    /// use myelin_environment::simulation::SimulationImpl;
+    /// use myelin_environment::world_interactor::WorldInteractorImpl;
     /// use std::sync::{Arc, RwLock};
     ///
     /// let rotation_translator = NphysicsRotationTranslatorImpl::default();
@@ -82,18 +82,18 @@ impl SimulationImpl {
     /// ));
     /// let simulation = SimulationImpl::new(
     ///     world,
-    ///     Box::new(|simulation| Box::new(ObjectEnvironmentImpl::new(simulation))),
+    ///     Box::new(|simulation| Box::new(WorldInteractorImpl::new(simulation))),
     /// );
     /// ```
     /// [`World`]: ./trait.World.html
     pub fn new(
         world: Box<dyn World>,
-        object_environment_factory_fn: Box<ObjectEnvironmentFactoryFn>,
+        world_interactor_factory_fn: Box<WorldInteractorFactoryFn>,
     ) -> Self {
         Self {
             world,
             non_physical_object_data: HashMap::new(),
-            object_environment_factory_fn,
+            world_interactor_factory_fn,
         }
     }
 
@@ -177,7 +177,7 @@ impl Simulation for SimulationImpl {
         let mut actions = Vec::new();
 
         {
-            let environment = (self.object_environment_factory_fn)(self);
+            let world_interactor = (self.world_interactor_factory_fn)(self);
             for (object_handle, non_physical_object_data) in &self.non_physical_object_data {
                 // This is safe because the keys of self.objects and
                 // object_handle_to_objects_within_sensor are identical
@@ -185,7 +185,7 @@ impl Simulation for SimulationImpl {
                 let action = non_physical_object_data
                     .behavior
                     .borrow_mut()
-                    .step(&own_description, environment.as_ref());
+                    .step(&own_description, world_interactor.as_ref());
                 if let Some(action) = action {
                     actions.push((*object_handle, action));
                 }
@@ -255,118 +255,27 @@ impl Simulation for SimulationImpl {
     }
 }
 
-/// A container for [`PhysicalBodies`] that will apply
-/// physical laws to them on [`step`]
-///
-/// [`PhysicalBodies`]: ./struct.PhysicalBody.html
-/// [`step`]: ./trait.World.html#tymethod.step
-#[cfg_attr(test, mockiato::mockable)]
-pub trait World: fmt::Debug {
-    /// Advance the simulation by one tick. This will apply
-    /// forces to the objects and handle collisions;
-    fn step(&mut self);
-    /// Place a [`PhysicalBody`] in the world. Returns a
-    /// unique [`BodyHandle`] that can be passed to [`body()`]
-    /// in order to retrieve the [`PhysicalBody`] again
-    ///
-    /// [`PhysicalBody`]: ./struct.PhysicalBody.html
-    /// [`BodyHandle`]: ./struct.BodyHandle.html
-    /// [`body()`]: ./trait.World.html#tymethod.body
-    fn add_body(&mut self, body: PhysicalBody) -> BodyHandle;
-
-    /// Removes a previously added [`PhysicalBody`] from the world.
-    /// If `body_handle` was valid, this will return the removed physical body.
-    ///
-    /// [`PhysicalBody`]: ./struct.PhysicalBody.html
-    fn remove_body(&mut self, body_handle: BodyHandle) -> Option<PhysicalBody>;
-
-    /// Returns a [`PhysicalBody`] that has previously been
-    /// placed with [`add_body()`] by its [`BodyHandle`].
-    ///
-    /// # Errors
-    /// Returns `None` if the [`BodyHandle`] did not correspond
-    /// to any [`PhysicalBody`]
-    ///
-    /// [`PhysicalBody`]: ./struct.PhysicalBody.html
-    /// [`BodyHandle`]: ./struct.BodyHandle.html
-    /// [`add_body()`]: ./trait.World.html#tymethod.add_body
-    fn body(&self, handle: BodyHandle) -> Option<PhysicalBody>;
-
-    /// Register a force that will be applied to a body on the next
-    /// step.
-    /// # Errors
-    /// Returns `None` if `body_handle` did not match any sensors.
-    fn apply_force(&mut self, body_handle: BodyHandle, force: Force) -> Option<()>;
-
-    /// Sets how much time in seconds is simulated for each step.
-    /// # Examples
-    /// If you want to run a simulation with 60 steps per second, you
-    /// can run `set_simulated_timestep(1.0/60.0)`. Note that this method
-    /// does not block the thread if called faster than expected.
-    fn set_simulated_timestep(&mut self, timestep: f64);
-
-    /// Checks if the given [`BodyHandle`] is marked passable
-    ///
-    /// [`BodyHandle`]: ./struct.BodyHandle.html
-    fn is_body_passable(&self, body_handle: BodyHandle) -> bool;
-
-    /// Returns all bodies either completely contained or intersecting
-    /// with the area.
-    ///
-    /// [`Aabb`]: ./struct.Aabb.html
-    fn bodies_in_area(&self, area: Aabb) -> Vec<BodyHandle>;
-}
-
-/// The pure physical representation of an object
-/// that can be placed within a [`World`]
-///
-/// [`World`]: trait.World.html
-#[derive(Debug, PartialEq, Clone)]
-pub struct PhysicalBody {
-    /// The vertices defining the shape of the object
-    /// in relation to its [`position`]
-    ///
-    /// [`position`]: ./struct.Body.html#structfield.position
-    pub shape: Polygon,
-    /// The current global position of the center of the body
-    pub location: Point,
-    /// The body's rotation
-    pub rotation: Radians,
-    /// The current mobility of the object. If present,
-    /// this is defined as a two dimensional vector relative to the
-    /// objects center
-    pub mobility: Mobility,
-    /// Whether this object is passable or not
-    pub passable: bool,
-}
-
-/// A unique identifier that can be used to retrieve a [`PhysicalBody`] from a
-/// [`World`].
-///
-/// Don't construct any of these by yourself, only use the
-/// instances that [`World`] provides you
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct BodyHandle(pub usize);
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::object::{ObjectBehaviorMock, ObjectEnvironmentMock};
+    use crate::object::ObjectBehaviorMock;
     use crate::object_builder::ObjectBuilder;
+    use crate::simulation::simulation_impl::world::WorldMock;
+    use crate::world_interactor::{WorldInteractor, WorldInteractorMock};
     use mockiato::{any, partial_eq, partial_eq_owned};
     use myelin_geometry::PolygonBuilder;
 
-    fn object_environment_factory_fn<'a>(
+    fn world_interactor_factory_fn<'a>(
         _simulation: &'a dyn Simulation,
-    ) -> Box<dyn ObjectEnvironment + 'a> {
-        box ObjectEnvironmentMock::new()
+    ) -> Box<dyn WorldInteractor + 'a> {
+        box WorldInteractorMock::new()
     }
 
     #[test]
     fn propagates_step() {
         let mut world = box WorldMock::new();
         world.expect_step();
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
         simulation.step();
     }
 
@@ -375,7 +284,7 @@ mod tests {
         let mut world = box WorldMock::new();
         const EXPECTED_TIMESTEP: f64 = 1.0;
         world.expect_set_simulated_timestep(partial_eq(EXPECTED_TIMESTEP));
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
         simulation.set_simulated_timestep(EXPECTED_TIMESTEP);
     }
 
@@ -383,7 +292,7 @@ mod tests {
     #[test]
     fn panics_on_negative_timestep() {
         let world = box WorldMock::new();
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
         const INVALID_TIMESTEP: f64 = -0.1;
         simulation.set_simulated_timestep(INVALID_TIMESTEP);
     }
@@ -393,14 +302,14 @@ mod tests {
         let mut world = box WorldMock::new();
         const EXPECTED_TIMESTEP: f64 = 0.0;
         world.expect_set_simulated_timestep(partial_eq(EXPECTED_TIMESTEP));
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
         simulation.set_simulated_timestep(EXPECTED_TIMESTEP);
     }
 
     #[test]
     fn returns_no_objects_when_empty() {
         let world = box WorldMock::new();
-        let simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
         let objects = simulation.objects();
         assert!(objects.is_empty())
     }
@@ -436,7 +345,7 @@ mod tests {
             .unwrap();
         let object_behavior = ObjectBehaviorMock::new();
 
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
         simulation.add_object(object_description, box object_behavior);
     }
 
@@ -482,7 +391,7 @@ mod tests {
             .expect_step(partial_eq_owned(expected_object_description.clone()), any())
             .returns(None);
 
-        let mut simulation = SimulationImpl::new(box world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(box world, box world_interactor_factory_fn);
         simulation.add_object(expected_object_description, box object_behavior);
         simulation.step();
     }
@@ -514,7 +423,7 @@ mod tests {
             .expect_is_body_passable(partial_eq(returned_handle))
             .returns(expected_passable);
 
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
         let object_behavior = ObjectBehaviorMock::new();
 
         let expected_object_description = ObjectBuilder::default()
@@ -568,7 +477,7 @@ mod tests {
             .returns(Some(expected_physical_body));
         world.expect_step();
 
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
@@ -629,7 +538,7 @@ mod tests {
             .expect_is_body_passable(partial_eq(returned_handle))
             .returns(expected_passable);
 
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
@@ -684,7 +593,7 @@ mod tests {
             .expect_remove_body(partial_eq(handle_two))
             .returns(Some(expected_physical_body));
 
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
@@ -744,7 +653,7 @@ mod tests {
             )
             .returns(Some(()));
 
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
@@ -788,7 +697,7 @@ mod tests {
             .expect_add_body(partial_eq(expected_physical_body.clone()))
             .returns(returned_handle);
         world.expect_body(partial_eq(returned_handle)).returns(None);
-        let mut simulation = SimulationImpl::new(world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
 
         let object_description = ObjectBuilder::default()
             .location(expected_location.x, expected_location.y)
@@ -826,7 +735,7 @@ mod tests {
             .expect_is_body_passable(partial_eq(returned_handle))
             .returns(expected_physical_body.passable);
 
-        let mut simulation = SimulationImpl::new(box world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(box world, box world_interactor_factory_fn);
 
         let object_behavior = ObjectBehaviorMock::new();
         simulation.add_object(object_description.clone(), box object_behavior);
@@ -855,7 +764,7 @@ mod tests {
             .returns(vec![returned_handle]);
         world.expect_body(partial_eq(returned_handle)).returns(None);
 
-        let mut simulation = SimulationImpl::new(box world, box object_environment_factory_fn);
+        let mut simulation = SimulationImpl::new(box world, box world_interactor_factory_fn);
 
         let object_behavior = ObjectBehaviorMock::new();
         simulation.add_object(object_description.clone(), box object_behavior);
