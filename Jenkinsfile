@@ -38,7 +38,7 @@ pipeline {
           }
           steps {
             sh 'cargo doc'
-            sh './docs/build-index.py'
+            sh '(cd docs && pipenv run ./build-index.py)'
           }
         }
         stage('cargo doc --no-deps') {
@@ -47,7 +47,7 @@ pipeline {
           }
           steps {
             sh 'cargo doc --no-deps'
-            sh './docs/build-index.py'
+            sh '(cd docs && pipenv run ./build-index.py)'
           }
         }
         stage('wasm') {
