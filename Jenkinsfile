@@ -38,6 +38,7 @@ pipeline {
           }
           steps {
             sh 'cargo doc'
+            sh './docs/build-index.py'
           }
         }
         stage('cargo doc --no-deps') {
@@ -46,6 +47,7 @@ pipeline {
           }
           steps {
             sh 'cargo doc --no-deps'
+            sh './docs/build-index.py'
           }
         }
         stage('wasm') {
@@ -105,7 +107,6 @@ pipeline {
       }
       steps {
         sh "tar -cvf docs.tar.gz -C target/doc ."
-        sh "tar -rvf docs.tar.gz -C docs ."
         sh "./.jenkins/deploy-docs.sh"
       }
     }
