@@ -61,7 +61,7 @@ where
 
     let name_provider = name_provider_builder.build_randomized();
 
-    let associated_object_data_serializer =
+    let additional_object_description_serializer =
         box AdditionalObjectDescriptionBincodeSerializer::default();
 
     let mut worldgen = HardcodedGenerator::new(
@@ -71,7 +71,7 @@ where
         terrain_factory,
         water_factory,
         name_provider,
-        associated_object_data_serializer,
+        additional_object_description_serializer,
     );
 
     let conection_acceptor_factory_fn = Arc::new(move |current_snapshot_fn| {
