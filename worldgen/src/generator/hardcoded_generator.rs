@@ -150,7 +150,7 @@ impl HardcodedGenerator {
                     .vertex(100.0, -150.0)
                     .vertex(-100.0, -150.0)
                     .build()
-                    .expect("Generated an invalid vertex"),
+                    .expect("Generated an invalid polygon"),
             )
             .location(500.0, 500.0)
             .mobility(Mobility::Immovable)
@@ -228,7 +228,7 @@ impl HardcodedGenerator {
                     .vertex(x_offset, y_offset)
                     .vertex(-x_offset, y_offset)
                     .build()
-                    .expect("Generated an invalid vertex"),
+                    .expect("Generated an invalid polygon"),
             )
             .location(location.0, location.1)
             .mobility(Mobility::Immovable)
@@ -254,7 +254,7 @@ impl HardcodedGenerator {
                     .vertex(half_of_width_and_height, half_of_width_and_height)
                     .vertex(-half_of_width_and_height, half_of_width_and_height)
                     .build()
-                    .expect("Generated an invalid vertex"),
+                    .expect("Generated an invalid polygon"),
             )
             .location(x, y)
             .mobility(Mobility::Immovable)
@@ -278,10 +278,10 @@ impl HardcodedGenerator {
                 PolygonBuilder::default()
                     .vertex(25.0, 0.0)
                     .vertex(-25.0, 20.0)
-                    .vertex(-5.0, 0.0)
+                    .vertex(-30.0, 0.0)
                     .vertex(-25.0, -20.0)
                     .build()
-                    .expect("Generated an invalid vertex"),
+                    .expect("Generated an invalid polygon"),
             )
             .location(x, y)
             .rotation(Radians::try_new(FRAC_PI_2).unwrap())
