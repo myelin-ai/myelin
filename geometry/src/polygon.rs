@@ -1,9 +1,11 @@
 //! Types relating to 2D convex polygons and their construction
 
-use super::*;
-mod builder;
 pub use self::builder::*;
+use super::*;
+use crate::ConvexHull;
 use itertools::Itertools;
+
+mod builder;
 
 /// A convex polygon.
 ///
@@ -23,15 +25,16 @@ impl Polygon {
     ///
     /// # Errors
     /// This method will return an error if the number of configured
-    /// vertices is less than three, as the resulting [`Polygon`]
-    /// would not be two-dimensional.
+    /// vertices is less than three (as the resulting [`Polygon`]
+    /// would not be two-dimensional), or if the resulting [`Polygon`] is not convex.
     ///
     /// [`Polygon`]: ./struct.Polygon.html
     /// [`Point`]: ./struct.Point.html
     pub fn try_new(vertices: Vec<Point>) -> Result<Self, ()> {
         const MINIMUM_VERTICES_IN_EUCLIDEAN_GEOMETRY: usize = 3;
 
-        if vertices.len() >= MINIMUM_VERTICES_IN_EUCLIDEAN_GEOMETRY {
+        if vertices.len() >= MINIMUM_VERTICES_IN_EUCLIDEAN_GEOMETRY && is_convex_polygon(&vertices)
+        {
             Ok(Self { vertices })
         } else {
             Err(())
@@ -150,6 +153,11 @@ fn calculate_facing_side(a: Vector, b: Vector, point: Vector) -> Side {
     } else {
         Side::OnTheLine
     }
+}
+
+fn is_convex_polygon(vertices: &[Point]) -> bool {
+    let convex_hull_vertice_count = ConvexHull::try_new(vertices).unwrap().count();
+    convex_hull_vertice_count == vertices.len()
 }
 
 /// The side that a [`Point`] lies on, from the
@@ -436,6 +444,36 @@ mod tests {
                 Point { x: 0.0, y: 1.0 },
                 Point { x: 1.0, y: 1.0 },
             ])
+        );
+    }
+
+    #[test]
+    fn try_new_does_not_work_with_concave_polygon() {
+        assert!(Polygon::try_new(vec![
+            Point { x: 10.0, y: 10.0 },
+            Point { x: 5.0, y: 5.0 },
+            Point { x: 10.0, y: 5.0 },
+            Point { x: 15.0, y: 0.0 },
+            Point { x: 10.0, y: 0.0 },
+        ])
+        .is_err());
+    }
+
+    #[test]
+    fn try_new_works_with_convex_polygon() {
+        let vertices = vec![
+            Point { x: 10.0, y: 10.0 },
+            Point { x: 5.0, y: 5.0 },
+            Point { x: 20.0, y: 5.0 },
+            Point { x: 15.0, y: 0.0 },
+            Point { x: 10.0, y: 0.0 },
+        ];
+
+        assert_eq!(
+            Ok(Polygon {
+                vertices: vertices.clone(),
+            }),
+            Polygon::try_new(vertices)
         );
     }
 }
