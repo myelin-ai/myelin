@@ -12,3 +12,8 @@ name = "pypi"
 [packages]
 
 toml = "*"
+
+
+[requires]
+
+python_version = "3.7"
