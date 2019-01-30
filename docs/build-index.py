@@ -67,10 +67,16 @@ def _render(template: Template, rendered_crates: str) -> str:
     return template.safe_substitute(crates=rendered_crates)
 
 
-crates = [_extract_crate_metadata(crate) for crate in _get_workspace_members()]
+def build_index():
+    crates = [_extract_crate_metadata(crate)
+              for crate in _get_workspace_members()]
 
-rendered_crates = _render_crates(_get_crate_template(), crates)
-rendered = _render(_get_main_template(), rendered_crates)
+    rendered_crates = _render_crates(_get_crate_template(), crates)
+    rendered = _render(_get_main_template(), rendered_crates)
 
-with open(_OUTPUT, 'w+') as f:
-    f.write(rendered)
+    with open(_OUTPUT, 'w+') as f:
+        f.write(rendered)
+
+
+if __name__ == '__main__':
+    build_index()
