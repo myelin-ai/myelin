@@ -23,6 +23,11 @@ pipeline {
             sh '(cd visualization-client && yarn)'
           }
         }
+        stage('poetry') {
+          steps {
+            sh '(cd docs && poetry install)'
+          }
+        }
       }
     }
     stage('Build') {
@@ -38,7 +43,7 @@ pipeline {
           }
           steps {
             sh 'cargo doc'
-            sh './docs/build-index.sh'
+            sh '(cd docs && poetry run ./build-index.py)'
           }
         }
         stage('cargo doc --no-deps') {
@@ -47,7 +52,7 @@ pipeline {
           }
           steps {
             sh 'cargo doc --no-deps'
-            sh './docs/build-index.sh'
+            sh '(cd docs && poetry run ./build-index.py)'
           }
         }
         stage('wasm') {
