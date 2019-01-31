@@ -1,8 +1,13 @@
 [tool.poetry]
 name = "myelin-docs"
 version = "0.1.0"
-description = ""
-authors = []
+description = "Builds an index page of all crates in the workspace"
+authors = [
+  "Jan Nils Ferner <jan@myelin.ch>",
+  "Mathias Fischler <mathias@myelin.ch>",
+  "Ruben Schmidmeister <ruben@myelin.ch>",
+  "Jeremy Stucki <jeremy@myelin.ch>",
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"
