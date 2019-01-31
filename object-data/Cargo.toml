@@ -1,5 +1,6 @@
 [package]
 name = "myelin-object-data"
+description = "Definition of associated object data (mainly used within visualization)"
 version = "0.1.0"
 authors = [
     "Jan Nils Ferner <jan@myelin.ch>",
