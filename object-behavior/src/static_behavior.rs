@@ -11,7 +11,7 @@ impl ObjectBehavior for Static {
     fn step(
         &mut self,
         _own_description: &ObjectDescription,
-        _environment: &dyn WorldInteractor,
+        _world_interactor: &dyn WorldInteractor,
     ) -> Option<Action> {
         None
     }

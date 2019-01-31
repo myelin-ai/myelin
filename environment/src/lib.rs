@@ -1,4 +1,4 @@
-//! This crate containes the physical environment of
+//! This crate contains the physical environment of
 //! the simulation, as well as the objects that reside
 //! within it.
 
@@ -7,7 +7,6 @@
     rust_2018_idioms,
     missing_debug_implementations,
     missing_docs,
-    intra_doc_link_resolution_failure,
     clippy::doc_markdown,
     clippy::unimplemented
 )]

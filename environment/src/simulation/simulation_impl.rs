@@ -264,7 +264,7 @@ mod tests {
     use crate::object::ObjectBehaviorMock;
     use crate::object_builder::ObjectBuilder;
     use crate::simulation::simulation_impl::world::WorldMock;
-    use crate::world_interactor::{WorldInteractor, Interactable, WorldInteractorMock};
+    use crate::world_interactor::{Interactable, WorldInteractor, WorldInteractorMock};
     use mockiato::{any, partial_eq, partial_eq_owned};
     use myelin_geometry::PolygonBuilder;
 

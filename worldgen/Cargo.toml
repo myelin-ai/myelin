@@ -1,5 +1,6 @@
 [package]
 name = "myelin-worldgen"
+description = "Generate worlds using pre-defined world generation algorithms"
 version = "0.1.0"
 authors = [
     "Jan Nils Ferner <jan@myelin.ch>",

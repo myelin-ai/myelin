@@ -1,5 +1,6 @@
 [package]
 name = "myelin-visualization-server"
+description = "In-browser visualization for myelin using a canvas with WASM"
 version = "0.1.0"
 authors = [
     "Jan Nils Ferner <jan@myelin.ch>",

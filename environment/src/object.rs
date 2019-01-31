@@ -17,7 +17,7 @@ pub trait ObjectBehavior: Debug + ObjectBehaviorClone {
     fn step(
         &mut self,
         own_description: &ObjectDescription,
-        environment: &dyn WorldInteractor,
+        world_interactor: &dyn WorldInteractor,
     ) -> Option<Action>;
 }
 

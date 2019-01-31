@@ -23,6 +23,11 @@ pipeline {
             sh '(cd visualization-client && yarn)'
           }
         }
+        stage('poetry') {
+          steps {
+            sh '(cd docs && poetry install)'
+          }
+        }
       }
     }
     stage('Build') {
@@ -38,6 +43,7 @@ pipeline {
           }
           steps {
             sh 'cargo doc'
+            sh '(cd docs && poetry run ./build-index.py)'
           }
         }
         stage('cargo doc --no-deps') {
@@ -46,6 +52,7 @@ pipeline {
           }
           steps {
             sh 'cargo doc --no-deps'
+            sh '(cd docs && poetry run ./build-index.py)'
           }
         }
         stage('wasm') {
@@ -105,7 +112,6 @@ pipeline {
       }
       steps {
         sh "tar -cvf docs.tar.gz -C target/doc ."
-        sh "tar -rvf docs.tar.gz -C docs ."
         sh "./.jenkins/deploy-docs.sh"
       }
     }

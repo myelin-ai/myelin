@@ -4,7 +4,6 @@
     rust_2018_idioms,
     missing_debug_implementations,
     missing_docs,
-    intra_doc_link_resolution_failure,
     clippy::doc_markdown,
     clippy::unimplemented
 )]
@@ -30,3 +29,6 @@ pub use self::vector::*;
 
 mod point;
 pub use self::point::*;
+
+mod convex_hull;
+pub use self::convex_hull::*;

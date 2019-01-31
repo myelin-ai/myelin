@@ -1,5 +1,6 @@
 [package]
 name = "myelin-geometry"
+description = "Basic linear and vector geometry for two-dimensional Euclidean geometry"
 version = "0.1.0"
 authors = [
     "Jan Nils Ferner <jan@myelin.ch>",
