@@ -1,5 +1,6 @@
 [package]
 name = "myelin-visualization-core"
+description = "Functionality shared by myelin-visualization-client and myelin-visualization-server"
 version = "0.1.0"
 authors = [
     "Jan Nils Ferner <jan@myelin.ch>",

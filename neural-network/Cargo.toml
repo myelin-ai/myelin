@@ -1,5 +1,6 @@
 [package]
 name = "myelin-neural-network"
+description = "Neural networks and their components"
 version = "0.1.0"
 authors = ["Jan Nils Ferner <jan@myelin.ch>"]
 edition = "2018"
