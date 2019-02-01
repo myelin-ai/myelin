@@ -7,7 +7,7 @@
 pub use crate::object::*;
 pub use crate::object_builder::*;
 pub use crate::simulation::{Id, Simulation, Snapshot};
-pub use crate::world_interactor::{Milliseconds, WorldInteractor};
+pub use crate::world_interactor::WorldInteractor;
 pub use myelin_geometry::*;
 
 #[cfg(any(test, feature = "use-mocks"))]

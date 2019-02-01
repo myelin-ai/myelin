@@ -7,11 +7,12 @@ pub mod world;
 use self::time::InstantWrapper;
 use self::world::{BodyHandle, PhysicalBody, World};
 use crate::prelude::*;
-use crate::world_interactor::{Interactable, Milliseconds};
+use crate::world_interactor::Interactable;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::{self, Debug};
+use std::time::Duration;
 
 /// Factory used by [`SimulationImpl`] to create an [`WorldInteractor`].
 ///
@@ -264,15 +265,15 @@ impl Simulation for SimulationImpl {
             })
             .collect()
     }
-
-    fn elapsed_time_in_update(&self) -> Milliseconds {
-        unimplemented!()
-    }
 }
 
 impl Interactable for SimulationImpl {
     fn objects_in_area(&self, area: Aabb) -> Snapshot {
         Simulation::objects_in_area(self, area)
+    }
+
+    fn elapsed_time_in_update(&self) -> Duration {
+        unimplemented!()
     }
 }
 

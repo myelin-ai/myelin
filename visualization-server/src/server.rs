@@ -18,12 +18,13 @@ use myelin_object_data::Kind;
 use myelin_visualization_core::serialization::BincodeSerializer;
 use myelin_worldgen::NameProviderBuilder;
 use myelin_worldgen::{HardcodedGenerator, WorldGenerator};
+use myelin_environment::simulation::time::InstantWrapperImpl;
 use std::fs::read_to_string;
 use std::net::SocketAddr;
 use std::path::Path;
 use std::sync::Arc;
 use std::thread;
-use std::time::Duration;
+use std::time::{Instant, Duration};
 use uuid::Uuid;
 
 /// Starts the simulation and a websocket server, that broadcasts
@@ -44,7 +45,7 @@ where
         );
         box SimulationImpl::new(box world, box |simulation| {
             box WorldInteractorImpl::new(simulation)
-        })
+        }, box || box InstantWrapperImpl::new(Instant::now()))
     };
     let plant_factory = box || -> Box<dyn ObjectBehavior> {
         box StochasticSpreading::new(1.0 / 5_000.0, box RandomChanceCheckerImpl::new())

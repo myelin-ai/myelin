@@ -1,6 +1,6 @@
 use super::Interactable;
 use crate::prelude::*;
-use crate::world_interactor::Milliseconds;
+use std::time::Duration;
 
 /// Default implementation of [`WorldInteractor`].
 ///
@@ -24,7 +24,7 @@ impl<'a> WorldInteractor for WorldInteractorImpl<'a> {
         self.interactable.objects_in_area(area)
     }
 
-    fn elapsed_time_in_update(&self) -> Milliseconds {
+    fn elapsed_time_in_update(&self) -> Duration {
         self.interactable.elapsed_time_in_update()
     }
 }
