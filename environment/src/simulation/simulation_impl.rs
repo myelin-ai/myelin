@@ -240,9 +240,7 @@ impl Simulation for SimulationImpl {
         assert!(timestep >= 0.0, "Cannot set timestep to a negative value");
         self.world.set_simulated_timestep(timestep)
     }
-}
 
-impl Interactable for SimulationImpl {
     fn objects_in_area(&self, area: Aabb) -> Snapshot {
         self.world
             .bodies_in_area(area)
@@ -255,6 +253,12 @@ impl Interactable for SimulationImpl {
                 (handle.0, object_description)
             })
             .collect()
+    }
+}
+
+impl Interactable for SimulationImpl {
+    fn objects_in_area(&self, area: Aabb) -> Snapshot {
+        Simulation::objects_in_area(self, area)
     }
 }
 
@@ -745,7 +749,10 @@ mod tests {
 
         let expected_objects = hashmap! { 1234 => object_description };
 
-        assert_eq!(expected_objects, simulation.objects_in_area(area));
+        assert_eq!(
+            expected_objects,
+            Simulation::objects_in_area(&simulation, area)
+        );
     }
 
     #[test]
@@ -774,7 +781,10 @@ mod tests {
 
         let expected_objects = hashmap! { 1234 => object_description };
 
-        assert_eq!(expected_objects, simulation.objects_in_area(area));
+        assert_eq!(
+            expected_objects,
+            Simulation::objects_in_area(&simulation, area)
+        );
     }
 
     fn object() -> (PhysicalBody, ObjectDescription) {
