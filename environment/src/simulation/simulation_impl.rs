@@ -4,6 +4,7 @@
 pub mod time;
 pub mod world;
 
+use self::time::InstantWrapper;
 use self::world::{BodyHandle, PhysicalBody, World};
 use crate::prelude::*;
 use crate::world_interactor::{Interactable, Milliseconds};
@@ -19,6 +20,11 @@ use std::fmt::{self, Debug};
 pub type WorldInteractorFactoryFn =
     dyn for<'a> Fn(&'a dyn Interactable) -> Box<dyn WorldInteractor + 'a>;
 
+/// Factory to retrieve a current [`Instant`], wrapped by [`InstantWrapper`]
+///
+/// [`Instant`]: https://doc.rust-lang.org/std/time/struct.Instant.html
+pub type InstantWrapperFactoryFn = dyn Fn() -> Box<dyn InstantWrapper>;
+
 /// Implementation of [`Simulation`] that uses a physical
 /// [`World`] in order to apply physics to objects.
 ///
@@ -28,6 +34,7 @@ pub struct SimulationImpl {
     world: Box<dyn World>,
     non_physical_object_data: HashMap<BodyHandle, NonPhysicalObjectData>,
     world_interactor_factory_fn: Box<WorldInteractorFactoryFn>,
+    instant_wrapper_factory_fn: Box<InstantWrapperFactoryFn>,
 }
 
 impl Debug for SimulationImpl {
@@ -91,11 +98,13 @@ impl SimulationImpl {
     pub fn new(
         world: Box<dyn World>,
         world_interactor_factory_fn: Box<WorldInteractorFactoryFn>,
+        instant_wrapper_factory_fn: Box<InstantWrapperFactoryFn>,
     ) -> Self {
         Self {
             world,
             non_physical_object_data: HashMap::new(),
             world_interactor_factory_fn,
+            instant_wrapper_factory_fn,
         }
     }
 
@@ -269,6 +278,7 @@ impl Interactable for SimulationImpl {
 
 #[cfg(test)]
 mod tests {
+    use self::time::InstantWrapperMock;
     use super::*;
     use crate::object::ObjectBehaviorMock;
     use crate::object_builder::ObjectBuilder;
@@ -283,11 +293,19 @@ mod tests {
         box WorldInteractorMock::new()
     }
 
+    fn instant_wrapper_factory_fn() -> Box<dyn InstantWrapper> {
+        box InstantWrapperMock::new()
+    }
+
     #[test]
     fn propagates_step() {
         let mut world = box WorldMock::new();
         world.expect_step();
-        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
+        let mut simulation = SimulationImpl::new(
+            world,
+            box world_interactor_factory_fn,
+            box instant_wrapper_factory_fn,
+        );
         simulation.step();
     }
 
@@ -296,7 +314,11 @@ mod tests {
         let mut world = box WorldMock::new();
         const EXPECTED_TIMESTEP: f64 = 1.0;
         world.expect_set_simulated_timestep(partial_eq(EXPECTED_TIMESTEP));
-        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
+        let mut simulation = SimulationImpl::new(
+            world,
+            box world_interactor_factory_fn,
+            box instant_wrapper_factory_fn,
+        );
         simulation.set_simulated_timestep(EXPECTED_TIMESTEP);
     }
 
@@ -304,7 +326,11 @@ mod tests {
     #[test]
     fn panics_on_negative_timestep() {
         let world = box WorldMock::new();
-        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
+        let mut simulation = SimulationImpl::new(
+            world,
+            box world_interactor_factory_fn,
+            box instant_wrapper_factory_fn,
+        );
         const INVALID_TIMESTEP: f64 = -0.1;
         simulation.set_simulated_timestep(INVALID_TIMESTEP);
     }
@@ -314,14 +340,22 @@ mod tests {
         let mut world = box WorldMock::new();
         const EXPECTED_TIMESTEP: f64 = 0.0;
         world.expect_set_simulated_timestep(partial_eq(EXPECTED_TIMESTEP));
-        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
+        let mut simulation = SimulationImpl::new(
+            world,
+            box world_interactor_factory_fn,
+            box instant_wrapper_factory_fn,
+        );
         simulation.set_simulated_timestep(EXPECTED_TIMESTEP);
     }
 
     #[test]
     fn returns_no_objects_when_empty() {
         let world = box WorldMock::new();
-        let simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
+        let simulation = SimulationImpl::new(
+            world,
+            box world_interactor_factory_fn,
+            box instant_wrapper_factory_fn,
+        );
         let objects = simulation.objects();
         assert!(objects.is_empty())
     }
@@ -357,7 +391,11 @@ mod tests {
             .unwrap();
         let object_behavior = ObjectBehaviorMock::new();
 
-        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
+        let mut simulation = SimulationImpl::new(
+            world,
+            box world_interactor_factory_fn,
+            box instant_wrapper_factory_fn,
+        );
         simulation.add_object(object_description, box object_behavior);
     }
 
@@ -403,7 +441,11 @@ mod tests {
             .expect_step(partial_eq_owned(expected_object_description.clone()), any())
             .returns(None);
 
-        let mut simulation = SimulationImpl::new(box world, box world_interactor_factory_fn);
+        let mut simulation = SimulationImpl::new(
+            box world,
+            box world_interactor_factory_fn,
+            box instant_wrapper_factory_fn,
+        );
         simulation.add_object(expected_object_description, box object_behavior);
         simulation.step();
     }
@@ -435,7 +477,11 @@ mod tests {
             .expect_is_body_passable(partial_eq(returned_handle))
             .returns(expected_passable);
 
-        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
+        let mut simulation = SimulationImpl::new(
+            world,
+            box world_interactor_factory_fn,
+            box instant_wrapper_factory_fn,
+        );
         let object_behavior = ObjectBehaviorMock::new();
 
         let expected_object_description = ObjectBuilder::default()
@@ -489,7 +535,11 @@ mod tests {
             .returns(Some(expected_physical_body));
         world.expect_step();
 
-        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
+        let mut simulation = SimulationImpl::new(
+            world,
+            box world_interactor_factory_fn,
+            box instant_wrapper_factory_fn,
+        );
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
@@ -550,7 +600,11 @@ mod tests {
             .expect_is_body_passable(partial_eq(returned_handle))
             .returns(expected_passable);
 
-        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
+        let mut simulation = SimulationImpl::new(
+            world,
+            box world_interactor_factory_fn,
+            box instant_wrapper_factory_fn,
+        );
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
@@ -605,7 +659,11 @@ mod tests {
             .expect_remove_body(partial_eq(handle_two))
             .returns(Some(expected_physical_body));
 
-        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
+        let mut simulation = SimulationImpl::new(
+            world,
+            box world_interactor_factory_fn,
+            box instant_wrapper_factory_fn,
+        );
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
@@ -665,7 +723,11 @@ mod tests {
             )
             .returns(Some(()));
 
-        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
+        let mut simulation = SimulationImpl::new(
+            world,
+            box world_interactor_factory_fn,
+            box instant_wrapper_factory_fn,
+        );
 
         let mut object_behavior = ObjectBehaviorMock::new();
 
@@ -709,7 +771,11 @@ mod tests {
             .expect_add_body(partial_eq(expected_physical_body.clone()))
             .returns(returned_handle);
         world.expect_body(partial_eq(returned_handle)).returns(None);
-        let mut simulation = SimulationImpl::new(world, box world_interactor_factory_fn);
+        let mut simulation = SimulationImpl::new(
+            world,
+            box world_interactor_factory_fn,
+            box instant_wrapper_factory_fn,
+        );
 
         let object_description = ObjectBuilder::default()
             .location(expected_location.x, expected_location.y)
@@ -747,7 +813,11 @@ mod tests {
             .expect_is_body_passable(partial_eq(returned_handle))
             .returns(expected_physical_body.passable);
 
-        let mut simulation = SimulationImpl::new(box world, box world_interactor_factory_fn);
+        let mut simulation = SimulationImpl::new(
+            box world,
+            box world_interactor_factory_fn,
+            box instant_wrapper_factory_fn,
+        );
 
         let object_behavior = ObjectBehaviorMock::new();
         simulation.add_object(object_description.clone(), box object_behavior);
@@ -779,7 +849,11 @@ mod tests {
             .returns(vec![returned_handle]);
         world.expect_body(partial_eq(returned_handle)).returns(None);
 
-        let mut simulation = SimulationImpl::new(box world, box world_interactor_factory_fn);
+        let mut simulation = SimulationImpl::new(
+            box world,
+            box world_interactor_factory_fn,
+            box instant_wrapper_factory_fn,
+        );
 
         let object_behavior = ObjectBehaviorMock::new();
         simulation.add_object(object_description.clone(), box object_behavior);
