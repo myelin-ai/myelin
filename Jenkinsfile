@@ -21,6 +21,7 @@ pipeline {
         stage('rustup') {
           steps {
             sh 'rustup component add rustfmt clippy'
+            sh 'rustup target add wasm32-unknown-unknown'
           }
         }
         stage('yarn') {
