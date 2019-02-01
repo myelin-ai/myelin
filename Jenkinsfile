@@ -18,6 +18,11 @@ pipeline {
     }
     stage('Dependencies') {
       parallel {
+        stage('rustup') {
+          steps {
+            sh 'rustup component add rustfmt clippy'
+          }
+        }
         stage('yarn') {
           steps {
             sh '(cd visualization-client && yarn)'
