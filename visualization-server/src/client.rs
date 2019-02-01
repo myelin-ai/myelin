@@ -3,7 +3,7 @@ use crate::connection::SocketError;
 use crate::connection_acceptor::Client;
 use crate::controller::{CurrentSnapshotFn, Presenter};
 use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperError};
-use myelin_environment::prelude::*;
+use myelin_engine::prelude::*;
 use myelin_visualization_core::serialization::ViewModelSerializer;
 use std::error::Error;
 use std::fmt::{self, Debug, Display};

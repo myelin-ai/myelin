@@ -5,12 +5,12 @@ use crate::constant::*;
 use crate::controller::{ConnectionAcceptor, Controller, ControllerImpl};
 use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
-use myelin_environment::prelude::*;
-use myelin_environment::simulation::world::{
+use myelin_engine::prelude::*;
+use myelin_engine::simulation::world::{
     rotation_translator::NphysicsRotationTranslatorImpl, NphysicsWorld, SingleTimeForceApplierImpl,
 };
-use myelin_environment::simulation::SimulationImpl;
-use myelin_environment::world_interactor::WorldInteractorImpl;
+use myelin_engine::simulation::SimulationImpl;
+use myelin_engine::world_interactor::WorldInteractorImpl;
 use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
 use myelin_object_behavior::Static;
 use myelin_object_data::AdditionalObjectDescriptionBincodeSerializer;

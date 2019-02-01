@@ -47,8 +47,8 @@ impl NphysicsWorld {
     /// Instantiates a new empty world
     /// # Examples
     /// ```
-    /// use myelin_environment::prelude::*;
-    /// use myelin_environment::simulation::world::{
+    /// use myelin_engine::prelude::*;
+    /// use myelin_engine::simulation::world::{
     ///     rotation_translator::NphysicsRotationTranslatorImpl, NphysicsWorld,
     ///     SingleTimeForceApplierImpl,
     /// };

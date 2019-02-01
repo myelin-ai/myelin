@@ -1,5 +1,5 @@
 [package]
-name = "myelin-environment"
+name = "myelin-engine"
 description = """
 This crate contains the physical environment of
 the simulation, as well as the objects that reside
