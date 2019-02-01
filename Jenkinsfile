@@ -18,6 +18,12 @@ pipeline {
     }
     stage('Dependencies') {
       parallel {
+        stage('rustup') {
+          steps {
+            sh 'rustup component add rustfmt clippy'
+            sh 'rustup target add wasm32-unknown-unknown'
+          }
+        }
         stage('yarn') {
           steps {
             sh '(cd visualization-client && yarn)'
