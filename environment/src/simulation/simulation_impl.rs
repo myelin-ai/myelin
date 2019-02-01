@@ -5,7 +5,7 @@ pub mod world;
 
 use self::world::{BodyHandle, PhysicalBody, World};
 use crate::prelude::*;
-use crate::world_interactor::Interactable;
+use crate::world_interactor::{Interactable, Milliseconds};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::error::Error;
@@ -253,6 +253,10 @@ impl Simulation for SimulationImpl {
                 (handle.0, object_description)
             })
             .collect()
+    }
+
+    fn elapsed_time_in_update(&self) -> Milliseconds {
+        unimplemented!()
     }
 }
 
