@@ -1,3 +1,4 @@
+use super::Interactable;
 use crate::prelude::*;
 
 /// Default implementation of [`WorldInteractor`].
@@ -5,27 +6,28 @@ use crate::prelude::*;
 /// [`WorldInteractor`]: ./../object/trait.WorldInteractor.html
 #[derive(Debug)]
 pub struct WorldInteractorImpl<'a> {
-    simulation: &'a dyn Simulation,
+    interactable: &'a dyn Interactable,
 }
 
 impl<'a> WorldInteractorImpl<'a> {
     /// Creates a new instance of [`WorldInteractorImpl`].
     ///
     /// [`WorldInteractorImpl`]: ./struct.WorldInteractorImpl.html
-    pub fn new(simulation: &'a dyn Simulation) -> Self {
-        Self { simulation }
+    pub fn new(interactable: &'a dyn Interactable) -> Self {
+        Self { interactable }
     }
 }
 
 impl<'a> WorldInteractor for WorldInteractorImpl<'a> {
     fn find_objects_in_area(&self, area: Aabb) -> Snapshot {
-        self.simulation.objects_in_area(area)
+        self.interactable.objects_in_area(area)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::world_interactor::InteractableMock;
     use mockiato::partial_eq;
     use myelin_geometry::{Point, PolygonBuilder};
 
@@ -53,11 +55,11 @@ mod tests {
             lower_right: Point { x: 20.0, y: 0.0 },
         };
 
-        let mut simulation = SimulationMock::new();
-        simulation
+        let mut interactable = InteractableMock::new();
+        interactable
             .expect_objects_in_area(partial_eq(area))
             .returns(objects.clone());
-        let object_environment = WorldInteractorImpl::new(&simulation);
+        let object_environment = WorldInteractorImpl::new(&interactable);
 
         assert_eq!(objects, object_environment.find_objects_in_area(area));
     }
