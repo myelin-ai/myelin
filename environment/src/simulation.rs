@@ -34,6 +34,10 @@ pub trait Simulation: Debug {
     /// can run `set_simulated_timestep(1.0/60.0)`. Note that this method
     /// does not block the thread if called faster than expected.
     fn set_simulated_timestep(&mut self, timestep: f64);
+
+    /// Returns read-only descriptions for all objects either completely
+    /// contained or intersecting with the given area.
+    fn objects_in_area(&self, area: Aabb) -> Snapshot;
 }
 
 /// Unique identifier of an Object
