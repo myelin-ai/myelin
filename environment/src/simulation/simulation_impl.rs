@@ -36,6 +36,7 @@ pub struct SimulationImpl {
     non_physical_object_data: HashMap<BodyHandle, NonPhysicalObjectData>,
     world_interactor_factory_fn: Box<WorldInteractorFactoryFn>,
     instant_wrapper_factory_fn: Box<InstantWrapperFactoryFn>,
+    last_step_instant: Option<Box<dyn InstantWrapper>>,
 }
 
 impl Debug for SimulationImpl {
@@ -109,6 +110,7 @@ impl SimulationImpl {
             non_physical_object_data: HashMap::new(),
             world_interactor_factory_fn,
             instant_wrapper_factory_fn,
+            last_step_instant: None,
         }
     }
 
@@ -211,7 +213,8 @@ impl Simulation for SimulationImpl {
             self.handle_action(body_handle, action)
                 .expect("Body handle was not found within world");
         }
-        self.world.step()
+        self.world.step();
+        self.last_step_instant = Some((self.instant_wrapper_factory_fn)());
     }
 
     fn add_object(
@@ -276,7 +279,10 @@ impl Interactable for SimulationImpl {
     }
 
     fn elapsed_time_in_update(&self) -> Duration {
-        unimplemented!()
+        match &self.last_step_instant {
+            Some(last_step_instant) => last_step_instant.to_inner().elapsed(),
+            None => Duration::default(),
+        }
     }
 }
 
@@ -923,13 +929,14 @@ mod tests {
             box real_instant_wrapper_factory_fn,
         );
         let elapsed_time = simulation.elapsed_time_in_update();
-        let no_time = Duration::from_secs(0);
+        let no_time = Duration::default();
         assert_eq!(no_time, elapsed_time);
     }
 
     #[test]
     fn elapsed_time_in_update_is_correct_after_step() {
-        let world = box WorldMock::new();
+        let mut world = box WorldMock::new();
+        world.expect_step();
         let mut simulation = SimulationImpl::new(
             world,
             box world_interactor_factory_fn,
@@ -945,7 +952,8 @@ mod tests {
 
     #[test]
     fn elapsed_time_in_update_is_correct_after_multiple_steps() {
-        let world = box WorldMock::new();
+        let mut world = box WorldMock::new();
+        world.expect_step().times(2);
         let mut simulation = SimulationImpl::new(
             world,
             box world_interactor_factory_fn,
