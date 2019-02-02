@@ -38,6 +38,7 @@ impl HardcodedGenerator {
     /// # Examples
     /// ```
     /// use myelin_environment::prelude::*;
+    /// use myelin_environment::simulation::time::InstantWrapperImpl;
     /// use myelin_environment::simulation::world::{
     ///     rotation_translator::NphysicsRotationTranslatorImpl, NphysicsWorld,
     ///     SingleTimeForceApplierImpl,
@@ -50,6 +51,7 @@ impl HardcodedGenerator {
     /// use std::fs::read_to_string;
     /// use std::path::Path;
     /// use std::sync::{Arc, RwLock};
+    /// use std::time::Instant;
     ///
     /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
     ///     let rotation_translator = NphysicsRotationTranslatorImpl::default();
@@ -62,6 +64,7 @@ impl HardcodedGenerator {
     ///     Box::new(SimulationImpl::new(
     ///         world,
     ///         Box::new(|simulation| Box::new(WorldInteractorImpl::new(simulation))),
+    ///         Box::new(|| Box::new(InstantWrapperImpl::new(Instant::now()))),
     ///     ))
     /// });
     ///

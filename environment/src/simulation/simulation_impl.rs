@@ -75,6 +75,7 @@ impl SimulationImpl {
     /// # Examples
     /// ```
     /// use myelin_environment::prelude::*;
+    /// use myelin_environment::simulation::time::InstantWrapperImpl;
     /// use myelin_environment::simulation::world::{
     ///     rotation_translator::NphysicsRotationTranslatorImpl, NphysicsWorld,
     ///     SingleTimeForceApplierImpl,
@@ -82,6 +83,7 @@ impl SimulationImpl {
     /// use myelin_environment::simulation::SimulationImpl;
     /// use myelin_environment::world_interactor::WorldInteractorImpl;
     /// use std::sync::{Arc, RwLock};
+    /// use std::time::Instant;
     ///
     /// let rotation_translator = NphysicsRotationTranslatorImpl::default();
     /// let force_applier = SingleTimeForceApplierImpl::default();
@@ -93,6 +95,7 @@ impl SimulationImpl {
     /// let simulation = SimulationImpl::new(
     ///     world,
     ///     Box::new(|simulation| Box::new(WorldInteractorImpl::new(simulation))),
+    ///     Box::new(|| Box::new(InstantWrapperImpl::new(Instant::now()))),
     /// );
     /// ```
     /// [`World`]: ./trait.World.html
