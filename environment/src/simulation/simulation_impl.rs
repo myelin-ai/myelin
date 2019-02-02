@@ -282,7 +282,7 @@ impl Interactable for SimulationImpl {
 
 #[cfg(test)]
 mod tests {
-    use self::time::InstantWrapperMock;
+    use self::time::{InstantWrapperImpl, InstantWrapperMock};
     use super::*;
     use crate::object::ObjectBehaviorMock;
     use crate::object_builder::ObjectBuilder;
@@ -290,6 +290,8 @@ mod tests {
     use crate::world_interactor::{Interactable, WorldInteractor, WorldInteractorMock};
     use mockiato::{any, partial_eq, partial_eq_owned};
     use myelin_geometry::PolygonBuilder;
+    use std::thread::sleep;
+    use std::time::Instant;
 
     fn world_interactor_factory_fn<'a>(
         _interactable: &'a dyn Interactable,
@@ -911,4 +913,58 @@ mod tests {
     fn rotation() -> Radians {
         Radians::try_new(3.4).unwrap()
     }
+
+    #[test]
+    fn elapsed_time_in_update_is_initially_at_zero() {
+        let world = box WorldMock::new();
+        let simulation = SimulationImpl::new(
+            world,
+            box world_interactor_factory_fn,
+            box real_instant_wrapper_factory_fn,
+        );
+        let elapsed_time = simulation.elapsed_time_in_update();
+        let no_time = Duration::from_secs(0);
+        assert_eq!(no_time, elapsed_time);
+    }
+
+    #[test]
+    fn elapsed_time_in_update_is_correct_after_step() {
+        let world = box WorldMock::new();
+        let mut simulation = SimulationImpl::new(
+            world,
+            box world_interactor_factory_fn,
+            box real_instant_wrapper_factory_fn,
+        );
+        simulation.step();
+        let sleep_time = Duration::from_millis(15);
+        sleep(sleep_time);
+        let elapsed_time = simulation.elapsed_time_in_update();
+
+        assert!(elapsed_time >= sleep_time && elapsed_time <= MAX_DURATION);
+    }
+
+    #[test]
+    fn elapsed_time_in_update_is_correct_after_multiple_steps() {
+        let world = box WorldMock::new();
+        let mut simulation = SimulationImpl::new(
+            world,
+            box world_interactor_factory_fn,
+            box real_instant_wrapper_factory_fn,
+        );
+        simulation.step();
+        let sleep_time = Duration::from_millis(15);
+        sleep(sleep_time);
+        simulation.step();
+        sleep(sleep_time);
+        let elapsed_time = simulation.elapsed_time_in_update();
+
+        assert!(elapsed_time >= sleep_time && elapsed_time <= MAX_DURATION);
+    }
+
+    fn real_instant_wrapper_factory_fn() -> Box<dyn InstantWrapper> {
+        box InstantWrapperImpl::new(Instant::now())
+    }
+
+    const MAX_DURATION: Duration = Duration::from_millis(20);
+
 }
