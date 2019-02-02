@@ -974,5 +974,4 @@ mod tests {
     }
 
     const MAX_DURATION: Duration = Duration::from_millis(20);
-
 }
