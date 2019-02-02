@@ -60,8 +60,7 @@ impl ViewModelDeserializer for BincodeDeserializer {
 mod tests {
     use super::*;
     use crate::view_model_delta::*;
-    use myelin_environment::object::*;
-    use myelin_geometry::*;
+    use myelin_environment::prelude::*;
 
     #[test]
     fn serializes_full_delta() {
