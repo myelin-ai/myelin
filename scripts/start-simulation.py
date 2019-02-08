@@ -29,7 +29,7 @@ def start(release=False, open=False, build=True):
 
 def _parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--release', '-R', action='store_true',
+    parser.add_argument('--release', action='store_true',
                         help='Builds in release mode')
     parser.add_argument('--open', action='store_true',
                         help='Opens a browser after starting')

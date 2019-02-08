@@ -38,9 +38,9 @@ def _get_cargo_command(release: bool) -> List[str]:
 
 def _parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--webpack', '-W', action='store_true',
+    parser.add_argument('--webpack', action='store_true',
                         help='Runs webpack after building')
-    parser.add_argument('--release', '-R', action='store_true',
+    parser.add_argument('--release', action='store_true',
                         help='Builds in release mode')
     return parser.parse_args()
 
