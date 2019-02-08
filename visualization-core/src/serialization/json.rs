@@ -55,7 +55,7 @@ impl ViewModelDeserializer for JsonDeserializer {
 mod tests {
     use super::*;
     use crate::view_model_delta::*;
-    use myelin_environment::object::*;
+    use myelin_engine::object::*;
     use myelin_geometry::*;
 
     const EXPECTED_JSON: &str = r#"{"12":{"Updated":{"shape":{"vertices":[{"x":-5.0,"y":-5.0},{"x":1.0,"y":1.0},{"x":2.0,"y":3.0},{"x":5.0,"y":6.0}]},"location":{"x":3.0,"y":4.0},"rotation":{"value":1.0},"mobility":{"Movable":{"x":2.0,"y":3.0}},"associated_data":[67,97,116]}}}"#;

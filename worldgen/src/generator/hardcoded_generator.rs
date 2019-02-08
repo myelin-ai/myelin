@@ -2,7 +2,7 @@
 
 use crate::NameProvider;
 use crate::WorldGenerator;
-use myelin_environment::prelude::*;
+use myelin_engine::prelude::*;
 use myelin_object_data::{
     AdditionalObjectDescription, AdditionalObjectDescriptionSerializer, Kind,
 };
@@ -33,17 +33,17 @@ impl HardcodedGenerator {
     /// a function that returns a specific [`Simulation`] that
     /// is going to be populated by the simulation generator.
     ///
-    /// [`Simulation`]: ../../myelin_environment/simulation/trait.Simulation.html
+    /// [`Simulation`]: ../../myelin_engine/simulation/trait.Simulation.html
     ///
     /// # Examples
     /// ```
-    /// use myelin_environment::prelude::*;
-    /// use myelin_environment::simulation::world::{
+    /// use myelin_engine::prelude::*;
+    /// use myelin_engine::simulation::world::{
     ///     rotation_translator::NphysicsRotationTranslatorImpl, NphysicsWorld,
     ///     SingleTimeForceApplierImpl,
     /// };
-    /// use myelin_environment::simulation::SimulationImpl;
-    /// use myelin_environment::world_interactor::WorldInteractorImpl;
+    /// use myelin_engine::simulation::SimulationImpl;
+    /// use myelin_engine::world_interactor::WorldInteractorImpl;
     /// use myelin_object_behavior::Static;
     /// use myelin_object_data::{AdditionalObjectDescriptionBincodeSerializer, Kind};
     /// use myelin_worldgen::{HardcodedGenerator, NameProviderBuilder, WorldGenerator};

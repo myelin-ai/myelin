@@ -3,7 +3,7 @@
         "hash": {
             "sha256": "f9dc18dc6aa2819161adc7e97672379e351117a068e5a150fe073e2c358f5d63"
         },
-        "host-environment-markers": {
+        "host-engine-markers": {
             "implementation_name": "cpython",
             "implementation_version": "3.7.0",
             "os_name": "posix",
