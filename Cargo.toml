@@ -1,11 +1,9 @@
 [workspace]
 members = [
-    "environment",
     "visualization-core",
     "visualization-client",
     "visualization-server",
     "worldgen",
     "object-behavior",
     "neural-network",
-    "geometry"
 ]

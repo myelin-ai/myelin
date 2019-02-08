@@ -1,6 +1,6 @@
 //! Contains the [`Static`] behavior.
 
-use myelin_environment::prelude::*;
+use myelin_engine::prelude::*;
 
 /// A purely static and non-interactive behavior.
 /// This type will never perform any actions.

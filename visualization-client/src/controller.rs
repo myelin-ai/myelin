@@ -1,6 +1,6 @@
 use crate::input_handler::Controller;
 use crate::presenter;
-use myelin_environment::object::ObjectDescription;
+use myelin_engine::object::ObjectDescription;
 use myelin_object_data::{
     AdditionalObjectDescription, AdditionalObjectDescriptionDeserializer,
     AdditionalObjectDescriptionSerializer,

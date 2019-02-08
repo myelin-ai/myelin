@@ -60,7 +60,7 @@ impl ViewModelDeserializer for BincodeDeserializer {
 mod tests {
     use super::*;
     use crate::view_model_delta::*;
-    use myelin_environment::object::*;
+    use myelin_engine::object::*;
     use myelin_geometry::*;
 
     #[test]

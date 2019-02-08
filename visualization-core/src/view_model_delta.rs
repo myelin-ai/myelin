@@ -1,7 +1,7 @@
 //! The delta of the world's state, i.e. the properties
 //! that changed since the last snapshot
 
-use myelin_environment::prelude::*;
+use myelin_engine::prelude::*;
 use std::collections::HashMap;
 
 /// This step's object deltas
@@ -20,7 +20,7 @@ pub enum ObjectDelta {
 
 /// The delta of a [`ObjectDescription`].
 ///
-/// [`ObjectDescription`]: ../../environment/object/struct.ObjectDescription.html
+/// [`ObjectDescription`]: ../../engine/object/struct.ObjectDescription.html
 #[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct ObjectDescriptionDelta {
     /// The vertices defining the shape of the object
