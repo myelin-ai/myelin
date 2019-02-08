@@ -17,7 +17,6 @@ _WEBSOCKET_PORT = 6956
 def start(release=False, open=False, build=True):
     if build:
         _build_visualization_client(release)
-        _build_visualization_server(release)
 
     pool = ThreadPoolExecutor(max_workers=2)
     pool.submit(_serve_visualization_client)
@@ -54,15 +53,6 @@ def _get_visualization_client_build_command(release: bool) -> List[str]:
         _CARGO_WORKSPACE, 'visualization-client',  'scripts', 'build.py')
     command = [executable, '--webpack']
     return _append_release_flag(command, release)
-
-
-def _build_visualization_server(release: bool):
-    subprocess.check_call(_get_build_visualization_server_command(release))
-
-
-def _get_build_visualization_server_command(release: bool) -> List[str]:
-    return _append_release_flag(['cargo', 'build', '-p',
-                                 'myelin-visualization-server'], release)
 
 
 def _start_visualization_server(release: bool):
