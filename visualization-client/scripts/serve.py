@@ -6,7 +6,7 @@ import sys
 
 _DEFAULT_ADDRESS = ('127.0.0.1', 8080)
 _PUBLIC_DIRECTORY = os.path.join(
-    os.path.dirname(__file__), '..', '..', 'public')
+    os.path.dirname(__file__), '..', 'public')
 
 
 class _Handler(SimpleHTTPRequestHandler):
@@ -21,6 +21,7 @@ class _Handler(SimpleHTTPRequestHandler):
 
 def serve(address=_DEFAULT_ADDRESS):
     server = HTTPServer(address, _Handler)
+    print('Serving on {}'.format(address))
     server.serve_forever()
 
 
