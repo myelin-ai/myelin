@@ -15,5 +15,5 @@ class Handler(SimpleHTTPRequestHandler):
 Handler.extensions_map['.wasm'] = 'application/wasm'
 
 server = HTTPServer(ADDRESS, Handler)
-print('Listening on port {}'.format(PORT))
+print(f'Listening on port {PORT}')
 server.serve_forever()

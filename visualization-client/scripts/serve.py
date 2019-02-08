@@ -21,7 +21,7 @@ class _Handler(SimpleHTTPRequestHandler):
 
 def serve(address=_DEFAULT_ADDRESS):
     server = HTTPServer(address, _Handler)
-    print('Serving on {}'.format(address))
+    print(f'Serving on {address}')
     server.serve_forever()
 
 

@@ -16,7 +16,7 @@ def build(with_webpack=False, release=False):
     out_dir = os.path.join(crate_dir, 'out')
     build_mode = 'release' if release else 'debug'
     wasm_file = os.path.join(crate_dir, '..', 'target',
-                             _WASM_TARGET, build_mode, '{}.wasm'.format(_BINARY_NAME))
+                             _WASM_TARGET, build_mode, f'{_BINARY_NAME}.wasm')
 
     subprocess.check_call(_get_cargo_command(release), cwd=crate_dir)
 
