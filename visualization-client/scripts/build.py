@@ -5,6 +5,7 @@ import subprocess
 import os
 import shutil
 import argparse
+from typing import List
 
 _WASM_TARGET = 'wasm32-unknown-unknown'
 _BINARY_NAME = 'myelin_visualization_client'
@@ -17,10 +18,7 @@ def build(with_webpack=False, release=False):
     wasm_file = os.path.join(crate_dir, '..', 'target',
                              _WASM_TARGET, build_mode, '{}.wasm'.format(_BINARY_NAME))
 
-    cargo_command = ['cargo', 'build', '--target', _WASM_TARGET]
-    if release:
-        cargo_command.append('--release')
-    subprocess.check_call(cargo_command, cwd=crate_dir)
+    subprocess.check_call(_get_cargo_command(release), cwd=crate_dir)
 
     shutil.rmtree(out_dir, ignore_errors=True)
     os.makedirs(out_dir)
@@ -29,6 +27,13 @@ def build(with_webpack=False, release=False):
     if with_webpack:
         subprocess.check_call(['yarn'], cwd=crate_dir)
         subprocess.check_call(['yarn', 'webpack'], cwd=crate_dir)
+
+
+def _get_cargo_command(release: bool) -> List[str]:
+    command = ['cargo', 'build', '--target', _WASM_TARGET]
+    if release:
+        command.append('--release')
+    return command
 
 
 def _parse_arguments():

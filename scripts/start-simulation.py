@@ -6,6 +6,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor, Future
 import argparse
 import time
+from typing import List
 
 _CARGO_WORKSPACE = os.path.join(os.path.dirname(__file__), '..')
 
@@ -40,28 +41,40 @@ def _serve_visualization_client():
 
 
 def _build_visualization_client(release: bool):
-    build_command = [os.path.join(_CARGO_WORKSPACE, 'visualization-client',
-                                  'scripts', 'build.py'), '--webpack']
-    if release:
-        build_command.append('--release')
+    subprocess.check_call(_get_visualization_client_build_command(release))
 
-    subprocess.check_call(build_command)
+
+def _get_visualization_client_build_command(release: bool) -> List[str]:
+    executable = os.path.join(
+        _CARGO_WORKSPACE, 'visualization-client',  'scripts', 'build.py')
+    command = [executable, '--webpack']
+    if release:
+        command.append('--release')
+    return command
 
 
 def _build_visualization_server(release: bool):
+    subprocess.check_call(_get_build_visualization_server_command(release))
+
+
+def _get_build_visualization_server_command(release: bool) -> List[str]:
     command = ['cargo', 'build', '-p',
                'myelin-visualization-server']
     if release:
         command.append('--release')
-    subprocess.check_call(command)
+    return command
 
 
 def _start_visualization_server(release: bool):
+    subprocess.check_call(_get_start_visualization_server_command(release))
+
+
+def _get_start_visualization_server_command(release: bool) -> List[str]:
     command = ['cargo', 'run', '-p',
                'myelin-visualization-server']
     if release:
         command.append('--release')
-    subprocess.check_call(command)
+    return command
 
 
 def _open_browser():
