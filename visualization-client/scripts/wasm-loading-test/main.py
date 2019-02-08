@@ -57,9 +57,11 @@ def _start_webdriver():
         if not len(severe_messages) == 0:
             print('Error: fatal messages found in console')
             for message in severe_messages:
+                message_source = message['source']
+                message_text = message['message']
                 print('')
-                print(f'source: {message['source']}')
-                print(f'message: {message['message']}')
+                print(f'source: {message_source}')
+                print(f'message: {message_text}')
             sys.exit(1)
 
 
