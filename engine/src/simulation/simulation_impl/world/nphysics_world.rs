@@ -19,7 +19,7 @@ use nalgebra::base::{Scalar, Vector2};
 use ncollide2d::bounding_volume::AABB as NcollideAabb;
 use ncollide2d::math::Point as NcollidePoint;
 use ncollide2d::shape::{ConvexPolygon, ShapeHandle};
-use ncollide2d::world::CollisionObjectHandle;
+use ncollide2d::world::{CollisionGroups, CollisionObjectHandle};
 use nphysics2d::force_generator::{ForceGenerator, ForceGeneratorHandle};
 use nphysics2d::math::{Isometry, Point as NPhysicsPoint, Vector as NPhysicsVector};
 use nphysics2d::object::{
@@ -285,8 +285,11 @@ impl World for NphysicsWorld {
     }
 
     fn bodies_in_area(&self, area: Aabb) -> Vec<BodyHandle> {
+        let collision_groups = CollisionGroups::new();
+
         self.physics_world
-            .interferences_with_aabb(&to_ncollide_aabb(area))
+            .collision_world()
+            .interferences_with_aabb(&to_ncollide_aabb(area), &collision_groups)
             .map(|collision| to_body_handle(collision.handle()))
             .collect()
     }
