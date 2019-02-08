@@ -12,9 +12,10 @@ import sys
 _CARGO_WORKSPACE = os.path.join(os.path.dirname(__file__), '..')
 
 
-def start(release=False, open=False):
-    _build_visualization_client(release)
-    _build_visualization_server(release)
+def start(release=False, open=False, build=True):
+    if build:
+        _build_visualization_client(release)
+        _build_visualization_server(release)
 
     pool = ThreadPoolExecutor(max_workers=2)
     pool.submit(_serve_visualization_client)
@@ -31,14 +32,15 @@ def _parse_arguments():
                         help='Builds in release mode')
     parser.add_argument('--open', action='store_true',
                         help='Opens a browser after starting')
+    parser.add_argument('--no-build', action='store_true',
+                        help='Do not build anything, just run')
     return parser.parse_args()
 
 
 def _serve_visualization_client():
-    subprocess.check_call([
-        os.path.join(_CARGO_WORKSPACE, 'visualization-client',
-                     'scripts', 'serve.py')
-    ])
+    command = os.path.join(_CARGO_WORKSPACE, 'visualization-client',
+                           'scripts', 'serve.py')
+    subprocess.check_call(command)
 
 
 def _build_visualization_client(release: bool):
@@ -85,6 +87,6 @@ def _open_browser():
 if __name__ == '__main__':
     args = _parse_arguments()
     try:
-        start(release=args.release, open=args.open)
+        start(release=args.release, open=args.open, build=not args.no_build)
     except KeyboardInterrupt:
         sys.exit(0)
