@@ -38,7 +38,7 @@ def _start_webdriver():
     time.sleep(2)
 
     with webdriver.Chrome(options=options) as driver:
-        driver.get('http://localhost:{}'.format(HTTP_PORT))
+        driver.get(f'http://localhost:{HTTP_PORT}')
 
         # Sleep for a bit to make sure everything is properly loaded
         time.sleep(2)
@@ -57,9 +57,11 @@ def _start_webdriver():
         if not len(severe_messages) == 0:
             print('Error: fatal messages found in console')
             for message in severe_messages:
+                message_source = message['source']
+                message_text = message['message']
                 print('')
-                print('source: {}'.format(message['source']))
-                print('message: {}'.format(message['message']))
+                print(f'source: {message_source}')
+                print(f'message: {message_text}')
             sys.exit(1)
 
 
