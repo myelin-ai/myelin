@@ -8,8 +8,10 @@ import argparse
 import time
 from typing import List
 import sys
+from socket import create_connection
 
 _CARGO_WORKSPACE = os.path.join(os.path.dirname(__file__), '..')
+_WEBSOCKET_PORT = 6956
 
 
 def start(release=False, open=False, build=True):
@@ -22,7 +24,7 @@ def start(release=False, open=False, build=True):
     pool.submit(_start_visualization_server, release)
 
     if open:
-        time.sleep(3)
+        _poll_visualization_server()
         _open_browser()
 
 
@@ -82,6 +84,19 @@ def _get_start_visualization_server_command(release: bool) -> List[str]:
 
 def _open_browser():
     subprocess.call(['open', 'http://localhost:8080'])
+
+
+def _poll_visualization_server():
+    while True:
+        connection = None
+        try:
+            connection = create_connection(('localhost', _WEBSOCKET_PORT))
+            break
+        except ConnectionRefusedError as e:
+            time.sleep(0.1)
+        finally:
+            if connection is not None:
+                connection.close()
 
 
 if __name__ == '__main__':
