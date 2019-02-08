@@ -53,9 +53,7 @@ def _get_visualization_client_build_command(release: bool) -> List[str]:
     executable = os.path.join(
         _CARGO_WORKSPACE, 'visualization-client',  'scripts', 'build.py')
     command = [executable, '--webpack']
-    if release:
-        command.append('--release')
-    return command
+    return _append_release_flag(command, release)
 
 
 def _build_visualization_server(release: bool):
@@ -63,11 +61,8 @@ def _build_visualization_server(release: bool):
 
 
 def _get_build_visualization_server_command(release: bool) -> List[str]:
-    command = ['cargo', 'build', '-p',
-               'myelin-visualization-server']
-    if release:
-        command.append('--release')
-    return command
+    return _append_release_flag(['cargo', 'build', '-p',
+                                 'myelin-visualization-server'], release)
 
 
 def _start_visualization_server(release: bool):
@@ -75,11 +70,15 @@ def _start_visualization_server(release: bool):
 
 
 def _get_start_visualization_server_command(release: bool) -> List[str]:
-    command = ['cargo', 'run', '-p',
-               'myelin-visualization-server']
+    return _append_release_flag(['cargo', 'run', '-p',
+                                 'myelin-visualization-server'], release)
+
+
+def _append_release_flag(command: List[str], release: bool) -> List[str]:
     if release:
-        command.append('--release')
-    return command
+        return [*command, '--release']
+    else:
+        return command
 
 
 def _open_browser():
