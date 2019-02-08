@@ -6,6 +6,7 @@ use crate::controller::{ConnectionAcceptor, Controller, ControllerImpl};
 use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
 use myelin_environment::prelude::*;
+use myelin_environment::simulation::time::InstantWrapperImpl;
 use myelin_environment::simulation::world::{
     rotation_translator::NphysicsRotationTranslatorImpl, NphysicsWorld, SingleTimeForceApplierImpl,
 };
@@ -18,13 +19,12 @@ use myelin_object_data::Kind;
 use myelin_visualization_core::serialization::BincodeSerializer;
 use myelin_worldgen::NameProviderBuilder;
 use myelin_worldgen::{HardcodedGenerator, WorldGenerator};
-use myelin_environment::simulation::time::InstantWrapperImpl;
 use std::fs::read_to_string;
 use std::net::SocketAddr;
 use std::path::Path;
 use std::sync::Arc;
 use std::thread;
-use std::time::{Instant, Duration};
+use std::time::{Duration, Instant};
 use uuid::Uuid;
 
 /// Starts the simulation and a websocket server, that broadcasts
@@ -43,9 +43,11 @@ where
             box rotation_translator,
             box force_applier,
         );
-        box SimulationImpl::new(box world, box |simulation| {
-            box WorldInteractorImpl::new(simulation)
-        }, box || box InstantWrapperImpl::new(Instant::now()))
+        box SimulationImpl::new(
+            box world,
+            box |simulation| box WorldInteractorImpl::new(simulation),
+            box || box InstantWrapperImpl::new(Instant::now()),
+        )
     };
     let plant_factory = box || -> Box<dyn ObjectBehavior> {
         box StochasticSpreading::new(1.0 / 5_000.0, box RandomChanceCheckerImpl::new())
