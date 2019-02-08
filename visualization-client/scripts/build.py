@@ -47,4 +47,7 @@ def _parse_arguments():
 
 if __name__ == '__main__':
     args = _parse_arguments()
-    build(release=args.release, with_webpack=args.webpack)
+    try:
+        build(release=args.release, with_webpack=args.webpack)
+    except KeyboardInterrupt:
+        sys.exit(0)

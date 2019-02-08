@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor, Future
 import argparse
 import time
 from typing import List
+import sys
 
 _CARGO_WORKSPACE = os.path.join(os.path.dirname(__file__), '..')
 
@@ -83,4 +84,7 @@ def _open_browser():
 
 if __name__ == '__main__':
     args = _parse_arguments()
-    start(release=args.release, open=args.open)
+    try:
+        start(release=args.release, open=args.open)
+    except KeyboardInterrupt:
+        sys.exit(0)

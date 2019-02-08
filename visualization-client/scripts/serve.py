@@ -2,6 +2,7 @@
 
 import os
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+import sys
 
 _DEFAULT_ADDRESS = ('127.0.0.1', 8080)
 _PUBLIC_DIRECTORY = os.path.join(
@@ -24,4 +25,7 @@ def serve(address=_DEFAULT_ADDRESS):
 
 
 if __name__ == '__main__':
-    serve()
+    try:
+        serve()
+    except KeyboardInterrupt:
+        sys.exit(0)
