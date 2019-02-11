@@ -10,6 +10,8 @@ use std::time::Duration;
 #[cfg(test)]
 use mockiato::mockable;
 
+/// The snapshot provided by myelin-engine contains `ObjectDescription`,
+/// which we are not interested in.
 pub(crate) type Snapshot = HashMap<Id, ObjectDescription>;
 pub(crate) type ConnectionAcceptorFactoryFn =
     dyn Fn(Arc<CurrentSnapshotFn>) -> Box<dyn ConnectionAcceptor> + Send + Sync;
