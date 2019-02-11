@@ -105,6 +105,7 @@ impl ControllerImpl {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::cell::RefCell;
     use std::collections::HashMap;
     use std::sync::Mutex;
 
@@ -139,7 +140,7 @@ mod tests {
     fn steps_simulation_with_empty_snapshot() {
         let mut simulation = SimulationMock::new();
         simulation.expect_step();
-        simulation.expect_objects().returns(HashMap::new());
+        simulation.expect_objects_and_return(Vec::new());
         let mut controller = ControllerImpl::new(
             box simulation,
             Arc::new(move |_| panic!("No connection acceptor is expected to be created")),
@@ -151,13 +152,17 @@ mod tests {
 
     #[test]
     fn steps_simulation_with_snapshot() {
+        let mock_behavior = mock_behavior();
+
         let mut simulation = SimulationMock::new();
         simulation.expect_step();
-        let expected_snapshot = hashmap! {
-           0 => object_description()
-        };
 
-        simulation.expect_objects().returns(expected_snapshot);
+        simulation.expect_objects_and_return(vec![Object {
+            id: 0,
+            description: object_description(),
+            behavior: mock_behavior.borrow(),
+        }]);
+
         let mut controller = ControllerImpl::new(
             box simulation,
             Arc::new(move |_| panic!("No connection acceptor is expected to be created")),
@@ -192,16 +197,21 @@ mod tests {
     }
 
     #[test]
-    fn stepping_simulation_sets_snapshot() {
+    fn stepping_simulation_sets_snapshot_without_behavior() {
+        let mock_behavior = mock_behavior();
+
         let mut simulation = SimulationMock::new();
         simulation.expect_step();
 
         let expected_snapshot = hashmap! {
            0 => object_description()
         };
-        simulation
-            .expect_objects()
-            .returns(expected_snapshot.clone());
+
+        simulation.expect_objects_and_return(vec![Object {
+            id: 0,
+            description: object_description(),
+            behavior: mock_behavior.borrow(),
+        }]);
 
         let current_snapshot_fn: Arc<Mutex<Option<Arc<CurrentSnapshotFn>>>> = Default::default();
         let snapshot_fn = current_snapshot_fn.clone();
@@ -243,5 +253,9 @@ mod tests {
             )
             .build()
             .unwrap()
+    }
+
+    fn mock_behavior() -> RefCell<Box<dyn ObjectBehavior>> {
+        RefCell::new(Box::new(ObjectBehaviorMock::new()))
     }
 }
