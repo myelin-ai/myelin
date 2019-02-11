@@ -277,8 +277,8 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
-        let mut world_interactor = WorldInteractorMock::new();
         let mock_behavior = mock_behavior();
+        let mut world_interactor = WorldInteractorMock::new();
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((34.0, 34.0), (44.0, 44.0)),
             vec![Object {
