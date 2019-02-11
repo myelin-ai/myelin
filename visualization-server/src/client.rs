@@ -1,7 +1,7 @@
 use crate::connection::Connection;
 use crate::connection::SocketError;
 use crate::connection_acceptor::Client;
-use crate::controller::{CurrentSnapshotFn, Presenter};
+use crate::controller::{CurrentSnapshotFn, Presenter, Snapshot};
 use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperError};
 use myelin_engine::prelude::*;
 use myelin_visualization_core::serialization::ViewModelSerializer;

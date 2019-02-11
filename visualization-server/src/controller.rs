@@ -1,6 +1,7 @@
 use myelin_engine::prelude::*;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
 use std::boxed::FnBox;
+use std::collections::HashMap;
 use std::fmt::{self, Debug};
 use std::net::SocketAddr;
 use std::sync::{Arc, RwLock};
@@ -9,6 +10,7 @@ use std::time::Duration;
 #[cfg(test)]
 use mockiato::mockable;
 
+pub(crate) type Snapshot = HashMap<Id, ObjectDescription>;
 pub(crate) type ConnectionAcceptorFactoryFn =
     dyn Fn(Arc<CurrentSnapshotFn>) -> Box<dyn ConnectionAcceptor> + Send + Sync;
 pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send + Sync;
@@ -88,7 +90,13 @@ impl ControllerImpl {
 
     fn step_simulation(&mut self) {
         self.simulation.step();
-        *self.current_snapshot.write().unwrap() = self.simulation.objects();
+        let current_snapshot: Snapshot = self
+            .simulation
+            .objects()
+            .into_iter()
+            .map(|object| (object.id, object.description))
+            .collect();
+        *self.current_snapshot.write().unwrap() = current_snapshot;
     }
 }
 
