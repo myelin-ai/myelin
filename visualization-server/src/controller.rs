@@ -38,23 +38,23 @@ pub(crate) trait ConnectionAcceptor: Debug {
     fn address(&self) -> SocketAddr;
 }
 
-pub(crate) struct ControllerImpl {
-    simulation: Box<dyn Simulation>,
+pub(crate) struct ControllerImpl<'a> {
+    simulation: Box<dyn Simulation + 'a>,
     connection_acceptor_factory_fn: Arc<ConnectionAcceptorFactoryFn>,
     current_snapshot: Arc<RwLock<Snapshot>>,
     thread_spawn_fn: Box<ThreadSpawnFn>,
     expected_delta: Duration,
 }
 
-impl Debug for ControllerImpl {
+impl<'a> Debug for ControllerImpl<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct(name_of_type!(ControllerImpl))
+        f.debug_struct(name_of_type!(ControllerImpl<'a>))
             .field("expected_delta", &self.expected_delta)
             .finish()
     }
 }
 
-impl Controller for ControllerImpl {
+impl<'a> Controller for ControllerImpl<'a> {
     fn run(&mut self) {
         self.run_connection_acceptor();
         loop {
@@ -63,7 +63,7 @@ impl Controller for ControllerImpl {
     }
 }
 
-impl ControllerImpl {
+impl<'a> ControllerImpl<'a> {
     pub(crate) fn new(
         simulation: Box<dyn Simulation>,
         connection_acceptor_factory_fn: Arc<ConnectionAcceptorFactoryFn>,
