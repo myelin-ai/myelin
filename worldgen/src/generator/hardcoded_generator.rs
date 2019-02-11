@@ -40,8 +40,8 @@ impl HardcodedGenerator {
     /// use myelin_engine::prelude::*;
     /// use myelin_engine::simulation::world::{
     ///     rotation_translator::NphysicsRotationTranslatorImpl, NphysicsWorld,
-    ///     SingleTimeForceApplierImpl,
     /// };
+    /// use myelin_engine::simulation::SimulationBuilder;
     /// use myelin_engine::simulation::SimulationImpl;
     /// use myelin_engine::world_interactor::WorldInteractorImpl;
     /// use myelin_object_behavior::Static;
@@ -51,19 +51,8 @@ impl HardcodedGenerator {
     /// use std::path::Path;
     /// use std::sync::{Arc, RwLock};
     ///
-    /// let simulation_factory = Box::new(|| -> Box<dyn Simulation> {
-    ///     let rotation_translator = NphysicsRotationTranslatorImpl::default();
-    ///     let force_applier = SingleTimeForceApplierImpl::default();
-    ///     let world = Box::new(NphysicsWorld::with_timestep(
-    ///         1.0,
-    ///         Box::new(rotation_translator),
-    ///         Box::new(force_applier),
-    ///     ));
-    ///     Box::new(SimulationImpl::new(
-    ///         world,
-    ///         Box::new(|simulation| Box::new(WorldInteractorImpl::new(simulation))),
-    ///     ))
-    /// });
+    /// let simulation_factory =
+    ///     Box::new(|| -> Box<dyn Simulation> { SimulationBuilder::new().build() });
     ///
     /// let plant_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
     /// let organism_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });

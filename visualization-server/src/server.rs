@@ -6,11 +6,7 @@ use crate::controller::{ConnectionAcceptor, Controller, ControllerImpl};
 use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
 use myelin_engine::prelude::*;
-use myelin_engine::simulation::world::{
-    rotation_translator::NphysicsRotationTranslatorImpl, NphysicsWorld, SingleTimeForceApplierImpl,
-};
-use myelin_engine::simulation::SimulationImpl;
-use myelin_engine::world_interactor::WorldInteractorImpl;
+use myelin_engine::simulation::SimulationBuilder;
 use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
 use myelin_object_behavior::Static;
 use myelin_object_data::AdditionalObjectDescriptionBincodeSerializer;
@@ -34,18 +30,7 @@ where
 {
     let addr = addr.into();
 
-    let simulation_factory = box || -> Box<dyn Simulation> {
-        let rotation_translator = NphysicsRotationTranslatorImpl::default();
-        let force_applier = SingleTimeForceApplierImpl::default();
-        let world = NphysicsWorld::with_timestep(
-            SIMULATED_TIMESTEP_IN_SI_UNITS,
-            box rotation_translator,
-            box force_applier,
-        );
-        box SimulationImpl::new(box world, box |simulation| {
-            box WorldInteractorImpl::new(simulation)
-        })
-    };
+    let simulation_factory = box || -> Box<dyn Simulation> { SimulationBuilder::new().build() };
     let plant_factory = box || -> Box<dyn ObjectBehavior> {
         box StochasticSpreading::new(1.0 / 5_000.0, box RandomChanceCheckerImpl::new())
     };
