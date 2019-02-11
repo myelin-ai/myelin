@@ -214,9 +214,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use lazy_static::lazy_static;
     use mockiato::partial_eq;
-    use myelin_engine::prelude::*;
     use std::cell::RefCell;
 
     const SPREADING_CHANGE: f64 = 1.0 / (60.0 * 30.0);
