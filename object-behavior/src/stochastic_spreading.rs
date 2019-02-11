@@ -278,37 +278,70 @@ mod tests {
         let own_description = object_description_at_location(50.0, 50.0);
 
         let mut world_interactor = WorldInteractorMock::new();
+        let mock_behavior = mock_behavior();
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((34.0, 34.0), (44.0, 44.0)),
-            vec![mock_object_at_location(0, (39.0, 39.0))],
+            vec![Object {
+                id: 0,
+                description: object_description_at_location(39.0, 39.0),
+                behavior: mock_behavior.borrow(),
+            }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((45.0, 34.0), (55.0, 44.0)),
-            vec![mock_object_at_location(1, (50.0, 39.0))],
+            vec![Object {
+                id: 1,
+                description: object_description_at_location(50.0, 39.0),
+                behavior: mock_behavior.borrow(),
+            }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((56.0, 34.0), (66.0, 44.0)),
-            vec![mock_object_at_location(2, (60.0, 39.0))],
+            vec![Object {
+                id: 2,
+                description: object_description_at_location(60.0, 39.0),
+                behavior: mock_behavior.borrow(),
+            }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((56.0, 45.0), (66.0, 55.0)),
-            vec![mock_object_at_location(3, (61.0, 50.0))],
+            vec![Object {
+                id: 3,
+                description: object_description_at_location(61.0, 50.0),
+                behavior: mock_behavior.borrow(),
+            }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((56.0, 56.0), (66.0, 66.0)),
-            vec![mock_object_at_location(4, (61.0, 61.0))],
+            vec![Object {
+                id: 4,
+                description: object_description_at_location(61.0, 61.0),
+                behavior: mock_behavior.borrow(),
+            }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((45.0, 56.0), (55.0, 66.0)),
-            vec![mock_object_at_location(5, (50.0, 61.0))],
+            vec![Object {
+                id: 5,
+                description: object_description_at_location(50.0, 61.0),
+                behavior: mock_behavior.borrow(),
+            }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((34.0, 56.0), (44.0, 66.0)),
-            vec![mock_object_at_location(6, (39.0, 61.0))],
+            vec![Object {
+                id: 6,
+                description: object_description_at_location(39.0, 61.0),
+                behavior: mock_behavior.borrow(),
+            }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((34.0, 45.0), (44.0, 55.0)),
-            vec![mock_object_at_location(7, (39.0, 50.0))],
+            vec![Object {
+                id: 7,
+                description: object_description_at_location(39.0, 50.0),
+                behavior: mock_behavior.borrow(),
+            }],
         );
 
         let action = object.step(&own_description, &world_interactor);
@@ -329,18 +362,31 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
+        let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((34.0, 34.0), (44.0, 44.0)),
-            vec![mock_object_at_location(0, (39.0, 39.0))],
+            vec![Object {
+                id: 0,
+                description: object_description_at_location(39.0, 39.0),
+                behavior: mock_behavior.borrow(),
+            }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((45.0, 34.0), (55.0, 44.0)),
-            vec![mock_object_at_location(1, (50.0, 39.0))],
+            vec![Object {
+                id: 1,
+                description: object_description_at_location(50.0, 39.0),
+                behavior: mock_behavior.borrow(),
+            }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((56.0, 34.0), (66.0, 44.0)),
-            vec![mock_object_at_location(2, (60.0, 39.0))],
+            vec![Object {
+                id: 2,
+                description: object_description_at_location(60.0, 39.0),
+                behavior: mock_behavior.borrow(),
+            }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((56.0, 45.0), (66.0, 55.0)),
@@ -371,22 +417,39 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
+        let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((45.0, 34.0), (55.0, 44.0)),
-            vec![mock_object_at_location(1, (50.0, 39.0))],
+            vec![Object {
+                id: 1,
+                description: object_description_at_location(50.0, 39.0),
+                behavior: mock_behavior.borrow(),
+            }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((56.0, 34.0), (66.0, 44.0)),
-            vec![mock_object_at_location(2, (60.0, 39.0))],
+            vec![Object {
+                id: 2,
+                description: object_description_at_location(60.0, 39.0),
+                behavior: mock_behavior.borrow(),
+            }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((56.0, 45.0), (66.0, 55.0)),
-            vec![mock_object_at_location(3, (61.0, 50.0))],
+            vec![Object {
+                id: 3,
+                description: object_description_at_location(61.0, 50.0),
+                behavior: mock_behavior.borrow(),
+            }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((56.0, 56.0), (66.0, 66.0)),
-            vec![mock_object_at_location(4, (61.0, 61.0))],
+            vec![Object {
+                id: 4,
+                description: object_description_at_location(61.0, 61.0),
+                behavior: mock_behavior.borrow(),
+            }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((45.0, 56.0), (55.0, 66.0)),
@@ -417,14 +480,23 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
 
+        let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((45.0, 34.0), (55.0, 44.0)),
-            vec![mock_object_at_location(1, (50.0, 39.0))],
+            vec![Object {
+                id: 1,
+                description: object_description_at_location(50.0, 39.0),
+                behavior: mock_behavior.borrow(),
+            }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((56.0, 34.0), (66.0, 44.0)),
-            vec![mock_object_at_location(2, (60.0, 39.0))],
+            vec![Object {
+                id: 2,
+                description: object_description_at_location(60.0, 39.0),
+                behavior: mock_behavior.borrow(),
+            }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
             Aabb::new((56.0, 45.0), (66.0, 55.0)),
@@ -459,14 +531,7 @@ mod tests {
             .unwrap()
     }
 
-    fn mock_object_at_location(id: Id, coordinates: (f64, f64)) -> Object<'static> {
-        static BEHAVIOR_MOCK: RefCell<Box<dyn ObjectBehavior>> =
-            RefCell::new(Box::new(ObjectBehaviorMock::new()));
-
-        Object {
-            id,
-            description: object_description_at_location(coordinates.0, coordinates.1),
-            behavior: BEHAVIOR_MOCK.borrow(),
-        }
+    fn mock_behavior() -> RefCell<Box<dyn ObjectBehavior>> {
+        RefCell::new(Box::new(ObjectBehaviorMock::new()))
     }
 }
