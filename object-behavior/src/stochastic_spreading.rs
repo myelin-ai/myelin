@@ -214,9 +214,10 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use lazy_static::lazy_static;
     use mockiato::partial_eq;
-    use myelin_engine::prelude::WorldInteractorMock;
-    use std::collections::HashMap;
+    use myelin_engine::prelude::*;
+    use std::cell::RefCell;
 
     const SPREADING_CHANGE: f64 = 1.0 / (60.0 * 30.0);
     const EXPECTED_PADDING: f64 = 1.0;
@@ -247,9 +248,10 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
         let own_description = object_description_at_location(50.0, 50.0);
         let mut world_interactor = WorldInteractorMock::new();
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((34.0, 34.0), (44.0, 44.0))))
-            .returns(HashMap::new());
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((34.0, 34.0), (44.0, 44.0)),
+            Vec::new(),
+        );
         let action = object.step(&own_description, &world_interactor);
         match action {
             Some(Action::Spawn(object_description, _)) => {
@@ -278,46 +280,38 @@ mod tests {
         let own_description = object_description_at_location(50.0, 50.0);
 
         let mut world_interactor = WorldInteractorMock::new();
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((34.0, 34.0), (44.0, 44.0))))
-            .returns(hashmap! {
-                0 => object_description_at_location(39.0, 39.0),
-            });
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((45.0, 34.0), (55.0, 44.0))))
-            .returns(hashmap! {
-                1 => object_description_at_location(50.0, 39.0)
-            });
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 34.0), (66.0, 44.0))))
-            .returns(hashmap! {
-               2 => object_description_at_location(60.0, 39.0),
-            });
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 45.0), (66.0, 55.0))))
-            .returns(hashmap! {
-               3 => object_description_at_location(61.0, 50.0),
-            });
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 56.0), (66.0, 66.0))))
-            .returns(hashmap! {
-               4 => object_description_at_location(61.0, 61.0),
-            });
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((45.0, 56.0), (55.0, 66.0))))
-            .returns(hashmap! {
-               5 => object_description_at_location(50.0, 61.0),
-            });
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((34.0, 56.0), (44.0, 66.0))))
-            .returns(hashmap! {
-               6 => object_description_at_location(39.0, 61.0),
-            });
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((34.0, 45.0), (44.0, 55.0))))
-            .returns(hashmap! {
-               7 => object_description_at_location(39.0, 50.0),
-            });
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((34.0, 34.0), (44.0, 44.0)),
+            vec![mock_object_at_location(0, (39.0, 39.0))],
+        );
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((45.0, 34.0), (55.0, 44.0)),
+            vec![mock_object_at_location(1, (50.0, 39.0))],
+        );
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((56.0, 34.0), (66.0, 44.0)),
+            vec![mock_object_at_location(2, (60.0, 39.0))],
+        );
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((56.0, 45.0), (66.0, 55.0)),
+            vec![mock_object_at_location(3, (61.0, 50.0))],
+        );
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((56.0, 56.0), (66.0, 66.0)),
+            vec![mock_object_at_location(4, (61.0, 61.0))],
+        );
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((45.0, 56.0), (55.0, 66.0)),
+            vec![mock_object_at_location(5, (50.0, 61.0))],
+        );
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((34.0, 56.0), (44.0, 66.0)),
+            vec![mock_object_at_location(6, (39.0, 61.0))],
+        );
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((34.0, 45.0), (44.0, 55.0)),
+            vec![mock_object_at_location(7, (39.0, 50.0))],
+        );
 
         let action = object.step(&own_description, &world_interactor);
         assert!(action.is_none());
@@ -338,24 +332,22 @@ mod tests {
         let own_description = object_description_at_location(50.0, 50.0);
 
         let mut world_interactor = WorldInteractorMock::new();
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((34.0, 34.0), (44.0, 44.0))))
-            .returns(hashmap! {
-                0 => object_description_at_location(39.0, 39.0),
-            });
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((45.0, 34.0), (55.0, 44.0))))
-            .returns(hashmap! {
-                1 => object_description_at_location(50.0, 39.0)
-            });
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 34.0), (66.0, 44.0))))
-            .returns(hashmap! {
-               2 => object_description_at_location(60.0, 39.0),
-            });
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 45.0), (66.0, 55.0))))
-            .returns(HashMap::new());
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((34.0, 34.0), (44.0, 44.0)),
+            vec![mock_object_at_location(0, (39.0, 39.0))],
+        );
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((45.0, 34.0), (55.0, 44.0)),
+            vec![mock_object_at_location(1, (50.0, 39.0))],
+        );
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((56.0, 34.0), (66.0, 44.0)),
+            vec![mock_object_at_location(2, (60.0, 39.0))],
+        );
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((56.0, 45.0), (66.0, 55.0)),
+            Vec::new(),
+        );
 
         let action = object.step(&own_description, &world_interactor);
         match action {
@@ -382,29 +374,26 @@ mod tests {
         let own_description = object_description_at_location(50.0, 50.0);
 
         let mut world_interactor = WorldInteractorMock::new();
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((45.0, 34.0), (55.0, 44.0))))
-            .returns(hashmap! {
-                1 => object_description_at_location(50.0, 39.0)
-            });
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 34.0), (66.0, 44.0))))
-            .returns(hashmap! {
-               2 => object_description_at_location(60.0, 39.0),
-            });
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 45.0), (66.0, 55.0))))
-            .returns(hashmap! {
-               3 => object_description_at_location(61.0, 50.0),
-            });
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 56.0), (66.0, 66.0))))
-            .returns(hashmap! {
-               4 => object_description_at_location(61.0, 61.0),
-            });
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((45.0, 56.0), (55.0, 66.0))))
-            .returns(HashMap::new());
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((45.0, 34.0), (55.0, 44.0)),
+            vec![mock_object_at_location(1, (50.0, 39.0))],
+        );
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((56.0, 34.0), (66.0, 44.0)),
+            vec![mock_object_at_location(2, (60.0, 39.0))],
+        );
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((56.0, 45.0), (66.0, 55.0)),
+            vec![mock_object_at_location(3, (61.0, 50.0))],
+        );
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((56.0, 56.0), (66.0, 66.0)),
+            vec![mock_object_at_location(4, (61.0, 61.0))],
+        );
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((45.0, 56.0), (55.0, 66.0)),
+            Vec::new(),
+        );
 
         let action = object.step(&own_description, &world_interactor);
         match action {
@@ -431,19 +420,18 @@ mod tests {
         let own_description = object_description_at_location(50.0, 50.0);
 
         let mut world_interactor = WorldInteractorMock::new();
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((45.0, 34.0), (55.0, 44.0))))
-            .returns(hashmap! {
-                1 => object_description_at_location(50.0, 39.0)
-            });
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 34.0), (66.0, 44.0))))
-            .returns(hashmap! {
-               2 => object_description_at_location(60.0, 39.0),
-            });
-        world_interactor
-            .expect_find_objects_in_area(partial_eq(Aabb::new((56.0, 45.0), (66.0, 55.0))))
-            .returns(HashMap::new());
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((45.0, 34.0), (55.0, 44.0)),
+            vec![mock_object_at_location(1, (50.0, 39.0))],
+        );
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((56.0, 34.0), (66.0, 44.0)),
+            vec![mock_object_at_location(2, (60.0, 39.0))],
+        );
+        world_interactor.expect_find_objects_in_area_and_return(
+            Aabb::new((56.0, 45.0), (66.0, 55.0)),
+            Vec::new(),
+        );
 
         let action = object.step(&own_description, &world_interactor);
         match action {
@@ -471,5 +459,16 @@ mod tests {
             .mobility(Mobility::Immovable)
             .build()
             .unwrap()
+    }
+
+    fn mock_object_at_location(id: Id, coordinates: (f64, f64)) -> Object<'static> {
+        static BEHAVIOR_MOCK: RefCell<Box<dyn ObjectBehavior>> =
+            RefCell::new(Box::new(ObjectBehaviorMock::new()));
+
+        Object {
+            id,
+            description: object_description_at_location(coordinates.0, coordinates.1),
+            behavior: BEHAVIOR_MOCK.borrow(),
+        }
     }
 }
