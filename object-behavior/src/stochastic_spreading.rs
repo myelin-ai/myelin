@@ -1,6 +1,7 @@
 //! Types relating to a behavior that reproduces at random intervals
 
 use myelin_engine::prelude::*;
+use std::any::Any;
 use std::fmt;
 
 mod random_chance_checker_impl;
@@ -150,6 +151,10 @@ impl ObjectBehavior for StochasticSpreading {
         } else {
             None
         }
+    }
+
+    fn as_any(&self) -> &'_ dyn Any {
+        self
     }
 }
 
