@@ -405,7 +405,7 @@ mod tests {
     }
 
     #[test]
-    fn can_spread_in_vertically() {
+    fn can_spread_vertically() {
         let mut random_chance_checker = RandomChanceCheckerMock::new();
         random_chance_checker
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
