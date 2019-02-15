@@ -6,3 +6,4 @@ authors = ["Jan Nils Ferner <jan@myelin.ch>"]
 edition = "2018"
 
 [dependencies]
+myelin-neural-network = { path = "../neural-network" }
