@@ -5,9 +5,9 @@ use myelin_genetics::{
     DevelopedNeuralNetwork, Genome, NeuralNetworkDeveloper, NeuralNetworkDevelopmentMetadata,
 };
 
-#[derive(Debug, Clone)]
 /// An organism that can interact with its surroundings via a neural network,
 /// built from a set of genes
+#[derive(Debug, Clone)]
 pub struct OrganismBehavior {
     developed_neural_network: DevelopedNeuralNetwork,
     neural_network_developer: Box<dyn NeuralNetworkDeveloper>,
