@@ -304,17 +304,36 @@ impl fmt::Debug for HardcodedGenerator {
 mod tests {
     use super::*;
     use crate::NameProviderMock;
-    use mockiato::{any, partial_eq, partial_eq_owned, ExpectedCalls};
+    use mockiato::{partial_eq, partial_eq_owned};
     use myelin_object_data::AdditionalObjectDescriptionSerializerMock;
+    use std::cell::RefCell;
 
     #[test]
     fn generates_simulation() {
         let simulation_factory = box || -> Box<dyn Simulation> {
+            let behavior_mock: RefCell<Box<dyn ObjectBehavior>> =
+                RefCell::new(Box::new(ObjectBehaviorMock::new()));
+            let mock_object = Object {
+                id: 1,
+                description: ObjectBuilder::default()
+                    .shape(
+                        PolygonBuilder::default()
+                            .vertex(-5.0, -5.0)
+                            .vertex(5.0, -5.0)
+                            .vertex(5.0, 5.0)
+                            .vertex(-5.0, 5.0)
+                            .build()
+                            .unwrap(),
+                    )
+                    .location(5.0, 5.0)
+                    .mobility(Mobility::Immovable)
+                    .build()
+                    .unwrap(),
+                behavior: behavior_mock.borrow(),
+            };
             let mut simulation = SimulationMock::new();
 
-            simulation
-                .expect_add_object(any(), any())
-                .times(ExpectedCalls::any());
+            simulation.expect_add_object_any_times_and_return(mock_object);
 
             box simulation
         };
