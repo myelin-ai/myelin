@@ -17,6 +17,7 @@ mockiato = { git = "https://github.com/myelin-ai/mockiato", optional = true }
 myelin-engine = { git = "https://github.com/myelin-ai/engine" }
 myelin-geometry = { git = "https://github.com/myelin-ai/engine" }
 myelin-neural-network = { path = "../neural-network" }
+myelin-genetics = { path = "../genetics" }
 rand = "0.5.5"
 log = "0.4"
 

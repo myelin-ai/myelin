@@ -350,10 +350,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "genetics"
-version = "0.1.0"
-
-[[package]]
 name = "heck"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -612,6 +608,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "myelin-genetics"
+version = "0.1.0"
+dependencies = [
+ "myelin-neural-network 0.1.0",
+]
+
+[[package]]
 name = "myelin-geometry"
 version = "0.1.0"
 source = "git+https://github.com/myelin-ai/engine#d800d5722d89c6991e1ebe853ed7c449302d196f"
@@ -640,6 +643,7 @@ dependencies = [
  "maplit 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "mockiato 0.1.0 (git+https://github.com/myelin-ai/mockiato)",
  "myelin-engine 0.1.0 (git+https://github.com/myelin-ai/engine)",
+ "myelin-genetics 0.1.0",
  "myelin-geometry 0.1.0 (git+https://github.com/myelin-ai/engine)",
  "myelin-neural-network 0.1.0",
  "rand 0.5.6 (registry+https://github.com/rust-lang/crates.io-index)",

@@ -1,4 +1,5 @@
 use myelin_engine::prelude::*;
+use myelin_genetics::{Genome, NeuralNetworkDeveloper};
 use myelin_neural_network::NeuralNetwork;
 
 #[derive(Debug, Clone)]
@@ -6,12 +7,22 @@ use myelin_neural_network::NeuralNetwork;
 /// built from a set of genes
 pub struct OrganismBehavior {
     neural_network: Box<dyn NeuralNetwork>,
+    genome: Genome,
+    neural_network_developer: Box<dyn NeuralNetworkDeveloper>,
 }
 
 impl OrganismBehavior {
     /// Create a new `OrganismBehavior` with a `neural_network`
-    pub fn new(neural_network: Box<dyn NeuralNetwork>) -> Self {
-        Self { neural_network }
+    pub fn new(
+        neural_network: Box<dyn NeuralNetwork>,
+        genome: Genome,
+        neural_network_developer: Box<dyn NeuralNetworkDeveloper>,
+    ) -> Self {
+        Self {
+            neural_network,
+            genome,
+            neural_network_developer,
+        }
     }
 }
 
