@@ -19,3 +19,4 @@ mod static_behavior;
 pub use self::static_behavior::Static;
 
 pub mod stochastic_spreading;
+pub mod organism;
