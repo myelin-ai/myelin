@@ -21,11 +21,11 @@ pub struct Genome;
 /// [`NeuralNetwork`]: ../myelin-neural-network/trait.NeuralNetwork.html
 /// [`Genome`]: ./struct.Genome.html
 pub trait NeuralNetworkDeveloper: Debug + NeuralNetworkDeveloperClone {
-    /// Create a [`NeuralNetwork`] out of a [`Genome`]
+    /// Create a [`NeuralNetwork`] out of a pair of parent [`Genome`]s
     ///
     /// [`NeuralNetwork`]: ../myelin-neural-network/trait.NeuralNetwork.html
     /// [`Genome`]: ./struct.Genome.html
-    fn develop_neural_network(&self, genome: Genome) -> Box<dyn NeuralNetwork>;
+    fn develop_neural_network(&self, parent_genomes: (Genome, Genome)) -> Box<dyn NeuralNetwork>;
 }
 
 /// Supertrait used to make sure that all implementors
