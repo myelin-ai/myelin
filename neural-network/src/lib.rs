@@ -39,7 +39,7 @@ pub type Result<T> = std::result::Result<T, ()>;
 
 /// A neural network that supports construction from multiple neurons and arbitrary connections between them
 #[cfg_attr(any(test, feature = "use-mocks"), mockable)]
-pub trait NeuralNetwork: Debug {
+pub trait NeuralNetwork: Debug + NeuralNetworkClone {
     /// Update the state of all neurons
     fn step(
         &mut self,
