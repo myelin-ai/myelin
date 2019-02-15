@@ -1,3 +1,5 @@
+//! Behavior of an organism that can interact with its surroundings
+
 use myelin_engine::prelude::*;
 use myelin_genetics::{Genome, NeuralNetworkDeveloper};
 use myelin_neural_network::NeuralNetwork;
