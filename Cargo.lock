@@ -611,6 +611,7 @@ dependencies = [
 name = "myelin-genetics"
 version = "0.1.0"
 dependencies = [
+ "mockiato 0.1.0 (git+https://github.com/myelin-ai/mockiato)",
  "myelin-neural-network 0.1.0",
 ]
 

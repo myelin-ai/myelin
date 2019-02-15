@@ -6,4 +6,11 @@ authors = ["Jan Nils Ferner <jan@myelin.ch>"]
 edition = "2018"
 
 [dependencies]
+mockiato = { git = "https://github.com/myelin-ai/mockiato", optional = true }
 myelin-neural-network = { path = "../neural-network" }
+
+[dev-dependencies]
+mockiato = { git = "https://github.com/myelin-ai/mockiato" }
+
+[features]
+use-mocks = ["mockiato"]

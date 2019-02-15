@@ -9,6 +9,8 @@
     clippy::unimplemented
 )]
 
+#[cfg(any(test, feature = "use-mocks"))]
+use mockiato::mockable;
 use myelin_neural_network::{Handle as NeuronHandle, NeuralNetwork};
 use std::fmt::Debug;
 
@@ -76,6 +78,7 @@ pub struct DevelopedNeuralNetwork {
 ///
 /// [`NeuralNetwork`]: ../myelin-neural-network/trait.NeuralNetwork.html
 /// [`Genome`]: ./struct.Genome.html
+#[cfg_attr(any(test, feature = "use-mocks"), mockable)]
 pub trait NeuralNetworkDeveloper: Debug + NeuralNetworkDeveloperClone {
     /// Create a [`DevelopedNeuralNetwork`] using the information contained in the provided [`NeuralNetworkDevelopmentMetadata`]
     ///
