@@ -7,7 +7,7 @@ edition = "2018"
 
 [dependencies]
 mockiato = { git = "https://github.com/myelin-ai/mockiato", optional = true }
-myelin-engine = "0.1"
+myelin-engine = "0.2"
 myelin-geometry = "1.0"
 slab = "0.4"
 
