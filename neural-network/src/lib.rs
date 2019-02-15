@@ -78,3 +78,9 @@ where
         Box::new(self.clone())
     }
 }
+
+impl Clone for Box<dyn NeuralNetwork> {
+    fn clone(&self) -> Self {
+        self.clone_box()
+    }
+}
