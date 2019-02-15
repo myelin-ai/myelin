@@ -1,5 +1,6 @@
 //! Neural networks and their components
 
+#![feature(specialization)]
 #![deny(
     rust_2018_idioms,
     missing_debug_implementations,
@@ -56,4 +57,24 @@ pub trait NeuralNetwork: Debug {
     /// # Errors
     /// Returns `Err` if an involved handle is invalid
     fn add_connection(&mut self, connection: Connection) -> Result<()>;
+}
+
+/// Supertrait used to make sure that all implementors
+/// of [`NeuralNetwork`] are [`Clone`]. You don't need
+/// to care about this type.
+///
+/// [`NeuralNetwork`]: ./trait.NeuralNetwork.html
+/// [`Clone`]: https://doc.rust-lang.org/nightly/std/clone/trait.Clone.html
+#[doc(hidden)]
+pub trait NeuralNetworkClone {
+    fn clone_box(&self) -> Box<dyn NeuralNetwork>;
+}
+
+impl<T> NeuralNetworkClone for T
+where
+    T: NeuralNetwork + Clone + 'static,
+{
+    default fn clone_box(&self) -> Box<dyn NeuralNetwork> {
+        Box::new(self.clone())
+    }
 }

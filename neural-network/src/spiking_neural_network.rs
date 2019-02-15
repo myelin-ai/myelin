@@ -9,7 +9,7 @@ use slab::Slab;
 use std::collections::HashMap;
 
 /// A spiking neural network
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct SpikingNeuralNetwork {
     neurons: Slab<SpikingNeuron>,
     neuron_handles: Vec<Handle>,
