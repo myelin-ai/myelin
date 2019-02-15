@@ -1,28 +1,43 @@
 //! Behavior of an organism that can interact with its surroundings
 
 use myelin_engine::prelude::*;
-use myelin_genetics::{Genome, NeuralNetworkDeveloper};
-use myelin_neural_network::NeuralNetwork;
+use myelin_genetics::{
+    DevelopedNeuralNetwork, Genome, NeuralNetworkDeveloper, NeuralNetworkDevelopmentMetadata,
+};
 
 #[derive(Debug, Clone)]
 /// An organism that can interact with its surroundings via a neural network,
 /// built from a set of genes
 pub struct OrganismBehavior {
-    neural_network: Box<dyn NeuralNetwork>,
-    genome: Genome,
+    developed_neural_network: DevelopedNeuralNetwork,
     neural_network_developer: Box<dyn NeuralNetworkDeveloper>,
 }
 
 impl OrganismBehavior {
-    /// Create a new `OrganismBehavior` with a `neural_network`
+    /// Create a new `OrganismBehavior` from a pair of parent [`Genome`]s.
+    /// The [`NeuralNetworkDeveloper`] is used to create this organism's [`NeuralNetwork`]
+    /// and its eventual offspring.
+    ///
+    /// [`Genome`]: ../myelin-genetics/struct.Genome.html
+    /// [`NeuralNetwork`]: ../myelin-neural-network/trait.NeuralNetwork.html
     pub fn new(
-        neural_network: Box<dyn NeuralNetwork>,
-        genome: Genome,
+        parent_genomes: (Genome, Genome),
         neural_network_developer: Box<dyn NeuralNetworkDeveloper>,
     ) -> Self {
+        /// Arbitrary number
+        const INPUT_NEURON_COUNT: u32 = 5;
+
+        /// Arbitrary number
+        const OUTPUT_NEURON_COUNT: u32 = 5;
+
+        let metadata = NeuralNetworkDevelopmentMetadata {
+            parent_genomes,
+            input_neuron_count: INPUT_NEURON_COUNT,
+            output_neuron_count: OUTPUT_NEURON_COUNT,
+        };
+
         Self {
-            neural_network,
-            genome,
+            developed_neural_network: neural_network_developer.develop_neural_network(metadata),
             neural_network_developer,
         }
     }
