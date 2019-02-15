@@ -2,7 +2,7 @@
 
 use myelin_engine::prelude::*;
 use myelin_genetics::{
-    DevelopedNeuralNetwork, Genome, NeuralNetworkDeveloper, NeuralNetworkDevelopmentMetadata,
+    DevelopedNeuralNetwork, Genome, NeuralNetworkDeveloper, NeuralNetworkDevelopmentConfiguration,
 };
 
 /// An organism that can interact with its surroundings via a neural network,
@@ -30,7 +30,7 @@ impl OrganismBehavior {
         /// Arbitrary number
         const OUTPUT_NEURON_COUNT: u32 = 5;
 
-        let metadata = NeuralNetworkDevelopmentMetadata {
+        let metadata = NeuralNetworkDevelopmentConfiguration {
             parent_genomes,
             input_neuron_count: INPUT_NEURON_COUNT,
             output_neuron_count: OUTPUT_NEURON_COUNT,

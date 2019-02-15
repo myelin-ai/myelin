@@ -23,7 +23,7 @@ pub struct Genome;
 /// [`NeuralNetworkDeveloper`]: ./trait.NeuralNetworkDeveloper.html
 /// [`DevelopedNeuralNetwork`]: ./struct.DevelopedNeuralNetwork.html
 #[derive(Debug, Clone)]
-pub struct NeuralNetworkDevelopmentMetadata {
+pub struct NeuralNetworkDevelopmentConfiguration {
     /// The genomes that will be combined to form a new genome for this neural network.
     /// Will result in [`DevelopedNeuralNetwork.genome`].
     ///
@@ -55,22 +55,22 @@ pub struct DevelopedNeuralNetwork {
     pub neural_network: Box<dyn NeuralNetwork>,
 
     /// The generated [`Genome`], originating from the union of
-    /// [`NeuralNetworkDevelopmentMetadata.parent_genomes`].
+    /// [`NeuralNetworkDevelopmentConfiguration.parent_genomes`].
     ///
     /// [`Genome`]: ./struct.Genome.html
-    /// [`NeuralNetworkDevelopmentMetadata.parent_genomes`]: ./struct.NeuralNetworkDevelopmentMetadata.html#structfield.parent_genomes
+    /// [`NeuralNetworkDevelopmentConfiguration.parent_genomes`]: ./struct.NeuralNetworkDevelopmentConfiguration.html#structfield.parent_genomes
     pub genome: Genome,
 
     /// The handles to generated neurons that can accept inputs, originating from
-    /// [`NeuralNetworkDevelopmentMetadata.input_neuron_count`].
+    /// [`NeuralNetworkDevelopmentConfiguration.input_neuron_count`].
     ///
-    /// [`NeuralNetworkDevelopmentMetadata.input_neuron_count`]: ./struct.NeuralNetworkDevelopmentMetadata.html#structfield.input_neuron_count
+    /// [`NeuralNetworkDevelopmentConfiguration.input_neuron_count`]: ./struct.NeuralNetworkDevelopmentConfiguration.html#structfield.input_neuron_count
     pub input_neuron_handles: Vec<NeuronHandle>,
 
     /// The handles to generated neurons that emit outputs, originating from
-    /// [`NeuralNetworkDevelopmentMetadata.output_neuron_count`].
+    /// [`NeuralNetworkDevelopmentConfiguration.output_neuron_count`].
     ///
-    /// [`NeuralNetworkDevelopmentMetadata.output_neuron_count`]: ./struct.NeuralNetworkDevelopmentMetadata.html#structfield.output_neuron_count
+    /// [`NeuralNetworkDevelopmentConfiguration.output_neuron_count`]: ./struct.NeuralNetworkDevelopmentConfiguration.html#structfield.output_neuron_count
     pub output_neuron_handles: Vec<NeuronHandle>,
 }
 
@@ -80,13 +80,13 @@ pub struct DevelopedNeuralNetwork {
 /// [`Genome`]: ./struct.Genome.html
 #[cfg_attr(any(test, feature = "use-mocks"), mockable)]
 pub trait NeuralNetworkDeveloper: Debug + NeuralNetworkDeveloperClone {
-    /// Create a [`DevelopedNeuralNetwork`] using the information contained in the provided [`NeuralNetworkDevelopmentMetadata`]
+    /// Create a [`DevelopedNeuralNetwork`] using the information contained in the provided [`NeuralNetworkDevelopmentConfiguration`]
     ///
     /// [`DevelopedNeuralNetwork`]: ./struct.DevelopedNeuralNetwork.html
-    /// [`NeuralNetworkDevelopmentMetadata`]: ./struct.NeuralNetworkDevelopmentMetadata.html
+    /// [`NeuralNetworkDevelopmentConfiguration`]: ./struct.NeuralNetworkDevelopmentConfiguration.html
     fn develop_neural_network(
         &self,
-        neural_network_development_metadata: NeuralNetworkDevelopmentMetadata,
+        neural_network_development_configuration: NeuralNetworkDevelopmentConfiguration,
     ) -> DevelopedNeuralNetwork;
 }
 
