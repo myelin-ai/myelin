@@ -1,0 +1,8 @@
+[package]
+name = "myelin-genetics"
+description = "Genes, genomes and the mechanisms needed to evolve neural networks from them"
+version = "0.1.0"
+authors = ["Jan Nils Ferner <jan@myelin.ch>"]
+edition = "2018"
+
+[dependencies]
