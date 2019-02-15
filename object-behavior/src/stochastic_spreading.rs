@@ -187,6 +187,12 @@ where
     }
 }
 
+impl Clone for Box<dyn RandomChanceChecker> {
+    fn clone(&self) -> Self {
+        self.clone_box()
+    }
+}
+
 ///
 /// ```other
 /// ┼─────────────────────────────────────────────────── x

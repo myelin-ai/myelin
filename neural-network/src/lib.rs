@@ -1,5 +1,6 @@
 //! Neural networks and their components
 
+#![feature(specialization)]
 #![deny(
     rust_2018_idioms,
     missing_debug_implementations,
@@ -38,7 +39,7 @@ pub type Result<T> = std::result::Result<T, ()>;
 
 /// A neural network that supports construction from multiple neurons and arbitrary connections between them
 #[cfg_attr(any(test, feature = "use-mocks"), mockable)]
-pub trait NeuralNetwork: Debug {
+pub trait NeuralNetwork: Debug + NeuralNetworkClone {
     /// Update the state of all neurons
     fn step(
         &mut self,
@@ -56,4 +57,30 @@ pub trait NeuralNetwork: Debug {
     /// # Errors
     /// Returns `Err` if an involved handle is invalid
     fn add_connection(&mut self, connection: Connection) -> Result<()>;
+}
+
+/// Supertrait used to make sure that all implementors
+/// of [`NeuralNetwork`] are [`Clone`]. You don't need
+/// to care about this type.
+///
+/// [`NeuralNetwork`]: ./trait.NeuralNetwork.html
+/// [`Clone`]: https://doc.rust-lang.org/nightly/std/clone/trait.Clone.html
+#[doc(hidden)]
+pub trait NeuralNetworkClone {
+    fn clone_box(&self) -> Box<dyn NeuralNetwork>;
+}
+
+impl<T> NeuralNetworkClone for T
+where
+    T: NeuralNetwork + Clone + 'static,
+{
+    default fn clone_box(&self) -> Box<dyn NeuralNetwork> {
+        Box::new(self.clone())
+    }
+}
+
+impl Clone for Box<dyn NeuralNetwork> {
+    fn clone(&self) -> Self {
+        self.clone_box()
+    }
 }

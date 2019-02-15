@@ -6,4 +6,5 @@ members = [
     "worldgen",
     "object-behavior",
     "neural-network",
+    "genetics",
 ]

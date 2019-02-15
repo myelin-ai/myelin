@@ -1,0 +1,21 @@
+[package]
+name = "myelin-genetics"
+description = "Genes, genomes and the mechanisms needed to evolve neural networks from them"
+version = "0.1.0"
+authors = [
+    "Jan Nils Ferner <jan@myelin.ch>",
+    "Mathias Fischler <mathias@myelin.ch>",
+    "Ruben Schmidmeister <ruben@myelin.ch>",
+    "Jeremy Stucki <jeremy@myelin.ch>",
+]
+edition = "2018"
+
+[dependencies]
+mockiato = { git = "https://github.com/myelin-ai/mockiato", optional = true }
+myelin-neural-network = { path = "../neural-network" }
+
+[dev-dependencies]
+mockiato = { git = "https://github.com/myelin-ai/mockiato" }
+
+[features]
+use-mocks = ["mockiato"]
