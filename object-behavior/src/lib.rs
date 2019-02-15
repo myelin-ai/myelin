@@ -18,4 +18,5 @@ extern crate maplit;
 mod static_behavior;
 pub use self::static_behavior::Static;
 
+pub mod organism;
 pub mod stochastic_spreading;

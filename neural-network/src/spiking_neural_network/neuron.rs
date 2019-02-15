@@ -3,7 +3,7 @@ use crate::*;
 use std::f64::consts::E;
 
 /// A spiking neuron
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SpikingNeuron {
     current_membrane_potential: MembranePotential,
     current_threshold: MembranePotential,
@@ -147,7 +147,7 @@ impl Default for SpikingNeuron {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Phase {
     RestingState,
     Depolarization,

@@ -1,8 +1,6 @@
 [package]
-name = "myelin-object-behavior"
-description = """
-Implementation of the behaviours and interactions between
-objects that can be placed in a simulation"""
+name = "myelin-genetics"
+description = "Genes, genomes and the mechanisms needed to evolve neural networks from them"
 version = "0.1.0"
 authors = [
     "Jan Nils Ferner <jan@myelin.ch>",
@@ -14,17 +12,10 @@ edition = "2018"
 
 [dependencies]
 mockiato = { git = "https://github.com/myelin-ai/mockiato", optional = true }
-myelin-engine = "0.2"
-myelin-geometry = "1.0"
 myelin-neural-network = { path = "../neural-network" }
-myelin-genetics = { path = "../genetics" }
-rand = "0.5.5"
-log = "0.4"
 
 [dev-dependencies]
-maplit = "1.0"
 mockiato = { git = "https://github.com/myelin-ai/mockiato" }
 
-[dev-dependencies.myelin-engine]
-version = "0.1"
-features = ["use-mocks"]
+[features]
+use-mocks = ["mockiato"]
