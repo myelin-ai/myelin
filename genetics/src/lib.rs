@@ -13,7 +13,7 @@ use myelin_neural_network::NeuralNetwork;
 use std::fmt::Debug;
 
 /// The set of all genes in an organism
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Genome;
 
 /// A factory for producing a [`NeuralNetwork`] out of a [`Genome`]
