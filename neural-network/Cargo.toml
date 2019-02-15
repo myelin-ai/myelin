@@ -19,5 +19,5 @@ mockiato = { git = "https://github.com/myelin-ai/mockiato" }
 use-mocks = ["mockiato"]
 
 [dev-dependencies.myelin-engine]
-version = "0.1"
+version = "0.2"
 features = ["use-mocks"]
