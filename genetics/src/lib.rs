@@ -23,5 +23,5 @@ pub trait NeuralNetworkDeveloper {
     ///
     /// [`NeuralNetwork`]: ../myelin-neural-network/trait.NeuralNetwork.html
     /// [`Genome`]: ./struct.Genome.html
-    fn develop_neural_network(genome: Genome) -> Box<dyn NeuralNetwork>;
+    fn develop_neural_network(&self, genome: Genome) -> Box<dyn NeuralNetwork>;
 }
