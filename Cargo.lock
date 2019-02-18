@@ -702,6 +702,7 @@ dependencies = [
  "maplit 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "mockiato 0.1.0 (git+https://github.com/myelin-ai/mockiato)",
  "myelin-engine 0.1.0 (git+https://github.com/myelin-ai/engine)",
+ "myelin-genetics 0.1.0",
  "myelin-geometry 0.1.0 (git+https://github.com/myelin-ai/engine)",
  "myelin-object-behavior 0.1.0",
  "myelin-object-data 0.1.0",

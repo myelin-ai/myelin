@@ -17,6 +17,7 @@ myelin-object-behavior = { path = "../object-behavior" }
 myelin-visualization-core = { path = "../visualization-core" }
 myelin-geometry = { git = "https://github.com/myelin-ai/engine" }
 myelin-object-data = { path = "../object-data" }
+myelin-genetics = { path = "../genetics" }
 serde = "1.0"
 serde_json = "1.0"
 log = "0.4"

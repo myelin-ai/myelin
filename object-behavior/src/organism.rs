@@ -56,7 +56,7 @@ impl ObjectBehavior for OrganismBehavior {
     ) -> Option<Action> {
         let input_neurons = &self.developed_neural_network.input_neuron_handles;
         let output_neurons = &self.developed_neural_network.output_neuron_handles;
-        let neural_network = &self.developed_neural_network.neural_network;
+        let neural_network = &mut self.developed_neural_network.neural_network;
 
         let rotation_input_neuron = *input_neurons.get(0).expect("Neuron not found in network");
 
@@ -64,7 +64,7 @@ impl ObjectBehavior for OrganismBehavior {
             rotation_input_neuron => own_description.rotation.value() / PI - 1.0,
         };
 
-        self.developed_neural_network.neural_network.step(
+        neural_network.step(
             world_interactor.elapsed_time_in_update().as_millis() as Milliseconds,
             &inputs,
         );
@@ -95,7 +95,7 @@ fn get_neuron_handle(index: usize, handles: &Vec<Handle>) -> Handle {
 
 fn get_membrane_potential(
     neuron: Handle,
-    neural_network: &dyn NeuralNetwork,
+    neural_network: &Box<dyn NeuralNetwork>,
 ) -> Option<MembranePotential> {
     neural_network
         .membrane_potential_of_neuron(neuron)
