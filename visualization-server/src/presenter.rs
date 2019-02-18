@@ -1,4 +1,4 @@
-use crate::controller::{Snapshot, Presenter};
+use crate::controller::{Presenter, Snapshot};
 use myelin_engine::prelude::*;
 use myelin_visualization_core::view_model_delta::{
     ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
