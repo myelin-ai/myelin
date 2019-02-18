@@ -310,29 +310,24 @@ mod tests {
     #[test]
     fn generates_simulation() {
         let simulation_factory = box || -> Box<dyn Simulation> {
-            let mock_behavior: Box<dyn ObjectBehavior> = Box::new(ObjectBehaviorMock::new());
-            let mock_object = Object {
-                id: 1,
-                description: ObjectBuilder::default()
-                    .shape(
-                        PolygonBuilder::default()
-                            .vertex(-5.0, -5.0)
-                            .vertex(5.0, -5.0)
-                            .vertex(5.0, 5.0)
-                            .vertex(-5.0, 5.0)
-                            .build()
-                            .unwrap(),
-                    )
-                    .location(5.0, 5.0)
-                    .mobility(Mobility::Immovable)
-                    .build()
-                    .unwrap(),
-                behavior: mock_behavior.as_ref(),
-            };
+            let description = ObjectBuilder::default()
+                .shape(
+                    PolygonBuilder::default()
+                        .vertex(-5.0, -5.0)
+                        .vertex(5.0, -5.0)
+                        .vertex(5.0, 5.0)
+                        .vertex(-5.0, 5.0)
+                        .build()
+                        .unwrap(),
+                )
+                .location(5.0, 5.0)
+                .mobility(Mobility::Immovable)
+                .build()
+                .unwrap();
+            let behavior = Box::new(ObjectBehaviorMock::new());
+
             let mut simulation = SimulationMock::new();
-
-            simulation.expect_add_object_any_times_and_return(mock_object);
-
+            simulation.expect_add_object_any_times_and_return((1, description, behavior));
             box simulation
         };
         let plant_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
