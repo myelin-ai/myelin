@@ -89,13 +89,13 @@ impl ObjectBehavior for OrganismBehavior {
     }
 }
 
-fn get_neuron_handle(index: usize, handles: &Vec<Handle>) -> Handle {
+fn get_neuron_handle(index: usize, handles: &[Handle]) -> Handle {
     *handles.get(index).expect("Neuron not found in network")
 }
 
 fn get_membrane_potential(
     neuron: Handle,
-    neural_network: &Box<dyn NeuralNetwork>,
+    neural_network: &dyn NeuralNetwork,
 ) -> Option<MembranePotential> {
     neural_network
         .membrane_potential_of_neuron(neuron)
