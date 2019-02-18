@@ -73,9 +73,9 @@ impl ObjectBehavior for OrganismBehavior {
         let linear_force_y_output_neuron = get_neuron_handle(1, output_neurons);
         let torque_output_neuron = get_neuron_handle(2, output_neurons);
 
-        let linear_force_x = get_membrane_potential(linear_force_x_output_neuron, neural_network);
-        let linear_force_y = get_membrane_potential(linear_force_y_output_neuron, neural_network);
-        let torque = get_membrane_potential(torque_output_neuron, neural_network);
+        let linear_force_x = get_membrane_potential(linear_force_x_output_neuron, neural_network.as_ref());
+        let linear_force_y = get_membrane_potential(linear_force_y_output_neuron, neural_network.as_ref());
+        let torque = get_membrane_potential(torque_output_neuron, neural_network.as_ref());
 
         linear_force_x.or(linear_force_y).or(torque).map(|_| {
             Action::ApplyForce(Force {
