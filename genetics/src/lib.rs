@@ -78,7 +78,7 @@ pub struct DevelopedNeuralNetwork {
 ///
 /// [`NeuralNetwork`]: ../myelin-neural-network/trait.NeuralNetwork.html
 /// [`Genome`]: ./struct.Genome.html
-#[cfg_attr(any(test, feature = "use-mocks"), mockable)]
+#[cfg_attr(any(test, feature = "use-mocks"), mockable(static_references))]
 pub trait NeuralNetworkDeveloper: Debug + NeuralNetworkDeveloperClone {
     /// Create a [`DevelopedNeuralNetwork`] using the information contained in the provided [`NeuralNetworkDevelopmentConfiguration`]
     ///

@@ -159,7 +159,7 @@ impl ObjectBehavior for StochasticSpreading {
 }
 
 /// Dedicated random number generator
-#[cfg_attr(test, mockiato::mockable)]
+#[cfg_attr(test, mockiato::mockable(static_references))]
 pub trait RandomChanceChecker: fmt::Debug + RandomChanceCheckerClone {
     /// Returns a random boolean with a given probability of returning true.
     /// The probability is defined in the range `[0.0; 1.0]` where `0.0` means
