@@ -306,13 +306,11 @@ mod tests {
     use crate::NameProviderMock;
     use mockiato::{partial_eq, partial_eq_owned};
     use myelin_object_data::AdditionalObjectDescriptionSerializerMock;
-    use std::cell::RefCell;
 
     #[test]
     fn generates_simulation() {
         let simulation_factory = box || -> Box<dyn Simulation> {
-            let behavior_mock: RefCell<Box<dyn ObjectBehavior>> =
-                RefCell::new(Box::new(ObjectBehaviorMock::new()));
+            let mock_behavior: Box<dyn ObjectBehavior> = Box::new(ObjectBehaviorMock::new());
             let mock_object = Object {
                 id: 1,
                 description: ObjectBuilder::default()
@@ -329,7 +327,7 @@ mod tests {
                     .mobility(Mobility::Immovable)
                     .build()
                     .unwrap(),
-                behavior: behavior_mock.borrow(),
+                behavior: mock_behavior.as_ref(),
             };
             let mut simulation = SimulationMock::new();
 

@@ -221,7 +221,6 @@ impl Clone for Box<dyn RandomChanceChecker> {
 mod tests {
     use super::*;
     use mockiato::partial_eq;
-    use std::cell::RefCell;
 
     const SPREADING_CHANGE: f64 = 1.0 / (60.0 * 30.0);
     const EXPECTED_PADDING: f64 = 1.0;
@@ -290,7 +289,7 @@ mod tests {
             vec![Object {
                 id: 0,
                 description: object_description_at_location(39.0, 39.0),
-                behavior: mock_behavior.borrow(),
+                behavior: mock_behavior.as_ref(),
             }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
@@ -298,7 +297,7 @@ mod tests {
             vec![Object {
                 id: 1,
                 description: object_description_at_location(50.0, 39.0),
-                behavior: mock_behavior.borrow(),
+                behavior: mock_behavior.as_ref(),
             }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
@@ -306,7 +305,7 @@ mod tests {
             vec![Object {
                 id: 2,
                 description: object_description_at_location(60.0, 39.0),
-                behavior: mock_behavior.borrow(),
+                behavior: mock_behavior.as_ref(),
             }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
@@ -314,7 +313,7 @@ mod tests {
             vec![Object {
                 id: 3,
                 description: object_description_at_location(61.0, 50.0),
-                behavior: mock_behavior.borrow(),
+                behavior: mock_behavior.as_ref(),
             }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
@@ -322,7 +321,7 @@ mod tests {
             vec![Object {
                 id: 4,
                 description: object_description_at_location(61.0, 61.0),
-                behavior: mock_behavior.borrow(),
+                behavior: mock_behavior.as_ref(),
             }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
@@ -330,7 +329,7 @@ mod tests {
             vec![Object {
                 id: 5,
                 description: object_description_at_location(50.0, 61.0),
-                behavior: mock_behavior.borrow(),
+                behavior: mock_behavior.as_ref(),
             }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
@@ -338,7 +337,7 @@ mod tests {
             vec![Object {
                 id: 6,
                 description: object_description_at_location(39.0, 61.0),
-                behavior: mock_behavior.borrow(),
+                behavior: mock_behavior.as_ref(),
             }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
@@ -346,7 +345,7 @@ mod tests {
             vec![Object {
                 id: 7,
                 description: object_description_at_location(39.0, 50.0),
-                behavior: mock_behavior.borrow(),
+                behavior: mock_behavior.as_ref(),
             }],
         );
 
@@ -375,7 +374,7 @@ mod tests {
             vec![Object {
                 id: 0,
                 description: object_description_at_location(39.0, 39.0),
-                behavior: mock_behavior.borrow(),
+                behavior: mock_behavior.as_ref(),
             }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
@@ -383,7 +382,7 @@ mod tests {
             vec![Object {
                 id: 1,
                 description: object_description_at_location(50.0, 39.0),
-                behavior: mock_behavior.borrow(),
+                behavior: mock_behavior.as_ref(),
             }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
@@ -391,7 +390,7 @@ mod tests {
             vec![Object {
                 id: 2,
                 description: object_description_at_location(60.0, 39.0),
-                behavior: mock_behavior.borrow(),
+                behavior: mock_behavior.as_ref(),
             }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
@@ -430,7 +429,7 @@ mod tests {
             vec![Object {
                 id: 1,
                 description: object_description_at_location(50.0, 39.0),
-                behavior: mock_behavior.borrow(),
+                behavior: mock_behavior.as_ref(),
             }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
@@ -438,7 +437,7 @@ mod tests {
             vec![Object {
                 id: 2,
                 description: object_description_at_location(60.0, 39.0),
-                behavior: mock_behavior.borrow(),
+                behavior: mock_behavior.as_ref(),
             }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
@@ -446,7 +445,7 @@ mod tests {
             vec![Object {
                 id: 3,
                 description: object_description_at_location(61.0, 50.0),
-                behavior: mock_behavior.borrow(),
+                behavior: mock_behavior.as_ref(),
             }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
@@ -454,7 +453,7 @@ mod tests {
             vec![Object {
                 id: 4,
                 description: object_description_at_location(61.0, 61.0),
-                behavior: mock_behavior.borrow(),
+                behavior: mock_behavior.as_ref(),
             }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
@@ -493,7 +492,7 @@ mod tests {
             vec![Object {
                 id: 1,
                 description: object_description_at_location(50.0, 39.0),
-                behavior: mock_behavior.borrow(),
+                behavior: mock_behavior.as_ref(),
             }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
@@ -501,7 +500,7 @@ mod tests {
             vec![Object {
                 id: 2,
                 description: object_description_at_location(60.0, 39.0),
-                behavior: mock_behavior.borrow(),
+                behavior: mock_behavior.as_ref(),
             }],
         );
         world_interactor.expect_find_objects_in_area_and_return(
@@ -537,7 +536,7 @@ mod tests {
             .unwrap()
     }
 
-    fn mock_behavior() -> RefCell<Box<dyn ObjectBehavior>> {
-        RefCell::new(Box::new(ObjectBehaviorMock::new()))
+    fn mock_behavior() -> Box<dyn ObjectBehavior> {
+        Box::new(ObjectBehaviorMock::new())
     }
 }

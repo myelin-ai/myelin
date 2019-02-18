@@ -16,7 +16,7 @@ pub(crate) type Snapshot = HashMap<Id, ObjectDescription>;
 pub(crate) type ConnectionAcceptorFactoryFn =
     dyn Fn(Arc<CurrentSnapshotFn>) -> Box<dyn ConnectionAcceptor> + Send + Sync;
 pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send + Sync;
-pub(crate) type ThreadSpawnFn = dyn Fn(Box<dyn FnBox() + Send>) + Send + Sync;
+pub(crate) type ThreadSpawnFn<'a> = dyn Fn(Box<dyn FnBox() + Send>) + Send + Sync + 'a;
 
 pub(crate) trait Controller: Debug {
     fn run(&mut self);
@@ -42,7 +42,7 @@ pub(crate) struct ControllerImpl<'a> {
     simulation: Box<dyn Simulation + 'a>,
     connection_acceptor_factory_fn: Arc<ConnectionAcceptorFactoryFn>,
     current_snapshot: Arc<RwLock<Snapshot>>,
-    thread_spawn_fn: Box<ThreadSpawnFn>,
+    thread_spawn_fn: Box<ThreadSpawnFn<'a>>,
     expected_delta: Duration,
 }
 
@@ -65,9 +65,9 @@ impl<'a> Controller for ControllerImpl<'a> {
 
 impl<'a> ControllerImpl<'a> {
     pub(crate) fn new(
-        simulation: Box<dyn Simulation>,
+        simulation: Box<dyn Simulation + 'a>,
         connection_acceptor_factory_fn: Arc<ConnectionAcceptorFactoryFn>,
-        thread_spawn_fn: Box<ThreadSpawnFn>,
+        thread_spawn_fn: Box<ThreadSpawnFn<'a>>,
         expected_delta: Duration,
     ) -> Self {
         Self {
@@ -105,7 +105,6 @@ impl<'a> ControllerImpl<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::cell::RefCell;
     use std::collections::HashMap;
     use std::sync::Mutex;
 
@@ -160,7 +159,7 @@ mod tests {
         simulation.expect_objects_and_return(vec![Object {
             id: 0,
             description: object_description(),
-            behavior: mock_behavior.borrow(),
+            behavior: mock_behavior.as_ref(),
         }]);
 
         let mut controller = ControllerImpl::new(
@@ -210,7 +209,7 @@ mod tests {
         simulation.expect_objects_and_return(vec![Object {
             id: 0,
             description: object_description(),
-            behavior: mock_behavior.borrow(),
+            behavior: mock_behavior.as_ref(),
         }]);
 
         let current_snapshot_fn: Arc<Mutex<Option<Arc<CurrentSnapshotFn>>>> = Default::default();
@@ -234,7 +233,7 @@ mod tests {
         assert_eq!(expected_snapshot, actual_snapshot);
     }
 
-    fn main_thread_spawn_fn() -> Box<ThreadSpawnFn> {
+    fn main_thread_spawn_fn<'a>() -> Box<ThreadSpawnFn<'a>> {
         box move |function| function()
     }
 
@@ -255,7 +254,7 @@ mod tests {
             .unwrap()
     }
 
-    fn mock_behavior() -> RefCell<Box<dyn ObjectBehavior>> {
-        RefCell::new(Box::new(ObjectBehaviorMock::new()))
+    fn mock_behavior<'a>() -> Box<dyn ObjectBehavior + 'a> {
+        Box::new(ObjectBehaviorMock::new())
     }
 }
