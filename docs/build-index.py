@@ -79,7 +79,7 @@ def _render(template: Template, rendered_crates: str) -> str:
 
 
 def build_index():
-    crates = _get_crates()
+    crates = sorted(_get_crates(), key=lambda crate: crate.name)
     rendered_crates = _render_crates(_get_crate_template(), crates)
     rendered = _render(_get_main_template(), rendered_crates)
 
