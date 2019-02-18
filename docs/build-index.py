@@ -8,12 +8,14 @@ from string import Template
 from html import escape
 import subprocess
 import json
+import re
 
 _WORKSPACE_ROOT = os.path.join(os.path.dirname(__file__), '..')
 _CARGO_MANIFEST_FILE = 'Cargo.toml'
 _CRATE_TEMPLATE_FILE = os.path.join(_WORKSPACE_ROOT, 'docs', 'crate.html')
 _MAIN_TEMPLATE_FILE = os.path.join(_WORKSPACE_ROOT, 'docs', 'index.html')
 _OUTPUT = os.path.join(_WORKSPACE_ROOT, 'target', 'doc', 'index.html')
+_PACKAGE_NAME_REGEX = r'^myelin-|mockiato-$'
 
 
 @dataclass(frozen=True)
@@ -25,12 +27,13 @@ class Crate:
 
 def _get_crates() -> List[Crate]:
     cargo_metadata_string = subprocess.check_output(
-        ['cargo', 'metadata', '--no-deps', '--format-version', '1']).decode('utf-8')
+        ['cargo', 'metadata', '--all-features', '--format-version', '1']).decode('utf-8')
     cargo_metadata = json.loads(cargo_metadata_string)
 
     crates = []
     for package in cargo_metadata['packages']:
-        crates.append(_map_package_to_crate(package))
+        if _should_include_package(package['name']):
+            crates.append(_map_package_to_crate(package))
     return crates
 
 
@@ -40,6 +43,10 @@ def _map_package_to_crate(package: dict) -> Crate:
     name = _translate_package_name_to_crate_name(package_name)
     return Crate(name=name, package_name=package_name,
                  description=description)
+
+
+def _should_include_package(package_name: str) -> bool:
+    return re.match(_PACKAGE_NAME_REGEX, package_name) is not None
 
 
 def _translate_package_name_to_crate_name(package_name: str) -> str:
