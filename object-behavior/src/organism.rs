@@ -12,6 +12,7 @@ use std::f64::consts::PI;
 /// built from a set of genes
 #[derive(Debug, Clone)]
 pub struct OrganismBehavior {
+    previous_velocity: Vector,
     developed_neural_network: DevelopedNeuralNetwork,
     neural_network_developer: Box<dyn NeuralNetworkDeveloper>,
 }
@@ -28,7 +29,9 @@ impl OrganismBehavior {
         neural_network_developer: Box<dyn NeuralNetworkDeveloper>,
     ) -> Self {
         /// 1. Rotation
-        const INPUT_NEURON_COUNT: u32 = 1;
+        /// 2. Average acceleration since last step (x)
+        /// 3. Average acceleration since last step (y)
+        const INPUT_NEURON_COUNT: u32 = 3;
 
         /// 1. Linear force x
         /// 2. Linear force y
@@ -42,6 +45,7 @@ impl OrganismBehavior {
         };
 
         Self {
+            previous_velocity: Vector::default(),
             developed_neural_network: neural_network_developer.develop_neural_network(metadata),
             neural_network_developer,
         }
@@ -54,15 +58,28 @@ impl ObjectBehavior for OrganismBehavior {
         own_description: &ObjectDescription,
         world_interactor: &dyn WorldInteractor,
     ) -> Option<Action> {
+        let elapsed_time = world_interactor.elapsed_time_in_update().as_millis() as Milliseconds;
+
         let input_neurons = &self.developed_neural_network.input_neuron_handles;
         let output_neurons = &self.developed_neural_network.output_neuron_handles;
         let neural_network = &mut self.developed_neural_network.neural_network;
 
-        let rotation_input_neuron = *input_neurons.get(0).expect("Neuron not found in network");
+        let rotation_input_neuron = get_neuron_handle(0, input_neurons);
+        let acceleration_x_input_neuron = get_neuron_handle(1, input_neurons);
+        let acceleration_y_input_neuron = get_neuron_handle(2, input_neurons);
+
+        let current_velocity = match own_description.mobility {
+            Mobility::Immovable => Vector::default(),
+            Mobility::Movable(velocity) => velocity,
+        };
 
         let inputs = hashmap! {
             rotation_input_neuron => own_description.rotation.value() / PI - 1.0,
+            acceleration_x_input_neuron => (current_velocity.x - self.previous_velocity.x) / elapsed_time, // TODO: Implement `scale` in geometry
+            acceleration_y_input_neuron => (current_velocity.y - self.previous_velocity.y) / elapsed_time,
         };
+
+        self.previous_velocity = current_velocity;
 
         neural_network.step(
             world_interactor.elapsed_time_in_update().as_millis() as Milliseconds,
