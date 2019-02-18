@@ -20,8 +20,8 @@ myelin-neural-network = { path = "../neural-network" }
 myelin-genetics = { path = "../genetics" }
 rand = "0.5.5"
 log = "0.4"
+maplit = "1.0"
 
 [dev-dependencies]
-maplit = "1.0"
 myelin-engine = { git = "https://github.com/myelin-ai/engine", features = ["use-mocks"] }
 mockiato = { git = "https://github.com/myelin-ai/mockiato" }
