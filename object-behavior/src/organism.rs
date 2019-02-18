@@ -5,7 +5,7 @@ use myelin_engine::prelude::*;
 use myelin_genetics::{
     DevelopedNeuralNetwork, Genome, NeuralNetworkDeveloper, NeuralNetworkDevelopmentConfiguration,
 };
-use myelin_neural_network::Milliseconds;
+use myelin_neural_network::{Handle, MembranePotential, Milliseconds, NeuralNetwork};
 use std::f64::consts::PI;
 
 /// An organism that can interact with its surroundings via a neural network,
@@ -60,12 +60,6 @@ impl ObjectBehavior for OrganismBehavior {
 
         let rotation_input_neuron = *input_neurons.get(0).expect("Neuron not found in network");
 
-        let linear_force_x_output_neuron =
-            *output_neurons.get(0).expect("Neuron not found in network");
-        let linear_force_y_output_neuron =
-            *output_neurons.get(1).expect("Neuron not found in network");
-        let torque_output_neuron = *output_neurons.get(2).expect("Neuron not found in network");
-
         let inputs = hashmap! {
             rotation_input_neuron => own_description.rotation.value() / PI - 1.0,
         };
@@ -75,26 +69,35 @@ impl ObjectBehavior for OrganismBehavior {
             &inputs,
         );
 
-        let linear_force_x = neural_network
-            .membrane_potential_of_neuron(linear_force_x_output_neuron)
-            .expect("Invalid neuron handle");
+        let linear_force_x_output_neuron = get_neuron_handle(0, output_neurons);
+        let linear_force_y_output_neuron = get_neuron_handle(1, output_neurons);
+        let torque_output_neuron = get_neuron_handle(2, output_neurons);
 
-        let linear_force_y = neural_network
-            .membrane_potential_of_neuron(linear_force_y_output_neuron)
-            .expect("Invalid neuron handle");
-
-        let torque = neural_network
-            .membrane_potential_of_neuron(torque_output_neuron)
-            .expect("Invalid neuron handle");
+        let linear_force_x = get_membrane_potential(linear_force_x_output_neuron, neural_network);
+        let linear_force_y = get_membrane_potential(linear_force_y_output_neuron, neural_network);
+        let torque = get_membrane_potential(torque_output_neuron, neural_network);
 
         linear_force_x.or(linear_force_y).or(torque).map(|_| {
             Action::ApplyForce(Force {
                 linear: Vector {
-                    x: linear_force_x.unwrap_or(0.0),
-                    y: linear_force_y.unwrap_or(0.0),
+                    x: linear_force_x.unwrap_or_default(),
+                    y: linear_force_y.unwrap_or_default(),
                 },
-                torque: Torque(torque.unwrap_or(0.0)),
+                torque: Torque(torque.unwrap_or_default()),
             })
         })
     }
+}
+
+fn get_neuron_handle(index: usize, handles: &Vec<Handle>) -> Handle {
+    *handles.get(index).expect("Neuron not found in network")
+}
+
+fn get_membrane_potential(
+    neuron: Handle,
+    neural_network: &dyn NeuralNetwork,
+) -> Option<MembranePotential> {
+    neural_network
+        .membrane_potential_of_neuron(neuron)
+        .expect("Invalid neuron handle")
 }
