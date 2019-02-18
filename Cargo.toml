@@ -5,6 +5,7 @@ members = [
     "visualization-server",
     "worldgen",
     "object-behavior",
+    "object-data",
     "neural-network",
     "genetics",
 ]
