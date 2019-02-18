@@ -13,7 +13,7 @@ authors = [
 edition = "2018"
 
 [dependencies]
-mockiato = { git = "https://github.com/myelin-ai/mockiato", optional = true }
+mockiato = { version = "0.2", optional = true }
 myelin-engine = "0.3"
 myelin-geometry = "1.0"
 myelin-neural-network = { path = "../neural-network" }
@@ -23,7 +23,7 @@ log = "0.4"
 
 [dev-dependencies]
 maplit = "1.0"
-mockiato = { git = "https://github.com/myelin-ai/mockiato" }
+mockiato = "0.2"
 
 [dev-dependencies.myelin-engine]
 version = "0.3"

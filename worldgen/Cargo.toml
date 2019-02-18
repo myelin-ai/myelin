@@ -19,7 +19,7 @@ rand = "0.6.1"
 
 [dev-dependencies]
 myelin-object-behavior = { path = "../object-behavior" }
-mockiato = { git = "https://github.com/myelin-ai/mockiato" }
+mockiato = "0.2"
 myelin-object-data = { path = "../object-data", features = ["use-mocks"] }
 
 [dev-dependencies.myelin-engine]

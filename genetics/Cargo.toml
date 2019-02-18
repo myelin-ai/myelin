@@ -11,11 +11,11 @@ authors = [
 edition = "2018"
 
 [dependencies]
-mockiato = { git = "https://github.com/myelin-ai/mockiato", optional = true }
+mockiato = { version = "0.2", optional = true }
 myelin-neural-network = { path = "../neural-network" }
 
 [dev-dependencies]
-mockiato = { git = "https://github.com/myelin-ai/mockiato" }
+mockiato = "0.2"
 
 [features]
 use-mocks = ["mockiato"]
