@@ -4,6 +4,7 @@ use myelin_engine::prelude::*;
 use myelin_genetics::{
     DevelopedNeuralNetwork, Genome, NeuralNetworkDeveloper, NeuralNetworkDevelopmentConfiguration,
 };
+use std::any::Any;
 
 /// An organism that can interact with its surroundings via a neural network,
 /// built from a set of genes
@@ -50,5 +51,9 @@ impl ObjectBehavior for OrganismBehavior {
         _world_interactor: &dyn WorldInteractor,
     ) -> Option<Action> {
         None
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
