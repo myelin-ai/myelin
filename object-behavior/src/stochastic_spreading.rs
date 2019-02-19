@@ -14,6 +14,7 @@ pub use self::random_chance_checker_impl::RandomChanceCheckerImpl;
 pub struct StochasticSpreading {
     random_chance_checker: Box<dyn RandomChanceChecker>,
     spreading_probability: f64,
+    next_spreading_location: Option<Aabb>,
 }
 
 impl Clone for StochasticSpreading {
@@ -21,6 +22,7 @@ impl Clone for StochasticSpreading {
         Self {
             random_chance_checker: self.random_chance_checker.clone_box(),
             spreading_probability: self.spreading_probability,
+            next_spreading_location: self.next_spreading_location.clone(),
         }
     }
 }
@@ -36,7 +38,13 @@ impl StochasticSpreading {
         Self {
             spreading_probability,
             random_chance_checker,
+            next_spreading_location: None,
         }
+    }
+
+    /// Returns the position, if any, where this behavior will spread to in the next step
+    pub fn next_spreading_location(&self) -> Option<Aabb> {
+        self.next_spreading_location
     }
 
     fn should_spread(&mut self) -> bool {
@@ -137,7 +145,22 @@ fn can_spread_at_location(
 
     let objects_in_area = world_interactor.find_objects_in_area(target_area);
 
-    objects_in_area.is_empty()
+    if objects_in_area.is_empty() {
+        return true;
+    }
+
+    world_interactor
+        .find_objects_in_area(target_area)
+        .into_iter()
+        .filter_map(|object| {
+            object
+                .behavior
+                .as_any()
+                .downcast_ref::<StochasticSpreading>()
+        })
+        .filter_map(|stochastic_spreading| stochastic_spreading.next_spreading_location)
+        .map(Polygon::from)
+        .all(|next_spreading_location| !next_spreading_location.contains(target_area))
 }
 
 impl ObjectBehavior for StochasticSpreading {
