@@ -15,7 +15,7 @@ _CARGO_MANIFEST_FILE = 'Cargo.toml'
 _CRATE_TEMPLATE_FILE = os.path.join(_WORKSPACE_ROOT, 'docs', 'crate.html')
 _MAIN_TEMPLATE_FILE = os.path.join(_WORKSPACE_ROOT, 'docs', 'index.html')
 _OUTPUT = os.path.join(_WORKSPACE_ROOT, 'target', 'doc', 'index.html')
-_PACKAGE_NAME_REGEX = r'^myelin-|mockiato-$'
+_PACKAGE_NAME_REGEX = r'^myelin-|mockiato-?$'
 
 
 @dataclass(frozen=True)
