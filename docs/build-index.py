@@ -29,12 +29,11 @@ def _get_crates() -> List[Crate]:
     cargo_metadata_string = subprocess.check_output(
         ['cargo', 'metadata', '--all-features', '--format-version', '1']).decode('utf-8')
     cargo_metadata = json.loads(cargo_metadata_string)
+    packages = cargo_metadata['packages']
 
-    crates = []
-    for package in cargo_metadata['packages']:
-        if _should_include_package(package['name']):
-            crates.append(_map_package_to_crate(package))
-    return crates
+    return [_map_package_to_crate(package)
+            for package in packages
+            if _should_include_package(package['name'])]
 
 
 def _map_package_to_crate(package: dict) -> Crate:
