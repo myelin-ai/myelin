@@ -10,10 +10,6 @@
     clippy::unimplemented
 )]
 
-#[cfg_attr(test, macro_use)]
-#[cfg(test)]
-extern crate maplit;
-
 // Not named "static" because that would be a keyword
 mod static_behavior;
 pub use self::static_behavior::Static;

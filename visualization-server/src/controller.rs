@@ -1,6 +1,7 @@
 use myelin_engine::prelude::*;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
 use std::boxed::FnBox;
+use std::collections::HashMap;
 use std::fmt::{self, Debug};
 use std::net::SocketAddr;
 use std::sync::{Arc, RwLock};
@@ -9,10 +10,13 @@ use std::time::Duration;
 #[cfg(test)]
 use mockiato::mockable;
 
+/// The snapshot provided by myelin-engine contains `ObjectDescription`,
+/// which we are not interested in.
+pub(crate) type Snapshot = HashMap<Id, ObjectDescription>;
 pub(crate) type ConnectionAcceptorFactoryFn =
     dyn Fn(Arc<CurrentSnapshotFn>) -> Box<dyn ConnectionAcceptor> + Send + Sync;
 pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send + Sync;
-pub(crate) type ThreadSpawnFn = dyn Fn(Box<dyn FnBox() + Send>) + Send + Sync;
+pub(crate) type ThreadSpawnFn<'a> = dyn Fn(Box<dyn FnBox() + Send>) + Send + Sync + 'a;
 
 pub(crate) trait Controller: Debug {
     fn run(&mut self);
@@ -34,23 +38,23 @@ pub(crate) trait ConnectionAcceptor: Debug {
     fn address(&self) -> SocketAddr;
 }
 
-pub(crate) struct ControllerImpl {
-    simulation: Box<dyn Simulation>,
+pub(crate) struct ControllerImpl<'a> {
+    simulation: Box<dyn Simulation + 'a>,
     connection_acceptor_factory_fn: Arc<ConnectionAcceptorFactoryFn>,
     current_snapshot: Arc<RwLock<Snapshot>>,
-    thread_spawn_fn: Box<ThreadSpawnFn>,
+    thread_spawn_fn: Box<ThreadSpawnFn<'a>>,
     expected_delta: Duration,
 }
 
-impl Debug for ControllerImpl {
+impl<'a> Debug for ControllerImpl<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct(name_of_type!(ControllerImpl))
+        f.debug_struct(name_of_type!(ControllerImpl<'a>))
             .field("expected_delta", &self.expected_delta)
             .finish()
     }
 }
 
-impl Controller for ControllerImpl {
+impl<'a> Controller for ControllerImpl<'a> {
     fn run(&mut self) {
         self.run_connection_acceptor();
         loop {
@@ -59,11 +63,11 @@ impl Controller for ControllerImpl {
     }
 }
 
-impl ControllerImpl {
+impl<'a> ControllerImpl<'a> {
     pub(crate) fn new(
-        simulation: Box<dyn Simulation>,
+        simulation: Box<dyn Simulation + 'a>,
         connection_acceptor_factory_fn: Arc<ConnectionAcceptorFactoryFn>,
-        thread_spawn_fn: Box<ThreadSpawnFn>,
+        thread_spawn_fn: Box<ThreadSpawnFn<'a>>,
         expected_delta: Duration,
     ) -> Self {
         Self {
@@ -88,7 +92,13 @@ impl ControllerImpl {
 
     fn step_simulation(&mut self) {
         self.simulation.step();
-        *self.current_snapshot.write().unwrap() = self.simulation.objects();
+        let current_snapshot: Snapshot = self
+            .simulation
+            .objects()
+            .into_iter()
+            .map(|object| (object.id, object.description))
+            .collect();
+        *self.current_snapshot.write().unwrap() = current_snapshot;
     }
 }
 
@@ -129,7 +139,7 @@ mod tests {
     fn steps_simulation_with_empty_snapshot() {
         let mut simulation = SimulationMock::new();
         simulation.expect_step();
-        simulation.expect_objects().returns(HashMap::new());
+        simulation.expect_objects_and_return(Vec::new());
         let mut controller = ControllerImpl::new(
             box simulation,
             Arc::new(move |_| panic!("No connection acceptor is expected to be created")),
@@ -141,13 +151,17 @@ mod tests {
 
     #[test]
     fn steps_simulation_with_snapshot() {
+        let mock_behavior = mock_behavior();
+
         let mut simulation = SimulationMock::new();
         simulation.expect_step();
-        let expected_snapshot = hashmap! {
-           0 => object_description()
-        };
 
-        simulation.expect_objects().returns(expected_snapshot);
+        simulation.expect_objects_and_return(vec![Object {
+            id: 0,
+            description: object_description(),
+            behavior: mock_behavior.as_ref(),
+        }]);
+
         let mut controller = ControllerImpl::new(
             box simulation,
             Arc::new(move |_| panic!("No connection acceptor is expected to be created")),
@@ -182,16 +196,21 @@ mod tests {
     }
 
     #[test]
-    fn stepping_simulation_sets_snapshot() {
+    fn stepping_simulation_sets_snapshot_without_behavior() {
+        let mock_behavior = mock_behavior();
+
         let mut simulation = SimulationMock::new();
         simulation.expect_step();
 
         let expected_snapshot = hashmap! {
            0 => object_description()
         };
-        simulation
-            .expect_objects()
-            .returns(expected_snapshot.clone());
+
+        simulation.expect_objects_and_return(vec![Object {
+            id: 0,
+            description: object_description(),
+            behavior: mock_behavior.as_ref(),
+        }]);
 
         let current_snapshot_fn: Arc<Mutex<Option<Arc<CurrentSnapshotFn>>>> = Default::default();
         let snapshot_fn = current_snapshot_fn.clone();
@@ -214,7 +233,7 @@ mod tests {
         assert_eq!(expected_snapshot, actual_snapshot);
     }
 
-    fn main_thread_spawn_fn() -> Box<ThreadSpawnFn> {
+    fn main_thread_spawn_fn<'a>() -> Box<ThreadSpawnFn<'a>> {
         box move |function| function()
     }
 
@@ -233,5 +252,9 @@ mod tests {
             )
             .build()
             .unwrap()
+    }
+
+    fn mock_behavior<'a>() -> Box<dyn ObjectBehavior + 'a> {
+        Box::new(ObjectBehaviorMock::new())
     }
 }
