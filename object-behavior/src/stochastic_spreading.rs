@@ -101,10 +101,6 @@ fn calculate_possible_spreading_locations(polygon: &Polygon) -> Vec<Point> {
         lower_right: Point { x: max_x, y: max_y },
     } = polygon.aabb();
 
-    /// Arbitrary number in meters representing the space
-    /// between the spread objects
-    const PADDING: f64 = 1.0;
-
     let width = max_x - min_x + PADDING;
     let height = max_y - min_y + PADDING;
 
@@ -145,13 +141,29 @@ fn can_spread_at_location(
 
     let objects_in_area = world_interactor.find_objects_in_area(target_area);
 
-    if objects_in_area.is_empty() {
-        return true;
+    if !objects_in_area.is_empty() {
+        return false;
     }
 
+    let target_area_width = target_area.lower_right.x - target_area.upper_left.x;
+    let target_area_height = target_area.lower_right.y - target_area.upper_left.y;
+
+    let possible_other_spreaders = Aabb::try_new(
+        (
+            target_area.upper_left.x - PADDING - target_area_width,
+            target_area.upper_left.y - PADDING - target_area_height,
+        ),
+        (
+            target_area.lower_right.x + PADDING + target_area_width,
+            target_area.lower_right.y + PADDING + target_area_height,
+        ),
+    )
+    .expect("");
     world_interactor
-        .find_objects_in_area(target_area)
+        .find_objects_in_area(possible_other_spreaders)
         .into_iter()
+        // Todo: Check IDs instead, once engine hands out this object's ID
+        .filter(|object| object.description != *own_description)
         .filter_map(|object| {
             object
                 .behavior
@@ -161,6 +173,10 @@ fn can_spread_at_location(
         .filter_map(|stochastic_spreading| stochastic_spreading.next_spreading_location)
         .all(|other_target_location| !target_area.intersects(other_target_location))
 }
+
+/// Arbitrary number in meters representing the space
+/// between the spread objects
+const PADDING: f64 = 1.0;
 
 impl ObjectBehavior for StochasticSpreading {
     fn step(
@@ -560,6 +576,72 @@ mod tests {
             }
             action => panic!("Expected Action::Spawn, got {:#?}", action),
         }
+    }
+
+    #[test]
+    fn does_not_spread_on_space_that_another_behavior_will_spread_to() {
+        let mut first_random_chance_checker = RandomChanceCheckerMock::new();
+        first_random_chance_checker
+            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .returns(true);
+        first_random_chance_checker
+            .expect_random_number_in_range(partial_eq(0), partial_eq(8))
+            .returns(3);
+        let mut first_object =
+            StochasticSpreading::new(SPREADING_CHANGE, Box::new(first_random_chance_checker));
+        let first_description = object_description_at_location(50.0, 50.0);
+
+        let mut second_random_chance_checker = RandomChanceCheckerMock::new();
+        second_random_chance_checker
+            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .returns(true);
+        second_random_chance_checker
+            .expect_random_number_in_range(partial_eq(0), partial_eq(8))
+            .returns(7);
+        let mut second_object =
+            StochasticSpreading::new(SPREADING_CHANGE, Box::new(second_random_chance_checker));
+        let second_description = object_description_at_location(60.0, 50.0);
+
+        let mock_behavior = mock_behavior();
+        let mut world_interactor = WorldInteractorMock::new();
+        world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((45.0, 34.0), (55.0, 44.0)).unwrap(),
+            ))
+            .returns(vec![Object {
+                id: 1,
+                description: object_description_at_location(50.0, 39.0),
+                behavior: mock_behavior.as_ref(),
+            }]);
+        world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap(),
+            ))
+            .returns(vec![Object {
+                id: 2,
+                description: object_description_at_location(60.0, 39.0),
+                behavior: mock_behavior.as_ref(),
+            }]);
+        world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+
+        // Todo: Add world_interactor expectation for possible_spreaders
+
+        let first_action = first_object.step(&first_description, &world_interactor);
+        match first_action {
+            Some(Action::Spawn(object_description, _)) => {
+                let expected_object_description =
+                    object_description_at_location(60.0 + EXPECTED_PADDING, 50.0);
+                assert_eq!(expected_object_description, object_description);
+            }
+            action => panic!("Expected Action::Spawn, got {:#?}", action),
+        }
+
+        let second_action = second_object.step(&second_description, &world_interactor);
+        assert!(second_action.is_none())
     }
 
     fn object_description_at_location(x: f64, y: f64) -> ObjectDescription {
