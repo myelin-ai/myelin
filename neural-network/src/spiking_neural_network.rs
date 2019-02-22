@@ -32,7 +32,7 @@ impl NeuralNetwork for SpikingNeuralNetwork {
         self.neurons
             .get(neuron.0)
             .ok_or(())
-            .map(|neuron| neuron.membrane_potential())
+            .map(SpikingNeuron::membrane_potential)
     }
 
     /// Add a new unconnected neuron to the network
