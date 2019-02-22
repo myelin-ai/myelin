@@ -12,9 +12,6 @@
     clippy::unimplemented
 )]
 
-#[macro_use]
-extern crate nameof;
-
 pub use self::generator::*;
 pub use self::name_provider::*;
 use myelin_engine::prelude::*;

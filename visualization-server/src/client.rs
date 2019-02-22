@@ -8,6 +8,8 @@ use std::error::Error;
 use std::fmt::{self, Debug, Display};
 use std::sync::Arc;
 use std::time::Duration;
+use log::{debug, error, warn};
+use nameof::name_of_type;
 
 pub(crate) struct ClientHandler {
     interval: Duration,
@@ -133,6 +135,7 @@ mod tests {
     use std::fmt::Display;
     use std::thread::panicking;
     use uuid::Uuid;
+    use maplit::hashmap;
 
     const INTERVAL: u64 = 1000 / 30;
 

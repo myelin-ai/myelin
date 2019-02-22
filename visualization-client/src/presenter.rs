@@ -204,6 +204,8 @@ mod tests {
     use std::collections::VecDeque;
     use std::fmt::{self, Debug};
     use std::thread::panicking;
+    use maplit::hashmap;
+    use nameof::name_of_type;
 
     struct DeltaApplierMock<'mock> {
         #[allow(clippy::type_complexity)]

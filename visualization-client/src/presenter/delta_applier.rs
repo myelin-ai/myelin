@@ -96,6 +96,7 @@ mod tests {
     use super::*;
     use myelin_object_data::Kind;
     use std::f64::consts::PI;
+    use maplit::hashmap;
 
     fn object_description() -> ObjectDescription {
         ObjectDescription {

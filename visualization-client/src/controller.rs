@@ -166,6 +166,7 @@ mod tests {
     use std::error::Error;
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::thread::panicking;
+    use maplit::hashmap;
 
     #[derive(Debug)]
     struct PresenterMock {

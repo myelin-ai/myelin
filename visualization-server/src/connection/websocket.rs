@@ -7,6 +7,7 @@ use websocket::client::sync::Client;
 use websocket::message::Message;
 use websocket::result::WebSocketError;
 use websocket::stream::sync::TcpStream;
+use nameof::name_of_type;
 
 pub(crate) struct WebsocketClient(Mutex<Client<TcpStream>>);
 

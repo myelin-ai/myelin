@@ -6,6 +6,7 @@ use std::fmt::{self, Debug};
 use std::net::SocketAddr;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
+use nameof::name_of_type;
 
 #[cfg(test)]
 use mockiato::mockable;
@@ -107,6 +108,7 @@ mod tests {
     use super::*;
     use std::collections::HashMap;
     use std::sync::Mutex;
+    use maplit::hashmap;
 
     const EXPECTED_DELTA: Duration = Duration::from_millis((1.0f64 / 60.0f64) as u64);
 
