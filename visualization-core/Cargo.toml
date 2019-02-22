@@ -11,7 +11,7 @@ authors = [
 edition = "2018"
 
 [dependencies]
-myelin-engine = "0.3"
+myelin-engine = "0.4"
 myelin-geometry = "1.0"
 myelin-object-data = { path = "../object-data" }
 serde = "1.0"
