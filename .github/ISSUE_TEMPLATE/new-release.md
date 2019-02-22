@@ -15,4 +15,4 @@ assignees: ''
 # Perform the release
 - [ ] Merge the pull request
 - [ ] Run `cargo publish`
-- [ ] Tag the merge commit ('0.1.2')
+- [ ] Tag the merge commit (e.g. '0.1.2')
