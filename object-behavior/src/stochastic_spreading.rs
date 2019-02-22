@@ -159,8 +159,7 @@ fn can_spread_at_location(
                 .downcast_ref::<StochasticSpreading>()
         })
         .filter_map(|stochastic_spreading| stochastic_spreading.next_spreading_location)
-        .map(Polygon::from)
-        .all(|next_spreading_location| !next_spreading_location.contains(target_area))
+        .all(|other_target_location| !target_area.intersects(other_target_location))
 }
 
 impl ObjectBehavior for StochasticSpreading {
