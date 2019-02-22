@@ -131,6 +131,7 @@ impl SpikingNeuralNetwork {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use maplit::hashmap;
 
     #[test]
     fn empty_network_has_no_membrane_potential() {

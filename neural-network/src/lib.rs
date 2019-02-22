@@ -13,9 +13,6 @@ mod connection;
 pub mod spiking_neural_network;
 pub use self::connection::*;
 
-#[cfg(test)]
-use maplit::hashmap;
-
 #[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
 use std::collections::HashMap;

@@ -15,7 +15,6 @@ myelin-engine = "0.3"
 myelin-worldgen = { path = "../worldgen" }
 myelin-object-behavior = { path = "../object-behavior" }
 myelin-visualization-core = { path = "../visualization-core" }
-myelin-geometry = "1.0"
 myelin-object-data = { path = "../object-data" }
 serde = "1.0"
 serde_json = "1.0"
@@ -23,14 +22,12 @@ log = "0.4"
 simple_logger = "1.0"
 clap = "2.32"
 websocket = "0.20.3"
-spmc = "0.2"
 nameof = "0.1"
 uuid = { version = "0.7", features = ["v4"] }
 
 [dev-dependencies]
 maplit = "1.0"
 mockiato = "0.2"
-lazy_static = "1.2.0"
 
 [dev-dependencies.myelin-engine]
 version = "0.3"
