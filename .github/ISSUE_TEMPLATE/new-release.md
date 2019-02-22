@@ -7,11 +7,12 @@ assignees: ''
 
 ---
 
-# Prepare a release PR
+# Prepare the release
 - [ ] Bump the version numbers
 - [ ] Update dependency versions for neighbouring crates
+- [ ] Create a pull request
 
 # Perform the release
-- [ ] Merge the PR
+- [ ] Merge the pull request
 - [ ] Run `cargo publish`
-- [ ] Tag the merge commit
+- [ ] Tag the merge commit ('0.1.2')
