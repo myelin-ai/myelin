@@ -11,11 +11,11 @@ authors = [
 edition = "2018"
 
 [dependencies]
-myelin-engine = { git = "https://github.com/myelin-ai/engine" }
+myelin-engine = "0.3"
 myelin-worldgen = { path = "../worldgen" }
 myelin-object-behavior = { path = "../object-behavior" }
 myelin-visualization-core = { path = "../visualization-core" }
-myelin-geometry = { git = "https://github.com/myelin-ai/engine" }
+myelin-geometry = "1.0"
 myelin-object-data = { path = "../object-data" }
 myelin-genetics = { path = "../genetics" }
 serde = "1.0"
@@ -30,8 +30,9 @@ uuid = { version = "0.7", features = ["v4"] }
 
 [dev-dependencies]
 maplit = "1.0"
-mockiato = { git = "https://github.com/myelin-ai/mockiato" }
+mockiato = "0.2"
+lazy_static = "1.2.0"
 
 [dev-dependencies.myelin-engine]
-git = "https://github.com/myelin-ai/engine"
+version = "0.3"
 features = ["use-mocks"]

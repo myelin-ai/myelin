@@ -7,6 +7,7 @@ use myelin_genetics::{
 };
 use myelin_neural_network::{Handle, MembranePotential, Milliseconds, NeuralNetwork};
 use std::f64::consts::PI;
+use std::any::Any;
 
 /// An organism that can interact with its surroundings via a neural network,
 /// built from a set of genes
@@ -105,6 +106,10 @@ impl ObjectBehavior for OrganismBehavior {
                 torque: Torque(torque.unwrap_or_default()),
             })
         })
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

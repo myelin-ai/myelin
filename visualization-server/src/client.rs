@@ -1,9 +1,8 @@
 use crate::connection::Connection;
 use crate::connection::SocketError;
 use crate::connection_acceptor::Client;
-use crate::controller::{CurrentSnapshotFn, Presenter};
+use crate::controller::{CurrentSnapshotFn, Presenter, Snapshot};
 use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperError};
-use myelin_engine::prelude::*;
 use myelin_visualization_core::serialization::ViewModelSerializer;
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
@@ -121,10 +120,11 @@ impl Display for StepError {
 mod tests {
     use super::*;
     use crate::connection::{SocketErrorMock, SocketMock};
-    use crate::controller::PresenterMock;
+    use crate::controller::{PresenterMock, Snapshot};
     use crate::fixed_interval_sleeper::FixedIntervalSleeperMock;
     use mockiato::partial_eq;
     use mockiato::partial_eq_owned;
+    use myelin_engine::prelude::*;
     use myelin_visualization_core::view_model_delta::{
         ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
     };
