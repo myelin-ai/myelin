@@ -8,7 +8,7 @@ edition = "2018"
 [dependencies]
 mockiato = { version = "0.2", optional = true }
 myelin-engine = "0.4"
-myelin-geometry = "1.0"
+myelin-geometry = "2.0"
 slab = "0.4"
 
 [dev-dependencies]
