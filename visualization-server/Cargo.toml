@@ -11,11 +11,11 @@ authors = [
 edition = "2018"
 
 [dependencies]
-myelin-engine = "0.3"
+myelin-engine = "0.4"
 myelin-worldgen = { path = "../worldgen" }
 myelin-object-behavior = { path = "../object-behavior" }
 myelin-visualization-core = { path = "../visualization-core" }
-myelin-geometry = "1.0"
+myelin-geometry = "2.0"
 myelin-object-data = { path = "../object-data" }
 serde = "1.0"
 serde_json = "1.0"
@@ -33,5 +33,5 @@ mockiato = "0.2"
 lazy_static = "1.2.0"
 
 [dev-dependencies.myelin-engine]
-version = "0.3"
+version = "0.4"
 features = ["use-mocks"]
