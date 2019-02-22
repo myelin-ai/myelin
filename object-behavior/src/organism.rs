@@ -6,8 +6,8 @@ use myelin_genetics::{
     DevelopedNeuralNetwork, Genome, NeuralNetworkDeveloper, NeuralNetworkDevelopmentConfiguration,
 };
 use myelin_neural_network::{Handle, MembranePotential, Milliseconds, NeuralNetwork};
-use std::f64::consts::PI;
 use std::any::Any;
+use std::f64::consts::PI;
 
 /// An organism that can interact with its surroundings via a neural network,
 /// built from a set of genes
