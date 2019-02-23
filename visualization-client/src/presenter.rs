@@ -199,13 +199,13 @@ mod tests {
     use super::*;
     use crate::presenter::global_polygon_translator::GlobalPolygonTranslatorMock;
     use crate::view_model;
+    use maplit::hashmap;
     use mockiato::{partial_eq, partial_eq_owned, unordered_vec_eq};
+    use nameof::name_of_type;
     use std::cell::RefCell;
     use std::collections::VecDeque;
     use std::fmt::{self, Debug};
     use std::thread::panicking;
-    use maplit::hashmap;
-    use nameof::name_of_type;
 
     struct DeltaApplierMock<'mock> {
         #[allow(clippy::type_complexity)]

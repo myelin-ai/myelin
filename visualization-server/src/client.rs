@@ -3,13 +3,13 @@ use crate::connection::SocketError;
 use crate::connection_acceptor::Client;
 use crate::controller::{CurrentSnapshotFn, Presenter, Snapshot};
 use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperError};
+use log::{debug, error, warn};
 use myelin_visualization_core::serialization::ViewModelSerializer;
+use nameof::name_of_type;
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
 use std::sync::Arc;
 use std::time::Duration;
-use log::{debug, error, warn};
-use nameof::name_of_type;
 
 pub(crate) struct ClientHandler {
     interval: Duration,
@@ -124,6 +124,7 @@ mod tests {
     use crate::connection::{SocketErrorMock, SocketMock};
     use crate::controller::{PresenterMock, Snapshot};
     use crate::fixed_interval_sleeper::FixedIntervalSleeperMock;
+    use maplit::hashmap;
     use mockiato::partial_eq;
     use mockiato::partial_eq_owned;
     use myelin_engine::prelude::*;
@@ -135,7 +136,6 @@ mod tests {
     use std::fmt::Display;
     use std::thread::panicking;
     use uuid::Uuid;
-    use maplit::hashmap;
 
     const INTERVAL: u64 = 1000 / 30;
 

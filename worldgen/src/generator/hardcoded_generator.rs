@@ -6,9 +6,9 @@ use myelin_engine::prelude::*;
 use myelin_object_data::{
     AdditionalObjectDescription, AdditionalObjectDescriptionSerializer, Kind,
 };
+use nameof::name_of_type;
 use std::f64::consts::FRAC_PI_2;
 use std::fmt;
-use nameof::name_of_type;
 
 /// Simulation generation algorithm that creates a fixed simulation
 /// inhabited by two forests, a large central lake and

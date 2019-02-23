@@ -1,4 +1,5 @@
 use crate::controller::{ConnectionAcceptor, CurrentSnapshotFn};
+use nameof::name_of_type;
 use std::boxed::FnBox;
 use std::fmt::{self, Debug};
 use std::io;
@@ -7,7 +8,6 @@ use std::sync::Arc;
 use websocket::server::upgrade::{sync::Buffer, WsUpgrade as Request};
 use websocket::server::NoTlsAcceptor;
 use websocket::sync::{Client as WsClient, Server};
-use nameof::name_of_type;
 
 pub(crate) trait Client: Debug {
     fn run(&mut self);

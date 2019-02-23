@@ -2,8 +2,8 @@
 //! that changed since the last snapshot
 
 use myelin_engine::prelude::*;
+use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
-use serde_derive::{Serialize, Deserialize};
 
 /// This step's object deltas
 pub type ViewModelDelta = HashMap<Id, ObjectDelta>;
