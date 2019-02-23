@@ -1,4 +1,5 @@
 use super::{Socket, SocketError};
+use nameof::name_of_type;
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
 use std::io::ErrorKind as IoErrorKind;

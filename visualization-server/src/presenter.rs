@@ -91,6 +91,7 @@ fn delta_contains_changes(delta: &ObjectDescriptionDelta) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use maplit::hashmap;
 
     fn object_description() -> ObjectDescription {
         ObjectBuilder::default()
