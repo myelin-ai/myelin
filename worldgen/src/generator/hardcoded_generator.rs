@@ -6,6 +6,7 @@ use myelin_engine::prelude::*;
 use myelin_object_data::{
     AdditionalObjectDescription, AdditionalObjectDescriptionSerializer, Kind,
 };
+use nameof::name_of_type;
 use std::f64::consts::FRAC_PI_2;
 use std::fmt;
 

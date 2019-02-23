@@ -158,6 +158,7 @@ fn translate_object_description_delta(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use maplit::hashmap;
     use mockiato::partial_eq_owned;
     use myelin_geometry::*;
     use myelin_object_data::{AdditionalObjectDescriptionSerializerMock, Kind};

@@ -20,8 +20,6 @@ myelin-visualization-core = { path = "../visualization-core" }
 myelin-engine = "0.4"
 myelin-geometry = "2.0"
 myelin-object-data = { path = "../object-data" }
-serde = "1.0"
-serde_json = "1.0"
 
 [dependencies.web-sys]
 version = "0.3.0"
@@ -42,3 +40,4 @@ features = [
 maplit = "1.0"
 nameof = "0.1"
 mockiato = "0.2"
+myelin-object-data = { path = "../object-data", features = ["use-mocks"] }

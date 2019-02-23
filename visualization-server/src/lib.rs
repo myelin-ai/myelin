@@ -10,16 +10,6 @@
 )]
 
 #[macro_use]
-extern crate log;
-
-#[macro_use]
-extern crate nameof;
-
-#[cfg_attr(test, macro_use)]
-#[cfg(test)]
-extern crate maplit;
-
-#[macro_use]
 mod fixed_interval_sleeper;
 
 mod client;
