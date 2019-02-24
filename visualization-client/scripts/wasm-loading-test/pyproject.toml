@@ -1,8 +1,14 @@
 [tool.poetry]
 name = "myelin-wasm-loading-test"
 version = "0.1.0"
-description = ""
-authors = ["Ruben Schmidmeister <ruben@myelin.ch>"]
+description = "WASM loading test for the myelin visualization"
+authors = [
+  "Jan Nils Ferner <jan@myelin.ch>",
+  "Mathias Fischler <mathias@myelin.ch>",
+  "Ruben Schmidmeister <ruben@myelin.ch>",
+  "Jeremy Stucki <jeremy@myelin.ch>",
+]
+
 
 [tool.poetry.dependencies]
 python = "^3.7"
