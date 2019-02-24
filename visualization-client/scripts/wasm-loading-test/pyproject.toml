@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "myelin-wasm-loading-test"
+version = "0.1.0"
+description = "WASM loading test for the Myelin visualization"
+authors = [
+  "Jan Nils Ferner <jan@myelin.ch>",
+  "Mathias Fischler <mathias@myelin.ch>",
+  "Ruben Schmidmeister <ruben@myelin.ch>",
+  "Jeremy Stucki <jeremy@myelin.ch>",
+]
+
+
+[tool.poetry.dependencies]
+python = "^3.7"
+selenium = "^3.141"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
