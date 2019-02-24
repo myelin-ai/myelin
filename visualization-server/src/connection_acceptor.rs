@@ -1,4 +1,5 @@
 use crate::controller::{ConnectionAcceptor, CurrentSnapshotFn};
+use nameof::name_of_type;
 use std::boxed::FnBox;
 use std::fmt::{self, Debug};
 use std::io;

@@ -1,5 +1,6 @@
 use myelin_engine::prelude::*;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
+use nameof::name_of_type;
 use std::boxed::FnBox;
 use std::collections::HashMap;
 use std::fmt::{self, Debug};
@@ -105,6 +106,7 @@ impl<'a> ControllerImpl<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use maplit::hashmap;
     use std::collections::HashMap;
     use std::sync::Mutex;
 

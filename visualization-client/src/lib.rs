@@ -9,14 +9,6 @@
     clippy::unimplemented
 )]
 
-#[cfg_attr(test, macro_use)]
-#[cfg(test)]
-extern crate maplit;
-
-#[cfg_attr(test, macro_use)]
-#[cfg(test)]
-extern crate nameof;
-
 pub use self::bootstrapper::*;
 pub use self::input_handler::*;
 
