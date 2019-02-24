@@ -47,6 +47,9 @@ pub trait NeuralNetwork: Debug + NeuralNetworkClone {
     /// Returns the last calculated state of the neuron referenced by `handle`
     fn membrane_potential_of_neuron(&self, neuron: Handle) -> Result<Option<MembranePotential>>;
 
+    /// A normalized value between 0 and 1 representing the current membrane potential
+    fn normalized_potential_of_neuron(&self, neuron: Handle) -> Result<f64>;
+
     /// Add a new unconnected neuron to the network
     fn push_neuron(&mut self) -> Handle;
 

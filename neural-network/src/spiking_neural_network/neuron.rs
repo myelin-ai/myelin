@@ -49,6 +49,16 @@ impl SpikingNeuron {
         }
     }
 
+    /// The current threshold
+    pub fn threshold(&self) -> MembranePotential {
+        self.current_threshold
+    }
+
+    /// The current action potential
+    pub fn action_potential(&self) -> MembranePotential {
+        constant::ACTION_POTENTIAL
+    }
+
     fn update_phase(&mut self, time_since_last_step: Milliseconds) {
         self.elapsed_time_in_current_phase += time_since_last_step;
         match &self.current_phase {

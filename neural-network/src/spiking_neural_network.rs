@@ -35,6 +35,21 @@ impl NeuralNetwork for SpikingNeuralNetwork {
             .map(SpikingNeuron::membrane_potential)
     }
 
+    /// A normalized value between 0 and 1 representing the current membrane potential
+    fn normalized_potential_of_neuron(&self, neuron: Handle) -> Result<f64> {
+        let neuron = self.neurons.get(neuron.0).ok_or(())?;
+
+        let normalized_value =
+            neuron
+                .membrane_potential()
+                .map_or_else(Default::default, |membrane_potential| {
+                    (membrane_potential - neuron.threshold())
+                        / (neuron.action_potential() / neuron.threshold())
+                });
+
+        Ok(normalized_value)
+    }
+
     /// Add a new unconnected neuron to the network
     fn push_neuron(&mut self) -> Handle {
         let handle = Handle(self.neurons.insert(SpikingNeuron::default()));
