@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "myelin-wasm-loading-test"
 version = "0.1.0"
-description = "WASM loading test for the myelin visualization"
+description = "WASM loading test for the Myelin visualization"
 authors = [
   "Jan Nils Ferner <jan@myelin.ch>",
   "Mathias Fischler <mathias@myelin.ch>",
