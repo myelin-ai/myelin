@@ -78,7 +78,7 @@ pub struct AdditionalObjectDescriptionBincodeDeserializer {}
 
 impl AdditionalObjectDescriptionDeserializer for AdditionalObjectDescriptionBincodeDeserializer {
     fn deserialize(&self, data: &[u8]) -> Result<AdditionalObjectDescription, Box<dyn Error>> {
-        bincode::deserialize(data).map_err(|err| err.into())
+        bincode::deserialize(data).map_err(Into::into)
     }
 }
 
