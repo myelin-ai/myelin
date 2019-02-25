@@ -66,27 +66,25 @@ impl StochasticSpreading {
             as usize;
 
         // Take an iterator over the possible locations, starting at a random index
-        let spreading_location = possible_spreading_locations
+        possible_spreading_locations
             .iter()
             .cycle()
             .skip(first_try_index)
             .take(possible_spreading_locations.len())
             .map(|&point| own_description.location + point)
-            .find(|&location| can_spread_at_location(&own_description, location, world_interactor));
-        if let Some(spreading_location) = spreading_location {
-            let object_description = ObjectBuilder::from(own_description.clone())
-                .location(spreading_location.x, spreading_location.y)
-                .build()
-                .unwrap();
+            .find(|&location| can_spread_at_location(&own_description, location, world_interactor))
+            .and_then(|spreading_location| {
+                let object_description = ObjectBuilder::from(own_description.clone())
+                    .location(spreading_location.x, spreading_location.y)
+                    .build()
+                    .unwrap();
 
-            self.next_spreading_location =
-                Some(spreading_location_aabb(own_description, spreading_location));
+                self.next_spreading_location =
+                    Some(spreading_location_aabb(own_description, spreading_location));
 
-            let object_behavior = Box::new(self.clone());
-            Some(Action::Spawn(object_description, object_behavior))
-        } else {
-            None
-        }
+                let object_behavior = Box::new(self.clone());
+                Some(Action::Spawn(object_description, object_behavior))
+            })
     }
 }
 
