@@ -299,6 +299,12 @@ mod tests {
                 Aabb::try_new((34.0, 34.0), (44.0, 44.0)).unwrap(),
             ))
             .returns(Vec::new());
+        world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((23.0, 23.0), (55.0, 55.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+
         let action = object.step(&own_description, &world_interactor);
         match action {
             Some(Action::Spawn(object_description, _)) => {
@@ -451,6 +457,11 @@ mod tests {
         world_interactor
             .expect_find_objects_in_area(partial_eq(
                 Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+        world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
             ))
             .returns(Vec::new());
 
