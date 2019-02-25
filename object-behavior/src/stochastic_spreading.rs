@@ -687,20 +687,22 @@ mod tests {
                 Aabb::try_new((65.0, 34.0), (75.0, 44.0)).unwrap(),
             ))
             .returns(Vec::new());
+
+        let other_spreaders = vec![Object {
+            id: 0,
+            description: first_description,
+            behavior: &first_object,
+        }];
         second_world_interactor
             .expect_find_objects_in_area(partial_eq(
                 Aabb::try_new((54.0, 23.0), (86.0, 55.0)).unwrap(),
             ))
-            .returns(Vec::new());
+            .returns(other_spreaders.clone());
         second_world_interactor
             .expect_find_objects_in_area(partial_eq(
                 Aabb::try_new((43.0, 34.0), (75.0, 66.0)).unwrap(),
             ))
-            .returns(vec![Object {
-                id: 0,
-                description: first_description,
-                behavior: &first_object,
-            }]);
+            .returns(other_spreaders);
 
         let second_action = second_object.step(&second_description, &second_world_interactor);
         match second_action {
