@@ -522,6 +522,12 @@ mod tests {
             ))
             .returns(Vec::new());
 
+        world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((34.0, 45.0), (66.0, 77.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+
         let action = object.step(&own_description, &world_interactor);
         match action {
             Some(Action::Spawn(object_description, _)) => {
@@ -602,6 +608,56 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(first_random_chance_checker));
         let first_description = object_description_at_location(50.0, 50.0);
 
+        let mock_behavior = mock_behavior();
+        let mut first_world_interactor = WorldInteractorMock::new();
+        first_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((45.0, 34.0), (55.0, 44.0)).unwrap(),
+            ))
+            .returns(vec![Object {
+                id: 1,
+                description: object_description_at_location(50.0, 39.0),
+                behavior: mock_behavior.as_ref(),
+            }]);
+        first_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap(),
+            ))
+            .returns(vec![Object {
+                id: 2,
+                description: object_description_at_location(60.0, 39.0),
+                behavior: mock_behavior.as_ref(),
+            }]);
+        first_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+        first_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((23.0, 23.0), (55.0, 55.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+
+        first_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+
+        let first_action = first_object.step(&first_description.clone(), &first_world_interactor);
+        match first_action {
+            Some(Action::Spawn(object_description, _)) => {
+                let expected_object_description =
+                    object_description_at_location(60.0 + EXPECTED_PADDING, 50.0);
+                assert_eq!(expected_object_description, object_description);
+            }
+            action => panic!("Expected Action::Spawn, got {:#?}", action),
+        }
+
+        // Todo: Add world_interactor expectation for possible_spreaders
+        let first_object = first_object;
+
         let mut second_random_chance_checker = RandomChanceCheckerMock::new();
         second_random_chance_checker
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
@@ -613,45 +669,67 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(second_random_chance_checker));
         let second_description = object_description_at_location(60.0, 50.0);
 
-        let mock_behavior = mock_behavior();
-        let mut world_interactor = WorldInteractorMock::new();
-        world_interactor
+        let mut second_world_interactor = WorldInteractorMock::new();
+        second_world_interactor
             .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((45.0, 34.0), (55.0, 44.0)).unwrap(),
+                Aabb::try_new((55.0, 34.0), (65.0, 44.0)).unwrap(),
             ))
             .returns(vec![Object {
                 id: 1,
                 description: object_description_at_location(50.0, 39.0),
                 behavior: mock_behavior.as_ref(),
             }]);
-        world_interactor
+        second_world_interactor
             .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap(),
+                Aabb::try_new((66.0, 34.0), (76.0, 44.0)).unwrap(),
             ))
             .returns(vec![Object {
                 id: 2,
-                description: object_description_at_location(60.0, 39.0),
+                description: object_description_at_location(70.0, 49.0),
                 behavior: mock_behavior.as_ref(),
             }]);
-        world_interactor
+        second_world_interactor
             .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
+                Aabb::try_new((66.0, 45.0), (76.0, 55.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+        second_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((45.0, 35.0), (77.0, 66.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+        second_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+        second_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((44.0, 34.0), (54.0, 55.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+        second_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((44.0, 45.0), (54.0, 55.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+        second_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((33.0, 34.0), (65.0, 66.0)).unwrap(),
             ))
             .returns(Vec::new());
 
-        // Todo: Add world_interactor expectation for possible_spreaders
+        second_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((55.0, 34.0), (87.0, 66.0)).unwrap(),
+            ))
+            .returns(vec![Object {
+                id: 0,
+                description: first_description,
+                behavior: &first_object,
+            }]);
 
-        let first_action = first_object.step(&first_description, &world_interactor);
-        match first_action {
-            Some(Action::Spawn(object_description, _)) => {
-                let expected_object_description =
-                    object_description_at_location(60.0 + EXPECTED_PADDING, 50.0);
-                assert_eq!(expected_object_description, object_description);
-            }
-            action => panic!("Expected Action::Spawn, got {:#?}", action),
-        }
-
-        let second_action = second_object.step(&second_description, &world_interactor);
+        let second_action = second_object.step(&second_description, &second_world_interactor);
         assert!(second_action.is_none())
     }
 
