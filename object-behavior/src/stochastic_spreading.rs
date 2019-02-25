@@ -152,9 +152,9 @@ fn can_spread_at_location(
         ),
     )
     .expect("");
-    let foo = world_interactor.find_objects_in_area(possible_other_spreaders);
-    dbg!(&foo);
-    foo.into_iter()
+    world_interactor
+        .find_objects_in_area(possible_other_spreaders)
+        .into_iter()
         // Todo: Check IDs instead, once engine hands out this object's ID
         .filter(|object| object.description != *own_description)
         .filter_map(|object| {
@@ -164,11 +164,7 @@ fn can_spread_at_location(
                 .downcast_ref::<StochasticSpreading>()
         })
         .filter_map(|stochastic_spreading| stochastic_spreading.next_spreading_location)
-        .all(|other_target_location| {
-            dbg!(target_area);
-            dbg!(other_target_location);
-            !target_area.intersects(other_target_location)
-        })
+        .all(|other_target_location| !target_area.intersects(other_target_location))
 }
 
 /// Arbitrary number in meters representing the space
@@ -696,7 +692,6 @@ mod tests {
             }]);
 
         let second_action = second_object.step(&second_description, &second_world_interactor);
-        dbg!(&second_action);
         assert!(second_action.is_none())
     }
 
