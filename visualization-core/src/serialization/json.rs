@@ -55,6 +55,7 @@ impl ViewModelDeserializer for JsonDeserializer {
 mod tests {
     use super::*;
     use crate::view_model_delta::*;
+    use maplit::hashmap;
     use myelin_engine::object::*;
     use myelin_geometry::*;
 

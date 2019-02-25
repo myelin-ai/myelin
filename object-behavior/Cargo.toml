@@ -19,10 +19,8 @@ myelin-geometry = "2.0"
 myelin-neural-network = { path = "../neural-network" }
 myelin-genetics = { path = "../genetics" }
 rand = "0.5.5"
-log = "0.4"
 
 [dev-dependencies]
-maplit = "1.0"
 mockiato = "0.2"
 
 [dev-dependencies.myelin-engine]
