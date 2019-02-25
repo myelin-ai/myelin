@@ -669,11 +669,6 @@ mod tests {
             .expect_find_objects_in_area(partial_eq(
                 Aabb::try_new((54.0, 34.0), (64.0, 44.0)).unwrap(),
             ))
-            .returns(Vec::new());
-        second_world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((54.0, 45.0), (64.0, 55.0)).unwrap(),
-            ))
             .returns(vec![Object {
                 id: 1,
                 description: object_description_at_location(
@@ -684,7 +679,17 @@ mod tests {
             }]);
         second_world_interactor
             .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((43.0, 23.0), (75.0, 55.0)).unwrap(),
+                Aabb::try_new((54.0, 45.0), (64.0, 55.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+        second_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((65.0, 34.0), (75.0, 44.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+        second_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((54.0, 23.0), (86.0, 55.0)).unwrap(),
             ))
             .returns(Vec::new());
         second_world_interactor
