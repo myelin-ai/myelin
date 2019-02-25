@@ -98,7 +98,7 @@ impl StochasticSpreading {
 ///  Lower Left | Lower Middle | Lower Right
 /// ```
 fn calculate_possible_spreading_locations(polygon: &Polygon) -> Vec<Point> {
-    let (width, height) = target_area_width_and_height(polygon.aabb());
+    let (width, height) = width_and_height_of_area(polygon.aabb());
 
     vec![
         Point {
@@ -137,7 +137,7 @@ fn can_spread_at_location(
         return false;
     }
 
-    let (target_area_width, target_area_height) = target_area_width_and_height(target_area);
+    let (target_area_width, target_area_height) = width_and_height_of_area(target_area);
 
     let possible_other_spreaders = Aabb::try_new(
         (
@@ -169,7 +169,7 @@ fn can_spread_at_location(
 /// between the spread objects
 const PADDING: f64 = 1.0;
 
-fn target_area_width_and_height(area: Aabb) -> (f64, f64) {
+fn width_and_height_of_area(area: Aabb) -> (f64, f64) {
     let Aabb {
         upper_left: Point { x: min_x, y: min_y },
         lower_right: Point { x: max_x, y: max_y },
