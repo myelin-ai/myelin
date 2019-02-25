@@ -78,6 +78,11 @@ impl StochasticSpreading {
                 .location(spreading_location.x, spreading_location.y)
                 .build()
                 .unwrap();
+
+            self.next_spreading_location =
+                Some(spreading_location_aabb(own_description, spreading_location));
+
+            dbg!(self.next_spreading_location);
             let object_behavior = Box::new(self.clone());
             Some(Action::Spawn(object_description, object_behavior))
         } else {
@@ -127,11 +132,7 @@ fn can_spread_at_location(
     location: Point,
     world_interactor: &dyn WorldInteractor,
 ) -> bool {
-    let target_area = own_description
-        .shape
-        .translate(location)
-        .rotate_around_point(own_description.rotation, own_description.location)
-        .aabb();
+    let target_area = spreading_location_aabb(own_description, location);
 
     let objects_in_area = world_interactor.find_objects_in_area(target_area);
 
@@ -181,6 +182,14 @@ fn target_area_width_and_height(area: Aabb) -> (f64, f64) {
     let height = max_y - min_y + PADDING;
 
     (width, height)
+}
+
+fn spreading_location_aabb(own_description: &ObjectDescription, spreading_location: Point) -> Aabb {
+    own_description
+        .shape
+        .translate(spreading_location)
+        .rotate_around_point(own_description.rotation, own_description.location)
+        .aabb()
 }
 
 impl ObjectBehavior for StochasticSpreading {
