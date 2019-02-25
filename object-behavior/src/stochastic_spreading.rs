@@ -82,7 +82,6 @@ impl StochasticSpreading {
             self.next_spreading_location =
                 Some(spreading_location_aabb(own_description, spreading_location));
 
-            dbg!(self.next_spreading_location);
             let object_behavior = Box::new(self.clone());
             Some(Action::Spawn(object_description, object_behavior))
         } else {
@@ -153,9 +152,9 @@ fn can_spread_at_location(
         ),
     )
     .expect("");
-    world_interactor
-        .find_objects_in_area(possible_other_spreaders)
-        .into_iter()
+    let foo = world_interactor.find_objects_in_area(possible_other_spreaders);
+    dbg!(&foo);
+    foo.into_iter()
         // Todo: Check IDs instead, once engine hands out this object's ID
         .filter(|object| object.description != *own_description)
         .filter_map(|object| {
@@ -165,7 +164,11 @@ fn can_spread_at_location(
                 .downcast_ref::<StochasticSpreading>()
         })
         .filter_map(|stochastic_spreading| stochastic_spreading.next_spreading_location)
-        .all(|other_target_location| !target_area.intersects(other_target_location))
+        .all(|other_target_location| {
+            dbg!(target_area);
+            dbg!(other_target_location);
+            !target_area.intersects(other_target_location)
+        })
 }
 
 /// Arbitrary number in meters representing the space
@@ -628,34 +631,10 @@ mod tests {
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(first_random_chance_checker));
         let first_description = object_description_at_location(50.0, 50.0);
 
-        let mock_behavior = mock_behavior();
         let mut first_world_interactor = WorldInteractorMock::new();
         first_world_interactor
             .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((45.0, 34.0), (55.0, 44.0)).unwrap(),
-            ))
-            .returns(vec![Object {
-                id: 1,
-                description: object_description_at_location(50.0, 39.0),
-                behavior: mock_behavior.as_ref(),
-            }]);
-        first_world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap(),
-            ))
-            .returns(vec![Object {
-                id: 2,
-                description: object_description_at_location(60.0, 39.0),
-                behavior: mock_behavior.as_ref(),
-            }]);
-        first_world_interactor
-            .expect_find_objects_in_area(partial_eq(
                 Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
-            ))
-            .returns(Vec::new());
-        first_world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((23.0, 23.0), (55.0, 55.0)).unwrap(),
             ))
             .returns(Vec::new());
 
@@ -689,42 +668,15 @@ mod tests {
         let second_description = object_description_at_location(60.0, 50.0);
 
         let mut second_world_interactor = WorldInteractorMock::new();
+
         second_world_interactor
             .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((55.0, 34.0), (65.0, 44.0)).unwrap(),
-            ))
-            .returns(vec![Object {
-                id: 1,
-                description: object_description_at_location(50.0, 39.0),
-                behavior: mock_behavior.as_ref(),
-            }]);
-        second_world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((66.0, 34.0), (76.0, 44.0)).unwrap(),
-            ))
-            .returns(vec![Object {
-                id: 2,
-                description: object_description_at_location(70.0, 49.0),
-                behavior: mock_behavior.as_ref(),
-            }]);
-        second_world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((66.0, 45.0), (76.0, 55.0)).unwrap(),
+                Aabb::try_new((44.0, 34.0), (54.0, 44.0)).unwrap(),
             ))
             .returns(Vec::new());
         second_world_interactor
             .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((45.0, 35.0), (77.0, 66.0)).unwrap(),
-            ))
-            .returns(Vec::new());
-        second_world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
-            ))
-            .returns(Vec::new());
-        second_world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((44.0, 34.0), (54.0, 55.0)).unwrap(),
+                Aabb::try_new((33.0, 23.0), (65.0, 55.0)).unwrap(),
             ))
             .returns(Vec::new());
         second_world_interactor
@@ -732,15 +684,10 @@ mod tests {
                 Aabb::try_new((44.0, 45.0), (54.0, 55.0)).unwrap(),
             ))
             .returns(Vec::new());
-        second_world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((33.0, 34.0), (65.0, 66.0)).unwrap(),
-            ))
-            .returns(Vec::new());
 
         second_world_interactor
             .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((55.0, 34.0), (87.0, 66.0)).unwrap(),
+                Aabb::try_new((33.0, 34.0), (65.0, 66.0)).unwrap(),
             ))
             .returns(vec![Object {
                 id: 0,
@@ -749,6 +696,7 @@ mod tests {
             }]);
 
         let second_action = second_object.step(&second_description, &second_world_interactor);
+        dbg!(&second_action);
         assert!(second_action.is_none())
     }
 
