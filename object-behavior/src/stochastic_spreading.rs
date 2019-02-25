@@ -153,7 +153,7 @@ fn can_spread_at_location(
     world_interactor
         .find_objects_in_area(possible_other_spreaders)
         .into_iter()
-        // Todo: Check IDs instead, once engine hands out this object's ID
+        // Todo: It would be nice to instead just compare IDs, but the engine doesn't let us know our own ID
         .filter(|object| object.description != *own_description)
         .filter_map(|object| {
             object
