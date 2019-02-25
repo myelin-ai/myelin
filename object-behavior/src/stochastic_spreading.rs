@@ -655,7 +655,6 @@ mod tests {
             action => panic!("Expected Action::Spawn, got {:#?}", action),
         }
 
-        // Todo: Add world_interactor expectation for possible_spreaders
         let first_object = first_object;
 
         let mut second_random_chance_checker = RandomChanceCheckerMock::new();
