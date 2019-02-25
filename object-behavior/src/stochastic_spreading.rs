@@ -661,13 +661,13 @@ mod tests {
             .returns(7);
         let mut second_object =
             StochasticSpreading::new(SPREADING_CHANGE, Box::new(second_random_chance_checker));
-        let second_description = object_description_at_location(70.0, 50.0);
+        let second_description = object_description_at_location(72.0, 50.0);
 
         let mut second_world_interactor = WorldInteractorMock::new();
 
         second_world_interactor
             .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((54.0, 34.0), (64.0, 44.0)).unwrap(),
+                Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap(),
             ))
             .returns(vec![Object {
                 id: 1,
@@ -679,12 +679,12 @@ mod tests {
             }]);
         second_world_interactor
             .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((54.0, 45.0), (64.0, 55.0)).unwrap(),
+                Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
             ))
             .returns(Vec::new());
         second_world_interactor
             .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((65.0, 34.0), (75.0, 44.0)).unwrap(),
+                Aabb::try_new((67.0, 34.0), (77.0, 44.0)).unwrap(),
             ))
             .returns(Vec::new());
 
@@ -695,12 +695,12 @@ mod tests {
         }];
         second_world_interactor
             .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((54.0, 23.0), (86.0, 55.0)).unwrap(),
+                Aabb::try_new((56.0, 23.0), (88.0, 55.0)).unwrap(),
             ))
             .returns(other_spreaders.clone());
         second_world_interactor
             .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((43.0, 34.0), (75.0, 66.0)).unwrap(),
+                Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
             ))
             .returns(other_spreaders);
 
@@ -712,7 +712,7 @@ mod tests {
                 // 2. Try to spread to the upper left, which is already occupied
                 // 3. Spread to the top
                 let expected_object_description =
-                    object_description_at_location(70.0, 40.0 - EXPECTED_PADDING);
+                    object_description_at_location(72.0, 40.0 - EXPECTED_PADDING);
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Spawn, got {:#?}", action),
