@@ -96,13 +96,7 @@ impl StochasticSpreading {
 ///  Lower Left | Lower Middle | Lower Right
 /// ```
 fn calculate_possible_spreading_locations(polygon: &Polygon) -> Vec<Point> {
-    let Aabb {
-        upper_left: Point { x: min_x, y: min_y },
-        lower_right: Point { x: max_x, y: max_y },
-    } = polygon.aabb();
-
-    let width = max_x - min_x + PADDING;
-    let height = max_y - min_y + PADDING;
+    let (width, height) = target_area_width_and_height(polygon.aabb());
 
     vec![
         Point {
@@ -145,17 +139,16 @@ fn can_spread_at_location(
         return false;
     }
 
-    let target_area_width = target_area.lower_right.x - target_area.upper_left.x;
-    let target_area_height = target_area.lower_right.y - target_area.upper_left.y;
+    let (target_area_width, target_area_height) = target_area_width_and_height(target_area);
 
     let possible_other_spreaders = Aabb::try_new(
         (
-            target_area.upper_left.x - PADDING - target_area_width,
-            target_area.upper_left.y - PADDING - target_area_height,
+            target_area.upper_left.x - target_area_width,
+            target_area.upper_left.y - target_area_height,
         ),
         (
-            target_area.lower_right.x + PADDING + target_area_width,
-            target_area.lower_right.y + PADDING + target_area_height,
+            target_area.lower_right.x + target_area_width,
+            target_area.lower_right.y + target_area_height,
         ),
     )
     .expect("");
@@ -177,6 +170,18 @@ fn can_spread_at_location(
 /// Arbitrary number in meters representing the space
 /// between the spread objects
 const PADDING: f64 = 1.0;
+
+fn target_area_width_and_height(area: Aabb) -> (f64, f64) {
+    let Aabb {
+        upper_left: Point { x: min_x, y: min_y },
+        lower_right: Point { x: max_x, y: max_y },
+    } = area;
+
+    let width = max_x - min_x + PADDING;
+    let height = max_y - min_y + PADDING;
+
+    (width, height)
+}
 
 impl ObjectBehavior for StochasticSpreading {
     fn step(
@@ -564,6 +569,12 @@ mod tests {
         world_interactor
             .expect_find_objects_in_area(partial_eq(
                 Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+
+        world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
             ))
             .returns(Vec::new());
 
