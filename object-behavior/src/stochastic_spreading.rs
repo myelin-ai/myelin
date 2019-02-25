@@ -614,6 +614,8 @@ mod tests {
 
     #[test]
     fn does_not_spread_on_space_that_another_behavior_will_spread_to() {
+        let mock_behavior = mock_behavior();
+
         let mut first_random_chance_checker = RandomChanceCheckerMock::new();
         first_random_chance_checker
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
@@ -670,15 +672,21 @@ mod tests {
             .returns(Vec::new());
         second_world_interactor
             .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((54.0, 45.0), (64.0, 55.0)).unwrap(),
+            ))
+            .returns(vec![Object {
+                id: 1,
+                description: object_description_at_location(
+                    60.0 - EXPECTED_PADDING,
+                    40.0 - EXPECTED_PADDING,
+                ),
+                behavior: mock_behavior.as_ref(),
+            }]);
+        second_world_interactor
+            .expect_find_objects_in_area(partial_eq(
                 Aabb::try_new((43.0, 23.0), (75.0, 55.0)).unwrap(),
             ))
             .returns(Vec::new());
-        second_world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((54.0, 45.0), (64.0, 55.0)).unwrap(),
-            ))
-            .returns(Vec::new());
-
         second_world_interactor
             .expect_find_objects_in_area(partial_eq(
                 Aabb::try_new((43.0, 34.0), (75.0, 66.0)).unwrap(),
@@ -690,7 +698,18 @@ mod tests {
             }]);
 
         let second_action = second_object.step(&second_description, &second_world_interactor);
-        assert!(second_action.is_none())
+        match second_action {
+            Some(Action::Spawn(object_description, _)) => {
+                // Expected order of operations for the second behavior:
+                // 1. Try to spread left, which fails, because the first behavior already spreads there
+                // 2. Try to spread to the upper left, which is already occupied
+                // 3. Spread to the top
+                let expected_object_description =
+                    object_description_at_location(70.0, 40.0 - EXPECTED_PADDING);
+                assert_eq!(expected_object_description, object_description);
+            }
+            action => panic!("Expected Action::Spawn, got {:#?}", action),
+        }
     }
 
     fn object_description_at_location(x: f64, y: f64) -> ObjectDescription {
