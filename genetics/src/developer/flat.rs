@@ -66,6 +66,18 @@ mod tests {
         );
     }
 
+    #[test]
+    fn develops_correct_number_of_output_neurons() {
+        let configuration = configuration();
+        let developer = FlatNeuralNetworkDeveloper::new();
+        let developed_neural_network = developer.develop_neural_network(&configuration);
+
+        assert_eq!(
+            configuration.output_neuron_count,
+            developed_neural_network.output_neuron_handles.len()
+        );
+    }
+
     fn configuration() -> NeuralNetworkDevelopmentConfiguration {
         NeuralNetworkDevelopmentConfiguration {
             parent_genomes: (Genome, Genome),
