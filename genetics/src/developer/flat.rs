@@ -1,7 +1,7 @@
 use crate::*;
 
-/// A dummy neural network where every input is connected to every output.
-/// There are no hidden neurons.
+/// A developer for a flat neural network with no hidden layers.
+/// Uses no actual genetics and sets all connection weights at 1.0
 #[derive(Default, Debug, Clone)]
 pub struct FlatNeuralNetworkDeveloper;
 
