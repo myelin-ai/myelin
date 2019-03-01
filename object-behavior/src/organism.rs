@@ -118,8 +118,8 @@ impl ObjectBehavior for OrganismBehavior {
             Some(Action::ApplyForce(Force {
                 // Todo: Translate forward linear force to global linear force
                 linear: Vector {
-                    x: linear_force_x,
-                    y: linear_force_y,
+                    x: linear_force,  // Wrong value
+                    y: -linear_force, // Wrong value
                 },
                 torque: Torque(angular_force),
             }))

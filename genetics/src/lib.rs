@@ -12,9 +12,7 @@
 #[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
 use myelin_neural_network::Handle;
-use myelin_neural_network::{
-    spiking_neural_network::SpikingNeuralNetwork, Connection, Handle as NeuronHandle, NeuralNetwork,
-};
+use myelin_neural_network::{Connection, Handle as NeuronHandle, NeuralNetwork};
 use std::fmt::Debug;
 pub mod developer;
 

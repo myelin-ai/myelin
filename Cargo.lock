@@ -608,6 +608,7 @@ version = "0.1.0"
 dependencies = [
  "mockiato 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "myelin-neural-network 0.1.0",
+ "nameof 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -694,6 +695,7 @@ dependencies = [
  "mockiato 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "myelin-engine 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "myelin-genetics 0.1.0",
+ "myelin-neural-network 0.1.0",
  "myelin-object-behavior 0.1.0",
  "myelin-object-data 0.1.0",
  "myelin-visualization-core 0.1.0",

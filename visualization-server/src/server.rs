@@ -9,6 +9,7 @@ use myelin_engine::prelude::*;
 use myelin_engine::simulation::SimulationBuilder;
 use myelin_genetics::developer::FlatNeuralNetworkDeveloper;
 use myelin_genetics::Genome;
+use myelin_neural_network::spiking_neural_network::SpikingNeuralNetwork;
 use myelin_object_behavior::organism::OrganismBehavior;
 use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
 use myelin_object_behavior::Static;
@@ -20,6 +21,7 @@ use myelin_worldgen::{HardcodedGenerator, WorldGenerator};
 use std::fs::read_to_string;
 use std::net::SocketAddr;
 use std::path::Path;
+use std::rc::Rc;
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
@@ -40,7 +42,7 @@ where
     let organism_factory = box || -> Box<dyn ObjectBehavior> {
         box OrganismBehavior::new(
             (Genome {}, Genome {}),
-            box FlatNeuralNetworkDeveloper::default(),
+            box FlatNeuralNetworkDeveloper::new(Rc::new(|| box SpikingNeuralNetwork::new())),
         )
     };
     let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };

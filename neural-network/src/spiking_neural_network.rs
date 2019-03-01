@@ -16,6 +16,13 @@ pub struct SpikingNeuralNetwork {
     incoming_connections: HashMap<Handle, Vec<(Handle, Weight)>>,
 }
 
+impl SpikingNeuralNetwork {
+    /// Returns a new `SpikingNeuralNetwork`
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
 impl NeuralNetwork for SpikingNeuralNetwork {
     /// Update the state of all neurons
     fn step(

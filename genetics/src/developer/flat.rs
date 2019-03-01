@@ -1,14 +1,33 @@
 use crate::*;
+use nameof::name_of_type;
+use std::fmt::{self, Debug};
+use std::rc::Rc;
 
 /// A developer for a flat neural network with no hidden layers.
 /// Uses no actual genetics and sets all connection weights at 1.0
-#[derive(Default, Debug, Clone)]
-pub struct FlatNeuralNetworkDeveloper;
+#[derive(Clone)]
+pub struct FlatNeuralNetworkDeveloper {
+    neural_network_factory: Rc<NeuralNetworkFactory>,
+}
+
+/// A factory for building a [`NeuralNetwork`]
+///
+/// [`NeuralNetwork`]: ../../../myelin-neural-network/trait.NeuralNetwork.html
+pub type NeuralNetworkFactory = dyn Fn() -> Box<dyn NeuralNetwork>;
 
 impl FlatNeuralNetworkDeveloper {
     /// Constructs a new `FlatNeuralNetworkDeveloper`
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(neural_network_factory: Rc<NeuralNetworkFactory>) -> Self {
+        Self {
+            neural_network_factory,
+        }
+    }
+}
+
+impl Debug for FlatNeuralNetworkDeveloper {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct(name_of_type!(FlatNeuralNetworkDeveloper))
+            .finish()
     }
 }
 
@@ -17,7 +36,7 @@ impl NeuralNetworkDeveloper for FlatNeuralNetworkDeveloper {
         &self,
         neural_network_development_configuration: &NeuralNetworkDevelopmentConfiguration,
     ) -> DevelopedNeuralNetwork {
-        let mut neural_network = box SpikingNeuralNetwork::default();
+        let mut neural_network = (self.neural_network_factory)();
 
         let input_neuron_handles: Vec<Handle> = (0..neural_network_development_configuration
             .input_neuron_count)
@@ -53,11 +72,13 @@ impl NeuralNetworkDeveloper for FlatNeuralNetworkDeveloper {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use myelin_neural_network::spiking_neural_network::SpikingNeuralNetwork;
 
     #[test]
     fn develops_correct_number_of_input_neurons() {
         let configuration = configuration();
-        let developer = FlatNeuralNetworkDeveloper::new();
+        let neural_network_factory = neural_network_factory();
+        let developer = FlatNeuralNetworkDeveloper::new(neural_network_factory);
         let neural_network = developer.develop_neural_network(&configuration);
 
         assert_eq!(
@@ -69,7 +90,8 @@ mod tests {
     #[test]
     fn develops_correct_number_of_output_neurons() {
         let configuration = configuration();
-        let developer = FlatNeuralNetworkDeveloper::new();
+        let neural_network_factory = neural_network_factory();
+        let developer = FlatNeuralNetworkDeveloper::new(neural_network_factory);
         let developed_neural_network = developer.develop_neural_network(&configuration);
 
         assert_eq!(
@@ -84,5 +106,9 @@ mod tests {
             input_neuron_count: 3,
             output_neuron_count: 5,
         }
+    }
+
+    fn neural_network_factory() -> Rc<NeuralNetworkFactory> {
+        Rc::new(|| Box::new(SpikingNeuralNetwork::default()))
     }
 }
