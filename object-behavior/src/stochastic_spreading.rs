@@ -14,6 +14,7 @@ pub use self::random_chance_checker_impl::RandomChanceCheckerImpl;
 pub struct StochasticSpreading {
     random_chance_checker: Box<dyn RandomChanceChecker>,
     spreading_probability: f64,
+    next_spreading_location: Option<Aabb>,
 }
 
 impl Clone for StochasticSpreading {
@@ -21,6 +22,7 @@ impl Clone for StochasticSpreading {
         Self {
             random_chance_checker: self.random_chance_checker.clone_box(),
             spreading_probability: self.spreading_probability,
+            next_spreading_location: self.next_spreading_location,
         }
     }
 }
@@ -36,7 +38,13 @@ impl StochasticSpreading {
         Self {
             spreading_probability,
             random_chance_checker,
+            next_spreading_location: None,
         }
+    }
+
+    /// Returns the position, if any, where this behavior will spread to in the next step
+    pub fn next_spreading_location(&self) -> Option<Aabb> {
+        self.next_spreading_location
     }
 
     fn should_spread(&mut self) -> bool {
@@ -58,23 +66,25 @@ impl StochasticSpreading {
             as usize;
 
         // Take an iterator over the possible locations, starting at a random index
-        let spreading_location = possible_spreading_locations
+        possible_spreading_locations
             .iter()
             .cycle()
             .skip(first_try_index)
             .take(possible_spreading_locations.len())
             .map(|&point| own_description.location + point)
-            .find(|&location| can_spread_at_location(&own_description, location, world_interactor));
-        if let Some(spreading_location) = spreading_location {
-            let object_description = ObjectBuilder::from(own_description.clone())
-                .location(spreading_location.x, spreading_location.y)
-                .build()
-                .unwrap();
-            let object_behavior = Box::new(self.clone());
-            Some(Action::Spawn(object_description, object_behavior))
-        } else {
-            None
-        }
+            .find(|&location| can_spread_at_location(&own_description, location, world_interactor))
+            .and_then(|spreading_location| {
+                let object_description = ObjectBuilder::from(own_description.clone())
+                    .location(spreading_location.x, spreading_location.y)
+                    .build()
+                    .unwrap();
+
+                self.next_spreading_location =
+                    Some(spreading_location_aabb(own_description, spreading_location));
+
+                let object_behavior = Box::new(self.clone());
+                Some(Action::Spawn(object_description, object_behavior))
+            })
     }
 }
 
@@ -88,17 +98,7 @@ impl StochasticSpreading {
 ///  Lower Left | Lower Middle | Lower Right
 /// ```
 fn calculate_possible_spreading_locations(polygon: &Polygon) -> Vec<Point> {
-    let Aabb {
-        upper_left: Point { x: min_x, y: min_y },
-        lower_right: Point { x: max_x, y: max_y },
-    } = polygon.aabb();
-
-    /// Arbitrary number in meters representing the space
-    /// between the spread objects
-    const PADDING: f64 = 1.0;
-
-    let width = max_x - min_x + PADDING;
-    let height = max_y - min_y + PADDING;
+    let (width, height) = width_and_height_of_area(polygon.aabb());
 
     vec![
         Point {
@@ -129,15 +129,64 @@ fn can_spread_at_location(
     location: Point,
     world_interactor: &dyn WorldInteractor,
 ) -> bool {
-    let target_area = own_description
-        .shape
-        .translate(location)
-        .rotate_around_point(own_description.rotation, own_description.location)
-        .aabb();
+    let target_area = spreading_location_aabb(own_description, location);
 
     let objects_in_area = world_interactor.find_objects_in_area(target_area);
 
-    objects_in_area.is_empty()
+    if !objects_in_area.is_empty() {
+        return false;
+    }
+
+    let (target_area_width, target_area_height) = width_and_height_of_area(target_area);
+
+    let possible_other_spreaders = Aabb::try_new(
+        (
+            target_area.upper_left.x - target_area_width,
+            target_area.upper_left.y - target_area_height,
+        ),
+        (
+            target_area.lower_right.x + target_area_width,
+            target_area.lower_right.y + target_area_height,
+        ),
+    )
+    .unwrap();
+    world_interactor
+        .find_objects_in_area(possible_other_spreaders)
+        .into_iter()
+        // Todo: It would be nice to instead just compare IDs, but the engine doesn't let us know our own ID
+        .filter(|object| object.description != *own_description)
+        .filter_map(|object| {
+            object
+                .behavior
+                .as_any()
+                .downcast_ref::<StochasticSpreading>()
+        })
+        .filter_map(|stochastic_spreading| stochastic_spreading.next_spreading_location)
+        .all(|other_target_location| !target_area.intersects(other_target_location))
+}
+
+/// Arbitrary number in meters representing the space
+/// between the spread objects
+const PADDING: f64 = 1.0;
+
+fn width_and_height_of_area(area: Aabb) -> (f64, f64) {
+    let Aabb {
+        upper_left: Point { x: min_x, y: min_y },
+        lower_right: Point { x: max_x, y: max_y },
+    } = area;
+
+    let width = max_x - min_x + PADDING;
+    let height = max_y - min_y + PADDING;
+
+    (width, height)
+}
+
+fn spreading_location_aabb(own_description: &ObjectDescription, spreading_location: Point) -> Aabb {
+    own_description
+        .shape
+        .translate(spreading_location)
+        .rotate_around_point(own_description.rotation, own_description.location)
+        .aabb()
 }
 
 impl ObjectBehavior for StochasticSpreading {
@@ -256,6 +305,12 @@ mod tests {
                 Aabb::try_new((34.0, 34.0), (44.0, 44.0)).unwrap(),
             ))
             .returns(Vec::new());
+        world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((23.0, 23.0), (55.0, 55.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+
         let action = object.step(&own_description, &world_interactor);
         match action {
             Some(Action::Spawn(object_description, _)) => {
@@ -410,6 +465,11 @@ mod tests {
                 Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
             ))
             .returns(Vec::new());
+        world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
+            ))
+            .returns(Vec::new());
 
         let action = object.step(&own_description, &world_interactor);
         match action {
@@ -479,6 +539,12 @@ mod tests {
             ))
             .returns(Vec::new());
 
+        world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((34.0, 45.0), (66.0, 77.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+
         let action = object.step(&own_description, &world_interactor);
         match action {
             Some(Action::Spawn(object_description, _)) => {
@@ -529,11 +595,124 @@ mod tests {
             ))
             .returns(Vec::new());
 
+        world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+
         let action = object.step(&own_description, &world_interactor);
         match action {
             Some(Action::Spawn(object_description, _)) => {
                 let expected_object_description =
                     object_description_at_location(60.0 + EXPECTED_PADDING, 50.0);
+                assert_eq!(expected_object_description, object_description);
+            }
+            action => panic!("Expected Action::Spawn, got {:#?}", action),
+        }
+    }
+
+    #[test]
+    fn does_not_spread_on_space_that_another_behavior_will_spread_to() {
+        let mock_behavior = mock_behavior();
+
+        let mut first_random_chance_checker = RandomChanceCheckerMock::new();
+        first_random_chance_checker
+            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .returns(true);
+        first_random_chance_checker
+            .expect_random_number_in_range(partial_eq(0), partial_eq(8))
+            .returns(3);
+        let mut first_object =
+            StochasticSpreading::new(SPREADING_CHANGE, Box::new(first_random_chance_checker));
+        let first_description = object_description_at_location(50.0, 50.0);
+
+        let mut first_world_interactor = WorldInteractorMock::new();
+        first_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+
+        first_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+
+        let first_action = first_object.step(&first_description.clone(), &first_world_interactor);
+        match first_action {
+            Some(Action::Spawn(object_description, _)) => {
+                let expected_object_description =
+                    object_description_at_location(60.0 + EXPECTED_PADDING, 50.0);
+                assert_eq!(expected_object_description, object_description);
+            }
+            action => panic!("Expected Action::Spawn, got {:#?}", action),
+        }
+
+        let first_object = first_object;
+
+        let mut second_random_chance_checker = RandomChanceCheckerMock::new();
+        second_random_chance_checker
+            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .returns(true);
+        second_random_chance_checker
+            .expect_random_number_in_range(partial_eq(0), partial_eq(8))
+            .returns(7);
+        let mut second_object =
+            StochasticSpreading::new(SPREADING_CHANGE, Box::new(second_random_chance_checker));
+        let second_description = object_description_at_location(72.0, 50.0);
+
+        let mut second_world_interactor = WorldInteractorMock::new();
+
+        second_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap(),
+            ))
+            .returns(vec![Object {
+                id: 1,
+                description: object_description_at_location(
+                    60.0 - EXPECTED_PADDING,
+                    40.0 - EXPECTED_PADDING,
+                ),
+                behavior: mock_behavior.as_ref(),
+            }]);
+        second_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+        second_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((67.0, 34.0), (77.0, 44.0)).unwrap(),
+            ))
+            .returns(Vec::new());
+
+        let other_spreaders = vec![Object {
+            id: 0,
+            description: first_description,
+            behavior: &first_object,
+        }];
+        second_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((56.0, 23.0), (88.0, 55.0)).unwrap(),
+            ))
+            .returns(other_spreaders.clone());
+        second_world_interactor
+            .expect_find_objects_in_area(partial_eq(
+                Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
+            ))
+            .returns(other_spreaders);
+
+        let second_action = second_object.step(&second_description, &second_world_interactor);
+        match second_action {
+            Some(Action::Spawn(object_description, _)) => {
+                // Expected order of operations for the second behavior:
+                // 1. Try to spread left, which fails, because the first behavior already spreads there
+                // 2. Try to spread to the upper left, which is already occupied
+                // 3. Spread to the top
+                let expected_object_description =
+                    object_description_at_location(72.0, 40.0 - EXPECTED_PADDING);
                 assert_eq!(expected_object_description, object_description);
             }
             action => panic!("Expected Action::Spawn, got {:#?}", action),
