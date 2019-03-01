@@ -7,7 +7,7 @@ use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
 use myelin_engine::prelude::*;
 use myelin_engine::simulation::SimulationBuilder;
-use myelin_genetics::DummyNeuralNetworkDeveloper;
+use myelin_genetics::developer::FlatNeuralNetworkDeveloper;
 use myelin_genetics::Genome;
 use myelin_object_behavior::organism::OrganismBehavior;
 use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
@@ -40,7 +40,7 @@ where
     let organism_factory = box || -> Box<dyn ObjectBehavior> {
         box OrganismBehavior::new(
             (Genome {}, Genome {}),
-            box DummyNeuralNetworkDeveloper::default(),
+            box FlatNeuralNetworkDeveloper::default(),
         )
     };
     let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
