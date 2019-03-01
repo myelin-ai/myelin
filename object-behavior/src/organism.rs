@@ -102,18 +102,14 @@ impl ObjectBehavior for OrganismBehavior {
             &inputs,
         );
 
-        let linear_force = get_normalized_potential(
+        let linear_force = get_combined_potential(
             neuron_handle_mapping.output.linear_acceleration.forward,
-            neural_network.as_ref(),
-        ) + get_normalized_potential(
             neuron_handle_mapping.output.linear_acceleration.backward,
             neural_network.as_ref(),
         );
 
-        let angular_force = get_normalized_potential(
+        let angular_force = get_combined_potential(
             neuron_handle_mapping.output.angular_acceleration.right,
-            neural_network.as_ref(),
-        ) + get_normalized_potential(
             neuron_handle_mapping.output.angular_acceleration.left,
             neural_network.as_ref(),
         );
@@ -203,4 +199,13 @@ fn get_normalized_potential(neuron: Handle, neural_network: &dyn NeuralNetwork) 
     neural_network
         .normalized_potential_of_neuron(neuron)
         .expect("Invalid neuron handle")
+}
+
+fn get_combined_potential(
+    positive_neuron: Handle,
+    negative_neuron: Handle,
+    neural_network: &dyn NeuralNetwork,
+) -> f64 {
+    get_normalized_potential(positive_neuron, neural_network)
+        + get_normalized_potential(negative_neuron, neural_network)
 }
