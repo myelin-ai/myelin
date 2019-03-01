@@ -162,7 +162,7 @@ fn can_spread_at_location(
                 .downcast_ref::<StochasticSpreading>()
         })
         .filter_map(|stochastic_spreading| stochastic_spreading.next_spreading_location)
-        .all(|other_target_location| !target_area.intersects(other_target_location))
+        .all(|other_target_location| !target_area.intersects(&other_target_location))
 }
 
 /// Arbitrary number in meters representing the space
