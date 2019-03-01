@@ -22,15 +22,15 @@ impl NeuralNetworkDeveloper for FlatNeuralNetworkDeveloper {
             .map(|_| neural_network.push_neuron())
             .collect();
 
-        for input_neuron in input_neuron_handles.iter() {
-            for output_neuron in output_neuron_handles.iter() {
+        for &input_neuron in input_neuron_handles.iter() {
+            for &output_neuron in output_neuron_handles.iter() {
                 neural_network
                     .add_connection(Connection {
-                        from: *input_neuron,
-                        to: *output_neuron,
+                        from: input_neuron,
+                        to: output_neuron,
                         weight: 1.0,
                     })
-                    .expect("Unable to add connection");
+                    .expect("Internal error: Stored neuron handle was invalid");
             }
         }
 
