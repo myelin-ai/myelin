@@ -149,7 +149,7 @@ fn can_spread_at_location(
             target_area.lower_right.y + target_area_height,
         ),
     )
-    .expect("");
+    .unwrap();
     world_interactor
         .find_objects_in_area(possible_other_spreaders)
         .into_iter()
