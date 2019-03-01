@@ -79,28 +79,26 @@ impl ObjectBehavior for OrganismBehavior {
             Mobility::Movable(velocity) => velocity,
         };
 
-        // TODO: Implement `scale` in geometry
-        let acceleration_x = (current_velocity.x - self.previous_velocity.x) / elapsed_time;
-        let acceleration_y = (current_velocity.y - self.previous_velocity.y) / elapsed_time;
+        let acceleration = (current_velocity - self.previous_velocity) / elapsed_time;
 
         let mut inputs = HashMap::with_capacity(2);
 
         inputs.insert(
-            if acceleration_x >= 0.0 {
+            if acceleration.x >= 0.0 {
                 acceleration_x_positive_input_neuron
             } else {
                 acceleration_x_negative_input_neuron
             },
-            acceleration_x,
+            acceleration.x,
         );
 
         inputs.insert(
-            if acceleration_y >= 0.0 {
+            if acceleration.y >= 0.0 {
                 acceleration_y_positive_input_neuron
             } else {
                 acceleration_y_negative_input_neuron
             },
-            acceleration_y,
+            acceleration.y,
         );
 
         self.previous_velocity = current_velocity;
