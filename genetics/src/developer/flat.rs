@@ -5,10 +5,17 @@ use crate::*;
 #[derive(Default, Debug, Clone)]
 pub struct FlatNeuralNetworkDeveloper;
 
+impl FlatNeuralNetworkDeveloper {
+    /// Constructs a new `FlatNeuralNetworkDeveloper`
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
 impl NeuralNetworkDeveloper for FlatNeuralNetworkDeveloper {
     fn develop_neural_network(
         &self,
-        neural_network_development_configuration: NeuralNetworkDevelopmentConfiguration,
+        neural_network_development_configuration: &NeuralNetworkDevelopmentConfiguration,
     ) -> DevelopedNeuralNetwork {
         let mut neural_network = box SpikingNeuralNetwork::default();
 
@@ -39,6 +46,31 @@ impl NeuralNetworkDeveloper for FlatNeuralNetworkDeveloper {
             genome: Genome {},
             input_neuron_handles,
             output_neuron_handles,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn develops_correct_number_of_input_neurons() {
+        let configuration = configuration();
+        let developer = FlatNeuralNetworkDeveloper::new();
+        let neural_network = developer.develop_neural_network(&configuration);
+
+        assert_eq!(
+            configuration.input_neuron_count,
+            neural_network.input_neuron_handles.len()
+        );
+    }
+
+    fn configuration() -> NeuralNetworkDevelopmentConfiguration {
+        NeuralNetworkDevelopmentConfiguration {
+            parent_genomes: (Genome, Genome),
+            input_neuron_count: 3,
+            output_neuron_count: 5,
         }
     }
 }

@@ -38,13 +38,13 @@ pub struct NeuralNetworkDevelopmentConfiguration {
     /// Will result in [`DevelopedNeuralNetwork.input_neuron_handles`].
     ///
     /// [`DevelopedNeuralNetwork.input_neuron_handles`]: ./struct.DevelopedNeuralNetwork.html#structfield.input_neuron_handles
-    pub input_neuron_count: u32,
+    pub input_neuron_count: usize,
 
     /// The number of neurons that shall emit outputs
     /// Will result in [`DevelopedNeuralNetwork.output_neuron_handles`].
     ///
     /// [`DevelopedNeuralNetwork.output_neuron_handles`]: ./struct.DevelopedNeuralNetwork.html#structfield.output_neuron_handles
-    pub output_neuron_count: u32,
+    pub output_neuron_count: usize,
 }
 
 /// [`NeuralNetwork`] and auxillary data developed by a [`NeuralNetworkDeveloper`].
@@ -90,7 +90,7 @@ pub trait NeuralNetworkDeveloper: Debug + NeuralNetworkDeveloperClone {
     /// [`NeuralNetworkDevelopmentConfiguration`]: ./struct.NeuralNetworkDevelopmentConfiguration.html
     fn develop_neural_network(
         &self,
-        neural_network_development_configuration: NeuralNetworkDevelopmentConfiguration,
+        neural_network_development_configuration: &NeuralNetworkDevelopmentConfiguration,
     ) -> DevelopedNeuralNetwork;
 }
 

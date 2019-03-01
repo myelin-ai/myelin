@@ -32,7 +32,7 @@ impl OrganismBehavior {
         /// 2. Average acceleration since last step (x in negative direction)
         /// 3. Average acceleration since last step (y in positive direction)
         /// 4. Average acceleration since last step (y in negative direction)
-        const INPUT_NEURON_COUNT: u32 = 4;
+        const INPUT_NEURON_COUNT: usize = 4;
 
         /// 1. Linear force x in positive direction
         /// 2. Linear force x in negative direction
@@ -40,9 +40,9 @@ impl OrganismBehavior {
         /// 4. Linear force y in negative direction
         /// 5. Torque in positive direction
         /// 6. Torque in negative direction
-        const OUTPUT_NEURON_COUNT: u32 = 6;
+        const OUTPUT_NEURON_COUNT: usize = 6;
 
-        let metadata = NeuralNetworkDevelopmentConfiguration {
+        let configuration = NeuralNetworkDevelopmentConfiguration {
             parent_genomes,
             input_neuron_count: INPUT_NEURON_COUNT,
             output_neuron_count: OUTPUT_NEURON_COUNT,
@@ -50,7 +50,8 @@ impl OrganismBehavior {
 
         Self {
             previous_velocity: Vector::default(),
-            developed_neural_network: neural_network_developer.develop_neural_network(metadata),
+            developed_neural_network: neural_network_developer
+                .develop_neural_network(&configuration),
             neural_network_developer,
         }
     }
