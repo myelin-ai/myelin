@@ -199,6 +199,18 @@ fn get_neuron_handle(handles: &[Handle], index: usize) -> Handle {
     *handles.get(index).expect("Neuron not found in network")
 }
 
+fn objects_in_field_of_view<'a, 'b>(
+    own_object: &Object<'a>,
+    world_interactor: &'b dyn WorldInteractor,
+) -> Vec<Object<'b>> {
+    let field_of_view = field_of_view();
+    world_interactor
+        .find_objects_in_polygon(&field_of_view)
+        .into_iter()
+        .filter(|object| object.id != own_object.id)
+        .collect()
+}
+
 fn field_of_view() -> Polygon {
     // These values were chosen to represent a cone with two additional edges
     // at the tip, in order to simulate the corner of the eye.
