@@ -201,6 +201,20 @@ fn get_neuron_handle(handles: &[Handle], index: usize) -> Handle {
     *handles.get(index).expect("Neuron not found in network")
 }
 
+fn field_of_view() -> Polygon {
+    // These values were chosen to represent a cone with two additional edges
+    // at the tip, in order to simulate the corner of the eye.
+    PolygonBuilder::default()
+        .vertex(0.0, 0.0)
+        .vertex(20.0, 60.0)
+        .vertex(150.0, 100.0)
+        .vertex(180.0, 0.0)
+        .vertex(150.0, -100.0)
+        .vertex(20.0, -60.0)
+        .build()
+        .unwrap()
+}
+
 fn get_normalized_potential(neuron: Handle, neural_network: &dyn NeuralNetwork) -> f64 {
     neural_network
         .normalized_potential_of_neuron(neuron)
