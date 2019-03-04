@@ -205,7 +205,10 @@ fn objects_in_field_of_view<'a, 'b>(
     own_object: &Object<'a>,
     world_interactor: &'b dyn WorldInteractor,
 ) -> Vec<Object<'b>> {
-    let field_of_view = field_of_view();
+    let own_description = &own_object.description;
+    let field_of_view = field_of_view()
+        .translate(own_description.location)
+        .rotate_around_point(own_description.rotation, own_description.location);
     world_interactor
         .find_objects_in_polygon(&field_of_view)
         .into_iter()
