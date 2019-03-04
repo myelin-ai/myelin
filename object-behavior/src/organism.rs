@@ -56,12 +56,9 @@ impl OrganismBehavior {
 }
 
 impl ObjectBehavior for OrganismBehavior {
-    fn step(
-        &mut self,
-        own_description: &ObjectDescription,
-        world_interactor: &dyn WorldInteractor,
-    ) -> Option<Action> {
+    fn step(&mut self, world_interactor: &dyn WorldInteractor) -> Option<Action> {
         let elapsed_time = world_interactor.elapsed_time_in_update().as_millis() as Milliseconds;
+        let own_description = world_interactor.own_object().description;
 
         let neuron_handle_mapping = map_handles(&self.developed_neural_network);
 
