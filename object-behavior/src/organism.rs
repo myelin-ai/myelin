@@ -30,14 +30,14 @@ impl OrganismBehavior {
     ) -> Self {
         /// 1. Average linear acceleration since last step (forward)
         /// 2. Average linear acceleration since last step (backward)
-        /// 3. Average angular acceleration since last step (right)
-        /// 4. Average angular acceleration since last step (left)
+        /// 3. Average angular acceleration since last step (clockwise)
+        /// 4. Average angular acceleration since last step (counterclockwise)
         const INPUT_NEURON_COUNT: usize = 4;
 
         /// 1. linear force (forward)
         /// 2. linear force (backward)
-        /// 3. angular force (right)
-        /// 4. angular force (left)
+        /// 3. angular force (clockwise)
+        /// 4. angular force (counterclockwise)
         const OUTPUT_NEURON_COUNT: usize = 4;
 
         let configuration = NeuralNetworkDevelopmentConfiguration {
@@ -85,11 +85,14 @@ impl ObjectBehavior for OrganismBehavior {
         );
 
         inputs.insert(
-            // Todo: Replace .y by right angular acceleration
+            // Todo: Replace .y by clockwise angular acceleration
             if acceleration.y >= 0.0 {
-                neuron_handle_mapping.input.angular_acceleration.right
+                neuron_handle_mapping.input.angular_acceleration.clockwise
             } else {
-                neuron_handle_mapping.input.angular_acceleration.left
+                neuron_handle_mapping
+                    .input
+                    .angular_acceleration
+                    .counterclockwise
             },
             acceleration.y,
         );
@@ -109,8 +112,11 @@ impl ObjectBehavior for OrganismBehavior {
         );
 
         let angular_force = get_combined_potential(
-            neuron_handle_mapping.output.angular_acceleration.right,
-            neuron_handle_mapping.output.angular_acceleration.left,
+            neuron_handle_mapping.output.angular_acceleration.clockwise,
+            neuron_handle_mapping
+                .output
+                .angular_acceleration
+                .counterclockwise,
             neural_network.as_ref(),
         );
 
@@ -153,8 +159,8 @@ struct LinearAccelerationHandleMapping {
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 struct AngularAccelerationHandleMapping {
-    left: Handle,
-    right: Handle,
+    counterclockwise: Handle,
+    clockwise: Handle,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -174,8 +180,8 @@ fn map_handles(developed_neural_network: &DevelopedNeuralNetwork) -> NeuronHandl
                 backward: get_neuron_handle(1, input_neurons),
             },
             angular_acceleration: AngularAccelerationHandleMapping {
-                left: get_neuron_handle(2, input_neurons),
-                right: get_neuron_handle(3, input_neurons),
+                counterclockwise: get_neuron_handle(2, input_neurons),
+                clockwise: get_neuron_handle(3, input_neurons),
             },
         },
         output: OutputNeuronHandleMapping {
@@ -184,8 +190,8 @@ fn map_handles(developed_neural_network: &DevelopedNeuralNetwork) -> NeuronHandl
                 backward: get_neuron_handle(1, output_neurons),
             },
             angular_acceleration: AngularAccelerationHandleMapping {
-                left: get_neuron_handle(2, output_neurons),
-                right: get_neuron_handle(3, output_neurons),
+                counterclockwise: get_neuron_handle(2, output_neurons),
+                clockwise: get_neuron_handle(3, output_neurons),
             },
         },
     }
