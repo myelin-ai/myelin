@@ -58,17 +58,17 @@ impl OrganismBehavior {
 impl ObjectBehavior for OrganismBehavior {
     fn step(&mut self, world_interactor: &dyn WorldInteractor) -> Option<Action> {
         let elapsed_time = world_interactor.elapsed_time_in_update().as_millis() as Milliseconds;
-        let own_description = world_interactor.own_object().description;
+        let own_object = world_interactor.own_object();
 
         let neuron_handle_mapping = map_handles(&self.developed_neural_network);
 
-        let current_velocity = match own_description.mobility {
+        let current_velocity = match own_object.description.mobility {
             Mobility::Immovable => Vector::default(),
             Mobility::Movable(velocity) => velocity,
         };
 
         let acceleration = (current_velocity - self.previous_velocity) / elapsed_time;
-        let relative_acceleration = acceleration.rotate(own_description.rotation);
+        let relative_acceleration = acceleration.rotate(own_object.description.rotation);
 
         let mut inputs = HashMap::with_capacity(2);
 
@@ -96,6 +96,8 @@ impl ObjectBehavior for OrganismBehavior {
         );
 
         self.previous_velocity = current_velocity;
+
+        let objects_in_field_of_view = objects_in_field_of_view(&own_object, world_interactor);
 
         let neural_network = &mut self.developed_neural_network.neural_network;
         neural_network.step(
