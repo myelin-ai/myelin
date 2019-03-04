@@ -176,28 +176,28 @@ fn map_handles(developed_neural_network: &DevelopedNeuralNetwork) -> NeuronHandl
     NeuronHandleMapping {
         input: InputNeuronHandleMapping {
             linear_acceleration: LinearAccelerationHandleMapping {
-                forward: get_neuron_handle(0, input_neurons),
-                backward: get_neuron_handle(1, input_neurons),
+                forward: get_neuron_handle(input_neurons, 0),
+                backward: get_neuron_handle(input_neurons, 1),
             },
             angular_acceleration: AngularAccelerationHandleMapping {
-                counterclockwise: get_neuron_handle(2, input_neurons),
-                clockwise: get_neuron_handle(3, input_neurons),
+                counterclockwise: get_neuron_handle(input_neurons, 2),
+                clockwise: get_neuron_handle(input_neurons, 3),
             },
         },
         output: OutputNeuronHandleMapping {
             linear_acceleration: LinearAccelerationHandleMapping {
-                forward: get_neuron_handle(0, output_neurons),
-                backward: get_neuron_handle(1, output_neurons),
+                forward: get_neuron_handle(output_neurons, 0),
+                backward: get_neuron_handle(output_neurons, 1),
             },
             angular_acceleration: AngularAccelerationHandleMapping {
-                counterclockwise: get_neuron_handle(2, output_neurons),
-                clockwise: get_neuron_handle(3, output_neurons),
+                counterclockwise: get_neuron_handle(output_neurons, 2),
+                clockwise: get_neuron_handle(output_neurons, 3),
             },
         },
     }
 }
 
-fn get_neuron_handle(index: usize, handles: &[Handle]) -> Handle {
+fn get_neuron_handle(handles: &[Handle], index: usize) -> Handle {
     *handles.get(index).expect("Neuron not found in network")
 }
 
