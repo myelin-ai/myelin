@@ -28,8 +28,8 @@ impl RandomChanceChecker for RandomChanceCheckerImpl {
                 probability
             );
         }
-        let num: f64 = self.rng.gen();
-        num <= probability
+
+        self.rng.gen_bool(probability)
     }
 
     fn random_number_in_range(&mut self, min: i32, max: i32) -> i32 {
