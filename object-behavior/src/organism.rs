@@ -71,6 +71,7 @@ impl ObjectBehavior for OrganismBehavior {
         };
 
         let acceleration = (current_velocity - self.previous_velocity) / elapsed_time;
+        let relative_acceleration = acceleration.rotate(own_description.rotation);
 
         let mut inputs = HashMap::with_capacity(2);
 
@@ -81,7 +82,7 @@ impl ObjectBehavior for OrganismBehavior {
             } else {
                 neuron_handle_mapping.input.linear_acceleration.backward
             },
-            acceleration.x,
+            relative_acceleration.x,
         );
 
         inputs.insert(
@@ -94,7 +95,7 @@ impl ObjectBehavior for OrganismBehavior {
                     .angular_acceleration
                     .counterclockwise
             },
-            acceleration.y,
+            relative_acceleration.y,
         );
 
         self.previous_velocity = current_velocity;
