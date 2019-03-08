@@ -140,7 +140,7 @@ where
                 .ok_or(())
                 .unwrap();
 
-            let input = convert_input_to_membrane_potential(input, neuron);
+            let input = convert_input_to_membrane_potential(normalized_input, neuron);
 
             const EXTERNAL_CONNECTION_WEIGHT: Weight = 1.0;
             inputs.push((input, EXTERNAL_CONNECTION_WEIGHT));

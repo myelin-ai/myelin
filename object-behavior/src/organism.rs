@@ -72,7 +72,7 @@ impl ObjectBehavior for OrganismBehavior {
 
         let mut inputs = HashMap::with_capacity(2);
 
-        const MAX_ACCELERATION_FORCE: f64 = 5 * 9.81;
+        const MAX_ACCELERATION_FORCE: f64 = 5.0 * 9.81;
 
         inputs.insert(
             // Todo: Replace .x by forward linear acceleration
