@@ -172,7 +172,7 @@ where
 {
     if input < 0.0 || input > 1.0 {
         panic!(
-            "Invalid input value: {}. Expected value in the range [0,1]",
+            "Invalid input value: {}. Expected value in the range [0, 1]",
             input
         )
     }
