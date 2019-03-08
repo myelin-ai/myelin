@@ -99,8 +99,6 @@ impl ObjectBehavior for OrganismBehavior {
 
         self.previous_velocity = current_velocity;
 
-        let _objects_in_field_of_view = objects_in_field_of_view(&own_object, world_interactor);
-
         let neural_network = &mut self.developed_neural_network.neural_network;
         neural_network.step(
             world_interactor.elapsed_time_in_update().as_millis() as Milliseconds,
@@ -201,35 +199,6 @@ fn map_handles(developed_neural_network: &DevelopedNeuralNetwork) -> NeuronHandl
 
 fn get_neuron_handle(handles: &[Handle], index: usize) -> Handle {
     *handles.get(index).expect("Neuron not found in network")
-}
-
-fn objects_in_field_of_view<'a, 'b>(
-    own_object: &Object<'a>,
-    world_interactor: &'b dyn WorldInteractor,
-) -> Vec<Object<'b>> {
-    let own_description = &own_object.description;
-    let field_of_view = field_of_view()
-        .translate(own_description.location)
-        .rotate_around_point(own_description.rotation, own_description.location);
-    world_interactor
-        .find_objects_in_polygon(&field_of_view)
-        .into_iter()
-        .filter(|object| object.id != own_object.id)
-        .collect()
-}
-
-fn field_of_view() -> Polygon {
-    // These values were chosen to represent a cone with two additional edges
-    // at the tip, in order to simulate the corner of the eye.
-    PolygonBuilder::default()
-        .vertex(0.0, 0.0)
-        .vertex(20.0, 60.0)
-        .vertex(150.0, 100.0)
-        .vertex(180.0, 0.0)
-        .vertex(150.0, -100.0)
-        .vertex(20.0, -60.0)
-        .build()
-        .unwrap()
 }
 
 fn get_normalized_potential(neuron: Handle, neural_network: &dyn NeuralNetwork) -> f64 {
