@@ -177,8 +177,6 @@ where
         )
     }
 
-    dbg!(input);
-
     input * (neuron.action_potential() - neuron.resting_potential()) + neuron.resting_potential()
 }
 
