@@ -32,16 +32,6 @@ pub trait SpikingNeuron: Debug + Default + Clone {
     fn resting_potential(&self) -> MembranePotential;
 }
 
-//pub trait SpikingNeuronClone {
-//    fn clone_box<'a>(&self) -> Box<dyn SpikingNeuron + 'a>;
-//}
-
-//default impl<T> SpikingNeuronClone for T where T: SpikingNeuron + Clone {
-//    fn clone_box<'a>(&self) -> Box<dyn SpikingNeuron + 'a> {
-//        box self.clone()
-//    }
-//}
-
 /// An implementation for a spiking neuron
 #[derive(Debug, Clone)]
 pub struct SpikingNeuronImpl {
