@@ -262,3 +262,80 @@ fn get_combined_potential(
     get_normalized_potential(positive_neuron, neural_network)
         + get_normalized_potential(negative_neuron, neural_network)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn axial_acceleration_handle_returns_correct_handle_for_minus_one() {
+        let mapping = AxialAccelerationHandleMapping {
+            forward: Handle(0),
+            backward: Handle(1),
+        };
+
+        let handle = axial_acceleration_handle(-1.0, mapping);
+
+        assert_eq!(Handle(1), handle);
+    }
+
+    #[test]
+    fn axial_acceleration_handle_returns_correct_handle_for_zero() {
+        let mapping = AxialAccelerationHandleMapping {
+            forward: Handle(0),
+            backward: Handle(1),
+        };
+
+        let handle = axial_acceleration_handle(0.0, mapping);
+
+        assert_eq!(Handle(0), handle);
+    }
+
+    #[test]
+    fn axial_acceleration_handle_returns_correct_handle_for_one() {
+        let mapping = AxialAccelerationHandleMapping {
+            forward: Handle(0),
+            backward: Handle(1),
+        };
+
+        let handle = axial_acceleration_handle(1.0, mapping);
+
+        assert_eq!(Handle(0), handle);
+    }
+
+    #[test]
+    fn lateral_acceleration_handle_returns_correct_handle_for_minus_one() {
+        let mapping = LateralAccelerationHandleMapping {
+            left: Handle(0),
+            right: Handle(1),
+        };
+
+        let handle = lateral_acceleration_handle(-1.0, mapping);
+
+        assert_eq!(Handle(0), handle);
+    }
+
+    #[test]
+    fn lateral_acceleration_handle_returns_correct_handle_for_zero() {
+        let mapping = LateralAccelerationHandleMapping {
+            left: Handle(0),
+            right: Handle(1),
+        };
+
+        let handle = lateral_acceleration_handle(0.0, mapping);
+
+        assert_eq!(Handle(0), handle);
+    }
+
+    #[test]
+    fn lateral_acceleration_handle_returns_correct_handle_for_one() {
+        let mapping = LateralAccelerationHandleMapping {
+            left: Handle(0),
+            right: Handle(1),
+        };
+
+        let handle = lateral_acceleration_handle(1.0, mapping);
+
+        assert_eq!(Handle(1), handle);
+    }
+}
