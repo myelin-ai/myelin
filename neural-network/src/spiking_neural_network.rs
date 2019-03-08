@@ -440,7 +440,7 @@ mod tests {
     }
 
     #[test]
-    fn get_membrane_potential_for_input_works_with_0() {
+    fn get_membrane_potential_for_input_works_with_zero() {
         let mut neuron = SpikingNeuronMock::new();
         neuron.expect_action_potential().returns(100.0);
         neuron.expect_resting_potential().returns(-50.0).times(1..);
@@ -451,7 +451,7 @@ mod tests {
     }
 
     #[test]
-    fn get_membrane_potential_for_input_works_with_0_point_5() {
+    fn get_membrane_potential_for_input_works_with_zero_point_five() {
         let mut neuron = SpikingNeuronMock::new();
         neuron.expect_action_potential().returns(100.0);
         neuron.expect_resting_potential().returns(-50.0).times(1..);
@@ -462,7 +462,7 @@ mod tests {
     }
 
     #[test]
-    fn get_membrane_potential_for_input_works_with_1() {
+    fn get_membrane_potential_for_input_works_with_zero() {
         let mut neuron = SpikingNeuronMock::new();
         neuron.expect_action_potential().returns(100.0);
         neuron.expect_resting_potential().returns(-50.0).times(1..);
