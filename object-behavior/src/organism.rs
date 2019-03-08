@@ -62,43 +62,20 @@ impl ObjectBehavior for OrganismBehavior {
 
         let neuron_handle_mapping = map_handles(&self.developed_neural_network);
 
-        let current_velocity = match own_object.description.mobility {
-            Mobility::Immovable => Vector::default(),
-            Mobility::Movable(velocity) => velocity,
-        };
-
-        let acceleration = (current_velocity - self.previous_velocity) / elapsed_time;
-        // Todo: Is this really correct?
-        let relative_acceleration = acceleration.rotate(own_object.description.rotation);
-
-        let mut inputs = HashMap::with_capacity(2);
-
-        const MAX_ACCELERATION_FORCE: f64 = 5.0 * 9.81;
-
-        inputs.insert(
-            // Todo: Replace .x by forward linear acceleration
-            if acceleration.x >= 0.0 {
-                neuron_handle_mapping.input.linear_acceleration.forward
-            } else {
-                neuron_handle_mapping.input.linear_acceleration.backward
-            },
-            relative_acceleration.x.min(MAX_ACCELERATION_FORCE) / MAX_ACCELERATION_FORCE,
-        );
-
-        inputs.insert(
-            // Todo: Replace .y by clockwise angular acceleration
-            if acceleration.y >= 0.0 {
-                neuron_handle_mapping.input.angular_acceleration.clockwise
-            } else {
-                neuron_handle_mapping
-                    .input
-                    .angular_acceleration
-                    .counterclockwise
-            },
-            relative_acceleration.y.min(MAX_ACCELERATION_FORCE) / MAX_ACCELERATION_FORCE,
-        );
+        let current_velocity = velocity(&own_object.description);
+        let absolute_acceleration = (current_velocity - self.previous_velocity) / elapsed_time;
+        let relative_acceleration = absolute_acceleration.rotate(own_object.description.rotation);
 
         self.previous_velocity = current_velocity;
+
+        let mut inputs = HashMap::with_capacity(2);
+        add_acceleration_inputs(
+            relative_acceleration,
+            neuron_handle_mapping.input,
+            |key, value| {
+                inputs.insert(key, value);
+            },
+        );
 
         let neural_network = &mut self.developed_neural_network.neural_network;
         neural_network.step(
@@ -137,6 +114,59 @@ impl ObjectBehavior for OrganismBehavior {
 
     fn as_any(&self) -> &dyn Any {
         self
+    }
+}
+
+fn velocity(object_description: &ObjectDescription) -> Vector {
+    match object_description.mobility {
+        Mobility::Immovable => Vector::default(),
+        Mobility::Movable(velocity) => velocity,
+    }
+}
+
+fn add_acceleration_inputs(
+    acceleration: Vector,
+    input_neuron_handle_mapping: InputNeuronHandleMapping,
+    mut add_input_fn: impl FnMut(Handle, f64),
+) {
+    const MAX_ACCELERATION_FORCE: f64 = 5.0 * 9.81;
+
+    add_input_fn(
+        linear_acceleration_handle(
+            acceleration.x,
+            input_neuron_handle_mapping.linear_acceleration,
+        ),
+        acceleration.x.min(MAX_ACCELERATION_FORCE) / MAX_ACCELERATION_FORCE,
+    );
+
+    add_input_fn(
+        angular_acceleration_handle(
+            acceleration.y,
+            input_neuron_handle_mapping.angular_acceleration,
+        ),
+        acceleration.y.min(MAX_ACCELERATION_FORCE) / MAX_ACCELERATION_FORCE,
+    );
+}
+
+fn linear_acceleration_handle(
+    linear_acceleration: f64,
+    linear_acceleration_handle_mapping: LinearAccelerationHandleMapping,
+) -> Handle {
+    if linear_acceleration >= 0.0 {
+        linear_acceleration_handle_mapping.forward
+    } else {
+        linear_acceleration_handle_mapping.backward
+    }
+}
+
+fn angular_acceleration_handle(
+    angular_acceleration: f64,
+    angular_acceleration_handle_mapping: AngularAccelerationHandleMapping,
+) -> Handle {
+    if angular_acceleration >= 0.0 {
+        angular_acceleration_handle_mapping.clockwise
+    } else {
+        angular_acceleration_handle_mapping.counterclockwise
     }
 }
 
