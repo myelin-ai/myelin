@@ -39,7 +39,7 @@ impl OrganismBehavior {
         /// 3. lateral force (left)
         /// 4. lateral force (right)
         /// 5. torque (counterclockwise)
-        /// 6. torque (clockwise)q
+        /// 6. torque (clockwise)
         const OUTPUT_NEURON_COUNT: usize = 6;
 
         let configuration = NeuralNetworkDevelopmentConfiguration {
