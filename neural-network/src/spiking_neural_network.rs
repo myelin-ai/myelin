@@ -140,7 +140,7 @@ where
                 .ok_or(())
                 .unwrap();
 
-            let input = get_membrane_potential_for_input(input, neuron);
+            let input = convert_input_to_membrane_potential(input, neuron);
 
             const EXTERNAL_CONNECTION_WEIGHT: Weight = 1.0;
             inputs.push((input, EXTERNAL_CONNECTION_WEIGHT));
@@ -166,7 +166,7 @@ where
     }
 }
 
-fn get_membrane_potential_for_input<N>(input: f64, neuron: &N) -> MembranePotential
+fn convert_input_to_membrane_potential<N>(input: f64, neuron: &N) -> MembranePotential
 where
     N: SpikingNeuron,
 {
@@ -445,7 +445,7 @@ mod tests {
         neuron.expect_action_potential().returns(100.0);
         neuron.expect_resting_potential().returns(-50.0).times(1..);
 
-        let membrane_potential = get_membrane_potential_for_input(0.0, &neuron);
+        let membrane_potential = convert_input_to_membrane_potential(0.0, &neuron);
 
         assert_eq!(-50.0, membrane_potential);
     }
@@ -456,7 +456,7 @@ mod tests {
         neuron.expect_action_potential().returns(100.0);
         neuron.expect_resting_potential().returns(-50.0).times(1..);
 
-        let membrane_potential = get_membrane_potential_for_input(0.5, &neuron);
+        let membrane_potential = convert_input_to_membrane_potential(0.5, &neuron);
 
         assert_eq!(25.0, membrane_potential);
     }
@@ -467,7 +467,7 @@ mod tests {
         neuron.expect_action_potential().returns(100.0);
         neuron.expect_resting_potential().returns(-50.0).times(1..);
 
-        let membrane_potential = get_membrane_potential_for_input(1.0, &neuron);
+        let membrane_potential = convert_input_to_membrane_potential(1.0, &neuron);
 
         assert_eq!(100.0, membrane_potential);
     }
@@ -476,13 +476,13 @@ mod tests {
     #[should_panic]
     fn get_membrane_potential_for_input_panics_with_negative_inputs() {
         let neuron = SpikingNeuronMock::new();
-        get_membrane_potential_for_input(-0.1, &neuron);
+        convert_input_to_membrane_potential(-0.1, &neuron);
     }
 
     #[test]
     #[should_panic]
     fn get_membrane_potential_for_input_panics_with_values_bigger_than_one() {
         let neuron = SpikingNeuronMock::new();
-        get_membrane_potential_for_input(1.1, &neuron);
+        convert_input_to_membrane_potential(1.1, &neuron);
     }
 }
