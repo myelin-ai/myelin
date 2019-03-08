@@ -72,6 +72,8 @@ impl ObjectBehavior for OrganismBehavior {
 
         let mut inputs = HashMap::with_capacity(2);
 
+        const MAX_ACCELERATION_FORCE: f64 = 5 * 9.81;
+
         inputs.insert(
             // Todo: Replace .x by forward linear acceleration
             if acceleration.x >= 0.0 {
@@ -79,7 +81,7 @@ impl ObjectBehavior for OrganismBehavior {
             } else {
                 neuron_handle_mapping.input.linear_acceleration.backward
             },
-            relative_acceleration.x,
+            relative_acceleration.x.min(MAX_ACCELERATION_FORCE) / MAX_ACCELERATION_FORCE,
         );
 
         inputs.insert(
@@ -92,7 +94,7 @@ impl ObjectBehavior for OrganismBehavior {
                     .angular_acceleration
                     .counterclockwise
             },
-            relative_acceleration.y,
+            relative_acceleration.y.min(MAX_ACCELERATION_FORCE) / MAX_ACCELERATION_FORCE,
         );
 
         self.previous_velocity = current_velocity;
