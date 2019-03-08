@@ -28,17 +28,19 @@ impl OrganismBehavior {
         parent_genomes: (Genome, Genome),
         neural_network_developer: Box<dyn NeuralNetworkDeveloper>,
     ) -> Self {
-        /// 1. Average linear acceleration since last step (forward)
-        /// 2. Average linear acceleration since last step (backward)
-        /// 3. Average angular acceleration since last step (clockwise)
-        /// 4. Average angular acceleration since last step (counterclockwise)
+        /// 1. Average axial acceleration since last step (forward)
+        /// 2. Average axial acceleration since last step (backward)
+        /// 3. Average lateral acceleration since last step (left)
+        /// 4. Average lateral acceleration since last step (right)
         const INPUT_NEURON_COUNT: usize = 4;
 
-        /// 1. linear force (forward)
-        /// 2. linear force (backward)
-        /// 3. angular force (clockwise)
-        /// 4. angular force (counterclockwise)
-        const OUTPUT_NEURON_COUNT: usize = 4;
+        /// 1. axial force (forward)
+        /// 2. axial force (backward)
+        /// 3. lateral force (left)
+        /// 4. lateral force (right)
+        /// 5. torque (counterclockwise)
+        /// 6. torque (clockwise)q
+        const OUTPUT_NEURON_COUNT: usize = 6;
 
         let configuration = NeuralNetworkDevelopmentConfiguration {
             parent_genomes,
@@ -64,7 +66,7 @@ impl ObjectBehavior for OrganismBehavior {
 
         let current_velocity = velocity(&own_object.description);
         let absolute_acceleration = (current_velocity - self.previous_velocity) / elapsed_time;
-        let relative_acceleration = absolute_acceleration.rotate(own_object.description.rotation);
+        let relative_acceleration = absolute_acceleration.rotate(own_object.description.rotation); // TODO: This is probably wrong
 
         self.previous_velocity = current_velocity;
 
@@ -83,29 +85,32 @@ impl ObjectBehavior for OrganismBehavior {
             &inputs,
         );
 
-        let linear_force = get_combined_potential(
-            neuron_handle_mapping.output.linear_acceleration.forward,
-            neuron_handle_mapping.output.linear_acceleration.backward,
+        let axial_force = get_combined_potential(
+            neuron_handle_mapping.output.axial_acceleration.forward,
+            neuron_handle_mapping.output.axial_acceleration.backward,
             neural_network.as_ref(),
         );
 
-        let angular_force = get_combined_potential(
-            neuron_handle_mapping.output.angular_acceleration.clockwise,
-            neuron_handle_mapping
-                .output
-                .angular_acceleration
-                .counterclockwise,
+        let lateral_force = get_combined_potential(
+            neuron_handle_mapping.output.lateral_acceleration.right,
+            neuron_handle_mapping.output.lateral_acceleration.left,
             neural_network.as_ref(),
         );
 
-        if linear_force != 0.0 || angular_force != 0.0 {
+        let torque = get_combined_potential(
+            neuron_handle_mapping.output.torque.counterclockwise,
+            neuron_handle_mapping.output.torque.clockwise,
+            neural_network.as_ref(),
+        );
+
+        if axial_force != 0.0 || angular_force != 0.0 {
             Some(Action::ApplyForce(Force {
-                // Todo: Translate forward linear force to global linear force
+                // Todo: Translate linear force to global values
                 linear: Vector {
-                    x: linear_force,  // Wrong value
-                    y: -linear_force, // Wrong value
+                    x: axial_force,
+                    y: lateral_force,
                 },
-                torque: Torque(angular_force),
+                torque: Torque(torque),
             }))
         } else {
             None
@@ -132,41 +137,41 @@ fn add_acceleration_inputs(
     const MAX_ACCELERATION_FORCE: f64 = 5.0 * 9.81;
 
     add_input_fn(
-        linear_acceleration_handle(
+        axial_acceleration_handle(
             acceleration.x,
-            input_neuron_handle_mapping.linear_acceleration,
+            input_neuron_handle_mapping.axial_acceleration,
         ),
         acceleration.x.min(MAX_ACCELERATION_FORCE) / MAX_ACCELERATION_FORCE,
     );
 
     add_input_fn(
-        angular_acceleration_handle(
+        lateral_acceleration_handle(
             acceleration.y,
-            input_neuron_handle_mapping.angular_acceleration,
+            input_neuron_handle_mapping.lateral_acceleration,
         ),
         acceleration.y.min(MAX_ACCELERATION_FORCE) / MAX_ACCELERATION_FORCE,
     );
 }
 
-fn linear_acceleration_handle(
-    linear_acceleration: f64,
-    linear_acceleration_handle_mapping: LinearAccelerationHandleMapping,
+fn axial_acceleration_handle(
+    axial_acceleration: f64,
+    axial_acceleration_handle_mapping: AxialAccelerationHandleMapping,
 ) -> Handle {
-    if linear_acceleration >= 0.0 {
-        linear_acceleration_handle_mapping.forward
+    if axial_acceleration >= 0.0 {
+        axial_acceleration_handle_mapping.forward
     } else {
-        linear_acceleration_handle_mapping.backward
+        axial_acceleration_handle_mapping.backward
     }
 }
 
-fn angular_acceleration_handle(
-    angular_acceleration: f64,
-    angular_acceleration_handle_mapping: AngularAccelerationHandleMapping,
+fn lateral_acceleration_handle(
+    lateral_acceleration: f64,
+    lateral_acceleration_handle_mapping: LateralAccelerationHandleMapping,
 ) -> Handle {
-    if angular_acceleration >= 0.0 {
-        angular_acceleration_handle_mapping.clockwise
+    if lateral_acceleration <= 0.0 {
+        lateral_acceleration_handle_mapping.left
     } else {
-        angular_acceleration_handle_mapping.counterclockwise
+        lateral_acceleration_handle_mapping.right
     }
 }
 
@@ -178,26 +183,33 @@ struct NeuronHandleMapping {
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 struct InputNeuronHandleMapping {
-    linear_acceleration: LinearAccelerationHandleMapping,
-    angular_acceleration: AngularAccelerationHandleMapping,
+    axial_acceleration: AxialAccelerationHandleMapping,
+    lateral_acceleration: LateralAccelerationHandleMapping,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-struct LinearAccelerationHandleMapping {
+struct OutputNeuronHandleMapping {
+    axial_acceleration: AxialAccelerationHandleMapping,
+    lateral_acceleration: LateralAccelerationHandleMapping,
+    torque: TorqueHandleMapping,
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+struct AxialAccelerationHandleMapping {
     forward: Handle,
     backward: Handle,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-struct AngularAccelerationHandleMapping {
-    counterclockwise: Handle,
-    clockwise: Handle,
+struct LateralAccelerationHandleMapping {
+    left: Handle,
+    right: Handle,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-struct OutputNeuronHandleMapping {
-    linear_acceleration: LinearAccelerationHandleMapping,
-    angular_acceleration: AngularAccelerationHandleMapping,
+struct TorqueHandleMapping {
+    counterclockwise: Handle,
+    clockwise: Handle,
 }
 
 fn map_handles(developed_neural_network: &DevelopedNeuralNetwork) -> NeuronHandleMapping {
@@ -206,23 +218,27 @@ fn map_handles(developed_neural_network: &DevelopedNeuralNetwork) -> NeuronHandl
 
     NeuronHandleMapping {
         input: InputNeuronHandleMapping {
-            linear_acceleration: LinearAccelerationHandleMapping {
+            axial_acceleration: AxialAccelerationHandleMapping {
                 forward: get_neuron_handle(input_neurons, 0),
                 backward: get_neuron_handle(input_neurons, 1),
             },
-            angular_acceleration: AngularAccelerationHandleMapping {
-                counterclockwise: get_neuron_handle(input_neurons, 2),
-                clockwise: get_neuron_handle(input_neurons, 3),
+            lateral_acceleration: LateralAccelerationHandleMapping {
+                left: get_neuron_handle(input_neurons, 2),
+                right: get_neuron_handle(input_neurons, 3),
             },
         },
         output: OutputNeuronHandleMapping {
-            linear_acceleration: LinearAccelerationHandleMapping {
+            axial_acceleration: AxialAccelerationHandleMapping {
                 forward: get_neuron_handle(output_neurons, 0),
                 backward: get_neuron_handle(output_neurons, 1),
             },
-            angular_acceleration: AngularAccelerationHandleMapping {
-                counterclockwise: get_neuron_handle(output_neurons, 2),
-                clockwise: get_neuron_handle(output_neurons, 3),
+            lateral_acceleration: LateralAccelerationHandleMapping {
+                left: get_neuron_handle(output_neurons, 2),
+                right: get_neuron_handle(output_neurons, 3),
+            },
+            torque: TorqueHandleMapping {
+                counterclockwise: get_neuron_handle(output_neurons, 4),
+                clockwise: get_neuron_handle(output_neurons, 5),
             },
         },
     }
