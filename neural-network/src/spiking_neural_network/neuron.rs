@@ -2,16 +2,56 @@ use super::constant;
 use crate::*;
 use std::f64::consts::E;
 
+#[cfg(any(test, feature = "use-mocks"))]
+use mockiato::mockable;
+
 /// A spiking neuron
+#[cfg_attr(any(test, feature = "use-mocks"), mockable)]
+pub trait SpikingNeuron: Debug + Default + Clone {
+    /// Update the internal state of the neuron
+    ///
+    /// # Arguments
+    /// - `time_since_last_step`: The time in milliseconds that passed since this method was last called
+    /// - `inputs`: The membrane potentials of other connected neurons that influence this neuron right now.
+    /// It is assumed that these inputs occure after `time_since_last_step` has passed.
+    fn step(&mut self, time_since_last_step: Milliseconds, inputs: &[(MembranePotential, Weight)]);
+
+    /// Returns the neuron's current membrane potential if it is above its current threshold
+    /// Call [`step`] to update this value
+    ///
+    /// [`step`]: #tySpikingNeuron.step
+    fn membrane_potential(&self) -> Option<MembranePotential>;
+
+    /// The current threshold
+    fn threshold(&self) -> MembranePotential;
+
+    /// The current action potential
+    fn action_potential(&self) -> MembranePotential;
+
+    /// The current resting potential
+    fn resting_potential(&self) -> MembranePotential;
+}
+
+//pub trait SpikingNeuronClone {
+//    fn clone_box<'a>(&self) -> Box<dyn SpikingNeuron + 'a>;
+//}
+
+//default impl<T> SpikingNeuronClone for T where T: SpikingNeuron + Clone {
+//    fn clone_box<'a>(&self) -> Box<dyn SpikingNeuron + 'a> {
+//        box self.clone()
+//    }
+//}
+
+/// An implementation for a spiking neuron
 #[derive(Debug, Clone)]
-pub struct SpikingNeuron {
+pub struct SpikingNeuronImpl {
     current_membrane_potential: MembranePotential,
     current_threshold: MembranePotential,
     current_phase: Phase,
     elapsed_time_in_current_phase: Milliseconds,
 }
 
-impl SpikingNeuron {
+impl SpikingNeuronImpl {
     /// Constructs a new neuron
     pub fn new() -> Self {
         Self {
@@ -20,43 +60,6 @@ impl SpikingNeuron {
             current_phase: Phase::RestingState,
             elapsed_time_in_current_phase: 0.0,
         }
-    }
-
-    /// Update the internal state of the neuron
-    ///
-    /// # Arguments
-    /// - `time_since_last_step`: The time in milliseconds that passed since this method was last called
-    /// - `inputs`: The membrane potentials of other connected neurons that influence this neuron right now.
-    /// It is assumed that these inputs occure after `time_since_last_step` has passed.
-    pub fn step(
-        &mut self,
-        time_since_last_step: Milliseconds,
-        inputs: &[(MembranePotential, Weight)],
-    ) {
-        self.update_phase(time_since_last_step);
-        self.handle_phase(inputs, time_since_last_step);
-    }
-
-    /// Returns the neuron's current membrane potential if it is above its current threshold
-    /// Call [`step`] to update this value
-    ///
-    /// [`step`]: #tySpikingNeuron.step
-    pub fn membrane_potential(&self) -> Option<MembranePotential> {
-        if self.is_above_threshold() {
-            Some(self.current_membrane_potential)
-        } else {
-            None
-        }
-    }
-
-    /// The current threshold
-    pub fn threshold(&self) -> MembranePotential {
-        self.current_threshold
-    }
-
-    /// The current action potential
-    pub fn action_potential(&self) -> MembranePotential {
-        constant::ACTION_POTENTIAL
     }
 
     fn update_phase(&mut self, time_since_last_step: Milliseconds) {
@@ -151,7 +154,34 @@ impl SpikingNeuron {
     }
 }
 
-impl Default for SpikingNeuron {
+impl SpikingNeuron for SpikingNeuronImpl {
+    fn step(&mut self, time_since_last_step: Milliseconds, inputs: &[(MembranePotential, Weight)]) {
+        self.update_phase(time_since_last_step);
+        self.handle_phase(inputs, time_since_last_step);
+    }
+
+    fn membrane_potential(&self) -> Option<MembranePotential> {
+        if self.is_above_threshold() {
+            Some(self.current_membrane_potential)
+        } else {
+            None
+        }
+    }
+
+    fn threshold(&self) -> MembranePotential {
+        self.current_threshold
+    }
+
+    fn action_potential(&self) -> MembranePotential {
+        constant::ACTION_POTENTIAL
+    }
+
+    fn resting_potential(&self) -> MembranePotential {
+        constant::RESTING_POTENTIAL
+    }
+}
+
+impl Default for SpikingNeuronImpl {
     fn default() -> Self {
         Self::new()
     }
@@ -199,19 +229,19 @@ mod tests {
 
     #[test]
     fn can_be_constructed() {
-        let _neuron = SpikingNeuron::default();
+        let _neuron = SpikingNeuronImpl::default();
     }
 
     #[test]
     fn membrane_potential_is_none_when_no_step_is_called() {
-        let neuron = SpikingNeuron::default();
+        let neuron = SpikingNeuronImpl::default();
         let membrane_potential = neuron.membrane_potential();
         assert!(membrane_potential.is_none());
     }
 
     #[test]
     fn emits_no_potential_without_inputs() {
-        let mut neuron = SpikingNeuron::default();
+        let mut neuron = SpikingNeuronImpl::default();
         let elapsed_time = 1.0;
         neuron.step(elapsed_time, &[]);
         let membrane_potential = neuron.membrane_potential();
@@ -220,7 +250,7 @@ mod tests {
 
     #[test]
     fn emits_no_potential_with_high_input_and_no_weight() {
-        let mut neuron = SpikingNeuron::default();
+        let mut neuron = SpikingNeuronImpl::default();
         let elapsed_time = 10.0;
         let inputs = [(constant::ACTION_POTENTIAL, 0.0)];
 
@@ -231,7 +261,7 @@ mod tests {
 
     #[test]
     fn emits_no_potential_when_input_is_too_low() {
-        let mut neuron = SpikingNeuron::default();
+        let mut neuron = SpikingNeuronImpl::default();
         let elapsed_time = 10.0;
 
         const ARBITRARY_THRESHOLD_DECREMENT: MembranePotential = 0.1;
@@ -246,7 +276,7 @@ mod tests {
 
     #[test]
     fn spikes_with_extremely_high_input() {
-        let mut neuron = SpikingNeuron::default();
+        let mut neuron = SpikingNeuronImpl::default();
         let elapsed_time = 10.0;
 
         let inputs = [(1000.0, 1000.0)];
@@ -258,7 +288,7 @@ mod tests {
 
     #[test]
     fn spikes_with_input_of_threshold() {
-        let mut neuron = SpikingNeuron::default();
+        let mut neuron = SpikingNeuronImpl::default();
         let elapsed_time = 0.001;
 
         let inputs = [(constant::THRESHOLD_POTENTIAL, 1.0)];
@@ -270,7 +300,7 @@ mod tests {
 
     #[test]
     fn spikes_with_input_of_threshold_when_factoring_in_weight() {
-        let mut neuron = SpikingNeuron::default();
+        let mut neuron = SpikingNeuronImpl::default();
         let elapsed_time = 0.001;
 
         let inputs = [(constant::THRESHOLD_POTENTIAL / 2.0, 2.0)];
@@ -282,7 +312,7 @@ mod tests {
 
     #[test]
     fn spike_ends_after_many_small_time_steps() {
-        let mut neuron = SpikingNeuron::default();
+        let mut neuron = SpikingNeuronImpl::default();
         const SMALL_TIMESTEP: Milliseconds = 0.001;
         let steps = f64::ceil(constant::SPIKE_DURATION / SMALL_TIMESTEP) as u32;
 
@@ -299,7 +329,7 @@ mod tests {
 
     #[test]
     fn spike_ends_after_many_small_time_steps_when_under_constant_input() {
-        let mut neuron = SpikingNeuron::default();
+        let mut neuron = SpikingNeuronImpl::default();
         const SMALL_TIMESTEP: Milliseconds = 0.001;
         let steps = f64::ceil(constant::SPIKE_DURATION / SMALL_TIMESTEP) as u32;
 
@@ -322,7 +352,7 @@ mod tests {
     #[ignore]
     #[test]
     fn spike_ends_after_one_big_time_step() {
-        let mut neuron = SpikingNeuron::default();
+        let mut neuron = SpikingNeuronImpl::default();
         let inputs = [(constant::THRESHOLD_POTENTIAL, 1.0)];
         neuron.step(10.0, &inputs);
         neuron.step(1_000.0, &[]);
@@ -332,7 +362,7 @@ mod tests {
 
     #[test]
     fn spike_happens_at_the_right_time_when_using_small_timesteps() {
-        let mut neuron = SpikingNeuron::default();
+        let mut neuron = SpikingNeuronImpl::default();
         let inputs = [(constant::THRESHOLD_POTENTIAL, 1.0)];
 
         const SMALL_TIME_STEP: Milliseconds = 0.01;
