@@ -45,7 +45,7 @@ where
     N: SpikingNeuron + 'static,
 {
     /// Update the state of all neurons
-    /// The external inputs should be defined in the range from 0 to 1
+    /// The external inputs must be defined in the range [0,1]
     fn step(&mut self, time_since_last_step: Milliseconds, external_inputs: &HashMap<Handle, f64>) {
         self.update_neurons_connected_to_external_inputs(time_since_last_step, external_inputs);
         self.update_neurons_not_connected_to_external_inputs(time_since_last_step, external_inputs);
