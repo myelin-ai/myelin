@@ -130,7 +130,7 @@ where
         time_since_last_step: Milliseconds,
         external_inputs: &HashMap<Handle, f64>,
     ) {
-        for (&handle_of_neuron_receiving_input, &input) in external_inputs.iter() {
+        for (&handle_of_neuron_receiving_input, &normalized_input) in external_inputs.iter() {
             let mut inputs =
                 self.cached_incoming_connection_inputs(handle_of_neuron_receiving_input);
 
@@ -140,10 +140,10 @@ where
                 .ok_or(())
                 .unwrap();
 
-            let normalized_input = get_membrane_potential_for_input(input, neuron);
+            let input = get_membrane_potential_for_input(input, neuron);
 
             const EXTERNAL_CONNECTION_WEIGHT: Weight = 1.0;
-            inputs.push((normalized_input, EXTERNAL_CONNECTION_WEIGHT));
+            inputs.push((input, EXTERNAL_CONNECTION_WEIGHT));
 
             neuron.step(time_since_last_step, &inputs);
         }
