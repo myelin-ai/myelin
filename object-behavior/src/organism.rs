@@ -68,6 +68,7 @@ impl ObjectBehavior for OrganismBehavior {
         };
 
         let acceleration = (current_velocity - self.previous_velocity) / elapsed_time;
+        // Todo: Is this really correct?
         let relative_acceleration = acceleration.rotate(own_object.description.rotation);
 
         let mut inputs = HashMap::with_capacity(2);
