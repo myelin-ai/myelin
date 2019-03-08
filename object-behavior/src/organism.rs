@@ -97,7 +97,7 @@ impl ObjectBehavior for OrganismBehavior {
 
         self.previous_velocity = current_velocity;
 
-        let objects_in_field_of_view = objects_in_field_of_view(&own_object, world_interactor);
+        let _objects_in_field_of_view = objects_in_field_of_view(&own_object, world_interactor);
 
         let neural_network = &mut self.developed_neural_network.neural_network;
         neural_network.step(
