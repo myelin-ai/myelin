@@ -440,7 +440,7 @@ mod tests {
     }
 
     #[test]
-    fn get_membrane_potential_for_input_works_with_zero() {
+    fn convert_input_to_membrane_potential_works_with_zero() {
         let mut neuron = SpikingNeuronMock::new();
         neuron.expect_action_potential().returns(100.0);
         neuron.expect_resting_potential().returns(-50.0).times(1..);
@@ -451,7 +451,7 @@ mod tests {
     }
 
     #[test]
-    fn get_membrane_potential_for_input_works_with_zero_point_five() {
+    fn convert_input_to_membrane_potential_works_with_zero_point_five() {
         let mut neuron = SpikingNeuronMock::new();
         neuron.expect_action_potential().returns(100.0);
         neuron.expect_resting_potential().returns(-50.0).times(1..);
@@ -462,7 +462,7 @@ mod tests {
     }
 
     #[test]
-    fn get_membrane_potential_for_input_works_with_zero() {
+    fn convert_input_to_membrane_potential_works_with_one() {
         let mut neuron = SpikingNeuronMock::new();
         neuron.expect_action_potential().returns(100.0);
         neuron.expect_resting_potential().returns(-50.0).times(1..);
@@ -474,14 +474,14 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn get_membrane_potential_for_input_panics_with_negative_inputs() {
+    fn convert_input_to_membrane_potential_panics_with_negative_inputs() {
         let neuron = SpikingNeuronMock::new();
         convert_input_to_membrane_potential(-0.1, &neuron);
     }
 
     #[test]
     #[should_panic]
-    fn get_membrane_potential_for_input_panics_with_values_bigger_than_one() {
+    fn convert_input_to_membrane_potential_panics_with_values_bigger_than_one() {
         let neuron = SpikingNeuronMock::new();
         convert_input_to_membrane_potential(1.1, &neuron);
     }
