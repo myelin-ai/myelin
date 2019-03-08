@@ -103,7 +103,7 @@ impl ObjectBehavior for OrganismBehavior {
             neural_network.as_ref(),
         );
 
-        if axial_force != 0.0 || angular_force != 0.0 {
+        if !(axial_force == 0.0 && lateral_force == 0.0 && torque == 0.0) {
             Some(Action::ApplyForce(Force {
                 // Todo: Translate linear force to global values
                 linear: Vector {
@@ -141,7 +141,7 @@ fn add_acceleration_inputs(
             acceleration.x,
             input_neuron_handle_mapping.axial_acceleration,
         ),
-        acceleration.x.min(MAX_ACCELERATION_FORCE) / MAX_ACCELERATION_FORCE,
+        acceleration.x.min(MAX_ACCELERATION_FORCE) / MAX_ACCELERATION_FORCE, // TODO: Negative value can exceed MAX_ACCELERATION_FORCE
     );
 
     add_input_fn(
@@ -149,7 +149,7 @@ fn add_acceleration_inputs(
             acceleration.y,
             input_neuron_handle_mapping.lateral_acceleration,
         ),
-        acceleration.y.min(MAX_ACCELERATION_FORCE) / MAX_ACCELERATION_FORCE,
+        acceleration.y.min(MAX_ACCELERATION_FORCE) / MAX_ACCELERATION_FORCE, // TODO: Negative value can exceed MAX_ACCELERATION_FORCE
     );
 }
 
