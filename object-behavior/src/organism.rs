@@ -72,7 +72,7 @@ impl ObjectBehavior for OrganismBehavior {
 
         let current_velocity = velocity(&own_object.description);
         let absolute_acceleration = (current_velocity - self.previous_velocity) / elapsed_time;
-        let relative_acceleration = absolute_acceleration.rotate(own_object.description.rotation); // TODO: This is probably wrong
+        let relative_acceleration = absolute_acceleration.rotate_clockwise(own_object.description.rotation);
 
         self.previous_velocity = current_velocity;
 
