@@ -14,6 +14,11 @@ use std::collections::HashMap;
 /// The origins of this number have not been verified.
 const MAX_ACCELERATION: f64 = 5.0 * 9.81;
 
+/// The highest possible force emmited by the organism.
+/// Calculated as F = μma, where μ = 1, m = 20kg (hardcoded value in engine) and a = 9.8 m/s^2,
+/// which is the [maximum acceleration a human can achieve](https://www.wired.com/2012/08/maximum-acceleration-in-the-100-m-dash/)
+const MAX_ACCELERATION_FORCE: f64 = 20.0 * 9.8;
+
 /// An organism that can interact with its surroundings via a neural network,
 /// built from a set of genes
 #[derive(Debug, Clone)]
@@ -72,7 +77,8 @@ impl ObjectBehavior for OrganismBehavior {
 
         let current_velocity = velocity(&own_object.description);
         let absolute_acceleration = (current_velocity - self.previous_velocity) / elapsed_time;
-        let relative_acceleration = absolute_acceleration.rotate_clockwise(own_object.description.rotation);
+        let relative_acceleration =
+            absolute_acceleration.rotate_clockwise(own_object.description.rotation);
 
         self.previous_velocity = current_velocity;
 
@@ -115,9 +121,9 @@ impl ObjectBehavior for OrganismBehavior {
                 y: lateral_force,
             };
             let global_linear_force = relative_linear_force.rotate(own_object.description.rotation);
-
+            let scaled_linear_force = global_linear_force * MAX_ACCELERATION_FORCE;
             Some(Action::ApplyForce(Force {
-                linear: global_linear_force,
+                linear: scaled_linear_force,
                 torque: Torque(torque),
             }))
         } else {
