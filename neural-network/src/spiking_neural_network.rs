@@ -184,6 +184,7 @@ where
 mod tests {
     use super::*;
     use maplit::hashmap;
+    use nearly_eq::assert_nearly_eq;
 
     #[test]
     fn empty_network_has_no_membrane_potential() {
@@ -447,7 +448,7 @@ mod tests {
 
         let membrane_potential = convert_input_to_membrane_potential(0.0, &neuron);
 
-        assert_eq!(-50.0, membrane_potential);
+        assert_nearly_eq!(-50.0, membrane_potential);
     }
 
     #[test]
@@ -458,7 +459,7 @@ mod tests {
 
         let membrane_potential = convert_input_to_membrane_potential(0.5, &neuron);
 
-        assert_eq!(25.0, membrane_potential);
+        assert_nearly_eq!(25.0, membrane_potential);
     }
 
     #[test]
@@ -469,7 +470,7 @@ mod tests {
 
         let membrane_potential = convert_input_to_membrane_potential(1.0, &neuron);
 
-        assert_eq!(100.0, membrane_potential);
+        assert_nearly_eq!(100.0, membrane_potential);
     }
 
     #[test]
