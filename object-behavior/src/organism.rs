@@ -100,7 +100,7 @@ impl ObjectBehavior for OrganismBehavior {
         convert_neural_network_output_to_action(
             neuron_handle_mapping,
             neural_network.as_ref(),
-            &own_object,
+            &own_object.description,
         )
     }
 
@@ -112,7 +112,7 @@ impl ObjectBehavior for OrganismBehavior {
 fn convert_neural_network_output_to_action(
     neuron_handle_mapping: NeuronHandleMapping,
     neural_network: &dyn NeuralNetwork,
-    own_object: &Object<'_>,
+    object_description: &ObjectDescription,
 ) -> Option<Action> {
     let axial_force = get_combined_potential(
         neuron_handle_mapping.output.axial_acceleration.forward,
@@ -137,7 +137,7 @@ fn convert_neural_network_output_to_action(
             x: axial_force,
             y: lateral_force,
         };
-        let global_linear_force = relative_linear_force.rotate(own_object.description.rotation);
+        let global_linear_force = relative_linear_force.rotate(object_description.rotation);
         let scaled_linear_force = global_linear_force * MAX_ACCELERATION_FORCE;
         Some(Action::ApplyForce(Force {
             linear: scaled_linear_force,
