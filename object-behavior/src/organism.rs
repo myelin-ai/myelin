@@ -143,7 +143,7 @@ fn convert_neural_network_output_to_action(
     }
     .rotate(object_description.rotation);
 
-    let normal_vector = position_vector.normal() * -1;
+    let normal_vector = position_vector.normal() * -1.0;
     let angular_force = normal_vector.unit() * MAX_ANGULAR_FORCE * angular_acceleration_force;
 
     let torque = position_vector.cross_product(angular_force);
@@ -602,7 +602,7 @@ mod tests {
                 x: -MAX_ACCELERATION_FORCE * 0.5,
                 y: -MAX_ACCELERATION_FORCE * 0.2,
             },
-            torque: Torque(392.0),
+            torque: Torque(-392.0),
         };
 
         let action =
