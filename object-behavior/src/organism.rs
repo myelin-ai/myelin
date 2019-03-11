@@ -173,7 +173,8 @@ fn objects_in_fov<'a, 'b>(
             let angle_in_radians = degrees_to_radians(angle_in_degrees).unwrap();
             let fov_direction = rightmost_angle.rotate(angle_in_radians);
             world_interactor
-                .objects_in_ray(own_description.location, fov_direction)
+                .find_objects_in_ray(own_description.location, fov_direction)
+                .into_iter()
                 .take(MAX_OBJECTS_PER_RAYCAST)
                 .collect()
         })
