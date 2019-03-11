@@ -106,12 +106,14 @@ impl ObjectBehavior for OrganismBehavior {
         );
 
         if !(axial_force == 0.0 && lateral_force == 0.0 && torque == 0.0) {
+            let relative_linear_force = Vector {
+                x: axial_force,
+                y: lateral_force,
+            };
+            let global_linear_force = relative_linear_force.rotate(own_object.description.rotation);
+
             Some(Action::ApplyForce(Force {
-                // Todo: Translate linear force to global values
-                linear: Vector {
-                    x: axial_force,
-                    y: lateral_force,
-                },
+                linear: global_linear_force,
                 torque: Torque(torque),
             }))
         } else {
@@ -361,9 +363,13 @@ mod tests {
         };
 
         let mut values = HashMap::with_capacity(2);
-        add_acceleration_inputs(configuration.input_acceleration, mapping, |handle, value| {
-            values.insert(handle, value);
-        });
+        add_acceleration_inputs(
+            configuration.input_acceleration,
+            mapping,
+            |handle, value| {
+                values.insert(handle, value);
+            },
+        );
 
         assert_eq!(2, values.len());
         assert_nearly_eq!(
