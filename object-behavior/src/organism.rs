@@ -141,7 +141,7 @@ fn add_acceleration_inputs(
             acceleration.x,
             input_neuron_handle_mapping.axial_acceleration,
         ),
-        acceleration.x.min(MAX_ACCELERATION_FORCE) / MAX_ACCELERATION_FORCE, // TODO: Negative value can exceed MAX_ACCELERATION_FORCE
+        acceleration.x.abs().min(MAX_ACCELERATION_FORCE) / MAX_ACCELERATION_FORCE,
     );
 
     add_input_fn(
@@ -149,7 +149,7 @@ fn add_acceleration_inputs(
             acceleration.y,
             input_neuron_handle_mapping.lateral_acceleration,
         ),
-        acceleration.y.min(MAX_ACCELERATION_FORCE) / MAX_ACCELERATION_FORCE, // TODO: Negative value can exceed MAX_ACCELERATION_FORCE
+        acceleration.y.abs().min(MAX_ACCELERATION_FORCE) / MAX_ACCELERATION_FORCE,
     );
 }
 
