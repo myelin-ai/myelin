@@ -379,30 +379,40 @@ mod tests {
     // Axial expected handles: (0 forward, 1 backward)
     // Lateral expected handles: (2 left, 3 right)
     acceleration_input_tests! {
-        test_acceleration_input_with_no_accelaration: {
+        add_acceleration_inputs_with_no_accelaration: {
             acceleration: (0.0, 0.0),
             axial_expected: (handle: 0, value: 0.0),
             lateral_expected: (handle: 2, value: 0.0),
         },
-        test_acceleration_input_with_forward_accelaration: {
+        add_acceleration_inputs_with_forward_accelaration: {
             acceleration: (MAX_ACCELERATION_FORCE / 5.0, 0.0),
             axial_expected: (handle: 0, value: 0.2),
             lateral_expected: (handle: 2, value: 0.0),
         },
-        test_acceleration_input_with_backward_accelaration: {
+        add_acceleration_inputs_with_backward_accelaration: {
             acceleration: (-MAX_ACCELERATION_FORCE / 5.0, 0.0),
             axial_expected: (handle: 1, value: 0.2),
             lateral_expected: (handle: 2, value: 0.0),
         },
-        test_acceleration_input_with_lateral_accelaration_to_the_left: {
+        add_acceleration_inputs_with_lateral_accelaration_to_the_left: {
             acceleration: (0.0, -MAX_ACCELERATION_FORCE / 5.0),
             axial_expected: (handle: 0, value: 0.0),
             lateral_expected: (handle: 2, value: 0.2),
         },
-        test_acceleration_input_with_lateral_accelaration_to_the_right: {
+        add_acceleration_inputs_with_lateral_accelaration_to_the_right: {
             acceleration: (0.0, MAX_ACCELERATION_FORCE / 5.0),
             axial_expected: (handle: 0, value: 0.0),
             lateral_expected: (handle: 3, value: 0.2),
+        },
+        add_acceleration_inputs_with_too_fast_forwards_accelaration: {
+            acceleration: (MAX_ACCELERATION_FORCE * 5.0, 0.0),
+            axial_expected: (handle: 0, value: 1.0),
+            lateral_expected: (handle: 2, value: 0.0),
+        },
+        add_acceleration_inputs_with_too_fast_backwards_accelaration: {
+            acceleration: (-MAX_ACCELERATION_FORCE * 5.0, 0.0),
+            axial_expected: (handle: 1, value: 1.0),
+            lateral_expected: (handle: 2, value: 0.0),
         },
     }
 }
