@@ -20,9 +20,9 @@ const MAX_ACCELERATION: f64 = 5.0 * 9.81;
 /// which is the [maximum acceleration a human can achieve](https://www.wired.com/2012/08/maximum-acceleration-in-the-100-m-dash/)
 const MAX_ACCELERATION_FORCE: f64 = 20.0 * 9.8;
 
-const RAYCAST_COUNT: u16 = 10;
+const RAYCAST_COUNT: usize = 10;
 
-const MAX_OBJECTS_PER_RAYCAST: u16 = 3;
+const MAX_OBJECTS_PER_RAYCAST: usize = 3;
 
 /// An organism that can interact with its surroundings via a neural network,
 /// built from a set of genes
@@ -48,7 +48,8 @@ impl OrganismBehavior {
         /// 2. Average axial acceleration since last step (backward)
         /// 3. Average lateral acceleration since last step (left)
         /// 4. Average lateral acceleration since last step (right)
-        const INPUT_NEURON_COUNT: usize = 4;
+        /// Rest: Distance to objects in FOV from right to left
+        const INPUT_NEURON_COUNT: usize = 4 + RAYCAST_COUNT * MAX_OBJECTS_PER_RAYCAST;
 
         /// 1. axial force (forward)
         /// 2. axial force (backward)
