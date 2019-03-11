@@ -7,6 +7,7 @@ use myelin_genetics::{
 use myelin_neural_network::{Handle, Milliseconds, NeuralNetwork};
 use std::any::Any;
 use std::collections::HashMap;
+use std::f64::consts::PI;
 
 /// The hightest relative acceleration an organism can detect.
 /// The value was chosen as many sources, [including Wikipedia](https://en.wikipedia.org/wiki/G-LOC#Thresholds) report
@@ -18,6 +19,10 @@ const MAX_ACCELERATION: f64 = 5.0 * 9.81;
 /// Calculated as F = μma, where μ = 1, m = 20kg (hardcoded value in engine) and a = 9.8 m/s^2,
 /// which is the [maximum acceleration a human can achieve](https://www.wired.com/2012/08/maximum-acceleration-in-the-100-m-dash/)
 const MAX_ACCELERATION_FORCE: f64 = 20.0 * 9.8;
+
+const RAYCAST_COUNT: u16 = 10;
+
+const MAX_OBJECTS_PER_RAYCAST: u16 = 3;
 
 /// An organism that can interact with its surroundings via a neural network,
 /// built from a set of genes
@@ -146,6 +151,38 @@ fn convert_neural_network_output_to_action(
     } else {
         None
     }
+}
+
+fn objects_in_fov<'a, 'b>(
+    own_description: &'a ObjectDescription,
+    world_interactor: &'b dyn WorldInteractor,
+) -> Vec<Vec<Object<'b>>> {
+    /// The angle in degrees describing the field of view. [Wikipedia](https://en.wikipedia.org/wiki/Human_eye#Field_of_view).
+    const FOV_ANGLE: usize = 200;
+    const ANGLE_PER_RAYCAST: f64 = FOV_ANGLE as f64 / RAYCAST_COUNT as f64;
+
+    let unit_vector = Vector { x: 1.0, y: 0.0 };
+    let own_direction = unit_vector.rotate(own_description.rotation);
+
+    let half_of_fov_angle = degrees_to_radians(FOV_ANGLE as f64 / 2.0).unwrap();
+    let rightmost_angle = own_direction.rotate_clockwise(half_of_fov_angle);
+    (0..FOV_ANGLE)
+        .map(|angle_step| {
+            let angle_in_degrees = angle_step as f64 * ANGLE_PER_RAYCAST;
+            let angle_in_radians = degrees_to_radians(angle_in_degrees).unwrap();
+            let fov_direction = rightmost_angle.rotate(angle_in_radians);
+            world_interactor
+                .objects_in_ray(own_description.location, fov_direction)
+                .sort()
+                .take(MAX_OBJECTS_PER_RAYCAST)
+                .collect()
+        })
+        .collect()
+}
+
+// To do: Move this to radians
+fn degrees_to_radians(degrees: f64) -> Result<Radians, RadiansError> {
+    Radians::try_new(degrees / 180.0 * PI)
 }
 
 fn velocity(object_description: &ObjectDescription) -> Vector {
