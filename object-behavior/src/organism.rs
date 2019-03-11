@@ -8,6 +8,8 @@ use myelin_neural_network::{Handle, Milliseconds, NeuralNetwork};
 use std::any::Any;
 use std::collections::HashMap;
 
+const MAX_ACCELERATION_FORCE: f64 = 5.0 * 9.81;
+
 /// An organism that can interact with its surroundings via a neural network,
 /// built from a set of genes
 #[derive(Debug, Clone)]
@@ -134,8 +136,6 @@ fn add_acceleration_inputs(
     input_neuron_handle_mapping: InputNeuronHandleMapping,
     mut add_input_fn: impl FnMut(Handle, f64),
 ) {
-    const MAX_ACCELERATION_FORCE: f64 = 5.0 * 9.81;
-
     add_input_fn(
         axial_acceleration_handle(
             acceleration.x,
@@ -266,6 +266,7 @@ fn get_combined_potential(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nearly_eq::assert_nearly_eq;
 
     #[test]
     fn axial_acceleration_handle_returns_correct_handle_for_minus_one() {
@@ -337,5 +338,71 @@ mod tests {
         let handle = lateral_acceleration_handle(1.0, mapping);
 
         assert_eq!(Handle(1), handle);
+    }
+
+    macro_rules! acceleration_input_tests {
+            ($($name:ident: {
+            acceleration: ($acceleration_x:expr, $acceleration_y:expr),
+            axial_expected: (handle: $axial_expected_handle:expr, value: $axial_expected_value:expr),
+            lateral_expected: (handle: $lateral_expected_handle:expr, value: $lateral_expected_value:expr),
+        },)*) => {
+            $(
+                #[test]
+                fn $name() {
+                    let acceleration = Vector {
+                        x: $acceleration_x,
+                        y: $acceleration_y,
+                    };
+
+                    let mapping = InputNeuronHandleMapping {
+                        axial_acceleration: AxialAccelerationHandleMapping {
+                            forward: Handle(0),
+                            backward: Handle(1),
+                        },
+                        lateral_acceleration: LateralAccelerationHandleMapping {
+                            left: Handle(2),
+                            right: Handle(3),
+                        }
+                    };
+
+                    let mut values = HashMap::with_capacity(2);
+                    add_acceleration_inputs(acceleration, mapping, |handle, value| { values.insert(handle, value); });
+
+                    assert_eq!(2, values.len());
+                    assert_nearly_eq!($axial_expected_value, *values.get(&Handle($axial_expected_handle)).expect("Axial input was None"));
+                    assert_nearly_eq!($lateral_expected_value, *values.get(&Handle($lateral_expected_handle)).expect("Lateral input was None"));
+                }
+            )*
+        }
+    }
+
+    // Axial expected handles: (0 forward, 1 backward)
+    // Lateral expected handles: (2 left, 3 right)
+    acceleration_input_tests! {
+        test_acceleration_input_with_no_accelaration: {
+            acceleration: (0.0, 0.0),
+            axial_expected: (handle: 0, value: 0.0),
+            lateral_expected: (handle: 2, value: 0.0),
+        },
+        test_acceleration_input_with_forward_accelaration: {
+            acceleration: (MAX_ACCELERATION_FORCE / 5.0, 0.0),
+            axial_expected: (handle: 0, value: 0.2),
+            lateral_expected: (handle: 2, value: 0.0),
+        },
+        test_acceleration_input_with_backward_accelaration: {
+            acceleration: (-MAX_ACCELERATION_FORCE / 5.0, 0.0),
+            axial_expected: (handle: 1, value: 0.2),
+            lateral_expected: (handle: 2, value: 0.0),
+        },
+        test_acceleration_input_with_lateral_accelaration_to_the_left: {
+            acceleration: (0.0, -MAX_ACCELERATION_FORCE / 5.0),
+            axial_expected: (handle: 0, value: 0.0),
+            lateral_expected: (handle: 2, value: 0.2),
+        },
+        test_acceleration_input_with_lateral_accelaration_to_the_right: {
+            acceleration: (0.0, MAX_ACCELERATION_FORCE / 5.0),
+            axial_expected: (handle: 0, value: 0.0),
+            lateral_expected: (handle: 3, value: 0.2),
+        },
     }
 }
