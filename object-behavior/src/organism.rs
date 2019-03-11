@@ -19,6 +19,8 @@ const MAX_ACCELERATION: f64 = 5.0 * 9.81;
 /// which is the [maximum acceleration a human can achieve](https://www.wired.com/2012/08/maximum-acceleration-in-the-100-m-dash/)
 const MAX_ACCELERATION_FORCE: f64 = 20.0 * 9.8;
 
+const MAX_ANGULAR_FORCE: f64 = MAX_ACCELERATION_FORCE;
+
 /// An organism that can interact with its surroundings via a neural network,
 /// built from a set of genes
 #[derive(Debug, Clone)]
@@ -126,11 +128,24 @@ fn convert_neural_network_output_to_action(
         neural_network,
     );
 
-    let torque = get_combined_potential(
+    let angular_acceleration_force = get_combined_potential(
         neuron_handle_mapping.output.torque.counterclockwise,
         neuron_handle_mapping.output.torque.clockwise,
         neural_network,
     );
+
+    let aabb = object_description.shape.aabb();
+    let width = aabb.lower_right.y - aabb.upper_left.y;
+
+    let position_vector = Vector {
+        x: 0.0,
+        y: width / 2.0,
+    }
+    .rotate(object_description.rotation);
+
+    let angular_force = position_vector.normal().unit() * MAX_ANGULAR_FORCE * angular_acceleration_force;
+
+    let torque = position_vector.cross_product(angular_force);
 
     if !(axial_force == 0.0 && lateral_force == 0.0 && torque == 0.0) {
         let relative_linear_force = Vector {
@@ -586,7 +601,7 @@ mod tests {
                 x: -MAX_ACCELERATION_FORCE * 0.5,
                 y: -MAX_ACCELERATION_FORCE * 0.2,
             },
-            torque: Torque(0.0),
+            torque: Torque(392.0),
         };
 
         let action =
@@ -597,7 +612,7 @@ mod tests {
             Action::ApplyForce(force) => {
                 assert_nearly_eq!(expected_force.linear.x, force.linear.x);
                 assert_nearly_eq!(expected_force.linear.y, force.linear.y);
-                assert_nearly_eq!(expected_force.torque.0, force.torque.0); // TODO
+                assert_nearly_eq!(expected_force.torque.0, force.torque.0);
             }
             _ => panic!("Unexpected action"),
         }
