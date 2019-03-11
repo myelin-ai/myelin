@@ -180,6 +180,32 @@ fn objects_in_fov<'a, 'b>(
         .collect()
 }
 
+fn objects_in_fov_to_neuron_inputs(
+    own_description: &ObjectDescription,
+    objects: Vec<Vec<Object<'_>>>,
+) -> Vec<Option<f64>> {
+    objects
+        .iter()
+        .map(|objects_in_ray| {
+            let mut distances = objects_in_ray
+                .iter()
+                .map(|object| object.description.location - own_description.location)
+                .map(Vector::from)
+                .map(Vector::magnitude)
+                .map(Some)
+                .collect::<Vec<_>>();
+            distances.sort_by(|a, b| a.partial_cmp(&b).unwrap());
+
+            let not_visible_object_count = MAX_OBJECTS_PER_RAYCAST - distances.len();
+            let mut not_visible_objects = vec![None; not_visible_object_count];
+            distances.append(&mut not_visible_objects);
+
+            distances
+        })
+        .flatten()
+        .collect()
+}
+
 // To do: Move this to radians
 fn degrees_to_radians(degrees: f64) -> Result<Radians, RadiansError> {
     Radians::try_new(degrees / 180.0 * PI)
