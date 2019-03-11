@@ -97,42 +97,54 @@ impl ObjectBehavior for OrganismBehavior {
             &inputs,
         );
 
-        let axial_force = get_combined_potential(
-            neuron_handle_mapping.output.axial_acceleration.forward,
-            neuron_handle_mapping.output.axial_acceleration.backward,
+        convert_neural_network_output_to_action(
+            neuron_handle_mapping,
             neural_network.as_ref(),
-        );
-
-        let lateral_force = get_combined_potential(
-            neuron_handle_mapping.output.lateral_acceleration.right,
-            neuron_handle_mapping.output.lateral_acceleration.left,
-            neural_network.as_ref(),
-        );
-
-        let torque = get_combined_potential(
-            neuron_handle_mapping.output.torque.counterclockwise,
-            neuron_handle_mapping.output.torque.clockwise,
-            neural_network.as_ref(),
-        );
-
-        if !(axial_force == 0.0 && lateral_force == 0.0 && torque == 0.0) {
-            let relative_linear_force = Vector {
-                x: axial_force,
-                y: lateral_force,
-            };
-            let global_linear_force = relative_linear_force.rotate(own_object.description.rotation);
-            let scaled_linear_force = global_linear_force * MAX_ACCELERATION_FORCE;
-            Some(Action::ApplyForce(Force {
-                linear: scaled_linear_force,
-                torque: Torque(torque),
-            }))
-        } else {
-            None
-        }
+            &own_object,
+        )
     }
 
     fn as_any(&self) -> &dyn Any {
         self
+    }
+}
+
+fn convert_neural_network_output_to_action(
+    neuron_handle_mapping: NeuronHandleMapping,
+    neural_network: &dyn NeuralNetwork,
+    own_object: &Object<'_>,
+) -> Option<Action> {
+    let axial_force = get_combined_potential(
+        neuron_handle_mapping.output.axial_acceleration.forward,
+        neuron_handle_mapping.output.axial_acceleration.backward,
+        neural_network,
+    );
+
+    let lateral_force = get_combined_potential(
+        neuron_handle_mapping.output.lateral_acceleration.right,
+        neuron_handle_mapping.output.lateral_acceleration.left,
+        neural_network,
+    );
+
+    let torque = get_combined_potential(
+        neuron_handle_mapping.output.torque.counterclockwise,
+        neuron_handle_mapping.output.torque.clockwise,
+        neural_network,
+    );
+
+    if !(axial_force == 0.0 && lateral_force == 0.0 && torque == 0.0) {
+        let relative_linear_force = Vector {
+            x: axial_force,
+            y: lateral_force,
+        };
+        let global_linear_force = relative_linear_force.rotate(own_object.description.rotation);
+        let scaled_linear_force = global_linear_force * MAX_ACCELERATION_FORCE;
+        Some(Action::ApplyForce(Force {
+            linear: scaled_linear_force,
+            torque: Torque(torque),
+        }))
+    } else {
+        None
     }
 }
 
