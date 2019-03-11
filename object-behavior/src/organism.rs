@@ -8,7 +8,11 @@ use myelin_neural_network::{Handle, Milliseconds, NeuralNetwork};
 use std::any::Any;
 use std::collections::HashMap;
 
-const MAX_ACCELERATION_FORCE: f64 = 5.0 * 9.81;
+/// The hightest relative acceleration an organism can detect.
+/// The value was chosen as many sources, [including Wikipedia](https://en.wikipedia.org/wiki/G-LOC#Thresholds) report
+/// 5G as a typical threshold for the loss of consciousness in humans.
+/// The origins of this number have not been verified.
+const MAX_ACCELERATION: f64 = 5.0 * 9.81;
 
 /// An organism that can interact with its surroundings via a neural network,
 /// built from a set of genes
@@ -143,7 +147,7 @@ fn add_acceleration_inputs(
             acceleration.x,
             input_neuron_handle_mapping.axial_acceleration,
         ),
-        acceleration.x.abs().min(MAX_ACCELERATION_FORCE) / MAX_ACCELERATION_FORCE,
+        acceleration.x.abs().min(MAX_ACCELERATION) / MAX_ACCELERATION,
     );
 
     add_input_fn(
@@ -151,7 +155,7 @@ fn add_acceleration_inputs(
             acceleration.y,
             input_neuron_handle_mapping.lateral_acceleration,
         ),
-        acceleration.y.abs().min(MAX_ACCELERATION_FORCE) / MAX_ACCELERATION_FORCE,
+        acceleration.y.abs().min(MAX_ACCELERATION) / MAX_ACCELERATION,
     );
 }
 
@@ -401,7 +405,7 @@ mod tests {
     fn add_acceleration_inputs_with_forward_acceleration() {
         let configuration = AddAccelerationInputsTestConfiguration {
             input_acceleration: Vector {
-                x: MAX_ACCELERATION_FORCE / 5.0,
+                x: MAX_ACCELERATION / 5.0,
                 y: 0.0,
             },
             axial_expected_value: (Handle(0), 0.2),
@@ -415,7 +419,7 @@ mod tests {
     fn add_acceleration_inputs_with_backward_acceleration() {
         let configuration = AddAccelerationInputsTestConfiguration {
             input_acceleration: Vector {
-                x: -MAX_ACCELERATION_FORCE / 5.0,
+                x: -MAX_ACCELERATION / 5.0,
                 y: 0.0,
             },
             axial_expected_value: (Handle(1), 0.2),
@@ -430,7 +434,7 @@ mod tests {
         let configuration = AddAccelerationInputsTestConfiguration {
             input_acceleration: Vector {
                 x: 0.0,
-                y: -MAX_ACCELERATION_FORCE / 5.0,
+                y: -MAX_ACCELERATION / 5.0,
             },
             axial_expected_value: (Handle(0), 0.0),
             lateral_expected_value: (Handle(2), 0.2),
@@ -444,7 +448,7 @@ mod tests {
         let configuration = AddAccelerationInputsTestConfiguration {
             input_acceleration: Vector {
                 x: 0.0,
-                y: MAX_ACCELERATION_FORCE / 5.0,
+                y: MAX_ACCELERATION / 5.0,
             },
             axial_expected_value: (Handle(0), 0.0),
             lateral_expected_value: (Handle(3), 0.2),
@@ -457,7 +461,7 @@ mod tests {
     fn add_acceleration_inputs_with_too_fast_forward_acceleration() {
         let configuration = AddAccelerationInputsTestConfiguration {
             input_acceleration: Vector {
-                x: MAX_ACCELERATION_FORCE * 5.0,
+                x: MAX_ACCELERATION * 5.0,
                 y: 0.0,
             },
             axial_expected_value: (Handle(0), 1.0),
@@ -471,7 +475,7 @@ mod tests {
     fn add_acceleration_inputs_with_too_fast_backward_acceleration() {
         let configuration = AddAccelerationInputsTestConfiguration {
             input_acceleration: Vector {
-                x: -MAX_ACCELERATION_FORCE * 5.0,
+                x: -MAX_ACCELERATION * 5.0,
                 y: 0.0,
             },
             axial_expected_value: (Handle(1), 1.0),
