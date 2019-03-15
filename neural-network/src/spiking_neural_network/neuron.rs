@@ -277,6 +277,18 @@ mod tests {
     }
 
     #[test]
+    fn extremely_high_input_does_not_cause_too_high_output() {
+        let mut neuron = SpikingNeuronImpl::default();
+        let elapsed_time = 10.0;
+
+        let inputs = [(1000.0, 1000.0)];
+
+        neuron.step(elapsed_time, &inputs);
+        let membrane_potential = neuron.membrane_potential().unwrap();
+        assert!(membrane_potential <= constant::ACTION_POTENTIAL);
+    }
+
+    #[test]
     fn spikes_with_input_of_threshold() {
         let mut neuron = SpikingNeuronImpl::default();
         let elapsed_time = 0.001;
