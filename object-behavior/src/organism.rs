@@ -612,7 +612,7 @@ mod tests {
         let expected_force = Force {
             linear: Vector {
                 x: -MAX_ACCELERATION_FORCE * 0.5,
-                y: -MAX_ACCELERATION_FORCE * 0.2,
+                y: MAX_ACCELERATION_FORCE * 0.2,
             },
             torque: Torque(-392.0),
         };
