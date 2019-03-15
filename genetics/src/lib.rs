@@ -108,7 +108,7 @@ where
     T: NeuralNetworkDeveloper + Clone + 'static,
 {
     default fn clone_box(&self) -> Box<dyn NeuralNetworkDeveloper> {
-        Box::new(self.clone())
+        box self.clone()
     }
 }
 
