@@ -134,6 +134,8 @@ fn convert_neural_network_output_to_action(
         neural_network,
     );
 
+    dbg!(angular_acceleration_force);
+
     let aabb = object_description.shape.aabb();
     let width = aabb.lower_right.y - aabb.upper_left.y;
 
@@ -143,9 +145,8 @@ fn convert_neural_network_output_to_action(
     }
     .rotate(object_description.rotation);
 
-    let normal_vector = position_vector.normal() * -1.0;
-    let angular_force =
-        angular_acceleration_force.map(|force| normal_vector.unit() * MAX_ANGULAR_FORCE * force);
+    let angular_force = angular_acceleration_force
+        .map(|force| position_vector.normal().unit() * MAX_ANGULAR_FORCE * force);
 
     let torque = angular_force.map(|force| position_vector.cross_product(force));
 
