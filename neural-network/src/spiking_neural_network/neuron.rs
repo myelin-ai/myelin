@@ -152,7 +152,10 @@ impl SpikingNeuron for SpikingNeuronImpl {
 
     fn membrane_potential(&self) -> Option<MembranePotential> {
         if self.is_above_threshold() {
-            Some(self.current_membrane_potential)
+            let clamped_output = self
+                .current_membrane_potential
+                .min(constant::ACTION_POTENTIAL);
+            Some(clamped_output)
         } else {
             None
         }
@@ -277,6 +280,22 @@ mod tests {
     }
 
     #[test]
+    fn extremely_high_input_is_in_range() {
+        let mut neuron = SpikingNeuronImpl::default();
+        let elapsed_time = 10.0;
+
+        let inputs = [(1000.0, 1000.0)];
+
+        neuron.step(elapsed_time, &inputs);
+        let membrane_potential = neuron.membrane_potential().unwrap();
+        let threshold = neuron.threshold();
+
+        assert!(
+            membrane_potential >= threshold && membrane_potential <= constant::ACTION_POTENTIAL
+        );
+    }
+
+    #[test]
     fn spikes_with_input_of_threshold() {
         let mut neuron = SpikingNeuronImpl::default();
         let elapsed_time = 0.001;
@@ -289,6 +308,22 @@ mod tests {
     }
 
     #[test]
+    fn spikes_with_input_of_threshold_in_range() {
+        let mut neuron = SpikingNeuronImpl::default();
+        let elapsed_time = 0.001;
+
+        let inputs = [(constant::THRESHOLD_POTENTIAL, 1.0)];
+
+        neuron.step(elapsed_time, &inputs);
+        let membrane_potential = neuron.membrane_potential().unwrap();
+        let threshold = neuron.threshold();
+
+        assert!(
+            membrane_potential >= threshold && membrane_potential <= constant::ACTION_POTENTIAL
+        );
+    }
+
+    #[test]
     fn spikes_with_input_of_threshold_when_factoring_in_weight() {
         let mut neuron = SpikingNeuronImpl::default();
         let elapsed_time = 0.001;
@@ -298,6 +333,22 @@ mod tests {
         neuron.step(elapsed_time, &inputs);
         let membrane_potential = neuron.membrane_potential();
         assert!(membrane_potential.is_some());
+    }
+
+    #[test]
+    fn spikes_with_input_of_threshold_when_factoring_in_weight_in_range() {
+        let mut neuron = SpikingNeuronImpl::default();
+        let elapsed_time = 0.001;
+
+        let inputs = [(constant::THRESHOLD_POTENTIAL / 2.0, 2.0)];
+
+        neuron.step(elapsed_time, &inputs);
+        let membrane_potential = neuron.membrane_potential().unwrap();
+        let threshold = neuron.threshold();
+
+        assert!(
+            membrane_potential >= threshold && membrane_potential <= constant::ACTION_POTENTIAL
+        );
     }
 
     #[test]
