@@ -4,7 +4,7 @@
 
 use maplit::hashmap;
 use myelin_neural_network::spiking_neural_network::{
-    DefaultSpikingNeuralNetwork, SpikingNeuronImpl,
+    DefaultSpikingNeuralNetwork,
 };
 use myelin_neural_network::{Connection, Handle, MembranePotential, Milliseconds, NeuralNetwork};
 use std::collections::HashMap;
