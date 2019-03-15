@@ -23,7 +23,9 @@ impl<N> SpikingNeuralNetwork<N>
 where
     N: SpikingNeuron + 'static,
 {
-    /// Returns a new `SpikingNeuralNetwork`
+    /// Returns a new [`SpikingNeuralNetwork`]
+    ///
+    /// [`./struct.SpikingNeuralNetwork.html`]
     pub fn new() -> Self {
         Self::default()
     }
