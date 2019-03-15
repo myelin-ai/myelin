@@ -193,7 +193,8 @@ mod tests {
     use maplit::hashmap;
     use nearly_eq::assert_nearly_eq;
 
-    const NORMALIZED_THRESHOLD_POTENTIAL: f64 = self::constant::THRESHOLD_POTENTIAL / (self::constant::RESTING_POTENTIAL - self::constant::ACTION_POTENTIAL);
+    const NORMALIZED_THRESHOLD_POTENTIAL: f64 = self::constant::THRESHOLD_POTENTIAL
+        / (self::constant::RESTING_POTENTIAL - self::constant::ACTION_POTENTIAL);
 
     #[test]
     fn empty_network_has_no_membrane_potential() {

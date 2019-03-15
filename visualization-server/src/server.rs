@@ -9,7 +9,9 @@ use myelin_engine::prelude::*;
 use myelin_engine::simulation::SimulationBuilder;
 use myelin_genetics::developer::FlatNeuralNetworkDeveloper;
 use myelin_genetics::Genome;
-use myelin_neural_network::spiking_neural_network::{DefaultSpikingNeuralNetwork, SpikingNeuronImpl};
+use myelin_neural_network::spiking_neural_network::{
+    DefaultSpikingNeuralNetwork, SpikingNeuronImpl,
+};
 use myelin_object_behavior::organism::OrganismBehavior;
 use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
 use myelin_object_behavior::Static;
@@ -42,9 +44,7 @@ where
     let organism_factory = box || -> Box<dyn ObjectBehavior> {
         box OrganismBehavior::new(
             (Genome::default(), Genome::default()),
-            box FlatNeuralNetworkDeveloper::new(Rc::new(|| {
-                box DefaultSpikingNeuralNetwork::new()
-            })),
+            box FlatNeuralNetworkDeveloper::new(Rc::new(|| box DefaultSpikingNeuralNetwork::new())),
         )
     };
     let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
