@@ -185,7 +185,7 @@ fn objects_in_fov<'a, 'b>(
 
     let half_of_fov_angle = degrees_to_radians(FOV_ANGLE as f64 / 2.0).unwrap();
     let rightmost_angle = own_direction.rotate_clockwise(half_of_fov_angle);
-    (0..FOV_ANGLE)
+    (0..RAYCAST_COUNT)
         .map(|angle_step| {
             let angle_in_degrees = angle_step as f64 * ANGLE_PER_RAYCAST;
             let angle_in_radians = degrees_to_radians(angle_in_degrees).unwrap();
