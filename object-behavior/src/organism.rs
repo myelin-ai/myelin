@@ -134,8 +134,6 @@ fn convert_neural_network_output_to_action(
         neural_network,
     );
 
-    dbg!(angular_acceleration_force);
-
     let aabb = object_description.shape.aabb();
     let width = aabb.lower_right.y - aabb.upper_left.y;
 
