@@ -277,7 +277,7 @@ mod tests {
     }
 
     #[test]
-    fn extremely_high_input_does_not_cause_too_high_output() {
+    fn extremely_high_input_is_in_range() {
         let mut neuron = SpikingNeuronImpl::default();
         let elapsed_time = 10.0;
 
@@ -285,7 +285,8 @@ mod tests {
 
         neuron.step(elapsed_time, &inputs);
         let membrane_potential = neuron.membrane_potential().unwrap();
-        assert!(membrane_potential <= constant::ACTION_POTENTIAL);
+        let threshold = neuron.threshold();
+        assert!(membrane_potential >= threshold && neuron <= constant::ACTION_POTENTIAL);
     }
 
     #[test]
