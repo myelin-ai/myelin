@@ -2,6 +2,8 @@ import { createWebsocket } from './websocket'
 
 const websocketUrl = `ws://${window.location.hostname}:6956`
 
+console.error('Fuck you all!')
+
 Promise.all([
     createWebsocket(websocketUrl),
     import('../out/myelin_visualization_client'),
