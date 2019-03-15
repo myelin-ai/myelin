@@ -177,6 +177,7 @@ where
         )
     }
 
+    // The input is converted from [0; 1] into [resting_potential, action_potential]
     input * (neuron.action_potential() - neuron.resting_potential()) + neuron.resting_potential()
 }
 
