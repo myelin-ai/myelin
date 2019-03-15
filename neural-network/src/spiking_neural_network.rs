@@ -190,6 +190,8 @@ mod tests {
     use maplit::hashmap;
     use nearly_eq::assert_nearly_eq;
 
+    const NORMALIZED_THRESHOLD_POTENTIAL: f64 = self::constant::THRESHOLD_POTENTIAL / (self::constant::RESTING_POTENTIAL - self::constant::ACTION_POTENTIAL);
+
     #[test]
     fn empty_network_has_no_membrane_potential() {
         let invalid_handle = Handle(1337);
@@ -376,7 +378,7 @@ mod tests {
 
         let elapsed_time = 1.0;
         let inputs = hashmap! {
-            sensor_handle => self::constant::THRESHOLD_POTENTIAL / (self::constant::RESTING_POTENTIAL - self::constant::ACTION_POTENTIAL)
+            sensor_handle => NORMALIZED_THRESHOLD_POTENTIAL
         };
         neural_network.step(elapsed_time, &inputs);
 
@@ -405,7 +407,7 @@ mod tests {
 
         let elapsed_time = 1.0;
         let inputs = hashmap! {
-            sensor_handle => self::constant::THRESHOLD_POTENTIAL / (self::constant::RESTING_POTENTIAL - self::constant::ACTION_POTENTIAL)
+            sensor_handle => NORMALIZED_THRESHOLD_POTENTIAL
         };
         neural_network.step(elapsed_time, &inputs);
 
@@ -429,7 +431,7 @@ mod tests {
         let steps = f64::ceil(constant::SPIKE_DURATION / SMALL_TIMESTEP) as u32;
 
         let inputs = hashmap! {
-            sensor_handle => self::constant::THRESHOLD_POTENTIAL / (self::constant::RESTING_POTENTIAL - self::constant::ACTION_POTENTIAL)
+            sensor_handle => NORMALIZED_THRESHOLD_POTENTIAL
         };
         neural_network.step(SMALL_TIMESTEP, &inputs);
 
