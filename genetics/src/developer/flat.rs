@@ -62,7 +62,7 @@ impl NeuralNetworkDeveloper for FlatNeuralNetworkDeveloper {
 
         DevelopedNeuralNetwork {
             neural_network,
-            genome: Genome {},
+            genome: Genome::default(),
             input_neuron_handles,
             output_neuron_handles,
         }
