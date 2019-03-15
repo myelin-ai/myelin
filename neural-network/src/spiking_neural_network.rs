@@ -65,8 +65,8 @@ where
                 .membrane_potential()
                 .map_or_else(Default::default, |membrane_potential| {
                     // The membrane potential is converted from [threshold; action_potential] into [0, 1]
-                    (membrane_potential - neuron.threshold())
-                        / (neuron.action_potential() / neuron.threshold())
+                    let threshold = neuron.threshold();
+                    (membrane_potential - threshold) / (neuron.action_potential() - threshold)
                 });
 
         Ok(normalized_value)
