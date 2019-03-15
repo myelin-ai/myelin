@@ -57,17 +57,14 @@ where
     }
 
     /// A normalized value between 0 and 1 representing the current membrane potential
-    fn normalized_potential_of_neuron(&self, neuron: Handle) -> Result<f64> {
+    fn normalized_potential_of_neuron(&self, neuron: Handle) -> Result<Option<f64>> {
         let neuron = self.neurons.get(neuron.0).ok_or(())?;
 
-        let normalized_value =
-            neuron
-                .membrane_potential()
-                .map_or_else(Default::default, |membrane_potential| {
-                    // The membrane potential is converted from [threshold; action_potential] into [0, 1]
-                    let threshold = neuron.threshold();
-                    (membrane_potential - threshold) / (neuron.action_potential() - threshold)
-                });
+        let normalized_value = neuron.membrane_potential().map(|membrane_potential| {
+            // The membrane potential is converted from [threshold; action_potential] into [0, 1]
+            let threshold = neuron.threshold();
+            (membrane_potential - threshold) / (neuron.action_potential() - threshold)
+        });
 
         Ok(normalized_value)
     }
@@ -381,6 +378,7 @@ mod tests {
 
         let sensor_membrane_potential = neural_network
             .normalized_potential_of_neuron(sensor_handle)
+            .unwrap()
             .unwrap();
         assert!(sensor_membrane_potential >= 0.0 && sensor_membrane_potential <= 1.0);
     }

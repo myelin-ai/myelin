@@ -144,20 +144,21 @@ fn convert_neural_network_output_to_action(
     .rotate(object_description.rotation);
 
     let normal_vector = position_vector.normal() * -1.0;
-    let angular_force = normal_vector.unit() * MAX_ANGULAR_FORCE * angular_acceleration_force;
+    let angular_force =
+        angular_acceleration_force.map(|force| normal_vector.unit() * MAX_ANGULAR_FORCE * force);
 
-    let torque = position_vector.cross_product(angular_force);
+    let torque = angular_force.map(|force| position_vector.cross_product(force));
 
-    if !(axial_force == 0.0 && lateral_force == 0.0 && torque == 0.0) {
+    if axial_force.is_some() || lateral_force.is_some() || torque.is_some() {
         let relative_linear_force = Vector {
-            x: axial_force,
-            y: lateral_force,
+            x: axial_force.unwrap_or_default(),
+            y: lateral_force.unwrap_or_default(),
         };
         let global_linear_force = relative_linear_force.rotate(object_description.rotation);
         let scaled_linear_force = global_linear_force * MAX_ACCELERATION_FORCE;
         Some(Action::ApplyForce(Force {
             linear: scaled_linear_force,
-            torque: Torque(torque),
+            torque: Torque(torque.unwrap_or_default()),
         }))
     } else {
         None
@@ -288,7 +289,7 @@ fn get_neuron_handle(handles: &[Handle], index: usize) -> Handle {
     *handles.get(index).expect("Neuron not found in network")
 }
 
-fn get_normalized_potential(neuron: Handle, neural_network: &dyn NeuralNetwork) -> f64 {
+fn get_normalized_potential(neuron: Handle, neural_network: &dyn NeuralNetwork) -> Option<f64> {
     neural_network
         .normalized_potential_of_neuron(neuron)
         .expect("Invalid neuron handle")
@@ -298,9 +299,20 @@ fn get_combined_potential(
     positive_neuron: Handle,
     negative_neuron: Handle,
     neural_network: &dyn NeuralNetwork,
-) -> f64 {
-    get_normalized_potential(positive_neuron, neural_network)
-        + get_normalized_potential(negative_neuron, neural_network)
+) -> Option<f64> {
+    let positive_potential = get_normalized_potential(positive_neuron, neural_network);
+    let negative_potential = get_normalized_potential(negative_neuron, neural_network);
+
+    match positive_potential {
+        Some(positive_potential) => match negative_potential {
+            Some(negative_potential) => Some(positive_potential - negative_potential),
+            None => Some(positive_potential),
+        },
+        None => match negative_potential {
+            Some(negative_potential) => Some(-negative_potential),
+            None => None,
+        },
+    }
 }
 
 #[cfg(test)]
@@ -556,30 +568,30 @@ mod tests {
             .expect_normalized_potential_of_neuron(partial_eq(
                 mapping.output.axial_acceleration.forward,
             ))
-            .returns(Ok(0.5));
+            .returns(Ok(Some(0.5)));
         network
             .expect_normalized_potential_of_neuron(partial_eq(
                 mapping.output.axial_acceleration.backward,
             ))
-            .returns(Ok(0.0));
+            .returns(Ok(Some(0.0)));
         network
             .expect_normalized_potential_of_neuron(partial_eq(
                 mapping.output.lateral_acceleration.left,
             ))
-            .returns(Ok(0.2));
+            .returns(Ok(Some(0.2)));
         network
             .expect_normalized_potential_of_neuron(partial_eq(
                 mapping.output.lateral_acceleration.right,
             ))
-            .returns(Ok(0.0));
+            .returns(Ok(Some(0.0)));
         network
             .expect_normalized_potential_of_neuron(partial_eq(
                 mapping.output.torque.counterclockwise,
             ))
-            .returns(Ok(0.0));
+            .returns(Ok(Some(0.0)));
         network
             .expect_normalized_potential_of_neuron(partial_eq(mapping.output.torque.clockwise))
-            .returns(Ok(0.4));
+            .returns(Ok(Some(0.4)));
 
         let object_description = ObjectBuilder::default()
             .shape(
