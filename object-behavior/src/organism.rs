@@ -33,6 +33,17 @@ pub struct OrganismBehavior {
     neural_network_developer: Box<dyn NeuralNetworkDeveloper>,
 }
 
+/// Distances to objects in FOV from right to left
+const VISION_INPUT_COUNT: usize = RAYCAST_COUNT * MAX_OBJECTS_PER_RAYCAST;
+
+/// 1. Average axial acceleration since last step (forward)
+/// 2. Average axial acceleration since last step (backward)
+/// 3. Average lateral acceleration since last step (left)
+/// 4. Average lateral acceleration since last step (right)
+const INPUT_NEURON_COUNT: usize = 4 + VISION_INPUT_COUNT;
+
+const FIRST_VISION_INDEX: usize = INPUT_NEURON_COUNT - VISION_INPUT_COUNT + 1;
+
 impl OrganismBehavior {
     /// Create a new `OrganismBehavior` from a pair of parent [`Genome`]s.
     /// The [`NeuralNetworkDeveloper`] is used to create this organism's [`NeuralNetwork`]
@@ -44,13 +55,6 @@ impl OrganismBehavior {
         parent_genomes: (Genome, Genome),
         neural_network_developer: Box<dyn NeuralNetworkDeveloper>,
     ) -> Self {
-        /// 1. Average axial acceleration since last step (forward)
-        /// 2. Average axial acceleration since last step (backward)
-        /// 3. Average lateral acceleration since last step (left)
-        /// 4. Average lateral acceleration since last step (right)
-        /// Rest: Distance to objects in FOV from right to left
-        const INPUT_NEURON_COUNT: usize = 4 + RAYCAST_COUNT * MAX_OBJECTS_PER_RAYCAST;
-
         /// 1. axial force (forward)
         /// 2. axial force (backward)
         /// 3. lateral force (left)
@@ -91,11 +95,25 @@ impl ObjectBehavior for OrganismBehavior {
         let mut inputs = HashMap::with_capacity(2);
         add_acceleration_inputs(
             relative_acceleration,
-            neuron_handle_mapping.input,
+            &neuron_handle_mapping.input,
             |key, value| {
                 inputs.insert(key, value);
             },
         );
+
+        let objects_in_fov = objects_in_fov(&own_object.description, world_interactor);
+        let vision_neuron_inputs =
+            objects_in_fov_to_neuron_inputs(&own_object.description, &objects_in_fov);
+
+        neuron_handle_mapping
+            .input
+            .vision
+            .iter()
+            .zip(vision_neuron_inputs.iter())
+            .filter_map(|(handle, &input)| Some((handle, input?)))
+            .for_each(|(handle, input)| {
+                inputs.insert(*handle, input);
+            });
 
         let neural_network = &mut self.developed_neural_network.neural_network;
         neural_network.step(
@@ -183,7 +201,7 @@ fn objects_in_fov<'a, 'b>(
 
 fn objects_in_fov_to_neuron_inputs(
     own_description: &ObjectDescription,
-    objects: Vec<Vec<Object<'_>>>,
+    objects: &[Vec<Object<'_>>],
 ) -> Vec<Option<f64>> {
     objects
         .iter()
@@ -222,7 +240,7 @@ fn velocity(object_description: &ObjectDescription) -> Vector {
 
 fn add_acceleration_inputs(
     acceleration: Vector,
-    input_neuron_handle_mapping: InputNeuronHandleMapping,
+    input_neuron_handle_mapping: &InputNeuronHandleMapping,
     mut add_input_fn: impl FnMut(Handle, f64),
 ) {
     add_input_fn(
@@ -264,16 +282,17 @@ fn lateral_acceleration_handle(
     }
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 struct NeuronHandleMapping {
     input: InputNeuronHandleMapping,
     output: OutputNeuronHandleMapping,
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 struct InputNeuronHandleMapping {
     axial_acceleration: AxialAccelerationHandleMapping,
     lateral_acceleration: LateralAccelerationHandleMapping,
+    vision: Vec<Handle>,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -315,6 +334,9 @@ fn map_handles(developed_neural_network: &DevelopedNeuralNetwork) -> NeuronHandl
                 left: get_neuron_handle(input_neurons, 2),
                 right: get_neuron_handle(input_neurons, 3),
             },
+            vision: (FIRST_VISION_INDEX..INPUT_NEURON_COUNT)
+                .map(|index| get_neuron_handle(input_neurons, index))
+                .collect(),
         },
         output: OutputNeuronHandleMapping {
             axial_acceleration: AxialAccelerationHandleMapping {
@@ -447,12 +469,15 @@ mod tests {
                 left: Handle(2),
                 right: Handle(3),
             },
+            vision: (FIRST_VISION_INDEX..INPUT_NEURON_COUNT)
+                .map(Handle)
+                .collect(),
         };
 
         let mut values = HashMap::with_capacity(2);
         add_acceleration_inputs(
             configuration.input_acceleration,
-            mapping,
+            &mapping,
             |handle, value| {
                 values.insert(handle, value);
             },
