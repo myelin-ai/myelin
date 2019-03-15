@@ -152,7 +152,10 @@ impl SpikingNeuron for SpikingNeuronImpl {
 
     fn membrane_potential(&self) -> Option<MembranePotential> {
         if self.is_above_threshold() {
-            Some(self.current_membrane_potential)
+            let clamped_output = self
+                .current_membrane_potential
+                .min(constant::ACTION_POTENTIAL);
+            Some(clamped_output)
         } else {
             None
         }
