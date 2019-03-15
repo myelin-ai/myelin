@@ -16,7 +16,9 @@ pub struct FlatNeuralNetworkDeveloper {
 pub type NeuralNetworkFactory = dyn Fn() -> Box<dyn NeuralNetwork>;
 
 impl FlatNeuralNetworkDeveloper {
-    /// Constructs a new `FlatNeuralNetworkDeveloper`
+    /// Constructs a new [`FlatNeuralNetworkDeveloper`]
+    ///
+    /// [`FlatNeuralNetworkDeveloper `]: ./struct. FlatNeuralNetworkDeveloper.html
     pub fn new(neural_network_factory: Rc<NeuralNetworkFactory>) -> Self {
         Self {
             neural_network_factory,
