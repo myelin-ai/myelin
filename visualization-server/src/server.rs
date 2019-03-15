@@ -9,7 +9,7 @@ use myelin_engine::prelude::*;
 use myelin_engine::simulation::SimulationBuilder;
 use myelin_genetics::developer::FlatNeuralNetworkDeveloper;
 use myelin_genetics::Genome;
-use myelin_neural_network::spiking_neural_network::{SpikingNeuralNetwork, SpikingNeuronImpl};
+use myelin_neural_network::spiking_neural_network::{DefaultSpikingNeuralNetwork, SpikingNeuronImpl};
 use myelin_object_behavior::organism::OrganismBehavior;
 use myelin_object_behavior::stochastic_spreading::{RandomChanceCheckerImpl, StochasticSpreading};
 use myelin_object_behavior::Static;
@@ -43,7 +43,7 @@ where
         box OrganismBehavior::new(
             (Genome::default(), Genome::default()),
             box FlatNeuralNetworkDeveloper::new(Rc::new(|| {
-                box SpikingNeuralNetwork::<SpikingNeuronImpl>::new()
+                box DefaultSpikingNeuralNetwork::new()
             })),
         )
     };

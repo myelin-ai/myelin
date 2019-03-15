@@ -74,7 +74,7 @@ impl NeuralNetworkDeveloper for FlatNeuralNetworkDeveloper {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_neural_network::spiking_neural_network::{SpikingNeuralNetwork, SpikingNeuronImpl};
+    use myelin_neural_network::spiking_neural_network::{DefaultSpikingNeuralNetwork, SpikingNeuronImpl};
 
     #[test]
     fn develops_correct_number_of_input_neurons() {
@@ -111,6 +111,6 @@ mod tests {
     }
 
     fn neural_network_factory() -> Rc<NeuralNetworkFactory> {
-        Rc::new(|| box SpikingNeuralNetwork::<SpikingNeuronImpl>::default())
+        Rc::new(|| box DefaultSpikingNeuralNetwork::default())
     }
 }
