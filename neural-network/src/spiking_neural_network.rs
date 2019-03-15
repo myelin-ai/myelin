@@ -23,7 +23,9 @@ impl<N> SpikingNeuralNetwork<N>
 where
     N: SpikingNeuron + 'static,
 {
-    /// Returns a new `SpikingNeuralNetwork`
+    /// Returns a new [`SpikingNeuralNetwork`]
+    ///
+    /// [`./struct.SpikingNeuralNetwork.html`]
     pub fn new() -> Self {
         Self::default()
     }
@@ -59,6 +61,7 @@ where
             neuron
                 .membrane_potential()
                 .map_or_else(Default::default, |membrane_potential| {
+                    // The membrane potential is converted from [threshold; action_potential] into [0, 1]
                     (membrane_potential - neuron.threshold())
                         / (neuron.action_potential() / neuron.threshold())
                 });
@@ -177,6 +180,7 @@ where
         )
     }
 
+    // The input is converted from [0; 1] into [resting_potential, action_potential]
     input * (neuron.action_potential() - neuron.resting_potential()) + neuron.resting_potential()
 }
 
@@ -185,6 +189,8 @@ mod tests {
     use super::*;
     use maplit::hashmap;
     use nearly_eq::assert_nearly_eq;
+
+    const NORMALIZED_THRESHOLD_POTENTIAL: f64 = self::constant::THRESHOLD_POTENTIAL / (self::constant::RESTING_POTENTIAL - self::constant::ACTION_POTENTIAL);
 
     #[test]
     fn empty_network_has_no_membrane_potential() {
@@ -372,7 +378,7 @@ mod tests {
 
         let elapsed_time = 1.0;
         let inputs = hashmap! {
-            sensor_handle => self::constant::THRESHOLD_POTENTIAL / (self::constant::RESTING_POTENTIAL - self::constant::ACTION_POTENTIAL)
+            sensor_handle => NORMALIZED_THRESHOLD_POTENTIAL
         };
         neural_network.step(elapsed_time, &inputs);
 
@@ -401,7 +407,7 @@ mod tests {
 
         let elapsed_time = 1.0;
         let inputs = hashmap! {
-            sensor_handle => self::constant::THRESHOLD_POTENTIAL / (self::constant::RESTING_POTENTIAL - self::constant::ACTION_POTENTIAL)
+            sensor_handle => NORMALIZED_THRESHOLD_POTENTIAL
         };
         neural_network.step(elapsed_time, &inputs);
 
@@ -425,7 +431,7 @@ mod tests {
         let steps = f64::ceil(constant::SPIKE_DURATION / SMALL_TIMESTEP) as u32;
 
         let inputs = hashmap! {
-            sensor_handle => self::constant::THRESHOLD_POTENTIAL / (self::constant::RESTING_POTENTIAL - self::constant::ACTION_POTENTIAL)
+            sensor_handle => NORMALIZED_THRESHOLD_POTENTIAL
         };
         neural_network.step(SMALL_TIMESTEP, &inputs);
 

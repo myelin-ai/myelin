@@ -23,6 +23,7 @@ const MAX_ACCELERATION_FORCE: f64 = 20.0 * 9.8;
 const RAYCAST_COUNT: usize = 10;
 
 const MAX_OBJECTS_PER_RAYCAST: usize = 3;
+const MAX_ANGULAR_FORCE: f64 = MAX_ACCELERATION_FORCE;
 
 /// An organism that can interact with its surroundings via a neural network,
 /// built from a set of genes
@@ -127,7 +128,7 @@ impl ObjectBehavior for OrganismBehavior {
         convert_neural_network_output_to_action(
             neuron_handle_mapping,
             neural_network.as_ref(),
-            &own_object,
+            &own_object.description,
         )
     }
 
@@ -139,7 +140,7 @@ impl ObjectBehavior for OrganismBehavior {
 fn convert_neural_network_output_to_action(
     neuron_handle_mapping: NeuronHandleMapping,
     neural_network: &dyn NeuralNetwork,
-    own_object: &Object<'_>,
+    object_description: &ObjectDescription,
 ) -> Option<Action> {
     let axial_force = get_combined_potential(
         neuron_handle_mapping.output.axial_acceleration.forward,
@@ -153,18 +154,32 @@ fn convert_neural_network_output_to_action(
         neural_network,
     );
 
-    let torque = get_combined_potential(
+    let angular_acceleration_force = get_combined_potential(
         neuron_handle_mapping.output.torque.counterclockwise,
         neuron_handle_mapping.output.torque.clockwise,
         neural_network,
     );
+
+    let aabb = object_description.shape.aabb();
+    let width = aabb.lower_right.y - aabb.upper_left.y;
+
+    let position_vector = Vector {
+        x: 0.0,
+        y: width / 2.0,
+    }
+    .rotate(object_description.rotation);
+
+    let normal_vector = position_vector.normal() * -1.0;
+    let angular_force = normal_vector.unit() * MAX_ANGULAR_FORCE * angular_acceleration_force;
+
+    let torque = position_vector.cross_product(angular_force);
 
     if !(axial_force == 0.0 && lateral_force == 0.0 && torque == 0.0) {
         let relative_linear_force = Vector {
             x: axial_force,
             y: lateral_force,
         };
-        let global_linear_force = relative_linear_force.rotate(own_object.description.rotation);
+        let global_linear_force = relative_linear_force.rotate(object_description.rotation);
         let scaled_linear_force = global_linear_force * MAX_ACCELERATION_FORCE;
         Some(Action::ApplyForce(Force {
             linear: scaled_linear_force,
@@ -380,7 +395,10 @@ fn get_combined_potential(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use mockiato::partial_eq;
+    use myelin_neural_network::NeuralNetworkMock;
     use nearly_eq::assert_nearly_eq;
+    use std::f64::consts::PI;
 
     #[test]
     fn axial_acceleration_handle_returns_correct_handle_for_minus_one() {
@@ -596,4 +614,100 @@ mod tests {
         add_acceleration_inputs_test(configuration);
     }
 
+    #[test]
+    fn convert_neural_network_output_to_action_test() {
+        let mapping = NeuronHandleMapping {
+            input: InputNeuronHandleMapping {
+                axial_acceleration: AxialAccelerationHandleMapping {
+                    forward: Handle(0),
+                    backward: Handle(1),
+                },
+                lateral_acceleration: LateralAccelerationHandleMapping {
+                    left: Handle(2),
+                    right: Handle(3),
+                },
+            },
+            output: OutputNeuronHandleMapping {
+                axial_acceleration: AxialAccelerationHandleMapping {
+                    forward: Handle(4),
+                    backward: Handle(5),
+                },
+                lateral_acceleration: LateralAccelerationHandleMapping {
+                    left: Handle(6),
+                    right: Handle(7),
+                },
+                torque: TorqueHandleMapping {
+                    counterclockwise: Handle(8),
+                    clockwise: Handle(9),
+                },
+            },
+        };
+
+        let mut network = NeuralNetworkMock::new();
+        network
+            .expect_normalized_potential_of_neuron(partial_eq(
+                mapping.output.axial_acceleration.forward,
+            ))
+            .returns(Ok(0.5));
+        network
+            .expect_normalized_potential_of_neuron(partial_eq(
+                mapping.output.axial_acceleration.backward,
+            ))
+            .returns(Ok(0.0));
+        network
+            .expect_normalized_potential_of_neuron(partial_eq(
+                mapping.output.lateral_acceleration.left,
+            ))
+            .returns(Ok(0.2));
+        network
+            .expect_normalized_potential_of_neuron(partial_eq(
+                mapping.output.lateral_acceleration.right,
+            ))
+            .returns(Ok(0.0));
+        network
+            .expect_normalized_potential_of_neuron(partial_eq(
+                mapping.output.torque.counterclockwise,
+            ))
+            .returns(Ok(0.0));
+        network
+            .expect_normalized_potential_of_neuron(partial_eq(mapping.output.torque.clockwise))
+            .returns(Ok(0.4));
+
+        let object_description = ObjectBuilder::default()
+            .shape(
+                PolygonBuilder::default()
+                    .vertex(0.0, 0.0)
+                    .vertex(0.0, 10.0)
+                    .vertex(10.0, 10.0)
+                    .vertex(10.0, 0.0)
+                    .build()
+                    .unwrap(),
+            )
+            .mobility(Mobility::Movable(Vector::default()))
+            .location(0.0, 0.0)
+            .rotation(Radians::try_new(PI).unwrap())
+            .build()
+            .unwrap();
+
+        let expected_force = Force {
+            linear: Vector {
+                x: -MAX_ACCELERATION_FORCE * 0.5,
+                y: -MAX_ACCELERATION_FORCE * 0.2,
+            },
+            torque: Torque(-392.0),
+        };
+
+        let action =
+            convert_neural_network_output_to_action(mapping, &network, &object_description)
+                .unwrap();
+
+        match action {
+            Action::ApplyForce(force) => {
+                assert_nearly_eq!(expected_force.linear.x, force.linear.x);
+                assert_nearly_eq!(expected_force.linear.y, force.linear.y);
+                assert_nearly_eq!(expected_force.torque.0, force.torque.0);
+            }
+            _ => panic!("Unexpected action"),
+        }
+    }
 }

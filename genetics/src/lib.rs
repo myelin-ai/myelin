@@ -17,7 +17,7 @@ use std::fmt::Debug;
 pub mod developer;
 
 /// The set of all genes in an organism
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct Genome;
 
 /// Information needed by a [`NeuralNetworkDeveloper`] to build a [`DevelopedNeuralNetwork`]
@@ -108,7 +108,7 @@ where
     T: NeuralNetworkDeveloper + Clone + 'static,
 {
     default fn clone_box(&self) -> Box<dyn NeuralNetworkDeveloper> {
-        Box::new(self.clone())
+        box self.clone()
     }
 }
 

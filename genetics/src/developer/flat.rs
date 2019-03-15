@@ -16,7 +16,9 @@ pub struct FlatNeuralNetworkDeveloper {
 pub type NeuralNetworkFactory = dyn Fn() -> Box<dyn NeuralNetwork>;
 
 impl FlatNeuralNetworkDeveloper {
-    /// Constructs a new `FlatNeuralNetworkDeveloper`
+    /// Constructs a new [`FlatNeuralNetworkDeveloper`]
+    ///
+    /// [`FlatNeuralNetworkDeveloper `]: ./struct. FlatNeuralNetworkDeveloper.html
     pub fn new(neural_network_factory: Rc<NeuralNetworkFactory>) -> Self {
         Self {
             neural_network_factory,
@@ -62,7 +64,7 @@ impl NeuralNetworkDeveloper for FlatNeuralNetworkDeveloper {
 
         DevelopedNeuralNetwork {
             neural_network,
-            genome: Genome {},
+            genome: Genome::default(),
             input_neuron_handles,
             output_neuron_handles,
         }
@@ -109,6 +111,6 @@ mod tests {
     }
 
     fn neural_network_factory() -> Rc<NeuralNetworkFactory> {
-        Rc::new(|| Box::new(SpikingNeuralNetwork::<SpikingNeuronImpl>::default()))
+        Rc::new(|| box SpikingNeuralNetwork::<SpikingNeuronImpl>::default())
     }
 }

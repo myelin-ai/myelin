@@ -41,7 +41,7 @@ where
     };
     let organism_factory = box || -> Box<dyn ObjectBehavior> {
         box OrganismBehavior::new(
-            (Genome {}, Genome {}),
+            (Genome::default(), Genome::default()),
             box FlatNeuralNetworkDeveloper::new(Rc::new(|| {
                 box SpikingNeuralNetwork::<SpikingNeuronImpl>::new()
             })),
