@@ -112,7 +112,10 @@ impl ObjectBehavior for OrganismBehavior {
             .zip(vision_neuron_inputs.iter())
             .filter_map(|(handle, &input)| Some((handle, input?)))
             .for_each(|(handle, input)| {
-                inputs.insert(*handle, input);
+                /// A bit more than the size of the simulated world
+                const MAXIMAL_VIEWABLE_DISTANCE_IN_METERS: f64 = 1200.0;
+                let normalized_input = input / MAXIMAL_VIEWABLE_DISTANCE_IN_METERS;
+                inputs.insert(*handle, normalized_input);
             });
 
         let neural_network = &mut self.developed_neural_network.neural_network;
