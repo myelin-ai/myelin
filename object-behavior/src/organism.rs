@@ -20,10 +20,10 @@ const MAX_ACCELERATION: f64 = 5.0 * 9.81;
 /// which is the [maximum acceleration a human can achieve](https://www.wired.com/2012/08/maximum-acceleration-in-the-100-m-dash/)
 const MAX_ACCELERATION_FORCE: f64 = 20.0 * 9.8;
 
-const RAYCAST_COUNT: usize = 10;
-
-const MAX_OBJECTS_PER_RAYCAST: usize = 3;
 const MAX_ANGULAR_FORCE: f64 = MAX_ACCELERATION_FORCE;
+
+const RAYCAST_COUNT: usize = 10;
+const MAX_OBJECTS_PER_RAYCAST: usize = 3;
 
 /// An organism that can interact with its surroundings via a neural network,
 /// built from a set of genes
