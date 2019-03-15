@@ -369,6 +369,23 @@ mod tests {
     }
 
     #[test]
+    fn normalized_potential_of_neuron_is_in_range() {
+        let mut neural_network = DefaultSpikingNeuralNetwork::default();
+        let sensor_handle = neural_network.push_neuron();
+
+        let elapsed_time = 1.0;
+        let inputs = hashmap! {
+            sensor_handle => 1.0
+        };
+        neural_network.step(elapsed_time, &inputs);
+
+        let sensor_membrane_potential = neural_network
+            .normalized_potential_of_neuron(sensor_handle)
+            .unwrap();
+        assert!(sensor_membrane_potential >= 0.0 && sensor_membrane_potential <= 1.0);
+    }
+
+    #[test]
     fn weak_connection_does_not_propagate_firing() {
         let mut neural_network = DefaultSpikingNeuralNetwork::default();
         let sensor_handle = neural_network.push_neuron();
