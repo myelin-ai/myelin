@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 
 from selenium import webdriver
+from socket import create_connection
 import os
 import subprocess
 import signal
 import time
 import sys
+from tempfile import mkstemp
+import json
 
 HTTP_PORT = 8081
 SERVER_CRATE = 'myelin-visualization-server'
+_WEBSOCKET_PORT = 6956
+_BEGIN_LOGS_MARKER = '----- BEGIN LOGS -----'
 
 WEB_DIR = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', 'public'))
@@ -31,13 +36,23 @@ def _start_websocket_server():
 
 
 def _start_webdriver():
-    options = webdriver.chrome.options.Options()
+    options = webdriver.firefox.options.Options()
     options.headless = True
 
-    # Sleep for a bit to make sure server is started
-    time.sleep(2)
+    profile = webdriver.FirefoxProfile()
+    profile.set_preference('devtools.console.stdout.content', True)
+    profile.update_preferences()
 
-    with webdriver.Chrome(options=options) as driver:
+    # Sleep for a bit to make sure server is started
+    _poll_visualization_server()
+
+    _, log_file = mkstemp(prefix='geckodriver', suffix='.log')
+
+    with webdriver.Firefox(options=options, firefox_profile=profile, service_log_path=log_file) as driver:
+        time.sleep(2)
+
+        driver.get(f'http://localhost:{HTTP_PORT}')
+        driver.execute_script(f'console.log(\'{_BEGIN_LOGS_MARKER}\')')
         driver.get(f'http://localhost:{HTTP_PORT}')
 
         # Sleep for a bit to make sure everything is properly loaded
@@ -51,18 +66,38 @@ def _start_webdriver():
         # by a websocket message are caught
         time.sleep(5)
 
-        severe_messages = [msg for msg in driver.get_log(
-            'browser') if msg['level'] == 'SEVERE']
+        with open(log_file, 'r') as f:
+            log_lines = f.read().splitlines()
+
+        index_of_start_marker = log_lines.index(
+            f'console.log: "{_BEGIN_LOGS_MARKER}"')
+        log_lines = log_lines[index_of_start_marker:]
+
+        severe_messages = [
+            msg for msg in log_lines if msg.startswith('console.error:')]
 
         if not len(severe_messages) == 0:
             print('Error: fatal messages found in console')
             for message in severe_messages:
-                message_source = message['source']
-                message_text = message['message']
                 print('')
-                print(f'source: {message_source}')
-                print(f'message: {message_text}')
+                print(message)
             sys.exit(1)
+
+    if os.path.exists(log_file):
+        os.remove(log_file)
+
+
+def _poll_visualization_server():
+    while True:
+        connection = None
+        try:
+            connection = create_connection(('localhost', _WEBSOCKET_PORT))
+            break
+        except ConnectionRefusedError as e:
+            time.sleep(0.1)
+        finally:
+            if connection is not None:
+                connection.close()
 
 
 httpd = _start_http_server()
