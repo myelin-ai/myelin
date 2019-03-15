@@ -14,7 +14,7 @@ edition = "2018"
 myelin-engine = "0.7"
 myelin-geometry = "2.2"
 myelin-object-data = { path = "../object-data" }
-nameof = "0.1"
+nameof = "1.0"
 rand = "0.6.1"
 
 [dev-dependencies]
