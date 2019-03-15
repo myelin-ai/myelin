@@ -1,6 +1,7 @@
 //! Genes, genomes and the mechanisms needed to evolve neural networks from them
 
-#![feature(specialization, box_syntax)]
+#![feature(specialization)]
+#![feature(box_syntax)]
 #![deny(
     rust_2018_idioms,
     missing_debug_implementations,
