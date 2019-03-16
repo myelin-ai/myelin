@@ -261,42 +261,55 @@ fn add_acceleration_inputs(
     input_neuron_handle_mapping: &InputNeuronHandleMapping,
     mut add_input_fn: impl FnMut(Handle, f64),
 ) {
-    add_input_fn(
-        axial_acceleration_handle(
-            acceleration.x,
-            input_neuron_handle_mapping.axial_acceleration,
-        ),
-        acceleration.x.abs().min(MAX_ACCELERATION) / MAX_ACCELERATION,
+    let axial_acceleration_handle = axial_acceleration_handle(
+        acceleration.x,
+        input_neuron_handle_mapping.axial_acceleration,
     );
+    if let Some(axial_acceleration_handle) = axial_acceleration_handle {
+        add_input_fn(
+            axial_acceleration_handle,
+            acceleration.x.abs().min(MAX_ACCELERATION) / MAX_ACCELERATION,
+        );
+    }
 
-    add_input_fn(
-        lateral_acceleration_handle(
-            acceleration.y,
-            input_neuron_handle_mapping.lateral_acceleration,
-        ),
-        acceleration.y.abs().min(MAX_ACCELERATION) / MAX_ACCELERATION,
+    let lateral_acceleration_handle = lateral_acceleration_handle(
+        acceleration.x,
+        input_neuron_handle_mapping.lateral_acceleration,
     );
+    if let Some(lateral_acceleration_handle) = lateral_acceleration_handle {
+        add_input_fn(
+            lateral_acceleration_handle,
+            acceleration.y.abs().min(MAX_ACCELERATION) / MAX_ACCELERATION,
+        );
+    }
 }
+
+/// Arbitrary value
+const MIN_PERCEIVABLE_ACCELERATION: f64 = 0.0001;
 
 fn axial_acceleration_handle(
     axial_acceleration: f64,
     axial_acceleration_handle_mapping: AxialAccelerationHandleMapping,
-) -> Handle {
-    if axial_acceleration >= 0.0 {
-        axial_acceleration_handle_mapping.forward
+) -> Option<Handle> {
+    if axial_acceleration >= MIN_PERCEIVABLE_ACCELERATION {
+        Some(axial_acceleration_handle_mapping.forward)
+    } else if axial_acceleration <= -MIN_PERCEIVABLE_ACCELERATION {
+        Some(axial_acceleration_handle_mapping.backward)
     } else {
-        axial_acceleration_handle_mapping.backward
+        None
     }
 }
 
 fn lateral_acceleration_handle(
     lateral_acceleration: f64,
     lateral_acceleration_handle_mapping: LateralAccelerationHandleMapping,
-) -> Handle {
-    if lateral_acceleration <= 0.0 {
-        lateral_acceleration_handle_mapping.left
+) -> Option<Handle> {
+    if lateral_acceleration <= -MIN_PERCEIVABLE_ACCELERATION {
+        Some(lateral_acceleration_handle_mapping.left)
+    } else if lateral_acceleration >= MIN_PERCEIVABLE_ACCELERATION {
+        Some(lateral_acceleration_handle_mapping.right)
     } else {
-        lateral_acceleration_handle_mapping.right
+        None
     }
 }
 
