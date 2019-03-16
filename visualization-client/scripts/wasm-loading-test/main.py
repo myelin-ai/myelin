@@ -52,6 +52,9 @@ def _start_webdriver():
         time.sleep(2)
 
         driver.get(f'http://localhost:{HTTP_PORT}')
+
+        # For some reason, Firefox is unable to connect to
+        # the websocket on the first page load.
         driver.execute_script(f'console.log(\'{_BEGIN_LOGS_MARKER}\')')
         driver.get(f'http://localhost:{HTTP_PORT}')
 
