@@ -181,7 +181,7 @@ mod tests {
                 hashmap! {
                     200 => ObjectDelta::Updated(ObjectDescriptionDelta {
                         location: Some(Point { x: 5.0, y: 5.0 }),
-                        ..Default::default()
+                        ..ObjectDescriptionDelta::default()
                     }),
                 },
             )
@@ -220,7 +220,7 @@ mod tests {
         test_apply_delta_handles_update(
             ObjectDescriptionDelta {
                 shape: Some(polygon()),
-                ..Default::default()
+                ..ObjectDescriptionDelta::default()
             },
             {
                 let mut object_description = object_description();
@@ -235,7 +235,7 @@ mod tests {
         test_apply_delta_handles_update(
             ObjectDescriptionDelta {
                 location: Some(Point { x: 100.0, y: 100.0 }),
-                ..Default::default()
+                ..ObjectDescriptionDelta::default()
             },
             {
                 let mut object_description = object_description();
@@ -250,7 +250,7 @@ mod tests {
         test_apply_delta_handles_update(
             ObjectDescriptionDelta {
                 rotation: Some(Radians::try_new(PI).unwrap()),
-                ..Default::default()
+                ..ObjectDescriptionDelta::default()
             },
             {
                 let mut object_description = object_description();
@@ -265,7 +265,7 @@ mod tests {
         test_apply_delta_handles_update(
             ObjectDescriptionDelta {
                 mobility: Some(Mobility::Movable(Vector { x: 10.0, y: 20.0 })),
-                ..Default::default()
+                ..ObjectDescriptionDelta::default()
             },
             {
                 let mut object_description = object_description();
@@ -280,7 +280,7 @@ mod tests {
         test_apply_delta_handles_update(
             ObjectDescriptionDelta {
                 kind: Some(Kind::Water),
-                ..Default::default()
+                ..ObjectDescriptionDelta::default()
             },
             {
                 let mut object_description = object_description();

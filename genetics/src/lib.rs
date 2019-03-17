@@ -6,7 +6,8 @@
     missing_debug_implementations,
     missing_docs,
     clippy::doc_markdown,
-    clippy::unimplemented
+    clippy::unimplemented,
+    clippy::default_trait_access
 )]
 
 #[cfg(any(test, feature = "use-mocks"))]

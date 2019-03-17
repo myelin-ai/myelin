@@ -343,7 +343,7 @@ mod tests {
     fn delta() -> ViewModelDelta {
         let updated_object = ObjectDescriptionDelta {
             location: Some(Point { x: 12.0, y: 32.0 }),
-            ..Default::default()
+            ..ObjectDescriptionDelta::default()
         };
 
         hashmap! {

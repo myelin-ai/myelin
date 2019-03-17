@@ -55,36 +55,36 @@ impl SpikingNeuron {
             Phase::RestingState => {
                 if self.current_membrane_potential >= self.current_threshold {
                     self.current_phase = Phase::Depolarization;
-                    self.elapsed_time_in_current_phase = Default::default();
+                    self.elapsed_time_in_current_phase = Milliseconds::default();
                 }
             }
             Phase::Depolarization => {
                 if self.current_membrane_potential >= constant::ACTION_POTENTIAL {
                     self.current_membrane_potential = constant::ACTION_POTENTIAL;
                     self.current_phase = Phase::ActionPotential;
-                    self.elapsed_time_in_current_phase = Default::default();
+                    self.elapsed_time_in_current_phase = Milliseconds::default();
                 }
             }
             Phase::ActionPotential => {
                 self.current_phase = Phase::Repolarization;
-                self.elapsed_time_in_current_phase = Default::default();
+                self.elapsed_time_in_current_phase = Milliseconds::default();
             }
             Phase::Repolarization => {
                 if self.current_membrane_potential <= self.current_threshold {
                     self.current_phase = Phase::Hyperpolarization;
-                    self.elapsed_time_in_current_phase = Default::default();
+                    self.elapsed_time_in_current_phase = Milliseconds::default();
                 }
             }
             Phase::Hyperpolarization => {
                 if self.current_membrane_potential <= constant::RESTING_POTENTIAL {
                     self.current_phase = Phase::RefractoryPeriod;
-                    self.elapsed_time_in_current_phase = Default::default();
+                    self.elapsed_time_in_current_phase = Milliseconds::default();
                 }
             }
             Phase::RefractoryPeriod => {
                 if self.current_membrane_potential >= constant::RESTING_POTENTIAL {
                     self.current_phase = Phase::RestingState;
-                    self.elapsed_time_in_current_phase = Default::default();
+                    self.elapsed_time_in_current_phase = Milliseconds::default();
                 }
             }
         }

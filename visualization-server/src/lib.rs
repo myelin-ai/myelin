@@ -8,7 +8,8 @@
     missing_debug_implementations,
     missing_docs,
     clippy::doc_markdown,
-    clippy::unimplemented
+    clippy::unimplemented,
+    clippy::default_trait_access
 )]
 
 #[macro_use]

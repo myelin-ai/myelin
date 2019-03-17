@@ -174,7 +174,7 @@ mod tests {
 
         let expected_delta = ObjectDescriptionDelta {
             location: Some(object.location),
-            ..Default::default()
+            ..ObjectDescriptionDelta::default()
         };
 
         assert_eq!(
