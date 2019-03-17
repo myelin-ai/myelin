@@ -38,7 +38,7 @@ pub(crate) struct DeltaApplierImpl(PhantomData<()>);
 
 impl DeltaApplierImpl {
     pub(crate) fn new() -> Self {
-        DeltaApplierImpl(PhantomData)
+        Self(PhantomData)
     }
 }
 

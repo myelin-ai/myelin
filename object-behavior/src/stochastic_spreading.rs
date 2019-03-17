@@ -18,7 +18,7 @@ pub struct StochasticSpreading {
 }
 
 impl Clone for StochasticSpreading {
-    fn clone(&self) -> StochasticSpreading {
+    fn clone(&self) -> Self {
         Self {
             random_chance_checker: self.random_chance_checker.clone_box(),
             spreading_probability: self.spreading_probability,
