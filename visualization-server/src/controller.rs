@@ -257,6 +257,6 @@ mod tests {
     }
 
     fn mock_behavior<'a>() -> Box<dyn ObjectBehavior + 'a> {
-        Box::new(ObjectBehaviorMock::new())
+        box ObjectBehaviorMock::new()
     }
 }

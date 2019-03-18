@@ -2,6 +2,7 @@
 //! objects that can be placed in a simulation
 
 #![feature(specialization)]
+#![feature(box_syntax)]
 
 #![warn(missing_docs, clippy::dbg_macro)]
 #![deny(

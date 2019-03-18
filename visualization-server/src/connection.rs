@@ -69,7 +69,7 @@ mod mock {
                 );
                 return_value
                     .clone()
-                    .map_err(|mock| Box::new(mock) as Box<dyn SocketError>)
+                    .map_err(|mock| box mock as Box<dyn SocketError>)
             } else {
                 panic!("send_message() was called unexpectedly")
             }

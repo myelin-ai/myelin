@@ -1,6 +1,8 @@
 //! Genes, genomes and the mechanisms needed to evolve neural networks from them
 
 #![feature(specialization)]
+#![feature(box_syntax)]
+
 #![warn(missing_docs, clippy::dbg_macro)]
 #![deny(
     rust_2018_idioms,
@@ -14,11 +16,13 @@
 
 #[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
-use myelin_neural_network::{Handle as NeuronHandle, NeuralNetwork};
+use myelin_neural_network::Handle;
+use myelin_neural_network::{Connection, Handle as NeuronHandle, NeuralNetwork};
 use std::fmt::Debug;
+pub mod developer;
 
 /// The set of all genes in an organism
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct Genome;
 
 /// Information needed by a [`NeuralNetworkDeveloper`] to build a [`DevelopedNeuralNetwork`]
@@ -37,13 +41,13 @@ pub struct NeuralNetworkDevelopmentConfiguration {
     /// Will result in [`DevelopedNeuralNetwork.input_neuron_handles`].
     ///
     /// [`DevelopedNeuralNetwork.input_neuron_handles`]: ./struct.DevelopedNeuralNetwork.html#structfield.input_neuron_handles
-    pub input_neuron_count: u32,
+    pub input_neuron_count: usize,
 
     /// The number of neurons that shall emit outputs
     /// Will result in [`DevelopedNeuralNetwork.output_neuron_handles`].
     ///
     /// [`DevelopedNeuralNetwork.output_neuron_handles`]: ./struct.DevelopedNeuralNetwork.html#structfield.output_neuron_handles
-    pub output_neuron_count: u32,
+    pub output_neuron_count: usize,
 }
 
 /// [`NeuralNetwork`] and auxillary data developed by a [`NeuralNetworkDeveloper`].
@@ -89,7 +93,7 @@ pub trait NeuralNetworkDeveloper: Debug + NeuralNetworkDeveloperClone {
     /// [`NeuralNetworkDevelopmentConfiguration`]: ./struct.NeuralNetworkDevelopmentConfiguration.html
     fn develop_neural_network(
         &self,
-        neural_network_development_configuration: NeuralNetworkDevelopmentConfiguration,
+        neural_network_development_configuration: &NeuralNetworkDevelopmentConfiguration,
     ) -> DevelopedNeuralNetwork;
 }
 
@@ -109,7 +113,7 @@ where
     T: NeuralNetworkDeveloper + Clone + 'static,
 {
     default fn clone_box(&self) -> Box<dyn NeuralNetworkDeveloper> {
-        Box::new(self.clone())
+        box self.clone()
     }
 }
 
