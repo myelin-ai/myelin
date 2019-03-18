@@ -44,7 +44,6 @@ const VISION_INPUT_COUNT: usize = RAYCAST_COUNT * MAX_OBJECTS_PER_RAYCAST;
 const INPUT_NEURON_COUNT: usize = 4 + VISION_INPUT_COUNT;
 
 const FIRST_VISION_INDEX: usize = INPUT_NEURON_COUNT - VISION_INPUT_COUNT + 1;
-const INPUT_NEURON_COUNT: usize = 4;
 
 /// 2. axial force (backward)
 /// 3. lateral force (left)
