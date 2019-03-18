@@ -9,7 +9,8 @@
     missing_docs,
     clippy::doc_markdown,
     clippy::unimplemented,
-    clippy::default_trait_access
+    clippy::default_trait_access,
+    clippy::enum_glob_use
 )]
 
 // Not named "static" because that would be a keyword

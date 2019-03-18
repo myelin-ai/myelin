@@ -7,7 +7,8 @@
     missing_docs,
     clippy::doc_markdown,
     clippy::unimplemented,
-    clippy::default_trait_access
+    clippy::default_trait_access,
+    clippy::enum_glob_use
 )]
 
 use serde_derive::{Deserialize, Serialize};
