@@ -336,74 +336,60 @@ mod tests {
 
     #[test]
     fn axial_acceleration_handle_returns_correct_handle_for_minus_one() {
-        let mapping = AxialAccelerationHandleMapping {
-            forward: Handle(0),
-            backward: Handle(1),
-        };
-
-        let handle = axial_acceleration_handle(-1.0, mapping);
-
-        assert_eq!(Some(Handle(1)), handle);
+        test_expected_handle_is_returned_for_axial_acceleration(-1.0, Handle(1));
     }
 
     #[test]
     fn axial_acceleration_handle_returns_correct_handle_for_zero() {
-        let mapping = AxialAccelerationHandleMapping {
-            forward: Handle(0),
-            backward: Handle(1),
-        };
-
-        let handle = axial_acceleration_handle(0.0, mapping);
-
-        assert_eq!(None, handle);
+        test_expected_handle_is_returned_for_axial_acceleration(0.0, None);
     }
 
     #[test]
     fn axial_acceleration_handle_returns_correct_handle_for_one() {
+        test_expected_handle_is_returned_for_axial_acceleration(1.0, Handle(0));
+    }
+
+    fn test_expected_handle_is_returned_for_axial_acceleration(
+        axial_acceleration: f64,
+        expected_handle: impl Into<Option<Handle>>,
+    ) {
         let mapping = AxialAccelerationHandleMapping {
             forward: Handle(0),
             backward: Handle(1),
         };
 
-        let handle = axial_acceleration_handle(1.0, mapping);
+        let handle = axial_acceleration_handle(axial_acceleration, mapping);
 
-        assert_eq!(Some(Handle(0)), handle);
+        assert_eq!(expected_handle.into(), handle);
     }
 
     #[test]
     fn lateral_acceleration_handle_returns_correct_handle_for_minus_one() {
-        let mapping = LateralAccelerationHandleMapping {
-            left: Handle(0),
-            right: Handle(1),
-        };
-
-        let handle = lateral_acceleration_handle(-1.0, mapping);
-
-        assert_eq!(Some(Handle(0)), handle);
+        test_expected_handle_is_returned_for_lateral_acceleration(-1.0, Handle(0));
     }
 
     #[test]
     fn lateral_acceleration_handle_returns_correct_handle_for_zero() {
-        let mapping = LateralAccelerationHandleMapping {
-            left: Handle(0),
-            right: Handle(1),
-        };
-
-        let handle = lateral_acceleration_handle(0.0, mapping);
-
-        assert_eq!(None, handle);
+        test_expected_handle_is_returned_for_lateral_acceleration(0.0, None);
     }
 
     #[test]
     fn lateral_acceleration_handle_returns_correct_handle_for_one() {
+        test_expected_handle_is_returned_for_lateral_acceleration(1.0, Handle(1));
+    }
+
+    fn test_expected_handle_is_returned_for_lateral_acceleration(
+        axial_acceleration: f64,
+        expected_handle: impl Into<Option<Handle>>,
+    ) {
         let mapping = LateralAccelerationHandleMapping {
             left: Handle(0),
             right: Handle(1),
         };
 
-        let handle = lateral_acceleration_handle(1.0, mapping);
+        let handle = lateral_acceleration_handle(axial_acceleration, mapping);
 
-        assert_eq!(Some(Handle(1)), handle);
+        assert_eq!(expected_handle.into(), handle);
     }
 
     // Axial expected handles: (0 forward, 1 backward)
