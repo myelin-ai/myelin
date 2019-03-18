@@ -9,14 +9,13 @@
     clippy::unimplemented
 )]
 
+use crate::genome::Genome;
 #[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
 use myelin_neural_network::{Handle as NeuronHandle, NeuralNetwork};
 use std::fmt::Debug;
 
-/// The set of all genes in an organism
-#[derive(Debug, Clone)]
-pub struct Genome;
+pub mod genome;
 
 /// Information needed by a [`NeuralNetworkDeveloper`] to build a [`DevelopedNeuralNetwork`]
 ///

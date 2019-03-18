@@ -1,8 +1,9 @@
 //! Behavior of an organism that can interact with its surroundings
 
 use myelin_engine::prelude::*;
+use myelin_genetics::genome::Genome;
 use myelin_genetics::{
-    DevelopedNeuralNetwork, Genome, NeuralNetworkDeveloper, NeuralNetworkDevelopmentConfiguration,
+    DevelopedNeuralNetwork, NeuralNetworkDeveloper, NeuralNetworkDevelopmentConfiguration,
 };
 use std::any::Any;
 
