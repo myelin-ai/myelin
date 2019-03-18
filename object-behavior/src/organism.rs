@@ -427,8 +427,6 @@ mod tests {
             },
         };
 
-        dbg!(&configuration);
-
         let mut values = HashMap::new();
         add_acceleration_inputs(
             configuration.input_acceleration,
@@ -437,8 +435,6 @@ mod tests {
                 values.insert(handle, value);
             },
         );
-
-        dbg!(&values);
 
         let expected_length = configuration.axial_expected_value.map_or(0, |_| 1)
             + configuration.lateral_expected_value.map_or(0, |_| 1);
