@@ -1,6 +1,6 @@
 //! Definition of associated object data (mainly used within visualization)
 
-#![warn(missing_docs)]
+#![warn(missing_docs, clippy::dbg_macro)]
 #![deny(
     rust_2018_idioms,
     future_incompatible,

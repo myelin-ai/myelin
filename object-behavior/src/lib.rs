@@ -2,7 +2,8 @@
 //! objects that can be placed in a simulation
 
 #![feature(specialization)]
-#![warn(missing_docs)]
+
+#![warn(missing_docs, clippy::dbg_macro)]
 #![deny(
     rust_2018_idioms,
     future_incompatible,

@@ -1,6 +1,8 @@
 //! Neural networks and their components
 
 #![feature(specialization)]
+
+#![warn(missing_docs, clippy::dbg_macro)]
 #![deny(
     rust_2018_idioms,
     future_incompatible,
@@ -10,7 +12,6 @@
     clippy::default_trait_access,
     clippy::enum_glob_use
 )]
-#![warn(missing_docs)]
 
 mod connection;
 pub mod spiking_neural_network;

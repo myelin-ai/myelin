@@ -1,7 +1,7 @@
 //! Genes, genomes and the mechanisms needed to evolve neural networks from them
 
 #![feature(specialization)]
-#![warn(missing_docs)]
+#![warn(missing_docs, clippy::dbg_macro)]
 #![deny(
     rust_2018_idioms,
     future_incompatible,
