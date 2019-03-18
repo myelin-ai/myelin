@@ -126,11 +126,7 @@ fn get_object_ordering(
     view_model::Object { kind: kind_one, .. }: &view_model::Object,
     view_model::Object { kind: kind_two, .. }: &view_model::Object,
 ) -> Ordering {
-    match (kind_one, kind_two) {
-        (view_model::Kind::Organism, _) => Ordering::Greater,
-        (_, view_model::Kind::Organism) => Ordering::Less,
-        _ => Ordering::Equal,
-    }
+   kind_one.cmp(kind_two)
 }
 
 fn map_objects(
