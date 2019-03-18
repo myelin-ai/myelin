@@ -8,6 +8,7 @@ use crate::view_model;
 use myelin_engine::prelude::*;
 use myelin_object_data::Kind;
 use std::borrow::Borrow;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
@@ -37,10 +38,12 @@ impl Presenter for CanvasPresenter {
         self.delta_applier
             .apply_delta(&mut self.current_snapshot, delta)?;
 
-        let objects = map_objects(
+        let mut objects = map_objects(
             &self.current_snapshot,
             self.global_polygon_translator.borrow(),
         );
+
+        objects.sort_by(compare_objects);
 
         self.view.flush();
         self.view.draw_objects(&objects);
@@ -117,6 +120,13 @@ pub struct ObjectDescriptionDelta {
     /// as a two dimensional vector relative to the
     /// objects center
     pub mobility: Option<Mobility>,
+}
+
+fn compare_objects(
+    view_model::Object { kind: kind_one, .. }: &view_model::Object,
+    view_model::Object { kind: kind_two, .. }: &view_model::Object,
+) -> Ordering {
+    kind_one.cmp(kind_two)
 }
 
 fn map_objects(
