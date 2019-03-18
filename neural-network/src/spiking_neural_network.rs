@@ -468,35 +468,30 @@ mod tests {
 
     #[test]
     fn convert_input_to_membrane_potential_works_with_zero() {
-        let mut neuron = SpikingNeuronMock::new();
-        neuron.expect_action_potential().returns(100.0);
-        neuron.expect_resting_potential().returns(-50.0).times(1..);
-
-        let membrane_potential = convert_input_to_membrane_potential(0.0, &neuron);
-
-        assert_nearly_eq!(-50.0, membrane_potential);
+        test_converts_input_to_expected_membrane_potential(0.0, -50.0);
     }
 
     #[test]
     fn convert_input_to_membrane_potential_works_with_zero_point_five() {
-        let mut neuron = SpikingNeuronMock::new();
-        neuron.expect_action_potential().returns(100.0);
-        neuron.expect_resting_potential().returns(-50.0).times(1..);
-
-        let membrane_potential = convert_input_to_membrane_potential(0.5, &neuron);
-
-        assert_nearly_eq!(25.0, membrane_potential);
+        test_converts_input_to_expected_membrane_potential(0.5, 25.0);
     }
 
     #[test]
     fn convert_input_to_membrane_potential_works_with_one() {
+        test_converts_input_to_expected_membrane_potential(1.0, 100.0);
+    }
+
+    fn test_converts_input_to_expected_membrane_potential(
+        input: f64,
+        expected_membrane_potential: f64,
+    ) {
         let mut neuron = SpikingNeuronMock::new();
         neuron.expect_action_potential().returns(100.0);
         neuron.expect_resting_potential().returns(-50.0).times(1..);
 
-        let membrane_potential = convert_input_to_membrane_potential(1.0, &neuron);
+        let membrane_potential = convert_input_to_membrane_potential(input, &neuron);
 
-        assert_nearly_eq!(100.0, membrane_potential);
+        assert_nearly_eq!(expected_membrane_potential, membrane_potential);
     }
 
     #[test]
