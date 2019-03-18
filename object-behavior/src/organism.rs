@@ -557,7 +557,7 @@ mod tests {
     }
 
     #[test]
-    fn convert_neural_network_output_to_action_test() {
+    fn neural_network_is_mapped_to_action() {
         let mapping = NeuronHandleMapping {
             input: InputNeuronHandleMapping {
                 axial_acceleration: AxialAccelerationHandleMapping {
