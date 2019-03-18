@@ -344,7 +344,7 @@ mod tests {
 
         let handle = axial_acceleration_handle(-1.0, mapping);
 
-        assert_eq!(Handle(1), handle);
+        assert_eq!(Some(Handle(1)), handle);
     }
 
     #[test]
@@ -356,7 +356,7 @@ mod tests {
 
         let handle = axial_acceleration_handle(0.0, mapping);
 
-        assert_eq!(Handle(0), handle);
+        assert_eq!(None, handle);
     }
 
     #[test]
@@ -368,7 +368,7 @@ mod tests {
 
         let handle = axial_acceleration_handle(1.0, mapping);
 
-        assert_eq!(Handle(0), handle);
+        assert_eq!(Some(Handle(0)), handle);
     }
 
     #[test]
@@ -380,7 +380,7 @@ mod tests {
 
         let handle = lateral_acceleration_handle(-1.0, mapping);
 
-        assert_eq!(Handle(0), handle);
+        assert_eq!(Some(Handle(0)), handle);
     }
 
     #[test]
@@ -392,7 +392,7 @@ mod tests {
 
         let handle = lateral_acceleration_handle(0.0, mapping);
 
-        assert_eq!(Handle(0), handle);
+        assert_eq!(None, handle);
     }
 
     #[test]
@@ -404,15 +404,16 @@ mod tests {
 
         let handle = lateral_acceleration_handle(1.0, mapping);
 
-        assert_eq!(Handle(1), handle);
+        assert_eq!(Some(Handle(1)), handle);
     }
 
     // Axial expected handles: (0 forward, 1 backward)
     // Lateral expected handles: (2 left, 3 right)
+    #[derive(Debug)]
     struct AddAccelerationInputsTestConfiguration {
         input_acceleration: Vector,
-        axial_expected_value: (Handle, f64),
-        lateral_expected_value: (Handle, f64),
+        axial_expected_value: Option<(Handle, f64)>,
+        lateral_expected_value: Option<(Handle, f64)>,
     }
 
     fn add_acceleration_inputs_test(configuration: AddAccelerationInputsTestConfiguration) {
@@ -427,7 +428,9 @@ mod tests {
             },
         };
 
-        let mut values = HashMap::with_capacity(2);
+        dbg!(&configuration);
+
+        let mut values = HashMap::new();
         add_acceleration_inputs(
             configuration.input_acceleration,
             mapping,
@@ -436,27 +439,38 @@ mod tests {
             },
         );
 
-        assert_eq!(2, values.len());
-        assert_nearly_eq!(
-            configuration.axial_expected_value.1,
-            *values
-                .get(&configuration.axial_expected_value.0)
-                .expect("Axial input was None")
-        );
-        assert_nearly_eq!(
-            configuration.lateral_expected_value.1,
-            *values
-                .get(&configuration.lateral_expected_value.0)
-                .expect("Lateral input was None")
-        );
+        dbg!(&values);
+
+        let expected_length = configuration.axial_expected_value.map_or(0, |_| 1)
+            + configuration.lateral_expected_value.map_or(0, |_| 1);
+
+        assert_eq!(expected_length, values.len());
+
+        if let Some((handle, axial_expected_value)) = configuration.axial_expected_value {
+            assert_nearly_eq!(
+                axial_expected_value,
+                *values
+                    .get(&handle)
+                    .expect("Axial input was None")
+            );
+        };
+
+        if let Some((handle, lateral_expected_value)) = configuration.lateral_expected_value {
+            assert_nearly_eq!(
+                lateral_expected_value,
+                *values
+                    .get(&handle)
+                    .expect("Lateral input was None")
+            );
+        };
     }
 
     #[test]
     fn add_acceleration_inputs_with_no_acceleration() {
         let configuration = AddAccelerationInputsTestConfiguration {
             input_acceleration: Vector { x: 0.0, y: 0.0 },
-            axial_expected_value: (Handle(0), 0.0),
-            lateral_expected_value: (Handle(0), 0.0),
+            axial_expected_value: None,
+            lateral_expected_value: None,
         };
 
         add_acceleration_inputs_test(configuration);
@@ -469,8 +483,8 @@ mod tests {
                 x: MAX_ACCELERATION / 5.0,
                 y: 0.0,
             },
-            axial_expected_value: (Handle(0), 0.2),
-            lateral_expected_value: (Handle(2), 0.0),
+            axial_expected_value: Some((Handle(0), 0.2)),
+            lateral_expected_value: None,
         };
 
         add_acceleration_inputs_test(configuration);
@@ -483,8 +497,8 @@ mod tests {
                 x: -MAX_ACCELERATION / 5.0,
                 y: 0.0,
             },
-            axial_expected_value: (Handle(1), 0.2),
-            lateral_expected_value: (Handle(2), 0.0),
+            axial_expected_value: Some((Handle(1), 0.2)),
+            lateral_expected_value: None,
         };
 
         add_acceleration_inputs_test(configuration);
@@ -497,8 +511,8 @@ mod tests {
                 x: 0.0,
                 y: -MAX_ACCELERATION / 5.0,
             },
-            axial_expected_value: (Handle(0), 0.0),
-            lateral_expected_value: (Handle(2), 0.2),
+            axial_expected_value: None,
+            lateral_expected_value: Some((Handle(2), 0.2)),
         };
 
         add_acceleration_inputs_test(configuration);
@@ -511,8 +525,8 @@ mod tests {
                 x: 0.0,
                 y: MAX_ACCELERATION / 5.0,
             },
-            axial_expected_value: (Handle(0), 0.0),
-            lateral_expected_value: (Handle(3), 0.2),
+            axial_expected_value: None,
+            lateral_expected_value: Some((Handle(3), 0.2)),
         };
 
         add_acceleration_inputs_test(configuration);
@@ -525,8 +539,8 @@ mod tests {
                 x: MAX_ACCELERATION * 5.0,
                 y: 0.0,
             },
-            axial_expected_value: (Handle(0), 1.0),
-            lateral_expected_value: (Handle(2), 0.0),
+            axial_expected_value: Some((Handle(0), 1.0)),
+            lateral_expected_value: None,
         };
 
         add_acceleration_inputs_test(configuration);
@@ -539,8 +553,8 @@ mod tests {
                 x: -MAX_ACCELERATION * 5.0,
                 y: 0.0,
             },
-            axial_expected_value: (Handle(1), 1.0),
-            lateral_expected_value: (Handle(2), 0.0),
+            axial_expected_value: Some((Handle(1), 1.0)),
+            lateral_expected_value: None,
         };
 
         add_acceleration_inputs_test(configuration);
