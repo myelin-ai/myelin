@@ -30,6 +30,19 @@ pub struct OrganismBehavior {
     neural_network_developer: Box<dyn NeuralNetworkDeveloper>,
 }
 
+/// 1. Average axial acceleration since last step (forward)
+/// 2. Average axial acceleration since last step (backward)
+/// 3. Average lateral acceleration since last step (left)
+/// 4. Average lateral acceleration since last step (right)
+const INPUT_NEURON_COUNT: usize = 4;
+
+/// 2. axial force (backward)
+/// 3. lateral force (left)
+/// 4. lateral force (right)
+/// 5. torque (counterclockwise)
+/// 6. torque (clockwise)
+const OUTPUT_NEURON_COUNT: usize = 6;
+
 impl OrganismBehavior {
     /// Create a new `OrganismBehavior` from a pair of parent [`Genome`]s.
     /// The [`NeuralNetworkDeveloper`] is used to create this organism's [`NeuralNetwork`]
@@ -41,20 +54,6 @@ impl OrganismBehavior {
         parent_genomes: (Genome, Genome),
         neural_network_developer: Box<dyn NeuralNetworkDeveloper>,
     ) -> Self {
-        /// 1. Average axial acceleration since last step (forward)
-        /// 2. Average axial acceleration since last step (backward)
-        /// 3. Average lateral acceleration since last step (left)
-        /// 4. Average lateral acceleration since last step (right)
-        const INPUT_NEURON_COUNT: usize = 4;
-
-        /// 1. axial force (forward)
-        /// 2. axial force (backward)
-        /// 3. lateral force (left)
-        /// 4. lateral force (right)
-        /// 5. torque (counterclockwise)
-        /// 6. torque (clockwise)
-        const OUTPUT_NEURON_COUNT: usize = 6;
-
         let configuration = NeuralNetworkDevelopmentConfiguration {
             parent_genomes,
             input_neuron_count: INPUT_NEURON_COUNT,
@@ -558,32 +557,8 @@ mod tests {
 
     #[test]
     fn neural_network_is_mapped_to_action() {
-        let mapping = NeuronHandleMapping {
-            input: InputNeuronHandleMapping {
-                axial_acceleration: AxialAccelerationHandleMapping {
-                    forward: Handle(0),
-                    backward: Handle(1),
-                },
-                lateral_acceleration: LateralAccelerationHandleMapping {
-                    left: Handle(2),
-                    right: Handle(3),
-                },
-            },
-            output: OutputNeuronHandleMapping {
-                axial_acceleration: AxialAccelerationHandleMapping {
-                    forward: Handle(4),
-                    backward: Handle(5),
-                },
-                lateral_acceleration: LateralAccelerationHandleMapping {
-                    left: Handle(6),
-                    right: Handle(7),
-                },
-                torque: TorqueHandleMapping {
-                    counterclockwise: Handle(8),
-                    clockwise: Handle(9),
-                },
-            },
-        };
+        let developed_neural_network = mock_developed_neural_network();
+        let mapping = map_handles(&developed_neural_network);
 
         let mut network = NeuralNetworkMock::new();
         network
@@ -650,6 +625,15 @@ mod tests {
                 assert_nearly_eq!(expected_force.torque.0, force.torque.0);
             }
             _ => panic!("Unexpected action"),
+        }
+    }
+
+    fn mock_developed_neural_network() -> DevelopedNeuralNetwork {
+        DevelopedNeuralNetwork {
+            input_neuron_handles: (0..INPUT_NEURON_COUNT).map(Handle).collect(),
+            output_neuron_handles: (0..OUTPUT_NEURON_COUNT).map(Handle).collect(),
+            neural_network: Box::new(NeuralNetworkMock::new()),
+            genome: Genome {},
         }
     }
 }
