@@ -677,21 +677,7 @@ mod tests {
             .expect_normalized_potential_of_neuron(partial_eq(mapping.output.torque.clockwise))
             .returns(Ok(Some(0.4)));
 
-        let object_description = ObjectBuilder::default()
-            .shape(
-                PolygonBuilder::default()
-                    .vertex(0.0, 0.0)
-                    .vertex(0.0, 10.0)
-                    .vertex(10.0, 10.0)
-                    .vertex(10.0, 0.0)
-                    .build()
-                    .unwrap(),
-            )
-            .mobility(Mobility::Movable(Vector::default()))
-            .location(0.0, 0.0)
-            .rotation(Radians::try_new(PI).unwrap())
-            .build()
-            .unwrap();
+        let object_description = object_description();
 
         let expected_force = Force {
             linear: Vector {
@@ -715,6 +701,24 @@ mod tests {
         }
     }
 
+    fn object_description() -> ObjectDescription {
+        ObjectBuilder::default()
+            .shape(
+                PolygonBuilder::default()
+                    .vertex(0.0, 0.0)
+                    .vertex(0.0, 10.0)
+                    .vertex(10.0, 10.0)
+                    .vertex(10.0, 0.0)
+                    .build()
+                    .unwrap(),
+            )
+            .mobility(Mobility::Movable(Vector::default()))
+            .location(0.0, 0.0)
+            .rotation(Radians::try_new(PI).unwrap())
+            .build()
+            .unwrap()
+    }
+
     fn mock_developed_neural_network() -> DevelopedNeuralNetwork {
         DevelopedNeuralNetwork {
             input_neuron_handles: (0..INPUT_NEURON_COUNT).map(Handle).collect(),
@@ -722,5 +726,12 @@ mod tests {
             neural_network: Box::new(NeuralNetworkMock::new()),
             genome: Genome {},
         }
+    }
+
+    #[test]
+    fn returns_sorted_objects_in_fov() {
+        let object_description = object_description();
+        let mut world_interactor = WorldInteractorMock::new();
+        let objects_in_fov = objects_in_fov(&object_description, &world_interactor);
     }
 }
