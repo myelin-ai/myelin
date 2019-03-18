@@ -8,7 +8,10 @@ use crate::*;
 use slab::Slab;
 use std::collections::HashMap;
 
-/// Type alias for SpikingNeuralNetwork<SpikingNeuronImpl>
+/// Type alias for a [`SpikingNeuralNetwork`] with [`SpikingNeuronImpl`]
+///
+/// [SpikingNeuralNetwork]: ./struct.SpikingNeuralNetwork.html
+/// [SpikingNeuronImpl]: ./struct.SpikingNeuronImpl.html
 pub type DefaultSpikingNeuralNetwork = SpikingNeuralNetwork<SpikingNeuronImpl>;
 
 /// A spiking neural network
