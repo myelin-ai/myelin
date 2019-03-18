@@ -176,12 +176,10 @@ fn convert_input_to_membrane_potential<N>(input: f64, neuron: &N) -> MembranePot
 where
     N: SpikingNeuron,
 {
-    if input < 0.0 || input > 1.0 {
-        panic!(
-            "Invalid input value: {}. Expected value in the range [0, 1]",
-            input
-        )
-    }
+    assert!(
+        input >= 0.0 && input <= 1.0,
+        "Invalid input value: {}. Expected value in the range [0, 1]"
+    );
 
     // The input is converted from [0; 1] into [resting_potential, action_potential]
     input * (neuron.action_potential() - neuron.resting_potential()) + neuron.resting_potential()
