@@ -556,7 +556,7 @@ mod tests {
     }
 
     #[test]
-    fn neural_network_is_mapped_to_action() {
+    fn neural_network_output_is_mapped_to_action() {
         let developed_neural_network = mock_developed_neural_network();
         let mapping = map_handles(&developed_neural_network);
 
