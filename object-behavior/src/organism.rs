@@ -541,14 +541,18 @@ mod tests {
         if let Some((handle, axial_expected_value)) = configuration.axial_expected_value {
             assert_nearly_eq!(
                 axial_expected_value,
-                *values.get(&handle).expect("Axial input was None")
+                *values
+                    .get(&handle)
+                    .expect("Axial input was None")
             );
         };
 
         if let Some((handle, lateral_expected_value)) = configuration.lateral_expected_value {
             assert_nearly_eq!(
                 lateral_expected_value,
-                *values.get(&handle).expect("Lateral input was None")
+                *values
+                    .get(&handle)
+                    .expect("Lateral input was None")
             );
         };
     }
