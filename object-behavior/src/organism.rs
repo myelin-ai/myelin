@@ -273,7 +273,7 @@ fn add_acceleration_inputs(
     }
 
     let lateral_acceleration_handle = lateral_acceleration_handle(
-        acceleration.x,
+        acceleration.y,
         input_neuron_handle_mapping.lateral_acceleration,
     );
     if let Some(lateral_acceleration_handle) = lateral_acceleration_handle {
