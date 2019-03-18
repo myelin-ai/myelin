@@ -136,7 +136,7 @@ where
         time_since_last_step: Milliseconds,
         external_inputs: &HashMap<Handle, f64>,
     ) {
-        for (&handle_of_neuron_receiving_input, &normalized_input) in &external_inputs {
+        for (&handle_of_neuron_receiving_input, &normalized_input) in external_inputs {
             let mut inputs =
                 self.cached_incoming_connection_inputs(handle_of_neuron_receiving_input);
 
