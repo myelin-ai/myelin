@@ -325,7 +325,7 @@ mod tests {
                 .mobility(Mobility::Immovable)
                 .build()
                 .unwrap();
-            let behavior = Box::new(ObjectBehaviorMock::new());
+            let behavior = box ObjectBehaviorMock::new();
 
             let mut simulation = SimulationMock::new();
             simulation.expect_add_object_any_times_and_return((1, description, behavior));

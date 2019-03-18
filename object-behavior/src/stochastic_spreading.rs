@@ -81,7 +81,7 @@ impl StochasticSpreading {
                     spreading_location,
                 ));
 
-                let object_behavior = Box::new(self.clone());
+                let object_behavior = box self.clone();
                 Some(Action::Spawn(object_description, object_behavior))
             })
     }
@@ -232,7 +232,7 @@ where
     T: RandomChanceChecker + Clone + 'static,
 {
     default fn clone_box(&self) -> Box<dyn RandomChanceChecker> {
-        Box::new(self.clone())
+        box self.clone()
     }
 }
 
@@ -275,8 +275,7 @@ mod tests {
         random_chance_checker
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
             .returns(false);
-        let mut object =
-            StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
+        let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random_chance_checker);
         let action = object.step(&WorldInteractorMock::new());
         assert!(action.is_none());
     }
@@ -291,8 +290,7 @@ mod tests {
         random_chance_checker
             .expect_random_number_in_range(partial_eq(0), partial_eq(8))
             .returns(0);
-        let mut object =
-            StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
+        let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random_chance_checker);
         let mut world_interactor = WorldInteractorMock::new();
         world_interactor
             .expect_find_objects_in_area(partial_eq(
@@ -335,8 +333,7 @@ mod tests {
             .expect_random_number_in_range(partial_eq(0), partial_eq(8))
             .returns(0);
 
-        let mut object =
-            StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
+        let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random_chance_checker);
 
         let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
@@ -434,8 +431,7 @@ mod tests {
             .expect_random_number_in_range(partial_eq(0), partial_eq(8))
             .returns(0);
 
-        let mut object =
-            StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
+        let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random_chance_checker);
 
         let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
@@ -504,8 +500,7 @@ mod tests {
         random_chance_checker
             .expect_random_number_in_range(partial_eq(0), partial_eq(8))
             .returns(1);
-        let mut object =
-            StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
+        let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random_chance_checker);
 
         let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
@@ -584,8 +579,7 @@ mod tests {
         random_chance_checker
             .expect_random_number_in_range(partial_eq(0), partial_eq(8))
             .returns(1);
-        let mut object =
-            StochasticSpreading::new(SPREADING_CHANGE, Box::new(random_chance_checker));
+        let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random_chance_checker);
 
         let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
@@ -648,7 +642,7 @@ mod tests {
             .expect_random_number_in_range(partial_eq(0), partial_eq(8))
             .returns(3);
         let mut first_object =
-            StochasticSpreading::new(SPREADING_CHANGE, Box::new(first_random_chance_checker));
+            StochasticSpreading::new(SPREADING_CHANGE, box first_random_chance_checker);
         let first_description = object_description_at_location(50.0, 50.0);
 
         let mut first_world_interactor = WorldInteractorMock::new();
@@ -689,7 +683,7 @@ mod tests {
             .expect_random_number_in_range(partial_eq(0), partial_eq(8))
             .returns(7);
         let mut second_object =
-            StochasticSpreading::new(SPREADING_CHANGE, Box::new(second_random_chance_checker));
+            StochasticSpreading::new(SPREADING_CHANGE, box second_random_chance_checker);
 
         let mut second_world_interactor = WorldInteractorMock::new();
 
@@ -770,6 +764,6 @@ mod tests {
     }
 
     fn mock_behavior() -> Box<dyn ObjectBehavior> {
-        Box::new(ObjectBehaviorMock::new())
+        box ObjectBehaviorMock::new()
     }
 }

@@ -1,6 +1,7 @@
 //! Neural networks and their components
 
 #![feature(specialization)]
+#![feature(box_syntax)]
 #![deny(
     rust_2018_idioms,
     missing_debug_implementations,
@@ -72,7 +73,7 @@ where
     T: NeuralNetwork + Clone + 'static,
 {
     default fn clone_box(&self) -> Box<dyn NeuralNetwork> {
-        Box::new(self.clone())
+        box self.clone()
     }
 }
 

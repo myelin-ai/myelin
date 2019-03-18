@@ -28,7 +28,7 @@ fn panic_hook(info: &PanicInfo<'_>) {
 /// [`InputHandler`]: ./struct.InputHandler.html
 #[wasm_bindgen]
 pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
-    set_hook(Box::new(panic_hook));
+    set_hook(box panic_hook);
 
     InputHandler::new(box ControllerImpl::new(
         box CanvasPresenter::new(
