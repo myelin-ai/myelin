@@ -43,7 +43,7 @@ impl Presenter for CanvasPresenter {
             self.global_polygon_translator.borrow(),
         );
 
-        objects.sort_by(get_object_ordering);
+        objects.sort_by(compare_objects);
 
         self.view.flush();
         self.view.draw_objects(&objects);
@@ -122,7 +122,7 @@ pub struct ObjectDescriptionDelta {
     pub mobility: Option<Mobility>,
 }
 
-fn get_object_ordering(
+fn compare_objects(
     view_model::Object { kind: kind_one, .. }: &view_model::Object,
     view_model::Object { kind: kind_two, .. }: &view_model::Object,
 ) -> Ordering {
