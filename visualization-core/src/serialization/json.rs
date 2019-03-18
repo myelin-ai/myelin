@@ -79,7 +79,6 @@ mod tests {
             location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
             associated_data: Some(String::from("Cat").into_bytes()),
-            ..Default::default()
         };
 
         let view_model_delta = hashmap! { 12 => ObjectDelta::Updated(object_description_delta) };
@@ -133,7 +132,6 @@ mod tests {
             location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
             associated_data: Some(String::from("Cat").into_bytes()),
-            ..Default::default()
         };
 
         let expected = hashmap! { 12 => ObjectDelta::Updated(object_description_delta) };
