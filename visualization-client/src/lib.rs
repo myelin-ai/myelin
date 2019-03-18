@@ -3,6 +3,7 @@
 #![feature(box_syntax)]
 #![deny(
     rust_2018_idioms,
+    future_incompatible,
     missing_debug_implementations,
     missing_docs,
     clippy::doc_markdown,
