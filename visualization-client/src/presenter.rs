@@ -126,7 +126,7 @@ fn compare_objects(
     view_model::Object { kind: kind_one, .. }: &view_model::Object,
     view_model::Object { kind: kind_two, .. }: &view_model::Object,
 ) -> Ordering {
-   kind_one.cmp(kind_two)
+    kind_one.cmp(kind_two)
 }
 
 fn map_objects(
