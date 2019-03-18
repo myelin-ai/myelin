@@ -728,6 +728,18 @@ mod tests {
         }
     }
 
+    #[test]
+    fn objects_in_fov_is_empty_with_no_surrounding_objects() {
+        test_objects_in_fov_are_as_expected(
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+        )
+    }
+
     fn test_objects_in_fov_are_as_expected(
         first_objects_in_ray: Snapshot<'_>,
         second_objects_in_ray: Snapshot<'_>,
