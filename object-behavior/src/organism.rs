@@ -105,18 +105,13 @@ impl ObjectBehavior for OrganismBehavior {
         let vision_neuron_inputs =
             objects_in_fov_to_neuron_inputs(&own_object.description, &objects_in_fov);
 
-        neuron_handle_mapping
-            .input
-            .vision
-            .iter()
-            .zip(vision_neuron_inputs.iter())
-            .filter_map(|(handle, &input)| Some((handle, input?)))
-            .for_each(|(handle, input)| {
-                /// A bit more than the size of the simulated world
-                const MAXIMAL_VIEWABLE_DISTANCE_IN_METERS: f64 = 1200.0;
-                let normalized_input = input / MAXIMAL_VIEWABLE_DISTANCE_IN_METERS;
-                inputs.insert(*handle, normalized_input);
-            });
+        add_vision_inputs(
+            &vision_neuron_inputs,
+            &neuron_handle_mapping.input,
+            |key, value| {
+                inputs.insert(key, value);
+            },
+        );
 
         let neural_network = &mut self.developed_neural_network.neural_network;
         neural_network.step(
@@ -281,6 +276,24 @@ fn add_acceleration_inputs(
             acceleration.y.abs().min(MAX_ACCELERATION) / MAX_ACCELERATION,
         );
     }
+}
+
+fn add_vision_inputs(
+    vision_neuron_inputs: &[Option<f64>],
+    input_neuron_handle_mapping: &InputNeuronHandleMapping,
+    mut add_input_fn: impl FnMut(Handle, f64),
+) {
+    input_neuron_handle_mapping
+        .vision
+        .iter()
+        .zip(vision_neuron_inputs.iter())
+        .filter_map(|(handle, &input)| Some((handle, input?)))
+        .for_each(|(handle, input)| {
+            /// A bit more than the size of the simulated world
+            const MAXIMAL_VIEWABLE_DISTANCE_IN_METERS: f64 = 1200.0;
+            let normalized_input = input / MAXIMAL_VIEWABLE_DISTANCE_IN_METERS;
+            add_input_fn(*handle, normalized_input);
+        });
 }
 
 /// Arbitrary value
