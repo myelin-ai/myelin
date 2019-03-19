@@ -749,22 +749,9 @@ mod tests {
     fn objects_in_fov_is_sorted_and_filtered_correctly() {
         let mock_behavior = ObjectBehaviorMock::new();
         let mut counter = 0;
-        let mut genenerate_objects = |amount| -> Vec<Object<'_>> {
-            (0..amount)
-                .map(|_| {
-                    let object = Object {
-                        id: counter,
-                        behavior: &mock_behavior,
-                        description: object_description()
-                            .location(1.0 + counter as f64, 1.0 + counter as f64)
-                            .build()
-                            .unwrap(),
-                    };
-                    counter += 1;
-                    object
-                })
-                .collect()
-        };
+        let mut genenerate_objects =
+            |amount| generate_objects(amount, &mock_behavior, &mut counter);
+
         let fourth_objects = genenerate_objects(6);
         let sixth_objects = genenerate_objects(2);
         let seventh_objects = genenerate_objects(1);
@@ -920,24 +907,10 @@ mod tests {
     #[test]
     fn objects_in_fov_are_mapped_to_neural_inputs() {
         // Todo: Move into generator
-        let mock_behavior = ObjectBehaviorMock::new();
         let mut counter = 0;
-        let mut genenerate_objects = |amount| -> Vec<Object<'_>> {
-            (0..amount)
-                .map(|_| {
-                    let object = Object {
-                        id: counter,
-                        behavior: &mock_behavior,
-                        description: object_description()
-                            .location(1.0 + counter as f64, 1.0 + counter as f64)
-                            .build()
-                            .unwrap(),
-                    };
-                    counter += 1;
-                    object
-                })
-                .collect()
-        };
+        let mock_behavior = ObjectBehaviorMock::new();
+        let mut genenerate_objects =
+            |amount| generate_objects(amount, &mock_behavior, &mut counter);
 
         let own_description = object_description().build().unwrap();
         let objects_in_fov = vec![
@@ -1000,8 +973,32 @@ mod tests {
         .into_iter()
         .flatten()
         .collect();
-        assert_eq!(RAYCAST_COUNT * MAX_OBJECTS_PER_RAYCAST, expected_inputs.len());
+        assert_eq!(
+            RAYCAST_COUNT * MAX_OBJECTS_PER_RAYCAST,
+            expected_inputs.len()
+        );
 
         assert_eq!(expected_inputs, inputs);
+    }
+
+    fn generate_objects<'a, 'b>(
+        amount: usize,
+        object_behavior: &'a dyn ObjectBehavior,
+        counter: &'b mut usize,
+    ) -> Vec<Object<'a>> {
+        (0..amount)
+            .map(|_| {
+                let object = Object {
+                    id: *counter,
+                    behavior: object_behavior,
+                    description: object_description()
+                        .location(1.0 + *counter as f64, 1.0 + *counter as f64)
+                        .build()
+                        .unwrap(),
+                };
+                *counter += 1;
+                object
+            })
+            .collect()
     }
 }
