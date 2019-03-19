@@ -908,4 +908,12 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn no_objects_in_fov_are_mapped_to_no_neural_inputs() {
+        let own_description = object_description().build().unwrap();
+        let objects_in_fov = Vec::new();
+        let inputs = objects_in_fov_to_neuron_inputs(&own_description, &objects_in_fov);
+        assert!(inputs.is_empty());
+    }
 }
