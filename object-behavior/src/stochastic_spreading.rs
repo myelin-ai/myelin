@@ -89,7 +89,7 @@ impl StochasticSpreading {
 
 /// Draws a bounding box around the polygon and returns the 8 adjacend positions
 /// to the box, factoring in some padding:
-///```other
+/// ```other
 ///  Upper Left | Upper Middle | Upper Right
 /// -----------------------------------------
 /// Middle Left |    Polygon   | Middle Right
@@ -242,7 +242,6 @@ impl Clone for Box<dyn RandomChanceChecker> {
     }
 }
 
-///
 /// ```other
 /// ┼─────────────────────────────────────────────────── x
 /// |        Padding: 1       Width: 10
