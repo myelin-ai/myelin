@@ -955,6 +955,20 @@ mod tests {
         ];
         let inputs = objects_in_fov_to_neuron_inputs(&own_description, &objects_in_fov);
 
-        assert_eq!(objects_in_fov.len() * MAX_OBJECTS_PER_RAYCAST, inputs.len());
+        let no_distances = vec![None; MAX_OBJECTS_PER_RAYCAST];
+        let first_distances = no_distances.clone();
+        let second_distances = no_distances.clone();
+        let third_distances = vec![2.0, 8.0, 18.0]
+            .into_iter()
+            .map(f64::sqrt)
+            .map(Some)
+            .collect();
+
+        let expected_inputs: Vec<Option<f64>> = vec![first_distances, second_distances, third_distances]
+            .into_iter()
+            .flatten()
+            .collect();
+
+        assert_eq!(expected_inputs, inputs);
     }
 }
