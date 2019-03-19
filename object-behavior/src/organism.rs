@@ -730,7 +730,19 @@ mod tests {
 
     #[test]
     fn objects_in_fov_is_empty_with_no_surrounding_objects() {
-        test_objects_in_fov_are_as_expected(ExpectedFovObjects::default())
+        test_objects_in_fov_are_as_expected(ExpectedFovObjects {
+            first_objects_in_ray: Vec::new(),
+            second_objects_in_ray: Vec::new(),
+            third_objects_in_ray: Vec::new(),
+            fourth_objects_in_ray: Vec::new(),
+            fifth_objects_in_ray: Vec::new(),
+            sixth_objects_in_ray: Vec::new(),
+            seventh_objects_in_ray: Vec::new(),
+            eight_objects_in_ray: Vec::new(),
+            ninth_objects_in_ray: Vec::new(),
+            tenth_objects_in_ray: Vec::new(),
+            expected_objects: vec![Vec::new(); 10],
+        })
     }
 
     #[derive(Debug, Default)]
