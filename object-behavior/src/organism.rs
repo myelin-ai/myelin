@@ -963,11 +963,43 @@ mod tests {
             .map(f64::sqrt)
             .map(Some)
             .collect();
-
-        let expected_inputs: Vec<Option<f64>> = vec![first_distances, second_distances, third_distances]
+        let fourth_distances = no_distances.clone();
+        let fifth_distances = vec![32.0, 50.0]
             .into_iter()
-            .flatten()
+            .map(f64::sqrt)
+            .map(Some)
+            .chain(vec![None].into_iter())
             .collect();
+        let sixth_distances = no_distances.clone();
+        let seventh_distances = vec![72.0]
+            .into_iter()
+            .map(f64::sqrt)
+            .map(Some)
+            .chain(vec![None; 2].into_iter())
+            .collect();
+        let eight_distances = vec![98.0, 128.0, 162.0]
+            .into_iter()
+            .map(f64::sqrt)
+            .map(Some)
+            .collect();
+        let ninth_distances = no_distances.clone();
+        let tenth_distances = no_distances;
+
+        let expected_inputs: Vec<Option<f64>> = vec![
+            first_distances,
+            second_distances,
+            third_distances,
+            fourth_distances,
+            fifth_distances,
+            sixth_distances,
+            seventh_distances,
+            eight_distances,
+            ninth_distances,
+            tenth_distances,
+        ]
+        .into_iter()
+        .flatten()
+        .collect();
 
         assert_eq!(expected_inputs, inputs);
     }
