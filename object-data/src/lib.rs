@@ -9,6 +9,7 @@
     clippy::unimplemented,
     clippy::default_trait_access,
     clippy::enum_glob_use,
+    clippy::needless_borrow,
     clippy::large_digit_groups,
     clippy::explicit_into_iter_loop
 )]
