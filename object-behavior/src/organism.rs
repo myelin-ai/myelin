@@ -916,4 +916,45 @@ mod tests {
         let inputs = objects_in_fov_to_neuron_inputs(&own_description, &objects_in_fov);
         assert!(inputs.is_empty());
     }
+
+    #[test]
+    fn objects_in_fov_are_mapped_to_neural_inputs() {
+        // Todo: Move into generator
+        let mock_behavior = ObjectBehaviorMock::new();
+        let mut counter = 0;
+        let mut genenerate_objects = |amount| -> Vec<Object<'_>> {
+            (0..amount)
+                .map(|_| {
+                    let object = Object {
+                        id: counter,
+                        behavior: &mock_behavior,
+                        description: object_description()
+                            .location(1.0 + counter as f64, 1.0 + counter as f64)
+                            .build()
+                            .unwrap(),
+                    };
+                    counter += 1;
+                    object
+                })
+                .collect()
+        };
+
+        let own_description = object_description().build().unwrap();
+        let objects_in_fov = vec![
+            Vec::new(),
+            Vec::new(),
+            genenerate_objects(3),
+            Vec::new(),
+            genenerate_objects(2),
+            Vec::new(),
+            genenerate_objects(1),
+            genenerate_objects(3),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+        ];
+        let inputs = objects_in_fov_to_neuron_inputs(&own_description, &objects_in_fov);
+
+        assert_eq!(9, inputs.len());
+    }
 }
