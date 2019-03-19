@@ -745,6 +745,65 @@ mod tests {
         })
     }
 
+    #[test]
+    fn objects_in_fov_is_sorted_and_filtered_correctly() {
+        let mock_behavior = ObjectBehaviorMock::new();
+        let mut counter = 0;
+        let mut genenerate_objects = |amount| -> Vec<Object<'_>> {
+            (0..amount)
+                .map(|_| {
+                    let object = Object {
+                        id: counter,
+                        behavior: &mock_behavior,
+                        description: object_description()
+                            .location(1.0 + counter as f64, 1.0 + counter as f64)
+                            .build()
+                            .unwrap(),
+                    };
+                    counter += 1;
+                    object
+                })
+                .collect()
+        };
+        let fourth_objects = genenerate_objects(6);
+        let sixth_objects = genenerate_objects(2);
+        let seventh_objects = genenerate_objects(1);
+
+        test_objects_in_fov_are_as_expected(ExpectedFovObjects {
+            first_objects_in_ray: Vec::new(),
+            second_objects_in_ray: Vec::new(),
+            third_objects_in_ray: Vec::new(),
+            fourth_objects_in_ray: fourth_objects.clone(),
+            fifth_objects_in_ray: Vec::new(),
+            sixth_objects_in_ray: sixth_objects.clone(),
+            seventh_objects_in_ray: seventh_objects.clone(),
+            eight_objects_in_ray: Vec::new(),
+            ninth_objects_in_ray: Vec::new(),
+            tenth_objects_in_ray: Vec::new(),
+            expected_objects: vec![
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                fourth_objects
+                    .into_iter()
+                    .take(MAX_OBJECTS_PER_RAYCAST)
+                    .collect(),
+                Vec::new(),
+                sixth_objects
+                    .into_iter()
+                    .take(MAX_OBJECTS_PER_RAYCAST)
+                    .collect(),
+                seventh_objects
+                    .into_iter()
+                    .take(MAX_OBJECTS_PER_RAYCAST)
+                    .collect(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+            ],
+        })
+    }
+
     #[derive(Debug, Default)]
     struct ExpectedFovObjects<'a> {
         first_objects_in_ray: Snapshot<'a>,
