@@ -819,11 +819,16 @@ mod tests {
         connect_ray_to_expectation(tenth_ray, expected_fov_objects.tenth_objects_in_ray);
 
         let objects_in_fov = objects_in_fov(&own_description, &world_interactor);
+        assert_eq!(
+            expected_fov_objects.expected_objects.len(),
+            objects_in_fov.len()
+        );
         for (expected_objects_in_ray, objects_in_ray) in expected_fov_objects
             .expected_objects
             .iter()
             .zip(objects_in_fov.iter())
         {
+            assert_eq!(expected_objects_in_ray.len(), objects_in_ray.len());
             for (expected_object, object) in
                 expected_objects_in_ray.iter().zip(objects_in_ray.iter())
             {
