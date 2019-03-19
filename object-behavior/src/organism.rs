@@ -751,28 +751,43 @@ mod tests {
 
     fn test_objects_in_fov_are_as_expected(expected_fov_objects: ExpectedFovObjects<'_>) {
         let own_description = object_description().build().unwrap();
-        let other_object = object_description().location(0.0, -5.0).build().unwrap();
         let mut world_interactor = WorldInteractorMock::new();
+
+        let mut connect_ray_to_expectation = |ray, expectation| {
+            world_interactor
+                .expect_find_objects_in_ray(partial_eq(own_description.location), partial_eq(ray))
+                .returns(expectation);
+        };
 
         let first_ray = Vector {
             x: 0.17364817766693041,
             y: 0.984807753012208,
         };
-
-        world_interactor
-            .expect_find_objects_in_ray(partial_eq(own_description.location), partial_eq(first_ray))
-            .returns(expected_fov_objects.first_objects_in_ray);
+        connect_ray_to_expectation(first_ray, expected_fov_objects.first_objects_in_ray);
 
         let second_ray = Vector {
             x: -0.17364817766693025,
             y: 0.9848077530122081,
         };
-        world_interactor
-            .expect_find_objects_in_ray(
-                partial_eq(own_description.location),
-                partial_eq(second_ray),
-            )
-            .returns(expected_fov_objects.second_objects_in_ray);
+        connect_ray_to_expectation(second_ray, expected_fov_objects.second_objects_in_ray);
+
+        let third_ray = Vector {
+            x: -0.4999999999999999,
+            y: 0.8660254037844387,
+        };
+        connect_ray_to_expectation(third_ray, expected_fov_objects.third_objects_in_ray);
+
+        let fourth_ray = Vector {
+            x: -0.7660444431189779,
+            y: 0.6427876096865395,
+        };
+        connect_ray_to_expectation(fourth_ray, expected_fov_objects.fourth_objects_in_ray);
+
+        let fifth_ray = Vector {
+            x: -0.9396926207859083,
+            y: 0.3420201433256688,
+        };
+        connect_ray_to_expectation(fifth_ray, expected_fov_objects.fifth_objects_in_ray);
 
         let objects_in_fov = objects_in_fov(&own_description, &world_interactor);
         for (expected_objects_in_ray, objects_in_ray) in expected_fov_objects
