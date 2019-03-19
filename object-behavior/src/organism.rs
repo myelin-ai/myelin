@@ -794,11 +794,29 @@ mod tests {
         };
         connect_ray_to_expectation(sixth_ray, expected_fov_objects.sixth_objects_in_ray);
 
-        let sixth_ray = Vector {
+        let seventh_ray = Vector {
             x: -0.9396926207859085,
             y: -0.34202014332566844,
         };
-        connect_ray_to_expectation(sixth_ray, expected_fov_objects.sixth_objects_in_ray);
+        connect_ray_to_expectation(seventh_ray, expected_fov_objects.seventh_objects_in_ray);
+
+        let eight_ray = Vector {
+            x: -0.7660444431189782,
+            y: -0.642787609686539,
+        };
+        connect_ray_to_expectation(eight_ray, expected_fov_objects.eight_objects_in_ray);
+
+        let ninth_ray = Vector {
+            x: -0.5000000000000002,
+            y: -0.8660254037844385,
+        };
+        connect_ray_to_expectation(ninth_ray, expected_fov_objects.ninth_objects_in_ray);
+
+        let tenth_ray = Vector {
+            x: -0.17364817766693053,
+            y: -0.984807753012208,
+        };
+        connect_ray_to_expectation(tenth_ray, expected_fov_objects.tenth_objects_in_ray);
 
         let objects_in_fov = objects_in_fov(&own_description, &world_interactor);
         for (expected_objects_in_ray, objects_in_ray) in expected_fov_objects
