@@ -730,24 +730,26 @@ mod tests {
 
     #[test]
     fn objects_in_fov_is_empty_with_no_surrounding_objects() {
-        test_objects_in_fov_are_as_expected(
-            Vec::new(),
-            Vec::new(),
-            Vec::new(),
-            Vec::new(),
-            Vec::new(),
-            Vec::new(),
-        )
+        test_objects_in_fov_are_as_expected(ExpectedFovObjects {
+            first_objects_in_ray: Vec::new(),
+            second_objects_in_ray: Vec::new(),
+            third_objects_in_ray: Vec::new(),
+            fourth_objects_in_ray: Vec::new(),
+            fifth_objects_in_ray: Vec::new(),
+            expected_objects: Vec::new(),
+        })
     }
 
-    fn test_objects_in_fov_are_as_expected(
-        first_objects_in_ray: Snapshot<'_>,
-        second_objects_in_ray: Snapshot<'_>,
-        third_objects_in_ray: Snapshot<'_>,
-        fourth_objects_in_ray: Snapshot<'_>,
-        fifth_objects_in_ray: Snapshot<'_>,
-        expected_objects: Vec<Vec<Object<'_>>>,
-    ) {
+    struct ExpectedFovObjects<'a> {
+        first_objects_in_ray: Snapshot<'a>,
+        second_objects_in_ray: Snapshot<'a>,
+        third_objects_in_ray: Snapshot<'a>,
+        fourth_objects_in_ray: Snapshot<'a>,
+        fifth_objects_in_ray: Snapshot<'a>,
+        expected_objects: Vec<Vec<Object<'a>>>,
+    }
+
+    fn test_objects_in_fov_are_as_expected(expected_fov_objects: ExpectedFovObjects<'_>) {
         let own_description = object_description().build().unwrap();
         let other_object = object_description().location(0.0, -5.0).build().unwrap();
         let mut world_interactor = WorldInteractorMock::new();
@@ -759,7 +761,7 @@ mod tests {
 
         world_interactor
             .expect_find_objects_in_ray(partial_eq(own_description.location), partial_eq(first_ray))
-            .returns(first_objects_in_ray);
+            .returns(expected_fov_objects.first_objects_in_ray);
 
         let second_ray = Vector {
             x: -0.17364817766693025,
@@ -770,11 +772,13 @@ mod tests {
                 partial_eq(own_description.location),
                 partial_eq(second_ray),
             )
-            .returns(second_objects_in_ray);
+            .returns(expected_fov_objects.second_objects_in_ray);
 
         let objects_in_fov = objects_in_fov(&own_description, &world_interactor);
-        for (expected_objects_in_ray, objects_in_ray) in
-            expected_objects.iter().zip(objects_in_fov.iter())
+        for (expected_objects_in_ray, objects_in_ray) in expected_fov_objects
+            .expected_objects
+            .iter()
+            .zip(objects_in_fov.iter())
         {
             for (expected_object, object) in
                 expected_objects_in_ray.iter().zip(objects_in_ray.iter())
