@@ -952,6 +952,7 @@ mod tests {
             Vec::new(),
             Vec::new(),
         ];
+        assert_eq!(RAYCAST_COUNT, objects_in_fov.len());
         let inputs = objects_in_fov_to_neuron_inputs(&own_description, &objects_in_fov);
 
         let no_distances = vec![None; MAX_OBJECTS_PER_RAYCAST];
@@ -999,6 +1000,7 @@ mod tests {
         .into_iter()
         .flatten()
         .collect();
+        assert_eq!(RAYCAST_COUNT * MAX_OBJECTS_PER_RAYCAST, expected_inputs.len());
 
         assert_eq!(expected_inputs, inputs);
     }
