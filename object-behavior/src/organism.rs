@@ -951,7 +951,6 @@ mod tests {
             genenerate_objects(3),
             Vec::new(),
             Vec::new(),
-            Vec::new(),
         ];
         let inputs = objects_in_fov_to_neuron_inputs(&own_description, &objects_in_fov);
 
