@@ -730,22 +730,21 @@ mod tests {
 
     #[test]
     fn objects_in_fov_is_empty_with_no_surrounding_objects() {
-        test_objects_in_fov_are_as_expected(ExpectedFovObjects {
-            first_objects_in_ray: Vec::new(),
-            second_objects_in_ray: Vec::new(),
-            third_objects_in_ray: Vec::new(),
-            fourth_objects_in_ray: Vec::new(),
-            fifth_objects_in_ray: Vec::new(),
-            expected_objects: Vec::new(),
-        })
+        test_objects_in_fov_are_as_expected(ExpectedFovObjects::default())
     }
 
+    #[derive(Debug, Default)]
     struct ExpectedFovObjects<'a> {
         first_objects_in_ray: Snapshot<'a>,
         second_objects_in_ray: Snapshot<'a>,
         third_objects_in_ray: Snapshot<'a>,
         fourth_objects_in_ray: Snapshot<'a>,
         fifth_objects_in_ray: Snapshot<'a>,
+        sixth_objects_in_ray: Snapshot<'a>,
+        seventh_objects_in_ray: Snapshot<'a>,
+        eight_objects_in_ray: Snapshot<'a>,
+        ninth_objects_in_ray: Snapshot<'a>,
+        tenth_objects_in_ray: Snapshot<'a>,
         expected_objects: Vec<Vec<Object<'a>>>,
     }
 
@@ -788,6 +787,18 @@ mod tests {
             y: 0.3420201433256688,
         };
         connect_ray_to_expectation(fifth_ray, expected_fov_objects.fifth_objects_in_ray);
+
+        let sixth_ray = Vector {
+            x: -0.9999999999999999,
+            y: 0.00000000000000008326672684688674,
+        };
+        connect_ray_to_expectation(sixth_ray, expected_fov_objects.sixth_objects_in_ray);
+
+        let sixth_ray = Vector {
+            x: -0.9396926207859085,
+            y: -0.34202014332566844,
+        };
+        connect_ray_to_expectation(sixth_ray, expected_fov_objects.sixth_objects_in_ray);
 
         let objects_in_fov = objects_in_fov(&own_description, &world_interactor);
         for (expected_objects_in_ray, objects_in_ray) in expected_fov_objects
