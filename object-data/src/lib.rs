@@ -8,7 +8,8 @@
     clippy::doc_markdown,
     clippy::unimplemented,
     clippy::default_trait_access,
-    clippy::enum_glob_use
+    clippy::enum_glob_use,
+    clippy::explicit_into_iter_loop
 )]
 
 use serde_derive::{Deserialize, Serialize};

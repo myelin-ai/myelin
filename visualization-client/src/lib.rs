@@ -1,7 +1,6 @@
 //! In-browser visualization for myelin using a canvas with WASM
 
 #![feature(box_syntax)]
-
 #![warn(missing_docs, clippy::dbg_macro)]
 #![deny(
     rust_2018_idioms,
@@ -10,7 +9,8 @@
     clippy::doc_markdown,
     clippy::unimplemented,
     clippy::default_trait_access,
-    clippy::enum_glob_use
+    clippy::enum_glob_use,
+    clippy::explicit_into_iter_loop
 )]
 
 pub use self::bootstrapper::*;
