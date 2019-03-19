@@ -955,6 +955,6 @@ mod tests {
         ];
         let inputs = objects_in_fov_to_neuron_inputs(&own_description, &objects_in_fov);
 
-        assert_eq!(9, inputs.len());
+        assert_eq!(objects_in_fov.len() * MAX_OBJECTS_PER_RAYCAST, inputs.len());
     }
 }
