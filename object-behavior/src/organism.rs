@@ -746,7 +746,7 @@ mod tests {
     }
 
     #[test]
-    fn objects_in_fov_is_sorted_and_filtered_correctly() {
+    fn objects_in_fov_are_filtered_correctly() {
         let mock_behavior = ObjectBehaviorMock::new();
         let mut counter = 0;
         let mut genenerate_objects =
