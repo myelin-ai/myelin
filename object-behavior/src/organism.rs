@@ -225,7 +225,7 @@ fn objects_in_fov_to_neuron_inputs(
                 .map(Vector::magnitude)
                 .map(Some)
                 .collect::<Vec<_>>();
-            distances.sort_by(|a, b| a.partial_cmp(&b).unwrap());
+            distances.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
             // Todo: Maybe move the whole Option stuff to another fn
             let not_visible_object_count = MAX_OBJECTS_PER_RAYCAST - distances.len();
