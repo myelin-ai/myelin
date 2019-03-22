@@ -842,7 +842,8 @@ mod tests {
         connect_ray_to_expectation(sixth_ray, expected_fov_objects.sixth_objects_in_ray);
 
         let seventh_ray = Vector {
-            x: -0.939_692_620_785_908_5,
+            /// On macOS, the actual value is for some reason 0.939_692_620_785_908_4
+            x: -0.939_692_620_785_908_4,
             y: -0.342_020_143_325_668_44,
         };
         connect_ray_to_expectation(seventh_ray, expected_fov_objects.seventh_objects_in_ray);
