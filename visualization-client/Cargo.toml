@@ -18,7 +18,6 @@ wasm-bindgen = "=0.2.23"
 js-sys = "=0.3.0"
 myelin-visualization-core = { path = "../visualization-core" }
 myelin-engine = "0.9"
-myelin-geometry = "2.2"
 myelin-object-data = { path = "../object-data" }
 
 [dependencies.web-sys]

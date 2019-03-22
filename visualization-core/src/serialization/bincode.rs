@@ -62,7 +62,7 @@ mod tests {
     use crate::view_model_delta::*;
     use maplit::hashmap;
     use myelin_engine::object::*;
-    use myelin_geometry::*;
+    use myelin_engine::geometry::*;
 
     #[test]
     fn serializes_full_delta() {

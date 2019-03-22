@@ -12,7 +12,6 @@ edition = "2018"
 
 [dependencies]
 myelin-engine = "0.9"
-myelin-geometry = "2.2"
 myelin-object-data = { path = "../object-data" }
 serde = "1.0"
 serde_derive = "1.0"
