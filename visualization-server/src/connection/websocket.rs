@@ -32,7 +32,7 @@ impl Socket for WebsocketClient {
             .unwrap()
             .send_message(&message)
             .map_err(WebsocketClientError::from)
-            .map_err(|err| Box::new(err) as Box<dyn SocketError>)
+            .map_err(|err| box err as Box<dyn SocketError>)
     }
 }
 

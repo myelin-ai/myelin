@@ -178,7 +178,8 @@ where
 {
     assert!(
         input >= 0.0 && input <= 1.0,
-        "Invalid input value: {}. Expected value in the range [0, 1]"
+        "Invalid input value: {}. Expected value in the range [0, 1]",
+        input
     );
 
     // The input is converted from [0; 1] into [resting_potential, action_potential]
