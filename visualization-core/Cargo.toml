@@ -11,8 +11,7 @@ authors = [
 edition = "2018"
 
 [dependencies]
-myelin-engine = "0.8"
-myelin-geometry = "2.2"
+myelin-engine = "0.10"
 myelin-object-data = { path = "../object-data" }
 serde = "1.0"
 serde_derive = "1.0"
@@ -21,7 +20,7 @@ bincode = { version = "1.0", optional = true }
 
 [dev-dependencies]
 maplit = "1.0"
-mockiato = "0.2"
+mockiato = "0.3"
 
 [features]
 default = ["use-bincode"]

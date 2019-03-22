@@ -11,17 +11,16 @@ authors = [
 edition = "2018"
 
 [dependencies]
-myelin-engine = "0.8"
-myelin-geometry = "2.2"
+myelin-engine = "0.10"
 myelin-object-data = { path = "../object-data" }
 nameof = "1.0"
-rand = "0.6.1"
+rand = "0.6"
 
 [dev-dependencies]
 myelin-object-behavior = { path = "../object-behavior" }
-mockiato = "0.2"
+mockiato = "0.3"
 myelin-object-data = { path = "../object-data", features = ["use-mocks"] }
 
 [dev-dependencies.myelin-engine]
-version = "0.8"
+version = "0.10"
 features = ["use-mocks"]
