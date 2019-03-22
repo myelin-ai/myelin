@@ -38,5 +38,5 @@ features = [
 [dev-dependencies]
 maplit = "1.0"
 nameof = "1.0"
-mockiato = "0.2"
+mockiato = "0.3"
 myelin-object-data = { path = "../object-data", features = ["use-mocks"] }
