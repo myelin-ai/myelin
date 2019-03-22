@@ -136,9 +136,9 @@ fn map_objects(
     snapshot
         .values()
         .map(|business_object| view_model::Object {
-            shape: translate_shape_into_view_model(&business_object, global_polygon_translator),
+            shape: translate_shape_into_view_model(business_object, global_polygon_translator),
             kind: translate_kind_into_view_model(business_object.kind),
-            name_label: translate_name_into_view_model(&business_object),
+            name_label: translate_name_into_view_model(business_object),
         })
         .collect()
 }
@@ -169,7 +169,7 @@ fn translate_name_into_view_model(
     business_object.name.clone().and_then(|name| {
         Some(view_model::Label {
             text: name,
-            location: calculate_name_position(&business_object),
+            location: calculate_name_position(business_object),
             font_color: String::from(constant::color::LABEL),
         })
     })

@@ -13,7 +13,7 @@ pub(crate) struct WebsocketClient(Mutex<Client<TcpStream>>);
 
 impl WebsocketClient {
     pub(crate) fn new(inner: Client<TcpStream>) -> Self {
-        WebsocketClient(Mutex::new(inner))
+        Self(Mutex::new(inner))
     }
 }
 
@@ -41,7 +41,7 @@ struct WebsocketClientError(WebSocketError);
 
 impl From<WebSocketError> for WebsocketClientError {
     fn from(err: WebSocketError) -> Self {
-        WebsocketClientError(err)
+        Self(err)
     }
 }
 
