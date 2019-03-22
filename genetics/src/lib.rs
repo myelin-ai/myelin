@@ -99,7 +99,7 @@ pub trait NeuralNetworkDeveloperFacade: Debug + NeuralNetworkDeveloperFacadeClon
 /// Provides a function that can be used to develop a neural network
 pub trait NeuralNetworkDeveloper: Debug {
     /// Develops a neural network and writes it into a [`NeuralNetworkConfigurator`].
-    fn develop_neural_network(self: Box<Self>, configurator: &mut NeuralNetworkConfigurator);
+    fn develop_neural_network(self: Box<Self>, configurator: &mut dyn NeuralNetworkConfigurator);
 }
 
 /// Configuration storage for a [`NeuralNetworkDeveloper`].
