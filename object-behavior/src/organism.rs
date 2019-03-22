@@ -908,8 +908,18 @@ mod tests {
     fn objects_in_fov_are_mapped_to_neural_inputs() {
         let mut counter = 0;
         let mock_behavior = ObjectBehaviorMock::new();
-        let mut genenerate_objects =
-            |amount| generate_objects(amount, &mock_behavior, &mut counter);
+
+        let mut genenerate_objects = |amount| {
+            /// This arbitrary shift jumbles the objects up,
+            /// later testing if their distances are sorted
+            const SHIFT: usize = 2;
+            generate_objects(amount, &mock_behavior, &mut counter)
+                .into_iter()
+                .cycle()
+                .skip(SHIFT)
+                .take(amount)
+                .collect()
+        };
 
         let own_description = object_description().build().unwrap();
         let objects_in_fov = vec![
