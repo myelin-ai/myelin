@@ -124,14 +124,19 @@ pub trait NeuralNetworkConfigurator {
 /// [`Clone`]: https://doc.rust-lang.org/nightly/std/clone/trait.Clone.html
 #[doc(hidden)]
 pub trait NeuralNetworkDeveloperFacadeClone {
-    fn clone_box(&self) -> Box<dyn NeuralNetworkDeveloperFacade>;
+    fn clone_box<'a>(&self) -> Box<dyn NeuralNetworkDeveloperFacade + 'a>
+    where
+        Self: 'a;
 }
 
 impl<T> NeuralNetworkDeveloperFacadeClone for T
 where
-    T: NeuralNetworkDeveloperFacade + Clone + 'static,
+    T: NeuralNetworkDeveloperFacade + Clone,
 {
-    default fn clone_box(&self) -> Box<dyn NeuralNetworkDeveloperFacade> {
+    default fn clone_box<'a>(&self) -> Box<dyn NeuralNetworkDeveloperFacade + 'a>
+    where
+        Self: 'a,
+    {
         box self.clone()
     }
 }
