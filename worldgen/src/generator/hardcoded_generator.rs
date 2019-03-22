@@ -39,12 +39,7 @@ impl HardcodedGenerator {
     /// # Examples
     /// ```
     /// use myelin_engine::prelude::*;
-    /// use myelin_engine::simulation::world::{
-    ///     rotation_translator::NphysicsRotationTranslatorImpl, NphysicsWorld,
-    /// };
     /// use myelin_engine::simulation::SimulationBuilder;
-    /// use myelin_engine::simulation::SimulationImpl;
-    /// use myelin_engine::world_interactor::WorldInteractorImpl;
     /// use myelin_object_behavior::Static;
     /// use myelin_object_data::{AdditionalObjectDescriptionBincodeSerializer, Kind};
     /// use myelin_worldgen::{HardcodedGenerator, NameProviderBuilder, WorldGenerator};
