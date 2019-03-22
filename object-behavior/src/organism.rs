@@ -297,7 +297,7 @@ fn add_vision_inputs(
 }
 
 /// Arbitrary value
-const MIN_PERCEIVABLE_ACCELERATION: f64 = 0.0001;
+const MIN_PERCEIVABLE_ACCELERATION: f64 = 0.000_1;
 
 fn axial_acceleration_handle(
     axial_acceleration: f64,
@@ -817,62 +817,62 @@ mod tests {
         };
 
         let first_ray = Vector {
-            x: 0.17364817766693041,
-            y: 0.984807753012208,
+            x: 0.173_648_177_666_930_41,
+            y: 0.984_807_753_012_208,
         };
         connect_ray_to_expectation(first_ray, expected_fov_objects.first_objects_in_ray);
 
         let second_ray = Vector {
-            x: -0.17364817766693025,
-            y: 0.9848077530122081,
+            x: -0.173_648_177_666_930_25,
+            y: 0.984_807_753_012_208_1,
         };
         connect_ray_to_expectation(second_ray, expected_fov_objects.second_objects_in_ray);
 
         let third_ray = Vector {
-            x: -0.4999999999999999,
-            y: 0.8660254037844387,
+            x: -0.499_999_999_999_999_9,
+            y: 0.866_025_403_784_438_7,
         };
         connect_ray_to_expectation(third_ray, expected_fov_objects.third_objects_in_ray);
 
         let fourth_ray = Vector {
-            x: -0.7660444431189779,
-            y: 0.6427876096865395,
+            x: -0.766_044_443_118_977_9,
+            y: 0.642_787_609_686_539_5,
         };
         connect_ray_to_expectation(fourth_ray, expected_fov_objects.fourth_objects_in_ray);
 
         let fifth_ray = Vector {
-            x: -0.9396926207859083,
-            y: 0.3420201433256688,
+            x: -0.939_692_620_785_908_3,
+            y: 0.342_020_143_325_668_8,
         };
         connect_ray_to_expectation(fifth_ray, expected_fov_objects.fifth_objects_in_ray);
 
         let sixth_ray = Vector {
-            x: -0.9999999999999999,
-            y: 0.00000000000000008326672684688674,
+            x: -0.999_999_999_999_999_9,
+            y: 0.000_000_000_000_000_083_266_726_846_886_74,
         };
         connect_ray_to_expectation(sixth_ray, expected_fov_objects.sixth_objects_in_ray);
 
         let seventh_ray = Vector {
-            x: -0.9396926207859085,
-            y: -0.34202014332566844,
+            x: -0.939_692_620_785_908_5,
+            y: -0.342_020_143_325_668_44,
         };
         connect_ray_to_expectation(seventh_ray, expected_fov_objects.seventh_objects_in_ray);
 
         let eight_ray = Vector {
-            x: -0.7660444431189782,
-            y: -0.642787609686539,
+            x: -0.766_044_443_118_978_2,
+            y: -0.642_787_609_686_539,
         };
         connect_ray_to_expectation(eight_ray, expected_fov_objects.eight_objects_in_ray);
 
         let ninth_ray = Vector {
-            x: -0.5000000000000002,
-            y: -0.8660254037844385,
+            x: -0.500_000_000_000_000_2,
+            y: -0.866_025_403_784_438_5,
         };
         connect_ray_to_expectation(ninth_ray, expected_fov_objects.ninth_objects_in_ray);
 
         let tenth_ray = Vector {
-            x: -0.17364817766693053,
-            y: -0.984807753012208,
+            x: -0.173_648_177_666_930_53,
+            y: -0.984_807_753_012_208,
         };
         connect_ray_to_expectation(tenth_ray, expected_fov_objects.tenth_objects_in_ray);
 
