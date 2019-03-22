@@ -21,7 +21,7 @@ pub(crate) struct GlobalPolygonTranslatorImpl(PhantomData<()>);
 
 impl GlobalPolygonTranslatorImpl {
     pub(crate) fn new() -> Self {
-        GlobalPolygonTranslatorImpl(PhantomData)
+        Self(PhantomData)
     }
 }
 

@@ -29,3 +29,7 @@ nearly_eq = "0.2"
 [dev-dependencies.myelin-engine]
 version = "0.8"
 features = ["use-mocks"]
+
+[dev-dependencies.myelin-neural-network]
+path = "../neural-network"
+features = ["use-mocks"]
