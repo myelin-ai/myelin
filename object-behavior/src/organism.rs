@@ -205,7 +205,6 @@ fn objects_in_fov<'a, 'b>(
             world_interactor
                 .find_objects_in_ray(own_description.location, fov_direction)
                 .into_iter()
-                .take(MAX_OBJECTS_PER_RAYCAST)
                 .collect()
         })
         .collect()
@@ -226,6 +225,8 @@ fn objects_in_fov_to_neuron_inputs(
                 .map(Some)
                 .collect::<Vec<_>>();
             distances.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+            distances.truncate(MAX_OBJECTS_PER_RAYCAST);
 
             // Todo: Maybe move the whole Option stuff to another fn
             let not_visible_object_count = MAX_OBJECTS_PER_RAYCAST - distances.len();
@@ -435,6 +436,7 @@ mod tests {
     use myelin_neural_network::NeuralNetworkMock;
     use nearly_eq::assert_nearly_eq;
     use std::f64::consts::PI;
+    use std::iter;
 
     #[test]
     fn axial_acceleration_handle_returns_correct_handle_for_minus_one() {
@@ -771,19 +773,10 @@ mod tests {
                 Vec::new(),
                 Vec::new(),
                 Vec::new(),
-                fourth_objects
-                    .into_iter()
-                    .take(MAX_OBJECTS_PER_RAYCAST)
-                    .collect(),
+                fourth_objects,
                 Vec::new(),
-                sixth_objects
-                    .into_iter()
-                    .take(MAX_OBJECTS_PER_RAYCAST)
-                    .collect(),
-                seventh_objects
-                    .into_iter()
-                    .take(MAX_OBJECTS_PER_RAYCAST)
-                    .collect(),
+                sixth_objects,
+                seventh_objects,
                 Vec::new(),
                 Vec::new(),
                 Vec::new(),
@@ -925,12 +918,12 @@ mod tests {
         let objects_in_fov = vec![
             Vec::new(),
             Vec::new(),
-            genenerate_objects(3),
+            genenerate_objects(6),
             Vec::new(),
             genenerate_objects(2),
             Vec::new(),
             genenerate_objects(1),
-            genenerate_objects(3),
+            genenerate_objects(4),
             Vec::new(),
             Vec::new(),
         ];
@@ -940,30 +933,24 @@ mod tests {
         let no_distances = vec![None; MAX_OBJECTS_PER_RAYCAST];
         let first_distances = no_distances.clone();
         let second_distances = no_distances.clone();
-        let third_distances = vec![2.0, 8.0, 18.0]
-            .into_iter()
-            .map(f64::sqrt)
-            .map(Some)
-            .collect();
+        let points_to_distances = |points: &[f64]| {
+            // Return the length of a vector from [0, 0] to [point, point]
+            // Fill the returned values with `None` until `MAX_OBJECTS_PER_RAYCAST`
+            points
+                .into_iter()
+                .map(|&point| 2.0 * f64::powf(point, 2.0))
+                .map(f64::sqrt)
+                .map(Some)
+                .chain(iter::repeat(None))
+                .take(MAX_OBJECTS_PER_RAYCAST)
+                .collect()
+        };
+        let third_distances = points_to_distances(&[1.0, 2.0, 3.0]);
         let fourth_distances = no_distances.clone();
-        let fifth_distances = vec![32.0, 50.0]
-            .into_iter()
-            .map(f64::sqrt)
-            .map(Some)
-            .chain(vec![None].into_iter())
-            .collect();
+        let fifth_distances = points_to_distances(&[7.0, 8.0]);
         let sixth_distances = no_distances.clone();
-        let seventh_distances = vec![72.0]
-            .into_iter()
-            .map(f64::sqrt)
-            .map(Some)
-            .chain(vec![None; 2].into_iter())
-            .collect();
-        let eight_distances = vec![98.0, 128.0, 162.0]
-            .into_iter()
-            .map(f64::sqrt)
-            .map(Some)
-            .collect();
+        let seventh_distances = points_to_distances(&[9.0]);
+        let eight_distances = points_to_distances(&[10.0, 11.0, 12.0]);
         let ninth_distances = no_distances.clone();
         let tenth_distances = no_distances;
 
