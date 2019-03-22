@@ -216,13 +216,16 @@ fn objects_in_fov_to_neuron_inputs(
     objects
         .iter()
         .map(|objects_in_ray| {
-            let mut distances = objects_in_ray
-                .iter()
-                .map(|object| object.description.location - own_description.location)
-                .map(Vector::from)
-                .map(Vector::magnitude)
-                .map(Some)
-                .collect::<Vec<_>>();
+            let distances_capacity = MAX_OBJECTS_PER_RAYCAST.max(objects_in_ray.len());
+            let mut distances = Vec::with_capacity(distances_capacity);
+            distances.extend(
+                objects_in_ray
+                    .iter()
+                    .map(|object| object.description.location - own_description.location)
+                    .map(Vector::from)
+                    .map(Vector::magnitude)
+                    .map(Some),
+            );
 
             distances.sort_by(|a, b| a.partial_cmp(b).unwrap());
             distances.resize(MAX_OBJECTS_PER_RAYCAST, None);
