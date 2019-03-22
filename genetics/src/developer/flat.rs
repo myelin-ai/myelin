@@ -111,6 +111,6 @@ mod tests {
     }
 
     fn neural_network_factory() -> Rc<NeuralNetworkFactory> {
-        Rc::new(|| box DefaultSpikingNeuralNetwork::default())
+        Rc::new(|| Box::new(DefaultSpikingNeuralNetwork::default()))
     }
 }
