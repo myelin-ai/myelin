@@ -12,7 +12,7 @@
 use crate::genome::Genome;
 #[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
-use myelin_neural_network::{Handle as NeuronHandle, NeuralNetwork};
+use myelin_neural_network::{Connection, Handle as NeuronHandle, Handle, NeuralNetwork};
 use std::fmt::Debug;
 
 pub mod genome;
@@ -42,7 +42,7 @@ pub struct NeuralNetworkDevelopmentConfiguration {
     pub output_neuron_count: u32,
 }
 
-/// [`NeuralNetwork`] and auxillary data developed by a [`NeuralNetworkDeveloper`].
+/// [`NeuralNetwork`] and auxiliary data developed by a [`NeuralNetworkDeveloper`].
 ///
 /// [`NeuralNetworkDeveloper`]: trait.NeuralNetworkDeveloper.html
 /// [`NeuralNetwork`]: ../myelin-neural-network/trait.NeuralNetwork.html
@@ -78,7 +78,7 @@ pub struct DevelopedNeuralNetwork {
 /// [`NeuralNetwork`]: ../myelin-neural-network/trait.NeuralNetwork.html
 /// [`Genome`]: ./struct.Genome.html
 #[cfg_attr(any(test, feature = "use-mocks"), mockable(static_references))]
-pub trait NeuralNetworkDeveloper: Debug + NeuralNetworkDeveloperClone {
+pub trait NeuralNetworkDeveloperFacade: Debug + NeuralNetworkDeveloperFacadeClone {
     /// Create a [`DevelopedNeuralNetwork`] using the information contained in the provided [`NeuralNetworkDevelopmentConfiguration`]
     ///
     /// [`DevelopedNeuralNetwork`]: ./struct.DevelopedNeuralNetwork.html
@@ -89,6 +89,26 @@ pub trait NeuralNetworkDeveloper: Debug + NeuralNetworkDeveloperClone {
     ) -> DevelopedNeuralNetwork;
 }
 
+/// Provides a function that can be used to develop a neural network
+pub trait NeuralNetworkDeveloper: Debug {
+    /// Develops a neural network and writes it into a [`NeuralNetworkConfigurator`].
+    fn develop_neural_network(self: Box<Self>, configurator: &mut NeuralNetworkConfigurator);
+}
+
+/// Configuration storage for a [`NeuralNetworkDeveloper`].
+pub trait NeuralNetworkConfigurator {
+    /// Add a new unconnected neuron to the network
+    fn push_neuron(&mut self) -> Handle;
+
+    /// Add a new connection between two neurons.
+    /// # Errors
+    /// Returns `Err` if an involved handle is invalid
+    fn add_connection(&mut self, connection: Connection) -> Result<(), ()>;
+
+    /// Marks a neuron as a sensor
+    fn mark_neuron_as_sensor(&mut self, handle: Handle) -> Result<(), ()>;
+}
+
 /// Supertrait used to make sure that all implementors
 /// of [`NeuralNetworkDeveloper`] are [`Clone`]. You don't need
 /// to care about this type.
@@ -96,20 +116,20 @@ pub trait NeuralNetworkDeveloper: Debug + NeuralNetworkDeveloperClone {
 /// [`NeuralNetworkDeveloper`]: ./trait.NeuralNetworkDeveloper.html
 /// [`Clone`]: https://doc.rust-lang.org/nightly/std/clone/trait.Clone.html
 #[doc(hidden)]
-pub trait NeuralNetworkDeveloperClone {
-    fn clone_box(&self) -> Box<dyn NeuralNetworkDeveloper>;
+pub trait NeuralNetworkDeveloperFacadeClone {
+    fn clone_box(&self) -> Box<dyn NeuralNetworkDeveloperFacade>;
 }
 
-impl<T> NeuralNetworkDeveloperClone for T
+impl<T> NeuralNetworkDeveloperFacadeClone for T
 where
-    T: NeuralNetworkDeveloper + Clone + 'static,
+    T: NeuralNetworkDeveloperFacade + Clone + 'static,
 {
-    default fn clone_box(&self) -> Box<dyn NeuralNetworkDeveloper> {
+    default fn clone_box(&self) -> Box<dyn NeuralNetworkDeveloperFacade> {
         Box::new(self.clone())
     }
 }
 
-impl Clone for Box<dyn NeuralNetworkDeveloper> {
+impl Clone for Box<dyn NeuralNetworkDeveloperFacade> {
     fn clone(&self) -> Self {
         self.clone_box()
     }

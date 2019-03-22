@@ -3,7 +3,7 @@
 use myelin_engine::prelude::*;
 use myelin_genetics::genome::Genome;
 use myelin_genetics::{
-    DevelopedNeuralNetwork, NeuralNetworkDeveloper, NeuralNetworkDevelopmentConfiguration,
+    DevelopedNeuralNetwork, NeuralNetworkDeveloperFacade, NeuralNetworkDevelopmentConfiguration,
 };
 use std::any::Any;
 
@@ -12,7 +12,7 @@ use std::any::Any;
 #[derive(Debug, Clone)]
 pub struct OrganismBehavior {
     developed_neural_network: DevelopedNeuralNetwork,
-    neural_network_developer: Box<dyn NeuralNetworkDeveloper>,
+    neural_network_developer: Box<dyn NeuralNetworkDeveloperFacade>,
 }
 
 impl OrganismBehavior {
@@ -24,7 +24,7 @@ impl OrganismBehavior {
     /// [`NeuralNetwork`]: ../myelin-neural-network/trait.NeuralNetwork.html
     pub fn new(
         parent_genomes: (Genome, Genome),
-        neural_network_developer: Box<dyn NeuralNetworkDeveloper>,
+        neural_network_developer: Box<dyn NeuralNetworkDeveloperFacade>,
     ) -> Self {
         /// Arbitrary number
         const INPUT_NEURON_COUNT: u32 = 5;
