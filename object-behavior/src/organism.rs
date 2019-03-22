@@ -7,7 +7,6 @@ use myelin_genetics::{
 use myelin_neural_network::{Handle, Milliseconds, NeuralNetwork};
 use std::any::Any;
 use std::collections::HashMap;
-use std::f64::consts::PI;
 
 /// The hightest relative acceleration an organism can detect.
 /// The value was chosen as many sources, [including Wikipedia](https://en.wikipedia.org/wiki/G-LOC#Thresholds) report
@@ -195,12 +194,12 @@ fn objects_in_fov<'a, 'b>(
     let unit_vector = Vector { x: 1.0, y: 0.0 };
     let own_direction = unit_vector.rotate(own_description.rotation);
 
-    let half_of_fov_angle = degrees_to_radians(FOV_ANGLE as f64 / 2.0).unwrap();
+    let half_of_fov_angle = Radians::try_from_degrees(FOV_ANGLE as f64 / 2.0).unwrap();
     let rightmost_angle = own_direction.rotate_clockwise(half_of_fov_angle);
     (0..RAYCAST_COUNT)
         .map(|angle_step| {
             let angle_in_degrees = angle_step as f64 * ANGLE_PER_RAYCAST;
-            let angle_in_radians = degrees_to_radians(angle_in_degrees).unwrap();
+            let angle_in_radians = Radians::try_from_degrees(angle_in_degrees).unwrap();
             let fov_direction = rightmost_angle.rotate(angle_in_radians);
             world_interactor
                 .find_objects_in_ray(own_description.location, fov_direction)
@@ -231,11 +230,6 @@ fn objects_in_fov_to_neuron_inputs(
         })
         .flatten()
         .collect()
-}
-
-// To do: Move this to radians
-fn degrees_to_radians(degrees: f64) -> Result<Radians, RadiansError> {
-    Radians::try_new(degrees / 180.0 * PI)
 }
 
 fn velocity(object_description: &ObjectDescription) -> Vector {
