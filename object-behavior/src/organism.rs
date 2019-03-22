@@ -93,12 +93,14 @@ impl ObjectBehavior for OrganismBehavior {
         self.previous_velocity = current_velocity;
 
         let mut inputs = HashMap::with_capacity(2);
+        let mut insert_input_fn = |key, value| {
+            inputs.insert(key, value);
+        };
+
         add_acceleration_inputs(
             relative_acceleration,
             &neuron_handle_mapping.input,
-            |key, value| {
-                inputs.insert(key, value);
-            },
+            &mut insert_input_fn,
         );
 
         let objects_in_fov = objects_in_fov(&own_object.description, world_interactor);
@@ -108,9 +110,7 @@ impl ObjectBehavior for OrganismBehavior {
         add_vision_inputs(
             &vision_neuron_inputs,
             &neuron_handle_mapping.input,
-            |key, value| {
-                inputs.insert(key, value);
-            },
+            &mut insert_input_fn,
         );
 
         let neural_network = &mut self.developed_neural_network.neural_network;
