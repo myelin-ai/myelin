@@ -198,9 +198,11 @@ fn objects_in_fov<'a, 'b>(
     let rightmost_angle = own_direction.rotate_clockwise(half_of_fov_angle);
     (0..RAYCAST_COUNT)
         .map(|angle_step| {
+            // Todo: The following three lines produce slightly different number on macOS
             let angle_in_degrees = angle_step as f64 * ANGLE_PER_RAYCAST;
             let angle_in_radians = Radians::try_from_degrees(angle_in_degrees).unwrap();
             let fov_direction = rightmost_angle.rotate(angle_in_radians);
+
             world_interactor
                 .find_objects_in_ray(own_description.location, fov_direction)
                 .into_iter()
