@@ -906,7 +906,6 @@ mod tests {
 
     #[test]
     fn objects_in_fov_are_mapped_to_neural_inputs() {
-        // Todo: Move into generator
         let mut counter = 0;
         let mock_behavior = ObjectBehaviorMock::new();
         let mut genenerate_objects =
