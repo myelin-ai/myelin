@@ -76,7 +76,7 @@ impl<'a> ControllerImpl<'a> {
             connection_acceptor_factory_fn,
             expected_delta,
             thread_spawn_fn,
-            current_snapshot: Default::default(),
+            current_snapshot: Arc::default(),
         }
     }
 
@@ -177,7 +177,7 @@ mod tests {
     fn snapshot_is_empty_before_step() {
         let simulation = SimulationMock::new();
 
-        let current_snapshot_fn: Arc<Mutex<Option<Arc<CurrentSnapshotFn>>>> = Default::default();
+        let current_snapshot_fn: Arc<Mutex<Option<Arc<CurrentSnapshotFn>>>> = Arc::default();
         let snapshot_fn = current_snapshot_fn.clone();
         let controller = ControllerImpl::new(
             box simulation,
@@ -214,7 +214,7 @@ mod tests {
             behavior: mock_behavior.as_ref(),
         }]);
 
-        let current_snapshot_fn: Arc<Mutex<Option<Arc<CurrentSnapshotFn>>>> = Default::default();
+        let current_snapshot_fn: Arc<Mutex<Option<Arc<CurrentSnapshotFn>>>> = Arc::default();
         let snapshot_fn = current_snapshot_fn.clone();
         let mut controller = ControllerImpl::new(
             box simulation,
@@ -257,6 +257,6 @@ mod tests {
     }
 
     fn mock_behavior<'a>() -> Box<dyn ObjectBehavior + 'a> {
-        Box::new(ObjectBehaviorMock::new())
+        box ObjectBehaviorMock::new()
     }
 }

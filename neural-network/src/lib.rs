@@ -1,12 +1,18 @@
 //! Neural networks and their components
 
 #![feature(specialization)]
+#![feature(box_syntax)]
+#![warn(missing_docs, clippy::dbg_macro, clippy::unimplemented)]
 #![deny(
     rust_2018_idioms,
+    future_incompatible,
     missing_debug_implementations,
-    missing_docs,
     clippy::doc_markdown,
-    clippy::unimplemented
+    clippy::default_trait_access,
+    clippy::enum_glob_use,
+    clippy::needless_borrow,
+    clippy::large_digit_groups,
+    clippy::explicit_into_iter_loop
 )]
 
 mod connection;
@@ -44,8 +50,8 @@ pub trait NeuralNetwork: Debug + NeuralNetworkClone {
         external_inputs: &HashMap<Handle, MembranePotential>,
     );
 
-    /// Returns the last calculated state of the neuron referenced by `handle`
-    fn membrane_potential_of_neuron(&self, neuron: Handle) -> Result<Option<MembranePotential>>;
+    /// A normalized value between 0 and 1 representing the current membrane potential
+    fn normalized_potential_of_neuron(&self, neuron: Handle) -> Result<Option<f64>>;
 
     /// Add a new unconnected neuron to the network
     fn push_neuron(&mut self) -> Handle;
@@ -72,7 +78,7 @@ where
     T: NeuralNetwork + Clone + 'static,
 {
     default fn clone_box(&self) -> Box<dyn NeuralNetwork> {
-        Box::new(self.clone())
+        box self.clone()
     }
 }
 

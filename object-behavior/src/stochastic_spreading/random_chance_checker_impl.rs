@@ -1,5 +1,6 @@
 use super::RandomChanceChecker;
-use rand::{thread_rng, Rng, ThreadRng};
+use rand::rngs::ThreadRng;
+use rand::{thread_rng, Rng};
 
 /// Random number generator implementation that uses the `rand` crate
 #[derive(Debug, Clone)]

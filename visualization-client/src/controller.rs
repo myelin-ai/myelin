@@ -160,7 +160,7 @@ mod tests {
     use super::*;
     use maplit::hashmap;
     use mockiato::partial_eq_owned;
-    use myelin_geometry::*;
+    use myelin_engine::geometry::*;
     use myelin_object_data::{AdditionalObjectDescriptionSerializerMock, Kind};
     use myelin_visualization_core::view_model_delta::{ObjectDelta, ObjectDescriptionDelta};
     use std::cell::RefCell;
@@ -292,7 +292,7 @@ mod tests {
             ),
             location: Some(Point { x: 20.0, y: 40.0 }),
             rotation: Some(Radians::try_new(6.0).unwrap()),
-            ..Default::default()
+            ..presenter::ObjectDescriptionDelta::default()
         }
     }
 
@@ -317,7 +317,7 @@ mod tests {
         fn new(parameter: Vec<u8>, return_value: AdditionalObjectDescription) -> Self {
             Self {
                 expect_deserialize: Some((parameter, return_value)),
-                expect_deserialize_called: Default::default(),
+                expect_deserialize_called: AtomicBool::default(),
             }
         }
     }

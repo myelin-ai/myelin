@@ -1,5 +1,5 @@
 use crate::view_model;
-use myelin_geometry::*;
+use myelin_engine::geometry::*;
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
@@ -21,7 +21,7 @@ pub(crate) struct GlobalPolygonTranslatorImpl(PhantomData<()>);
 
 impl GlobalPolygonTranslatorImpl {
     pub(crate) fn new() -> Self {
-        GlobalPolygonTranslatorImpl(PhantomData)
+        Self(PhantomData)
     }
 }
 

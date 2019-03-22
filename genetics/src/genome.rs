@@ -73,7 +73,7 @@ pub struct HoxGene {
     pub disabled_connections: Vec<ConnectionFilter>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Genome {
     pub hox_genes: Vec<HoxGene>,
     pub cluster_genes: Vec<ClusterGene>,

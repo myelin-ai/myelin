@@ -1,7 +1,9 @@
 //! Run neural-network/scripts/plot.py in order to visualize the neurons' output
 
+#![feature(box_syntax)]
+
 use maplit::hashmap;
-use myelin_neural_network::spiking_neural_network::SpikingNeuralNetwork;
+use myelin_neural_network::spiking_neural_network::DefaultSpikingNeuralNetwork;
 use myelin_neural_network::{Connection, Handle, MembranePotential, Milliseconds, NeuralNetwork};
 use std::collections::HashMap;
 
@@ -10,7 +12,7 @@ fn main() {
     const TIMESTEP: Milliseconds = 0.001;
     const IS_INPUT_CONSTANT: bool = true;
 
-    let mut neural_network = SpikingNeuralNetwork::default();
+    let mut neural_network = box DefaultSpikingNeuralNetwork::default();
     let sensor_handle = neural_network.push_neuron();
     let neuron_handle = neural_network.push_neuron();
     let connection = Connection {

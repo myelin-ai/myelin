@@ -143,9 +143,9 @@ mod tests {
     fn can_be_constructed() {
         let interval = Duration::from_millis(INTERVAL);
         let sleeper = FixedIntervalSleeperMock::new();
-        let presenter = Box::new(PresenterMock::new());
-        let serializer = Box::new(SerializerMock::default());
-        let socket = Box::new(SocketMock::default());
+        let presenter = box PresenterMock::new();
+        let serializer = box SerializerMock::default();
+        let socket = box SocketMock::default();
         let connection = Connection {
             id: Uuid::new_v4(),
             socket,
@@ -153,7 +153,7 @@ mod tests {
         let current_snapshot_fn = Arc::new(Snapshot::new);
         let _client = ClientHandler::new(
             interval,
-            Box::new(sleeper),
+            box sleeper,
             presenter,
             serializer,
             connection,
@@ -169,18 +169,18 @@ mod tests {
         sleeper
             .expect_sleep_until_interval_passed(partial_eq(interval))
             .returns(Ok(()));
-        let mut presenter = Box::new(PresenterMock::new());
+        let mut presenter = box PresenterMock::new();
         presenter
             .expect_calculate_deltas(
                 partial_eq_owned(Snapshot::new()),
                 partial_eq_owned(snapshot()),
             )
             .returns(delta());
-        let mut serializer = Box::new(SerializerMock::default());
+        let mut serializer = box SerializerMock::default();
         let expected_payload = vec![0xFF, 0x01, 0x32];
         serializer
             .expect_serialize_view_model_delta_and_return(delta(), Ok(expected_payload.clone()));
-        let mut socket = Box::new(SocketMock::default());
+        let mut socket = box SocketMock::default();
         socket.expect_send_message_and_return(expected_payload, Ok(()));
         let connection = Connection {
             id: Uuid::new_v4(),
@@ -190,7 +190,7 @@ mod tests {
         let current_snapshot_fn = Arc::new(snapshot);
         let mut client = ClientHandler::new(
             interval,
-            Box::new(sleeper),
+            box sleeper,
             presenter,
             serializer,
             connection,
@@ -209,15 +209,15 @@ mod tests {
         sleeper
             .expect_sleep_until_interval_passed(partial_eq(interval))
             .returns(Ok(()));
-        let mut presenter = Box::new(PresenterMock::new());
+        let mut presenter = box PresenterMock::new();
         presenter
             .expect_calculate_deltas(
                 partial_eq_owned(Snapshot::new()),
                 partial_eq_owned(snapshot()),
             )
             .returns(ViewModelDelta::default());
-        let serializer = Box::new(SerializerMock::default());
-        let socket = Box::new(SocketMock::default());
+        let serializer = box SerializerMock::default();
+        let socket = box SocketMock::default();
         let connection = Connection {
             id: Uuid::new_v4(),
             socket,
@@ -226,7 +226,7 @@ mod tests {
         let current_snapshot_fn = Arc::new(snapshot);
         let mut client = ClientHandler::new(
             interval,
-            Box::new(sleeper),
+            box sleeper,
             presenter,
             serializer,
             connection,
@@ -246,17 +246,17 @@ mod tests {
         sleeper
             .expect_sleep_until_interval_passed(partial_eq(interval))
             .returns(Ok(()));
-        let mut presenter = Box::new(PresenterMock::new());
+        let mut presenter = box PresenterMock::new();
         presenter
             .expect_calculate_deltas(
                 partial_eq_owned(Snapshot::new()),
                 partial_eq_owned(snapshot()),
             )
             .returns(delta());
-        let mut serializer = Box::new(SerializerMock::default());
+        let mut serializer = box SerializerMock::default();
         let err = ErrorMock;
         serializer.expect_serialize_view_model_delta_and_return(delta(), Err(err));
-        let socket = Box::new(SocketMock::default());
+        let socket = box SocketMock::default();
         let connection = Connection {
             id: Uuid::new_v4(),
             socket,
@@ -265,7 +265,7 @@ mod tests {
         let current_snapshot_fn = Arc::new(snapshot);
         let mut client = ClientHandler::new(
             interval,
-            Box::new(sleeper),
+            box sleeper,
             presenter,
             serializer,
             connection,
@@ -284,18 +284,18 @@ mod tests {
         sleeper
             .expect_sleep_until_interval_passed(partial_eq(interval))
             .returns(Ok(()));
-        let mut presenter = Box::new(PresenterMock::new());
+        let mut presenter = box PresenterMock::new();
         presenter
             .expect_calculate_deltas(
                 partial_eq_owned(Snapshot::new()),
                 partial_eq_owned(snapshot()),
             )
             .returns(delta());
-        let mut serializer = Box::new(SerializerMock::default());
+        let mut serializer = box SerializerMock::default();
         let expected_payload = vec![0xFF, 0x01, 0x32];
         serializer
             .expect_serialize_view_model_delta_and_return(delta(), Ok(expected_payload.clone()));
-        let mut socket = Box::new(SocketMock::default());
+        let mut socket = box SocketMock::default();
         let err = SocketErrorMock;
         socket.expect_send_message_and_return(expected_payload, Err(err));
         let connection = Connection {
@@ -306,7 +306,7 @@ mod tests {
         let current_snapshot_fn = Arc::new(snapshot);
         let mut client = ClientHandler::new(
             interval,
-            Box::new(sleeper),
+            box sleeper,
             presenter,
             serializer,
             connection,
@@ -343,7 +343,7 @@ mod tests {
     fn delta() -> ViewModelDelta {
         let updated_object = ObjectDescriptionDelta {
             location: Some(Point { x: 12.0, y: 32.0 }),
-            ..Default::default()
+            ..ObjectDescriptionDelta::default()
         };
 
         hashmap! {
@@ -387,7 +387,7 @@ mod tests {
                 );
                 return_value
                     .clone()
-                    .map_err(|mock| Box::new(mock) as Box<dyn Error>)
+                    .map_err(|mock| box mock as Box<dyn Error>)
             } else {
                 panic!("serialize_view_model_delta() was called unexpectedly")
             }

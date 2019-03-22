@@ -23,7 +23,7 @@ pub(crate) trait Controller: Debug {
 #[wasm_bindgen]
 impl InputHandler {
     pub(crate) fn new(controller: Box<dyn Controller>) -> Self {
-        InputHandler { controller }
+        Self { controller }
     }
 
     /// Handles an incoming message.

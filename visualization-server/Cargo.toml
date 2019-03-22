@@ -11,24 +11,27 @@ authors = [
 edition = "2018"
 
 [dependencies]
-myelin-engine = "0.4"
+myelin-engine = "0.10"
 myelin-worldgen = { path = "../worldgen" }
 myelin-object-behavior = { path = "../object-behavior" }
 myelin-visualization-core = { path = "../visualization-core" }
 myelin-object-data = { path = "../object-data" }
+myelin-genetics = { path = "../genetics" }
+myelin-neural-network = { path = "../neural-network" }
+
 serde = "1.0"
 serde_json = "1.0"
 log = "0.4"
 simple_logger = "1.0"
 clap = "2.32"
-websocket = "0.20.3"
-nameof = "0.1"
+websocket = "0.22"
+nameof = "1.0"
 uuid = { version = "0.7", features = ["v4"] }
 
 [dev-dependencies]
 maplit = "1.0"
-mockiato = "0.2"
+mockiato = "0.3"
 
 [dev-dependencies.myelin-engine]
-version = "0.4"
+version = "0.10"
 features = ["use-mocks"]

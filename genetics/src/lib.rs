@@ -1,12 +1,18 @@
 //! Genes, genomes and the mechanisms needed to evolve neural networks from them
 
 #![feature(specialization)]
+#![feature(box_syntax)]
+#![warn(missing_docs, clippy::dbg_macro, clippy::unimplemented)]
 #![deny(
     rust_2018_idioms,
+    future_incompatible,
     missing_debug_implementations,
-    missing_docs,
     clippy::doc_markdown,
-    clippy::unimplemented
+    clippy::default_trait_access,
+    clippy::enum_glob_use,
+    clippy::needless_borrow,
+    clippy::large_digit_groups,
+    clippy::explicit_into_iter_loop
 )]
 
 use crate::genome::Genome;
@@ -15,6 +21,7 @@ use mockiato::mockable;
 use myelin_neural_network::{Connection, Handle as NeuronHandle, Handle, NeuralNetwork};
 use std::fmt::Debug;
 
+pub mod developer;
 pub mod genome;
 
 /// Information needed by a [`NeuralNetworkDeveloper`] to build a [`DevelopedNeuralNetwork`]
@@ -33,13 +40,13 @@ pub struct NeuralNetworkDevelopmentConfiguration {
     /// Will result in [`DevelopedNeuralNetwork.input_neuron_handles`].
     ///
     /// [`DevelopedNeuralNetwork.input_neuron_handles`]: ./struct.DevelopedNeuralNetwork.html#structfield.input_neuron_handles
-    pub input_neuron_count: u32,
+    pub input_neuron_count: usize,
 
     /// The number of neurons that shall emit outputs
     /// Will result in [`DevelopedNeuralNetwork.output_neuron_handles`].
     ///
     /// [`DevelopedNeuralNetwork.output_neuron_handles`]: ./struct.DevelopedNeuralNetwork.html#structfield.output_neuron_handles
-    pub output_neuron_count: u32,
+    pub output_neuron_count: usize,
 }
 
 /// [`NeuralNetwork`] and auxiliary data developed by a [`NeuralNetworkDeveloper`].
@@ -85,7 +92,7 @@ pub trait NeuralNetworkDeveloperFacade: Debug + NeuralNetworkDeveloperFacadeClon
     /// [`NeuralNetworkDevelopmentConfiguration`]: ./struct.NeuralNetworkDevelopmentConfiguration.html
     fn develop_neural_network(
         &self,
-        neural_network_development_configuration: NeuralNetworkDevelopmentConfiguration,
+        neural_network_development_configuration: &NeuralNetworkDevelopmentConfiguration,
     ) -> DevelopedNeuralNetwork;
 }
 
@@ -125,7 +132,7 @@ where
     T: NeuralNetworkDeveloperFacade + Clone + 'static,
 {
     default fn clone_box(&self) -> Box<dyn NeuralNetworkDeveloperFacade> {
-        Box::new(self.clone())
+        box self.clone()
     }
 }
 
