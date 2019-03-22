@@ -160,7 +160,7 @@ mod tests {
     use super::*;
     use maplit::hashmap;
     use mockiato::partial_eq_owned;
-    use myelin_geometry::*;
+    use myelin_engine::geometry::*;
     use myelin_object_data::{AdditionalObjectDescriptionSerializerMock, Kind};
     use myelin_visualization_core::view_model_delta::{ObjectDelta, ObjectDescriptionDelta};
     use std::cell::RefCell;

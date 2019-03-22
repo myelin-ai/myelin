@@ -7,7 +7,7 @@ pub(crate) mod color {
 }
 
 pub(crate) mod offset {
-    use myelin_geometry::Point;
+    use myelin_engine::geometry::Point;
 
     pub(crate) const NAME_OFFSET: Point = Point { x: 0.0, y: -10.0 };
 }
