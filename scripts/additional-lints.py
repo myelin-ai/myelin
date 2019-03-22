@@ -19,14 +19,14 @@ class CheckedFile:
 
 
 def check_files(filenames: List[str]) -> List[CheckedFile]:
-    return [_check_file(filename) for filename in source_files if _should_include_file(filename)]
+    return [_check_file(filename) for filename in filenames if _should_include_file(filename)]
 
 
 def _check_file(filename: str) -> CheckedFile:
     with open(filename, 'r') as file:
         errors = [*_check_for_box_syntax_new(file)]
 
-    return File(filename=filename, errors=errors)
+    return CheckedFile(filename=filename, errors=errors)
 
 
 def _check_for_box_syntax_new(file) -> List[Error]:
@@ -71,7 +71,7 @@ def _get_files_to_check() -> List[str]:
 
 
 if __name__ == '__main__':
-    checked_files = _check_files(_get_files_to_check())
+    checked_files = check_files(_get_files_to_check())
 
     for file in checked_files:
         _print_checked_file(file)
