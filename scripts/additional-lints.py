@@ -72,9 +72,10 @@ def _get_files_to_check() -> List[str]:
 
 if __name__ == '__main__':
     checked_files = check_files(_get_files_to_check())
+    files_with_errors = [file for file in checked_files if len(file.errors) > 0]
 
     for file in checked_files:
         _print_checked_file(file)
 
-    if len(checked_files) > 0:
+    if len(files_with_errors) > 0:
         sys.exit(1)
