@@ -616,7 +616,7 @@ mod tests {
             input_neuron_handles: (0..INPUT_NEURON_COUNT).map(Handle).collect(),
             output_neuron_handles: (0..OUTPUT_NEURON_COUNT).map(Handle).collect(),
             neural_network: box NeuralNetworkMock::new(),
-            genome: Genome {},
+            genome: Genome::default(),
         }
     }
 }
