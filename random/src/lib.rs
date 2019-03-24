@@ -46,19 +46,24 @@ pub trait RandomChanceChecker: Debug + RandomChanceCheckerClone {
 /// [`Clone`]: https://doc.rust-lang.org/nightly/std/clone/trait.Clone.html
 #[doc(hidden)]
 pub trait RandomChanceCheckerClone {
-    fn clone_box(&self) -> Box<dyn RandomChanceChecker>;
+    fn clone_box<'a>(&self) -> Box<dyn RandomChanceChecker + 'a>
+    where
+        Self: 'a;
 }
 
 impl<T> RandomChanceCheckerClone for T
 where
-    T: RandomChanceChecker + Clone + 'static,
+    T: RandomChanceChecker + Clone,
 {
-    default fn clone_box(&self) -> Box<dyn RandomChanceChecker> {
+    default fn clone_box<'a>(&self) -> Box<dyn RandomChanceChecker + 'a>
+    where
+        Self: 'a,
+    {
         box self.clone()
     }
 }
 
-impl Clone for Box<dyn RandomChanceChecker> {
+impl<'a> Clone for Box<dyn RandomChanceChecker + 'a> {
     fn clone(&self) -> Self {
         self.clone_box()
     }
