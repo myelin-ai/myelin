@@ -6,6 +6,7 @@ members = [
     "worldgen",
     "object-behavior",
     "object-data",
+    "random",
     "neural-network",
     "genetics",
 ]
