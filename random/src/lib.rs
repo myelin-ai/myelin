@@ -24,7 +24,10 @@ mod random_chance_checker_impl;
 /// Dedicated random number generator
 #[cfg_attr(any(test, feature = "use-mocks"), mockable(static_references))]
 pub trait RandomChanceChecker: Debug + RandomChanceCheckerClone {
-    /// Returns a random boolean with a given probability of returning true.
+    /// Returns a random boolean with equal chances of returning `true` or `false`.
+    fn flip_coin(&mut self) -> bool;
+
+    /// Returns a random boolean with a given probability of returning `true`.
     /// The probability is defined in the range `[0.0; 1.0]` where `0.0` means
     /// always return `false` and `1.0` means always return `true`.
     /// # Panics
