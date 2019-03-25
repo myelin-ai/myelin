@@ -18,6 +18,7 @@
 use crate::genome::Genome;
 #[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
+use myelin_clone_box::clone_box;
 use myelin_neural_network::{Connection, Handle as NeuronHandle, Handle, NeuralNetwork};
 use std::fmt::Debug;
 
@@ -99,6 +100,11 @@ pub trait NeuralNetworkDeveloperFacade: Debug + NeuralNetworkDeveloperFacadeClon
     ) -> DevelopedNeuralNetwork;
 }
 
+clone_box!(
+    NeuralNetworkDeveloperFacade,
+    NeuralNetworkDeveloperFacadeClone
+);
+
 /// Provides a function that can be used to develop a neural network
 pub trait NeuralNetworkDeveloper: Debug {
     /// Develops a neural network and writes it into a [`NeuralNetworkConfigurator`].
@@ -117,35 +123,4 @@ pub trait NeuralNetworkConfigurator {
 
     /// Marks a neuron as a sensor
     fn mark_neuron_as_sensor(&mut self, handle: Handle) -> Result<(), ()>;
-}
-
-/// Supertrait used to make sure that all implementors
-/// of [`NeuralNetworkDeveloper`] are [`Clone`]. You don't need
-/// to care about this type.
-///
-/// [`NeuralNetworkDeveloper`]: ./trait.NeuralNetworkDeveloper.html
-/// [`Clone`]: https://doc.rust-lang.org/nightly/std/clone/trait.Clone.html
-#[doc(hidden)]
-pub trait NeuralNetworkDeveloperFacadeClone {
-    fn clone_box<'a>(&self) -> Box<dyn NeuralNetworkDeveloperFacade + 'a>
-    where
-        Self: 'a;
-}
-
-impl<T> NeuralNetworkDeveloperFacadeClone for T
-where
-    T: NeuralNetworkDeveloperFacade + Clone,
-{
-    default fn clone_box<'a>(&self) -> Box<dyn NeuralNetworkDeveloperFacade + 'a>
-    where
-        Self: 'a,
-    {
-        box self.clone()
-    }
-}
-
-impl Clone for Box<dyn NeuralNetworkDeveloperFacade> {
-    fn clone(&self) -> Self {
-        self.clone_box()
-    }
 }

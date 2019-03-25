@@ -14,6 +14,7 @@ edition = "2018"
 mockiato = { version = "0.3", optional = true }
 myelin-neural-network = { path = "../neural-network" }
 myelin-random = { path = "../random" }
+myelin-clone-box = { path = "../clone-box" }
 nameof = "1.0"
 itertools = "0.8"
 
