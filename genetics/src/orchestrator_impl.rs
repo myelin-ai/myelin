@@ -10,21 +10,45 @@ use std::rc::Rc;
 /// Provides a function that can be used to develop a neural network
 pub trait NeuralNetworkDeveloper: Debug {
     /// Develops a neural network and writes it into a [`NeuralNetworkConfigurator`].
-    fn develop_neural_network(self: Box<Self>, configurator: &mut dyn NeuralNetworkConfigurator);
+    fn develop_neural_network(self: Box<Self>, builder: &mut NeuralNetworkBuilder);
 }
 
 /// Configuration storage for a [`NeuralNetworkDeveloper`].
-pub trait NeuralNetworkConfigurator {
+#[derive(Debug)]
+pub struct NeuralNetworkBuilder {}
+
+impl NeuralNetworkBuilder {
+    /// Creates a new [`NeuralNetworkBuilder`] for a [`DevelopedNeuralNetwork`]
+    pub fn new(developed_neural_network: DevelopedNeuralNetwork) -> Self {
+        unimplemented!()
+    }
+
     /// Add a new unconnected neuron to the network
-    fn push_neuron(&mut self) -> Handle;
+    pub fn push_neuron(&mut self) -> Handle {
+        unimplemented!();
+    }
 
     /// Add a new connection between two neurons.
     /// # Errors
     /// Returns `Err` if an involved handle is invalid
-    fn add_connection(&mut self, connection: Connection) -> Result<(), ()>;
+    pub fn add_connection(&mut self, connection: Connection) -> Result<(), ()> {
+        unimplemented!();
+    }
 
-    /// Marks a neuron as a sensor
-    fn mark_neuron_as_sensor(&mut self, handle: Handle) -> Result<(), ()>;
+    /// Marks a neuron as an input
+    pub fn mark_neuron_as_input(&mut self, handle: Handle) -> Result<(), ()> {
+        unimplemented!();
+    }
+
+    /// Marks a neuron as an output
+    pub fn mark_neuron_as_output(&mut self, handle: Handle) -> Result<(), ()> {
+        unimplemented!();
+    }
+
+    /// Consumes `self`, returning the built [`DevelopedNeuralNetwork`]
+    pub fn build(self: Box<Self>) -> DevelopedNeuralNetwork {
+        unimplemented!();
+    }
 }
 
 /// A factory for building a [`NeuralNetwork`]
@@ -68,6 +92,7 @@ impl Debug for NeuralNetworkDevelopmentOrchestratorImpl {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct(name_of_type!(NeuralNetworkDevelopmentOrchestratorImpl))
             .field(name_of!(genome_deriver in Self), &self.genome_deriver)
+            .field(name_of!(genome_mutator in Self), &self.genome_mutator)
             .finish()
     }
 }
