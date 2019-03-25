@@ -883,7 +883,7 @@ mod tests {
             .iter()
             .zip(objects_in_fov.into_iter())
         {
-            let objects_in_ray: Vec<_> = objects_in_ray.into_iter().collect();
+            let objects_in_ray: Vec<_> = objects_in_ray.collect();
             assert_eq!(expected_objects_in_ray.len(), objects_in_ray.len());
             for (expected_object, object) in
                 expected_objects_in_ray.iter().zip(objects_in_ray.iter())
