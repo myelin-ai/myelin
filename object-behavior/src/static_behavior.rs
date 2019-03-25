@@ -21,6 +21,7 @@ impl ObjectBehavior for Static {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use myelin_random::RandomChanceCheckerMock;
 
     #[test]
     fn returns_no_actions() {

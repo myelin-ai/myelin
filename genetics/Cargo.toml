@@ -13,6 +13,7 @@ edition = "2018"
 [dependencies]
 mockiato = { version = "0.3", optional = true }
 myelin-neural-network = { path = "../neural-network" }
+myelin-random = { path = "../random" }
 nameof = "1.0"
 
 [dev-dependencies]
@@ -20,3 +21,7 @@ mockiato = "0.3"
 
 [features]
 use-mocks = ["mockiato"]
+
+[dev-dependencies.myelin-random]
+path = "../random"
+features = ["use-mocks"]

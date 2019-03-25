@@ -590,6 +590,7 @@ version = "0.1.0"
 dependencies = [
  "mockiato 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "myelin-neural-network 0.1.0",
+ "myelin-random 0.1.0",
  "nameof 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
