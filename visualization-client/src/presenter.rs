@@ -132,15 +132,12 @@ fn compare_objects(
 fn map_objects(
     snapshot: &Snapshot,
     global_polygon_translator: &dyn GlobalPolygonTranslator,
-) -> Vec<view_model::Object> {
-    snapshot
-        .values()
-        .map(|business_object| view_model::Object {
-            shape: translate_shape_into_view_model(business_object, global_polygon_translator),
-            kind: translate_kind_into_view_model(business_object.kind),
-            name_label: translate_name_into_view_model(business_object),
-        })
-        .collect()
+) -> impl Iterator<Item = view_model::Object> {
+    snapshot.values().map(|business_object| view_model::Object {
+        shape: translate_shape_into_view_model(business_object, global_polygon_translator),
+        kind: translate_kind_into_view_model(business_object.kind),
+        name_label: translate_name_into_view_model(business_object),
+    })
 }
 
 fn translate_shape_into_view_model(

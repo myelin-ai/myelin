@@ -115,12 +115,11 @@ where
     controller.run();
 }
 
-fn load_names_files_from_file(path: &Path) -> Vec<String> {
+fn load_names_files_from_file(path: &Path) -> impl Iterator<Item = String> {
     read_to_string(path)
         .expect("Error while reading file")
         .lines()
         .map(String::from)
-        .collect()
 }
 
 fn spawn_thread_factory() -> Box<ThreadSpawnFn> {
