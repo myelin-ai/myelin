@@ -190,7 +190,7 @@ fn convert_neural_network_output_to_action(
 fn objects_in_fov<'a>(
     own_description: &'a ObjectDescription,
     world_interactor: &'a dyn WorldInteractor,
-) -> impl Iterator<Item = Vec<Object<'a>>> + 'a {
+) -> impl Iterator<Item = (impl Iterator<Item = Object<'a>> + 'a)> + 'a {
     /// The angle in degrees describing the field of view. [Wikipedia](https://en.wikipedia.org/wiki/Human_eye#Field_of_view).
     const FOV_ANGLE: usize = 200;
     const ANGLE_PER_RAYCAST: f64 = FOV_ANGLE as f64 / RAYCAST_COUNT as f64;
@@ -209,20 +209,21 @@ fn objects_in_fov<'a>(
         world_interactor
             .find_objects_in_ray(own_description.location, fov_direction)
             .into_iter()
-            .collect()
     })
 }
 
-fn objects_in_fov_to_neuron_inputs<'a, T>(
+fn objects_in_fov_to_neuron_inputs<'a, T, U>(
     own_description: &'a ObjectDescription,
     objects: T,
 ) -> Vec<Option<f64>>
 where
-    T: IntoIterator<Item = Vec<Object<'a>>>,
+    T: IntoIterator<Item = U>,
+    U: IntoIterator<Item = Object<'a>>,
 {
     objects
         .into_iter()
         .map(|objects_in_ray| {
+            let objects_in_ray: Vec<_> = objects_in_ray.into_iter().collect();
             let distances_capacity = MAX_OBJECTS_PER_RAYCAST.max(objects_in_ray.len());
             let mut distances = Vec::with_capacity(distances_capacity);
             distances.extend(
@@ -879,8 +880,9 @@ mod tests {
         for (expected_objects_in_ray, objects_in_ray) in expected_fov_objects
             .expected_objects
             .iter()
-            .zip(objects_in_fov.iter())
+            .zip(objects_in_fov.into_iter())
         {
+            let objects_in_ray: Vec<_> = objects_in_ray.into_iter().collect();
             assert_eq!(expected_objects_in_ray.len(), objects_in_ray.len());
             for (expected_object, object) in
                 expected_objects_in_ray.iter().zip(objects_in_ray.iter())
@@ -894,7 +896,7 @@ mod tests {
     #[test]
     fn no_objects_in_fov_are_mapped_to_no_neural_inputs() {
         let own_description = object_description().build().unwrap();
-        let objects_in_fov = Vec::new();
+        let objects_in_fov: Vec<Vec<_>> = Vec::new();
         let inputs = objects_in_fov_to_neuron_inputs(&own_description, objects_in_fov);
         assert!(inputs.is_empty());
     }
