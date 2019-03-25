@@ -1,17 +1,20 @@
 use super::Random;
 use rand::rngs::ThreadRng;
 use rand::{thread_rng, Rng};
+use std::cell::RefCell;
 
 /// Random number generator implementation that uses the `rand` crate
 #[derive(Debug, Clone)]
 pub struct RandomImpl {
-    rng: ThreadRng,
+    rng: RefCell<ThreadRng>,
 }
 
 impl RandomImpl {
     /// Constructs a new [`RandomImpl`] by seeding a new threaded rng source
     pub fn new() -> Self {
-        Self { rng: thread_rng() }
+        Self {
+            rng: RefCell::new(thread_rng()),
+        }
     }
 }
 
@@ -22,11 +25,11 @@ impl Default for RandomImpl {
 }
 
 impl Random for RandomImpl {
-    fn flip_coin(&mut self) -> bool {
-        self.rng.gen()
+    fn flip_coin(&self) -> bool {
+        self.rng.borrow_mut().gen()
     }
 
-    fn flip_coin_with_probability(&mut self, probability: f64) -> bool {
+    fn flip_coin_with_probability(&self, probability: f64) -> bool {
         if probability < 0.0 || probability > 1.0 {
             panic!(
                 "Expected probability to be in range [0.0; 1.0] but got {}",
@@ -34,11 +37,11 @@ impl Random for RandomImpl {
             );
         }
 
-        self.rng.gen_bool(probability)
+        self.rng.borrow_mut().gen_bool(probability)
     }
 
-    fn random_number_in_range(&mut self, min: i32, max: i32) -> i32 {
-        self.rng.gen_range(min, max)
+    fn random_number_in_range(&self, min: i32, max: i32) -> i32 {
+        self.rng.borrow_mut().gen_range(min, max)
     }
 }
 
