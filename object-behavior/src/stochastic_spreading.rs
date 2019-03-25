@@ -41,7 +41,7 @@ impl StochasticSpreading {
         self.next_spreading_location
     }
 
-    fn should_spread(&mut self) -> bool {
+    fn should_spread(&self) -> bool {
         self.random
             .flip_coin_with_probability(self.spreading_probability)
     }
