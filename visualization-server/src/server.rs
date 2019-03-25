@@ -51,8 +51,7 @@ where
 
     let mut name_provider_builder = NameProviderBuilder::default();
 
-    let organism_names: Vec<String> =
-        load_names_files_from_file(Path::new("./object-names/organisms.txt"));
+    let organism_names = load_names_files_from_file(Path::new("./object-names/organisms.txt"));
     name_provider_builder.add_names(&organism_names, Kind::Organism);
 
     let name_provider = name_provider_builder.build_randomized();
@@ -115,11 +114,12 @@ where
     controller.run();
 }
 
-fn load_names_files_from_file(path: &Path) -> impl Iterator<Item = String> {
+fn load_names_files_from_file(path: &Path) -> Vec<String> {
     read_to_string(path)
         .expect("Error while reading file")
         .lines()
         .map(String::from)
+        .collect()
 }
 
 fn spawn_thread_factory() -> Box<ThreadSpawnFn> {
