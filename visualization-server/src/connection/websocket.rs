@@ -1,5 +1,5 @@
 use super::{Socket, SocketError};
-use nameof::name_of_type;
+use nameof::name_of;
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
 use std::io::ErrorKind as IoErrorKind;
@@ -19,7 +19,7 @@ impl WebsocketClient {
 
 impl Debug for WebsocketClient {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct(name_of_type!(WebsocketClient)).finish()
+        f.debug_struct(name_of!(type WebsocketClient)).finish()
     }
 }
 
