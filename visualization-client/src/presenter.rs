@@ -38,10 +38,11 @@ impl Presenter for CanvasPresenter {
         self.delta_applier
             .apply_delta(&mut self.current_snapshot, delta)?;
 
-        let mut objects = map_objects(
+        let mut objects: Vec<_> = map_objects(
             &self.current_snapshot,
             self.global_polygon_translator.borrow(),
-        );
+        )
+        .collect();
 
         objects.sort_by(compare_objects);
 
@@ -129,18 +130,17 @@ fn compare_objects(
     kind_one.cmp(kind_two)
 }
 
-fn map_objects(
-    snapshot: &Snapshot,
-    global_polygon_translator: &dyn GlobalPolygonTranslator,
-) -> Vec<view_model::Object> {
+fn map_objects<'a>(
+    snapshot: &'a Snapshot,
+    global_polygon_translator: &'a dyn GlobalPolygonTranslator,
+) -> impl Iterator<Item = view_model::Object> + 'a {
     snapshot
         .values()
-        .map(|business_object| view_model::Object {
+        .map(move |business_object| view_model::Object {
             shape: translate_shape_into_view_model(business_object, global_polygon_translator),
             kind: translate_kind_into_view_model(business_object.kind),
             name_label: translate_name_into_view_model(business_object),
         })
-        .collect()
 }
 
 fn translate_shape_into_view_model(
