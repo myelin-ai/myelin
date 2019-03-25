@@ -2,17 +2,17 @@ use super::GenomeDeriver;
 use crate::constant::CROSSOVER_EXTRA_GENE_SELECTION_PROBABILITY;
 use crate::genome::Genome;
 use itertools::Itertools;
-use myelin_random::RandomChanceChecker;
+use myelin_random::Random;
 
 /// Implementation of chromosomal crossover
 #[derive(Debug, Clone)]
 pub struct ChromosomalCrossoverGenomeDeriver {
-    random_chance_checker: Box<dyn RandomChanceChecker>,
+    random_chance_checker: Box<dyn Random>,
 }
 
 impl ChromosomalCrossoverGenomeDeriver {
     /// Creates a new instance of [`ChromosomalCrossoverGenomeDeriver`].
-    pub fn new(random_chance_checker: Box<dyn RandomChanceChecker>) -> Self {
+    pub fn new(random_chance_checker: Box<dyn Random>) -> Self {
         Self {
             random_chance_checker,
         }
@@ -75,44 +75,52 @@ impl GenomeDeriver for ChromosomalCrossoverGenomeDeriver {
 mod tests {
     use super::*;
     use crate::genome::*;
+    use std::cell::RefCell;
     use std::collections::VecDeque;
     use std::thread::panicking;
 
     #[derive(Clone, Debug, Default)]
     struct RandomChanceCheckerMock {
-        flip_coin_expected_calls: VecDeque<bool>,
-        flip_coin_with_probability_expected_calls: VecDeque<bool>,
+        flip_coin_expected_calls: RefCell<VecDeque<bool>>,
+        flip_coin_with_probability_expected_calls: RefCell<VecDeque<bool>>,
     }
 
     impl RandomChanceCheckerMock {
         fn expect_flip_coin(&mut self, return_value: bool) {
-            self.flip_coin_expected_calls.push_back(return_value)
+            self.flip_coin_expected_calls
+                .borrow_mut()
+                .push_back(return_value)
         }
 
         fn expect_flip_coin_with_probability(&mut self, return_value: bool) {
             self.flip_coin_with_probability_expected_calls
+                .borrow_mut()
                 .push_back(return_value)
         }
     }
 
-    impl RandomChanceChecker for RandomChanceCheckerMock {
-        fn flip_coin(&mut self) -> bool {
-            if let Some(return_value) = self.flip_coin_expected_calls.pop_front() {
+    impl Random for RandomChanceCheckerMock {
+        fn flip_coin(&self) -> bool {
+            if let Some(return_value) = self.flip_coin_expected_calls.borrow_mut().pop_front() {
                 return_value
             } else {
                 panic!("flip_coin was called unexpectedly")
             }
         }
 
-        fn flip_coin_with_probability(&mut self, _probability: f64) -> bool {
-            if let Some(return_value) = self.flip_coin_with_probability_expected_calls.pop_front() {
+        fn flip_coin_with_probability(&self, _probability: f64) -> bool {
+            if let Some(return_value) = self
+                .flip_coin_with_probability_expected_calls
+                .borrow_mut()
+                .pop_front()
+            {
                 return_value
             } else {
                 panic!("flip_coin_with_probability was called unexpectedly")
             }
         }
 
-        fn random_number_in_range(&mut self, _min: i32, _max: i32) -> i32 {
+        fn random_number_in_range(&self, _min: i32, _max: i32) -> i32 {
             unimplemented!()
         }
     }
@@ -124,11 +132,13 @@ mod tests {
             }
 
             assert!(
-                self.flip_coin_expected_calls.is_empty(),
+                self.flip_coin_expected_calls.borrow().is_empty(),
                 "additional calls to flip_coin were expected"
             );
             assert!(
-                self.flip_coin_with_probability_expected_calls.is_empty(),
+                self.flip_coin_with_probability_expected_calls
+                    .borrow()
+                    .is_empty(),
                 "additional calls to flip_coin_with_probability were expected"
             );
         }
