@@ -19,9 +19,12 @@ const MAX_ACCELERATION: f64 = 5.0 * 9.81;
 /// which is the [maximum acceleration a human can achieve](https://www.wired.com/2012/08/maximum-acceleration-in-the-100-m-dash/)
 const MAX_ACCELERATION_FORCE: f64 = 20.0 * 9.8;
 
+/// Our research indicates that these seem to be the same
 const MAX_ANGULAR_FORCE: f64 = MAX_ACCELERATION_FORCE;
 
+/// Number of rays sent out by an organism to detect visible objects
 const RAYCAST_COUNT: usize = 10;
+/// Number of objects that can be detected by a vision ray
 const MAX_OBJECTS_PER_RAYCAST: usize = 3;
 
 /// An organism that can interact with its surroundings via a neural network,
@@ -33,13 +36,14 @@ pub struct OrganismBehavior {
     neural_network_developer: Box<dyn NeuralNetworkDeveloper>,
 }
 
-/// Distances to objects in FOV from right to left
+/// Number of inputs reserved for visible objects
 const VISION_INPUT_COUNT: usize = RAYCAST_COUNT * MAX_OBJECTS_PER_RAYCAST;
 
 /// 1. Average axial acceleration since last step (forward)
 /// 2. Average axial acceleration since last step (backward)
 /// 3. Average lateral acceleration since last step (left)
 /// 4. Average lateral acceleration since last step (right)
+/// Rest: Distances to objects in FOV from right to left
 const INPUT_NEURON_COUNT: usize = 4 + VISION_INPUT_COUNT;
 
 const FIRST_VISION_INDEX: usize = INPUT_NEURON_COUNT - VISION_INPUT_COUNT + 1;
