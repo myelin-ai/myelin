@@ -16,14 +16,14 @@
 
 #[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
-pub use random_chance_checker_impl::*;
+pub use random_impl::*;
 use std::fmt::Debug;
 
-mod random_chance_checker_impl;
+mod random_impl;
 
 /// Dedicated random number generator
 #[cfg_attr(any(test, feature = "use-mocks"), mockable(static_references))]
-pub trait RandomChanceChecker: Debug + RandomChanceCheckerClone {
+pub trait Random: Debug + RandomClone {
     /// Returns a random boolean with equal chances of returning `true` or `false`.
     fn flip_coin(&mut self) -> bool;
 
@@ -39,23 +39,23 @@ pub trait RandomChanceChecker: Debug + RandomChanceCheckerClone {
 }
 
 /// Supertrait used to make sure that all implementors
-/// of [`RandomChanceChecker`] are [`Clone`]. You don't need
+/// of [`Random`] are [`Clone`]. You don't need
 /// to care about this type.
 ///
-/// [`RandomChanceChecker`]: ./trait.RandomChanceChecker.html
+/// [`Random`]: ./trait.Random.html
 /// [`Clone`]: https://doc.rust-lang.org/nightly/std/clone/trait.Clone.html
 #[doc(hidden)]
-pub trait RandomChanceCheckerClone {
-    fn clone_box<'a>(&self) -> Box<dyn RandomChanceChecker + 'a>
+pub trait RandomClone {
+    fn clone_box<'a>(&self) -> Box<dyn Random + 'a>
     where
         Self: 'a;
 }
 
-impl<T> RandomChanceCheckerClone for T
+impl<T> RandomClone for T
 where
-    T: RandomChanceChecker + Clone,
+    T: Random + Clone,
 {
-    default fn clone_box<'a>(&self) -> Box<dyn RandomChanceChecker + 'a>
+    default fn clone_box<'a>(&self) -> Box<dyn Random + 'a>
     where
         Self: 'a,
     {
@@ -63,7 +63,7 @@ where
     }
 }
 
-impl<'a> Clone for Box<dyn RandomChanceChecker + 'a> {
+impl<'a> Clone for Box<dyn Random + 'a> {
     fn clone(&self) -> Self {
         self.clone_box()
     }

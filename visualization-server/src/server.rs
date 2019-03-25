@@ -15,7 +15,7 @@ use myelin_object_behavior::stochastic_spreading::StochasticSpreading;
 use myelin_object_behavior::Static;
 use myelin_object_data::AdditionalObjectDescriptionBincodeSerializer;
 use myelin_object_data::Kind;
-use myelin_random::RandomChanceCheckerImpl;
+use myelin_random::RandomImpl;
 use myelin_visualization_core::serialization::BincodeSerializer;
 use myelin_worldgen::NameProviderBuilder;
 use myelin_worldgen::{HardcodedGenerator, WorldGenerator};
@@ -38,7 +38,7 @@ where
 
     let simulation_factory = box || -> Box<dyn Simulation> { SimulationBuilder::new().build() };
     let plant_factory = box || -> Box<dyn ObjectBehavior> {
-        box StochasticSpreading::new(1.0 / 5_000.0, box RandomChanceCheckerImpl::new())
+        box StochasticSpreading::new(1.0 / 5_000.0, box RandomImpl::new())
     };
     let organism_factory = box || -> Box<dyn ObjectBehavior> {
         box OrganismBehavior::new(
