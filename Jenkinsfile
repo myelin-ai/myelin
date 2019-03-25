@@ -48,7 +48,7 @@ pipeline {
             branch 'master'
           }
           steps {
-            sh 'cargo doc'
+            sh 'cargo doc --all --all-features'
             sh '(cd docs && poetry run ./build-index.py)'
           }
         }
