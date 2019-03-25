@@ -123,11 +123,11 @@ mod tests {
             }
 
             assert!(
-                !self.flip_coin_expected_calls.is_empty(),
+                self.flip_coin_expected_calls.is_empty(),
                 "additional calls to flip_coin were expected"
             );
             assert!(
-                !self.flip_coin_with_probability_expected_calls.is_empty(),
+                self.flip_coin_with_probability_expected_calls.is_empty(),
                 "additional calls to flip_coin_with_probability were expected"
             );
         }
