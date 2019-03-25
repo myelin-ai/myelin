@@ -21,6 +21,7 @@ use mockiato::mockable;
 use myelin_neural_network::{Connection, Handle as NeuronHandle, Handle, NeuralNetwork};
 use std::fmt::Debug;
 
+pub mod deriver;
 pub mod developer;
 pub mod genome;
 
