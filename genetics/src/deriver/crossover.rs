@@ -5,7 +5,7 @@ use itertools::Itertools;
 use myelin_random::RandomChanceChecker;
 
 /// Implementation of chromosomal crossover
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ChromosomalCrossover {
     random_chance_checker: Box<dyn RandomChanceChecker>,
 }

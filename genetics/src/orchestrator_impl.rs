@@ -19,7 +19,7 @@ pub struct NeuralNetworkBuilder {}
 
 impl NeuralNetworkBuilder {
     /// Creates a new [`NeuralNetworkBuilder`] for a [`DevelopedNeuralNetwork`]
-    pub fn new(developed_neural_network: DevelopedNeuralNetwork) -> Self {
+    pub fn new(_developed_neural_network: DevelopedNeuralNetwork) -> Self {
         unimplemented!()
     }
 
@@ -31,22 +31,22 @@ impl NeuralNetworkBuilder {
     /// Add a new connection between two neurons.
     /// # Errors
     /// Returns `Err` if an involved handle is invalid
-    pub fn add_connection(&mut self, connection: Connection) -> Result<(), ()> {
+    pub fn add_connection(&mut self, _connection: Connection) -> Result<(), ()> {
         unimplemented!();
     }
 
     /// Marks a neuron as an input
-    pub fn mark_neuron_as_input(&mut self, handle: Handle) -> Result<(), ()> {
+    pub fn mark_neuron_as_input(&mut self, _handle: Handle) -> Result<(), ()> {
         unimplemented!();
     }
 
     /// Marks a neuron as an output
-    pub fn mark_neuron_as_output(&mut self, handle: Handle) -> Result<(), ()> {
+    pub fn mark_neuron_as_output(&mut self, _handle: Handle) -> Result<(), ()> {
         unimplemented!();
     }
 
     /// Consumes `self`, returning the built [`DevelopedNeuralNetwork`]
-    pub fn build(self: Box<Self>) -> DevelopedNeuralNetwork {
+    pub fn build(self) -> DevelopedNeuralNetwork {
         unimplemented!();
     }
 }
