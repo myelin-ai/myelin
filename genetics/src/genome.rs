@@ -43,7 +43,7 @@ pub struct ClusterGene {
     pub placement_neuron: NeuronClusterLocalIndex,
 }
 
-/// Describes the placement behaviour of a hox gene.
+/// Describes the placement behaviour of a [`HoxGene`].
 #[derive(Debug, Clone, PartialEq)]
 pub enum HoxPlacement {
     /// This hox will place its cluster on all previously instantiated clusters of the given [`ClusterGene`].
@@ -56,7 +56,7 @@ pub enum HoxPlacement {
     },
     /// This hox will place its cluster on all cluster instances placed by the referenced [`HoxGene`].
     HoxGene {
-        /// Index of the hox gene in the [`Genome`].
+        /// Index of the [`HoxGene`] in the [`Genome`].
         hox_gene_index: HoxGeneIndex,
         /// Index of a neuron in an already placed cluster. The neuron will be shared the
         /// [`ClusterGene::placement_neuron`] of the cluster that is currently being placed.
