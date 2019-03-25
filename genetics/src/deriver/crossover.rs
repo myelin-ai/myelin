@@ -6,12 +6,12 @@ use myelin_random::RandomChanceChecker;
 
 /// Implementation of chromosomal crossover
 #[derive(Debug, Clone)]
-pub struct ChromosomalCrossover {
+pub struct ChromosomalCrossoverGenomeDeriver {
     random_chance_checker: Box<dyn RandomChanceChecker>,
 }
 
-impl ChromosomalCrossover {
-    /// Creates a new instance of [`ChromosomalCrossover`].
+impl ChromosomalCrossoverGenomeDeriver {
+    /// Creates a new instance of [`ChromosomalCrossoverGenomeDeriver`].
     pub fn new(random_chance_checker: Box<dyn RandomChanceChecker>) -> Self {
         Self {
             random_chance_checker,
@@ -51,7 +51,7 @@ impl ChromosomalCrossover {
     }
 }
 
-impl GenomeDeriver for ChromosomalCrossover {
+impl GenomeDeriver for ChromosomalCrossoverGenomeDeriver {
     fn derive_genome_from_parents(&mut self, parent_genomes: (Genome, Genome)) -> Genome {
         let (
             Genome {
@@ -174,7 +174,7 @@ mod tests {
         random_chance_checker.expect_flip_coin(true);
         random_chance_checker.expect_flip_coin(false);
 
-        let mut deriver = ChromosomalCrossover::new(box random_chance_checker);
+        let mut deriver = ChromosomalCrossoverGenomeDeriver::new(box random_chance_checker);
 
         let actual_genome = deriver.derive_genome_from_parents((genome_one, genome_two));
 
@@ -205,7 +205,7 @@ mod tests {
         random_chance_checker.expect_flip_coin_with_probability(false);
         random_chance_checker.expect_flip_coin_with_probability(true);
 
-        let mut deriver = ChromosomalCrossover::new(box random_chance_checker);
+        let mut deriver = ChromosomalCrossoverGenomeDeriver::new(box random_chance_checker);
 
         let actual_genome = deriver.derive_genome_from_parents((genome_one, genome_two));
 
@@ -236,7 +236,7 @@ mod tests {
         random_chance_checker.expect_flip_coin_with_probability(true);
         random_chance_checker.expect_flip_coin_with_probability(false);
 
-        let mut deriver = ChromosomalCrossover::new(box random_chance_checker);
+        let mut deriver = ChromosomalCrossoverGenomeDeriver::new(box random_chance_checker);
 
         let actual_genome = deriver.derive_genome_from_parents((genome_one, genome_two));
 
