@@ -15,7 +15,7 @@ use myelin_object_behavior::stochastic_spreading::StochasticSpreading;
 use myelin_object_behavior::Static;
 use myelin_object_data::AdditionalObjectDescriptionBincodeSerializer;
 use myelin_object_data::Kind;
-use myelin_random::RandomChanceCheckerImpl;
+use myelin_random::RandomImpl;
 use myelin_visualization_core::serialization::BincodeSerializer;
 use myelin_worldgen::NameProviderBuilder;
 use myelin_worldgen::{HardcodedGenerator, WorldGenerator};
@@ -38,7 +38,7 @@ where
 
     let simulation_factory = box || -> Box<dyn Simulation> { SimulationBuilder::new().build() };
     let plant_factory = box || -> Box<dyn ObjectBehavior> {
-        box StochasticSpreading::new(1.0 / 5_000.0, box RandomChanceCheckerImpl::new())
+        box StochasticSpreading::new(1.0 / 5_000.0, box RandomImpl::new())
     };
     let organism_factory = box || -> Box<dyn ObjectBehavior> {
         box OrganismBehavior::new(
@@ -51,8 +51,7 @@ where
 
     let mut name_provider_builder = NameProviderBuilder::default();
 
-    let organism_names: Vec<String> =
-        load_names_files_from_file(Path::new("./object-names/organisms.txt"));
+    let organism_names = load_names_from_file(Path::new("./object-names/organisms.txt"));
     name_provider_builder.add_names(&organism_names, Kind::Organism);
 
     let name_provider = name_provider_builder.build_randomized();
@@ -115,7 +114,7 @@ where
     controller.run();
 }
 
-fn load_names_files_from_file(path: &Path) -> Vec<String> {
+fn load_names_from_file(path: &Path) -> Vec<String> {
     read_to_string(path)
         .expect("Error while reading file")
         .lines()
