@@ -108,7 +108,7 @@ impl ObjectBehavior for OrganismBehavior {
 
         let objects_in_fov = objects_in_fov(&own_object.description, world_interactor);
         let vision_neuron_inputs =
-            objects_in_fov_to_neuron_inputs(&own_object.description, &objects_in_fov);
+            objects_in_fov_to_neuron_inputs(&own_object.description, objects_in_fov);
 
         add_vision_inputs(
             &vision_neuron_inputs,
@@ -187,10 +187,10 @@ fn convert_neural_network_output_to_action(
     }
 }
 
-fn objects_in_fov<'a, 'b>(
+fn objects_in_fov<'a>(
     own_description: &'a ObjectDescription,
-    world_interactor: &'b dyn WorldInteractor,
-) -> Vec<Vec<Object<'b>>> {
+    world_interactor: &'a dyn WorldInteractor,
+) -> impl Iterator<Item = Vec<Object<'a>>> + 'a {
     /// The angle in degrees describing the field of view. [Wikipedia](https://en.wikipedia.org/wiki/Human_eye#Field_of_view).
     const FOV_ANGLE: usize = 200;
     const ANGLE_PER_RAYCAST: f64 = FOV_ANGLE as f64 / RAYCAST_COUNT as f64;
@@ -200,27 +200,28 @@ fn objects_in_fov<'a, 'b>(
 
     let half_of_fov_angle = Radians::try_from_degrees(FOV_ANGLE as f64 / 2.0).unwrap();
     let rightmost_angle = own_direction.rotate_clockwise(half_of_fov_angle);
-    (0..RAYCAST_COUNT)
-        .map(|angle_step| {
-            // Todo: The following three lines produce slightly different numbers on macOS
-            let angle_in_degrees = angle_step as f64 * ANGLE_PER_RAYCAST;
-            let angle_in_radians = Radians::try_from_degrees(angle_in_degrees).unwrap();
-            let fov_direction = rightmost_angle.rotate(angle_in_radians);
+    (0..RAYCAST_COUNT).map(move |angle_step| {
+        // Todo: The following three lines produce slightly different numbers on macOS
+        let angle_in_degrees = angle_step as f64 * ANGLE_PER_RAYCAST;
+        let angle_in_radians = Radians::try_from_degrees(angle_in_degrees).unwrap();
+        let fov_direction = rightmost_angle.rotate(angle_in_radians);
 
-            world_interactor
-                .find_objects_in_ray(own_description.location, fov_direction)
-                .into_iter()
-                .collect()
-        })
-        .collect()
+        world_interactor
+            .find_objects_in_ray(own_description.location, fov_direction)
+            .into_iter()
+            .collect()
+    })
 }
 
-fn objects_in_fov_to_neuron_inputs(
-    own_description: &ObjectDescription,
-    objects: &[Vec<Object<'_>>],
-) -> Vec<Option<f64>> {
+fn objects_in_fov_to_neuron_inputs<'a, T>(
+    own_description: &'a ObjectDescription,
+    objects: T,
+) -> Vec<Option<f64>>
+where
+    T: IntoIterator<Item = Vec<Object<'a>>>,
+{
     objects
-        .iter()
+        .into_iter()
         .map(|objects_in_ray| {
             let distances_capacity = MAX_OBJECTS_PER_RAYCAST.max(objects_in_ray.len());
             let mut distances = Vec::with_capacity(distances_capacity);
@@ -870,7 +871,7 @@ mod tests {
         };
         connect_ray_to_expectation(tenth_ray, expected_fov_objects.tenth_objects_in_ray);
 
-        let objects_in_fov = objects_in_fov(&own_description, &world_interactor);
+        let objects_in_fov: Vec<_> = objects_in_fov(&own_description, &world_interactor).collect();
         assert_eq!(
             expected_fov_objects.expected_objects.len(),
             objects_in_fov.len()
@@ -894,7 +895,7 @@ mod tests {
     fn no_objects_in_fov_are_mapped_to_no_neural_inputs() {
         let own_description = object_description().build().unwrap();
         let objects_in_fov = Vec::new();
-        let inputs = objects_in_fov_to_neuron_inputs(&own_description, &objects_in_fov);
+        let inputs = objects_in_fov_to_neuron_inputs(&own_description, objects_in_fov);
         assert!(inputs.is_empty());
     }
 
@@ -929,7 +930,7 @@ mod tests {
             Vec::new(),
         ];
         assert_eq!(RAYCAST_COUNT, objects_in_fov.len());
-        let inputs = objects_in_fov_to_neuron_inputs(&own_description, &objects_in_fov);
+        let inputs = objects_in_fov_to_neuron_inputs(&own_description, objects_in_fov);
 
         let no_distances = vec![None; MAX_OBJECTS_PER_RAYCAST];
         let first_distances = no_distances.clone();
