@@ -31,17 +31,17 @@ impl NeuralNetworkBuilder {
     /// Add a new connection between two neurons.
     /// # Errors
     /// Returns `Err` if an involved handle is invalid
-    pub fn add_connection(&mut self, _connection: Connection) -> Result<(), ()> {
+    pub fn add_connection(&mut self, _connection: Connection) -> Result<&mut Self, ()> {
         unimplemented!();
     }
 
     /// Marks a neuron as an input
-    pub fn mark_neuron_as_input(&mut self, _handle: Handle) -> Result<(), ()> {
+    pub fn mark_neuron_as_input(&mut self, _handle: Handle) -> Result<&mut Self, ()> {
         unimplemented!();
     }
 
     /// Marks a neuron as an output
-    pub fn mark_neuron_as_output(&mut self, _handle: Handle) -> Result<(), ()> {
+    pub fn mark_neuron_as_output(&mut self, _handle: Handle) -> Result<&mut Self, ()> {
         unimplemented!();
     }
 
