@@ -19,7 +19,7 @@ pub struct Neuron {}
 /// Weight of a [`Connection`]
 pub type Weight = f64;
 
-/// Defining the connection of two neurons, including the direction and weight of it.
+/// Definition of the connection between two neurons.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Connection {
     /// The index of the neuron that will be used for the start of the connection
