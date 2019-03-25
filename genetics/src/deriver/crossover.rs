@@ -1,5 +1,7 @@
 use super::GenomeDeriver;
+use crate::constant::CROSSOVER_EXTRA_GENE_SELECTION_PROBABILITY;
 use crate::genome::Genome;
+use itertools::Itertools;
 use myelin_random::RandomChanceChecker;
 
 /// Implementation of chromosomal crossover
@@ -15,11 +17,56 @@ impl ChromosomalCrossover {
             random_chance_checker,
         }
     }
+
+    fn crossover_genes<T>(&mut self, genome_one: Vec<T>, genome_two: Vec<T>) -> Vec<T> {
+        use itertools::EitherOrBoth::*;
+
+        genome_one
+            .into_iter()
+            .zip_longest(genome_two)
+            .filter_map(|genes| match genes {
+                Both(gene_one, gene_two) => Some(self.pick_one(gene_one, gene_two)),
+                Left(gene) | Right(gene) => self.pick_extra_gene(gene),
+            })
+            .collect()
+    }
+
+    fn pick_one<T>(&mut self, gene_one: T, gene_two: T) -> T {
+        if self.random_chance_checker.flip_coin() {
+            gene_one
+        } else {
+            gene_two
+        }
+    }
+
+    fn pick_extra_gene<T>(&mut self, gene: T) -> Option<T> {
+        if self
+            .random_chance_checker
+            .flip_coin_with_probability(CROSSOVER_EXTRA_GENE_SELECTION_PROBABILITY)
+        {
+            Some(gene)
+        } else {
+            None
+        }
+    }
 }
 
 impl GenomeDeriver for ChromosomalCrossover {
-    fn derive_genome_from_parents(&mut self, _parent_genomes: (Genome, Genome)) -> Genome {
-        unimplemented!();
+    fn derive_genome_from_parents(&mut self, parent_genomes: (Genome, Genome)) -> Genome {
+        let Genome {
+            hox_genes: hox_genes_one,
+            cluster_genes: cluster_genes_one,
+        } = parent_genomes.0;
+
+        let Genome {
+            hox_genes: hox_genes_two,
+            cluster_genes: cluster_genes_two,
+        } = parent_genomes.1;
+
+        Genome {
+            hox_genes: self.crossover_genes(hox_genes_one, hox_genes_two),
+            cluster_genes: self.crossover_genes(cluster_genes_one, cluster_genes_two),
+        }
     }
 }
 
@@ -27,8 +74,8 @@ impl GenomeDeriver for ChromosomalCrossover {
 mod tests {
     use super::*;
     use crate::genome::*;
-    use myelin_random::RandomChanceCheckerMock;
     use mockiato::any;
+    use myelin_random::RandomChanceCheckerMock;
 
     fn hox_gene(cluster_index: usize) -> HoxGene {
         HoxGene {
@@ -98,8 +145,12 @@ mod tests {
         random_chance_checker.expect_flip_coin().returns(true);
         random_chance_checker.expect_flip_coin().returns(false);
         random_chance_checker.expect_flip_coin().returns(false);
-        random_chance_checker.expect_flip_coin_with_probability(any()).returns(false);
-        random_chance_checker.expect_flip_coin_with_probability(any()).returns(true);
+        random_chance_checker
+            .expect_flip_coin_with_probability(any())
+            .returns(false);
+        random_chance_checker
+            .expect_flip_coin_with_probability(any())
+            .returns(true);
 
         let mut deriver = ChromosomalCrossover::new(box random_chance_checker);
 
@@ -129,8 +180,12 @@ mod tests {
         random_chance_checker.expect_flip_coin().returns(true);
         random_chance_checker.expect_flip_coin().returns(false);
         random_chance_checker.expect_flip_coin().returns(false);
-        random_chance_checker.expect_flip_coin_with_probability(any()).returns(true);
-        random_chance_checker.expect_flip_coin_with_probability(any()).returns(false);
+        random_chance_checker
+            .expect_flip_coin_with_probability(any())
+            .returns(true);
+        random_chance_checker
+            .expect_flip_coin_with_probability(any())
+            .returns(false);
 
         let mut deriver = ChromosomalCrossover::new(box random_chance_checker);
 

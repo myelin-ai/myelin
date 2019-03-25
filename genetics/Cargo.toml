@@ -15,6 +15,7 @@ mockiato = { version = "0.3", optional = true }
 myelin-neural-network = { path = "../neural-network" }
 myelin-random = { path = "../random" }
 nameof = "1.0"
+itertools = "0.8"
 
 [dev-dependencies]
 mockiato = "0.3"

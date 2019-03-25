@@ -25,6 +25,8 @@ pub mod deriver;
 pub mod developer;
 pub mod genome;
 
+mod constant;
+
 /// Information needed by a [`NeuralNetworkDeveloper`] to build a [`DevelopedNeuralNetwork`]
 ///
 /// [`NeuralNetworkDeveloper`]: ./trait.NeuralNetworkDeveloper.html
