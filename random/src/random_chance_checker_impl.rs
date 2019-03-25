@@ -22,6 +22,10 @@ impl Default for RandomChanceCheckerImpl {
 }
 
 impl RandomChanceChecker for RandomChanceCheckerImpl {
+    fn flip_coin(&mut self) -> bool {
+        self.rng.gen()
+    }
+
     fn flip_coin_with_probability(&mut self, probability: f64) -> bool {
         if probability < 0.0 || probability > 1.0 {
             panic!(
