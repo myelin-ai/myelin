@@ -74,8 +74,61 @@ impl GenomeDeriver for ChromosomalCrossover {
 mod tests {
     use super::*;
     use crate::genome::*;
-    use mockiato::any;
-    use myelin_random::RandomChanceCheckerMock;
+    use std::collections::VecDeque;
+    use std::thread::panicking;
+
+    #[derive(Clone, Debug, Default)]
+    struct RandomChanceCheckerMock {
+        flip_coin_expected_calls: VecDeque<bool>,
+        flip_coin_with_probability_expected_calls: VecDeque<bool>,
+    }
+
+    impl RandomChanceCheckerMock {
+        fn expect_flip_coin(&mut self, return_value: bool) {
+            self.flip_coin_expected_calls.push_back(return_value)
+        }
+
+        fn expect_flip_coin_with_probability(&mut self, return_value: bool) {
+            self.flip_coin_with_probability_expected_calls
+                .push_back(return_value)
+        }
+    }
+
+    impl RandomChanceChecker for RandomChanceCheckerMock {
+        fn flip_coin(&mut self) -> bool {
+            if let Some(return_value) = self.flip_coin_expected_calls.pop_front() {
+                return_value
+            } else {
+                panic!("flip_coin was called unexpectedly")
+            }
+        }
+
+        fn flip_coin_with_probability(&mut self, _probability: f64) -> bool {
+            if let Some(return_value) = self.flip_coin_with_probability_expected_calls.pop_front() {
+                return_value
+            } else {
+                panic!("flip_coin_with_probability was called unexpectedly")
+            }
+        }
+
+        fn random_number_in_range(&mut self, _min: i32, _max: i32) -> i32 {
+            unimplemented!()
+        }
+    }
+
+    impl Drop for RandomChanceCheckerMock {
+        fn drop(&mut self) {
+            if !panicking() {
+                if !self.flip_coin_expected_calls.is_empty() {
+                    panic!("additional calls to flip_coin were expected")
+                }
+
+                if !self.flip_coin_with_probability_expected_calls.is_empty() {
+                    panic!("additional calls to flip_coin_with_probability were expected")
+                }
+            }
+        }
+    }
 
     fn hox_gene(cluster_index: usize) -> HoxGene {
         HoxGene {
@@ -111,11 +164,11 @@ mod tests {
         };
 
         let mut random_chance_checker = RandomChanceCheckerMock::default();
-        random_chance_checker.expect_flip_coin().returns(true);
-        random_chance_checker.expect_flip_coin().returns(false);
-        random_chance_checker.expect_flip_coin().returns(false);
-        random_chance_checker.expect_flip_coin().returns(true);
-        random_chance_checker.expect_flip_coin().returns(false);
+        random_chance_checker.expect_flip_coin(true);
+        random_chance_checker.expect_flip_coin(false);
+        random_chance_checker.expect_flip_coin(false);
+        random_chance_checker.expect_flip_coin(true);
+        random_chance_checker.expect_flip_coin(false);
 
         let mut deriver = ChromosomalCrossover::new(box random_chance_checker);
 
@@ -142,15 +195,11 @@ mod tests {
         };
 
         let mut random_chance_checker = RandomChanceCheckerMock::default();
-        random_chance_checker.expect_flip_coin().returns(true);
-        random_chance_checker.expect_flip_coin().returns(false);
-        random_chance_checker.expect_flip_coin().returns(false);
-        random_chance_checker
-            .expect_flip_coin_with_probability(any())
-            .returns(false);
-        random_chance_checker
-            .expect_flip_coin_with_probability(any())
-            .returns(true);
+        random_chance_checker.expect_flip_coin(true);
+        random_chance_checker.expect_flip_coin(false);
+        random_chance_checker.expect_flip_coin(false);
+        random_chance_checker.expect_flip_coin_with_probability(false);
+        random_chance_checker.expect_flip_coin_with_probability(true);
 
         let mut deriver = ChromosomalCrossover::new(box random_chance_checker);
 
@@ -177,15 +226,11 @@ mod tests {
         };
 
         let mut random_chance_checker = RandomChanceCheckerMock::default();
-        random_chance_checker.expect_flip_coin().returns(true);
-        random_chance_checker.expect_flip_coin().returns(false);
-        random_chance_checker.expect_flip_coin().returns(false);
-        random_chance_checker
-            .expect_flip_coin_with_probability(any())
-            .returns(true);
-        random_chance_checker
-            .expect_flip_coin_with_probability(any())
-            .returns(false);
+        random_chance_checker.expect_flip_coin(true);
+        random_chance_checker.expect_flip_coin(false);
+        random_chance_checker.expect_flip_coin(false);
+        random_chance_checker.expect_flip_coin_with_probability(true);
+        random_chance_checker.expect_flip_coin_with_probability(false);
 
         let mut deriver = ChromosomalCrossover::new(box random_chance_checker);
 
