@@ -934,7 +934,7 @@ mod tests {
             // Return the length of a vector from [0, 0] to [point, point]
             // Fill the returned values with `None` until `MAX_OBJECTS_PER_RAYCAST`
             points
-                .into_iter()
+                .iter()
                 .map(|&point| 2.0 * f64::powf(point, 2.0))
                 .map(f64::sqrt)
                 .map(Some)
