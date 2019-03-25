@@ -118,15 +118,18 @@ mod tests {
 
     impl Drop for RandomChanceCheckerMock {
         fn drop(&mut self) {
-            if !panicking() {
-                if !self.flip_coin_expected_calls.is_empty() {
-                    panic!("additional calls to flip_coin were expected")
-                }
-
-                if !self.flip_coin_with_probability_expected_calls.is_empty() {
-                    panic!("additional calls to flip_coin_with_probability were expected")
-                }
+            if panicking() {
+                return;
             }
+
+            assert!(
+                !self.flip_coin_expected_calls.is_empty(),
+                "additional calls to flip_coin were expected"
+            );
+            assert!(
+                !self.flip_coin_with_probability_expected_calls.is_empty(),
+                "additional calls to flip_coin_with_probability were expected"
+            );
         }
     }
 
