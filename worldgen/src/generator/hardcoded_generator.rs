@@ -6,7 +6,7 @@ use myelin_engine::prelude::*;
 use myelin_object_data::{
     AdditionalObjectDescription, AdditionalObjectDescriptionSerializer, Kind,
 };
-use nameof::name_of_type;
+use nameof::name_of;
 use std::f64::consts::FRAC_PI_2;
 use std::fmt;
 
@@ -292,7 +292,7 @@ impl WorldGenerator for HardcodedGenerator {
 
 impl fmt::Debug for HardcodedGenerator {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct(name_of_type!(HardcodedGenerator)).finish()
+        f.debug_struct(name_of!(type HardcodedGenerator)).finish()
     }
 }
 
