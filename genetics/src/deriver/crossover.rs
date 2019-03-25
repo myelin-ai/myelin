@@ -53,15 +53,16 @@ impl ChromosomalCrossover {
 
 impl GenomeDeriver for ChromosomalCrossover {
     fn derive_genome_from_parents(&mut self, parent_genomes: (Genome, Genome)) -> Genome {
-        let Genome {
-            hox_genes: hox_genes_one,
-            cluster_genes: cluster_genes_one,
-        } = parent_genomes.0;
-
-        let Genome {
-            hox_genes: hox_genes_two,
-            cluster_genes: cluster_genes_two,
-        } = parent_genomes.1;
+        let (
+            Genome {
+                hox_genes: hox_genes_one,
+                cluster_genes: cluster_genes_one,
+            },
+            Genome {
+                hox_genes: hox_genes_two,
+                cluster_genes: cluster_genes_two,
+            },
+        ) = parent_genomes;
 
         Genome {
             hox_genes: self.crossover_genes(hox_genes_one, hox_genes_two),
