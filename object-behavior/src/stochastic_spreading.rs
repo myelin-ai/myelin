@@ -1,11 +1,8 @@
 //! Types relating to a behavior that reproduces at random intervals
 
 use myelin_engine::prelude::*;
+use myelin_random::RandomChanceChecker;
 use std::any::Any;
-use std::fmt;
-
-mod random_chance_checker_impl;
-pub use self::random_chance_checker_impl::RandomChanceCheckerImpl;
 
 /// An [`ObjectBehavior`] that spreads itself in random intervals.
 /// The spreading has a chance to occur in every step
@@ -202,46 +199,6 @@ impl ObjectBehavior for StochasticSpreading {
     }
 }
 
-/// Dedicated random number generator
-#[cfg_attr(test, mockiato::mockable(static_references))]
-pub trait RandomChanceChecker: fmt::Debug + RandomChanceCheckerClone {
-    /// Returns a random boolean with a given probability of returning true.
-    /// The probability is defined in the range `[0.0; 1.0]` where `0.0` means
-    /// always return `false` and `1.0` means always return `true`.
-    /// # Errors
-    /// Is allowed to panic if `probability` is outside the range [0.0; 1.0]
-    fn flip_coin_with_probability(&mut self, probability: f64) -> bool;
-
-    /// Returns a random element from the specified range [min; max)
-    fn random_number_in_range(&mut self, min: i32, max: i32) -> i32;
-}
-
-/// Supertrait used to make sure that all implementors
-/// of [`RandomChanceChecker`] are [`Clone`]. You don't need
-/// to care about this type.
-///
-/// [`ObjectBehavior`]: ./trait.RandomChanceChecker.html
-/// [`Clone`]: https://doc.rust-lang.org/nightly/std/clone/trait.Clone.html
-#[doc(hidden)]
-pub trait RandomChanceCheckerClone {
-    fn clone_box(&self) -> Box<dyn RandomChanceChecker>;
-}
-
-impl<T> RandomChanceCheckerClone for T
-where
-    T: RandomChanceChecker + Clone + 'static,
-{
-    default fn clone_box(&self) -> Box<dyn RandomChanceChecker> {
-        box self.clone()
-    }
-}
-
-impl Clone for Box<dyn RandomChanceChecker> {
-    fn clone(&self) -> Self {
-        self.clone_box()
-    }
-}
-
 /// ```other
 /// ┼─────────────────────────────────────────────────── x
 /// |        Padding: 1       Width: 10
@@ -264,6 +221,7 @@ impl Clone for Box<dyn RandomChanceChecker> {
 mod tests {
     use super::*;
     use mockiato::partial_eq;
+    use myelin_random::RandomChanceCheckerMock;
 
     const SPREADING_CHANGE: f64 = 1.0 / (60.0 * 30.0);
     const EXPECTED_PADDING: f64 = 1.0;
