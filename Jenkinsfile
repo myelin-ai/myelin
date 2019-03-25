@@ -105,6 +105,11 @@ pipeline {
             sh 'cargo fmt --all -- --check'
           }
         }
+        stage('additional lints') {
+          steps {
+            sh './scripts/additional-lints.py'
+          }
+        }
         stage('tslint') {
           steps {
             sh '(cd visualization-client && yarn lint)'
