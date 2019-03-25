@@ -1,5 +1,5 @@
 use crate::*;
-use nameof::name_of_type;
+use nameof::name_of;
 use std::fmt::{self, Debug};
 use std::rc::Rc;
 
@@ -28,7 +28,7 @@ impl FlatNeuralNetworkDeveloper {
 
 impl Debug for FlatNeuralNetworkDeveloper {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct(name_of_type!(FlatNeuralNetworkDeveloper))
+        f.debug_struct(name_of!(type FlatNeuralNetworkDeveloper))
             .finish()
     }
 }
