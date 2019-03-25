@@ -107,7 +107,7 @@ pipeline {
         }
         stage('additional lints') {
           steps {
-            sh 'python3.7 ./scripts/additional-lints.py'
+            sh './scripts/additional-lints.py'
           }
         }
         stage('tslint') {
