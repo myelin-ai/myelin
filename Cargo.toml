@@ -8,5 +8,6 @@ members = [
     "object-data",
     "random",
     "neural-network",
+    "clone-box",
     "genetics",
 ]

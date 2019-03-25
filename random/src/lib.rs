@@ -16,6 +16,7 @@
 
 #[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
+use myelin_clone_box::clone_box;
 pub use random_impl::*;
 use std::fmt::Debug;
 
@@ -38,33 +39,4 @@ pub trait Random: Debug + RandomClone {
     fn random_number_in_range(&self, min: i32, max: i32) -> i32;
 }
 
-/// Supertrait used to make sure that all implementors
-/// of [`Random`] are [`Clone`]. You don't need
-/// to care about this type.
-///
-/// [`Random`]: ./trait.Random.html
-/// [`Clone`]: https://doc.rust-lang.org/nightly/std/clone/trait.Clone.html
-#[doc(hidden)]
-pub trait RandomClone {
-    fn clone_box<'a>(&self) -> Box<dyn Random + 'a>
-    where
-        Self: 'a;
-}
-
-impl<T> RandomClone for T
-where
-    T: Random + Clone,
-{
-    default fn clone_box<'a>(&self) -> Box<dyn Random + 'a>
-    where
-        Self: 'a,
-    {
-        box self.clone()
-    }
-}
-
-impl<'a> Clone for Box<dyn Random + 'a> {
-    fn clone(&self) -> Self {
-        self.clone_box()
-    }
-}
+clone_box!(Random, RandomClone);
