@@ -23,7 +23,7 @@ impl NeuralNetworkBuilder {
         unimplemented!()
     }
 
-    /// Add a new unconnected neuron to the network
+    /// Adds a new unconnected neuron to the network
     pub fn push_neuron(&mut self) -> Handle {
         unimplemented!();
     }
