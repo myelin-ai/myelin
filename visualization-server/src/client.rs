@@ -5,7 +5,7 @@ use crate::controller::{CurrentSnapshotFn, Presenter, Snapshot};
 use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperError};
 use log::{debug, error, warn};
 use myelin_visualization_core::serialization::ViewModelSerializer;
-use nameof::name_of_type;
+use nameof::name_of;
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
 use std::sync::Arc;
@@ -95,10 +95,10 @@ impl Client for ClientHandler {
 
 impl Debug for ClientHandler {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct(name_of_type!(ClientHandler))
-            .field("presenter", &self.presenter)
-            .field("serializer", &self.serializer)
-            .field("connection", &self.connection)
+        f.debug_struct(name_of!(type ClientHandler))
+            .field(name_of!(presenter in ClientHandler), &self.presenter)
+            .field(name_of!(serializer in ClientHandler), &self.serializer)
+            .field(name_of!(connection in ClientHandler), &self.connection)
             .finish()
     }
 }
