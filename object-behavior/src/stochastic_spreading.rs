@@ -93,10 +93,10 @@ impl StochasticSpreading {
 /// -----------------------------------------
 ///  Lower Left | Lower Middle | Lower Right
 /// ```
-fn calculate_possible_spreading_locations(polygon: &Polygon) -> Vec<Point> {
+fn calculate_possible_spreading_locations(polygon: &Polygon) -> [Point; 8] {
     let (width, height) = width_and_height_of_area(polygon.aabb());
 
-    vec![
+    [
         Point {
             x: -width,
             y: -height,
