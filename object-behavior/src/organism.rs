@@ -111,7 +111,7 @@ impl ObjectBehavior for OrganismBehavior {
             objects_in_fov_to_neuron_inputs(&own_object.description, objects_in_fov);
 
         add_vision_inputs(
-            &vision_neuron_inputs,
+            vision_neuron_inputs,
             &neuron_handle_mapping.input,
             &mut insert_input_fn,
         );
@@ -215,14 +215,14 @@ fn objects_in_fov<'a>(
 fn objects_in_fov_to_neuron_inputs<'a, T, U>(
     own_description: &'a ObjectDescription,
     objects: T,
-) -> Vec<Option<f64>>
+) -> impl Iterator<Item = Option<f64>> + 'a
 where
-    T: IntoIterator<Item = U>,
-    U: IntoIterator<Item = Object<'a>>,
+    T: IntoIterator<Item = U> + 'a,
+    U: IntoIterator<Item = Object<'a>> + 'a,
 {
     objects
         .into_iter()
-        .map(|objects_in_ray| {
+        .map(move |objects_in_ray| {
             let objects_in_ray: Vec<_> = objects_in_ray.into_iter().collect();
             let distances_capacity = MAX_OBJECTS_PER_RAYCAST.max(objects_in_ray.len());
             let mut distances = Vec::with_capacity(distances_capacity);
@@ -240,7 +240,6 @@ where
             distances
         })
         .flatten()
-        .collect()
 }
 
 fn velocity(object_description: &ObjectDescription) -> Vector {
@@ -278,16 +277,18 @@ fn add_acceleration_inputs(
     }
 }
 
-fn add_vision_inputs(
-    vision_neuron_inputs: &[Option<f64>],
+fn add_vision_inputs<T>(
+    vision_neuron_inputs: T,
     input_neuron_handle_mapping: &InputNeuronHandleMapping,
     mut add_input_fn: impl FnMut(Handle, f64),
-) {
+) where
+    T: IntoIterator<Item = Option<f64>>,
+{
     input_neuron_handle_mapping
         .vision
         .iter()
-        .zip(vision_neuron_inputs.iter())
-        .filter_map(|(handle, &input)| Some((handle, input?)))
+        .zip(vision_neuron_inputs.into_iter())
+        .filter_map(|(handle, input)| Some((handle, input?)))
         .for_each(|(handle, input)| {
             /// Arbitrary value
             const MAXIMAL_DISTINGUISHABLE_DISTANCE_IN_METERS: f64 = 1200.0;
@@ -898,7 +899,7 @@ mod tests {
         let own_description = object_description().build().unwrap();
         let objects_in_fov: Vec<Vec<_>> = Vec::new();
         let inputs = objects_in_fov_to_neuron_inputs(&own_description, objects_in_fov);
-        assert!(inputs.is_empty());
+        assert_eq!(0, inputs.count());
     }
 
     #[test]
@@ -932,7 +933,8 @@ mod tests {
             Vec::new(),
         ];
         assert_eq!(RAYCAST_COUNT, objects_in_fov.len());
-        let inputs = objects_in_fov_to_neuron_inputs(&own_description, objects_in_fov);
+        let inputs: Vec<_> =
+            objects_in_fov_to_neuron_inputs(&own_description, objects_in_fov).collect();
 
         let no_distances = vec![None; MAX_OBJECTS_PER_RAYCAST];
         let first_distances = no_distances.clone();
