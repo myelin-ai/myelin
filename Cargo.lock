@@ -580,6 +580,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "myelin-clone-box"
+version = "0.1.0"
+
+[[package]]
 name = "myelin-engine"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
