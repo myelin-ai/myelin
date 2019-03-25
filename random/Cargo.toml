@@ -13,6 +13,7 @@ edition = "2018"
 [dependencies]
 rand = "0.6"
 mockiato = { version = "0.3", optional = true }
+myelin-clone-box = { path = "../clone-box" }
 
 [dev-dependencies]
 mockiato = "0.3"

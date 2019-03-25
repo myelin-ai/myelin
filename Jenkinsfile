@@ -48,7 +48,7 @@ pipeline {
             branch 'master'
           }
           steps {
-            sh 'cargo doc'
+            sh 'cargo doc --all --all-features'
             sh '(cd docs && poetry run ./build-index.py)'
           }
         }
@@ -57,7 +57,7 @@ pipeline {
             changeRequest()
           }
           steps {
-            sh 'cargo doc --no-deps'
+            sh 'cargo doc --all --all-features --no-deps'
             sh '(cd docs && poetry run ./build-index.py)'
           }
         }
@@ -103,6 +103,11 @@ pipeline {
         stage('rustfmt') {
           steps {
             sh 'cargo fmt --all -- --check'
+          }
+        }
+        stage('additional lints') {
+          steps {
+            sh './scripts/additional-lints.py'
           }
         }
         stage('tslint') {

@@ -21,7 +21,13 @@ const MAX_ACCELERATION: f64 = 5.0 * 9.81;
 /// which is the [maximum acceleration a human can achieve](https://www.wired.com/2012/08/maximum-acceleration-in-the-100-m-dash/)
 const MAX_ACCELERATION_FORCE: f64 = 20.0 * 9.8;
 
+/// Our research indicates that these seem to be the same
 const MAX_ANGULAR_FORCE: f64 = MAX_ACCELERATION_FORCE;
+
+/// Number of rays sent out by an organism to detect visible objects
+const RAYCAST_COUNT: usize = 10;
+/// Number of objects that can be detected by a vision ray
+const MAX_OBJECTS_PER_RAYCAST: usize = 3;
 
 /// An organism that can interact with its surroundings via a neural network,
 /// built from a set of genes
@@ -32,11 +38,17 @@ pub struct OrganismBehavior {
     neural_network_developer: Box<dyn NeuralNetworkDevelopmentOrchestrator>,
 }
 
+/// Number of inputs reserved for visible objects
+const VISION_INPUT_COUNT: usize = RAYCAST_COUNT * MAX_OBJECTS_PER_RAYCAST;
+
 /// 1. Average axial acceleration since last step (forward)
 /// 2. Average axial acceleration since last step (backward)
 /// 3. Average lateral acceleration since last step (left)
 /// 4. Average lateral acceleration since last step (right)
-const INPUT_NEURON_COUNT: usize = 4;
+/// Rest: Distances to objects in FOV from right to left
+const INPUT_NEURON_COUNT: usize = 4 + VISION_INPUT_COUNT;
+
+const FIRST_VISION_INDEX: usize = INPUT_NEURON_COUNT - VISION_INPUT_COUNT + 1;
 
 /// 2. axial force (backward)
 /// 3. lateral force (left)
@@ -86,12 +98,24 @@ impl ObjectBehavior for OrganismBehavior {
         self.previous_velocity = current_velocity;
 
         let mut inputs = HashMap::with_capacity(2);
+        let mut insert_input_fn = |key, value| {
+            inputs.insert(key, value);
+        };
+
         add_acceleration_inputs(
             relative_acceleration,
-            neuron_handle_mapping.input,
-            |key, value| {
-                inputs.insert(key, value);
-            },
+            &neuron_handle_mapping.input,
+            &mut insert_input_fn,
+        );
+
+        let objects_in_fov = objects_in_fov(&own_object.description, world_interactor);
+        let vision_neuron_inputs =
+            objects_in_fov_to_neuron_inputs(&own_object.description, objects_in_fov);
+
+        add_vision_inputs(
+            vision_neuron_inputs,
+            &neuron_handle_mapping.input,
+            &mut insert_input_fn,
         );
 
         let neural_network = &mut self.developed_neural_network.neural_network;
@@ -165,6 +189,61 @@ fn convert_neural_network_output_to_action(
     }
 }
 
+fn objects_in_fov<'a>(
+    own_description: &'a ObjectDescription,
+    world_interactor: &'a dyn WorldInteractor,
+) -> impl Iterator<Item = (impl Iterator<Item = Object<'a>> + 'a)> + 'a {
+    /// The angle in degrees describing the field of view. [Wikipedia](https://en.wikipedia.org/wiki/Human_eye#Field_of_view).
+    const FOV_ANGLE: usize = 200;
+    const ANGLE_PER_RAYCAST: f64 = FOV_ANGLE as f64 / RAYCAST_COUNT as f64;
+
+    let unit_vector = Vector { x: 1.0, y: 0.0 };
+    let own_direction = unit_vector.rotate(own_description.rotation);
+
+    let half_of_fov_angle = Radians::try_from_degrees(FOV_ANGLE as f64 / 2.0).unwrap();
+    let rightmost_angle = own_direction.rotate_clockwise(half_of_fov_angle);
+    (0..RAYCAST_COUNT).map(move |angle_step| {
+        // Todo: The following three lines produce slightly different numbers on macOS
+        let angle_in_degrees = angle_step as f64 * ANGLE_PER_RAYCAST;
+        let angle_in_radians = Radians::try_from_degrees(angle_in_degrees).unwrap();
+        let fov_direction = rightmost_angle.rotate(angle_in_radians);
+
+        world_interactor
+            .find_objects_in_ray(own_description.location, fov_direction)
+            .into_iter()
+    })
+}
+
+fn objects_in_fov_to_neuron_inputs<'a, T, U>(
+    own_description: &'a ObjectDescription,
+    objects: T,
+) -> impl Iterator<Item = Option<f64>> + 'a
+where
+    T: IntoIterator<Item = U> + 'a,
+    U: IntoIterator<Item = Object<'a>> + 'a,
+{
+    objects
+        .into_iter()
+        .map(move |objects_in_ray| {
+            let objects_in_ray: Vec<_> = objects_in_ray.into_iter().collect();
+            let distances_capacity = MAX_OBJECTS_PER_RAYCAST.max(objects_in_ray.len());
+            let mut distances = Vec::with_capacity(distances_capacity);
+            distances.extend(
+                objects_in_ray
+                    .iter()
+                    .map(|object| object.description.location - own_description.location)
+                    .map(Vector::from)
+                    .map(Vector::magnitude)
+                    .map(Some),
+            );
+
+            distances.sort_by(|a, b| a.partial_cmp(b).unwrap());
+            distances.resize(MAX_OBJECTS_PER_RAYCAST, None);
+            distances
+        })
+        .flatten()
+}
+
 fn velocity(object_description: &ObjectDescription) -> Vector {
     match object_description.mobility {
         Mobility::Immovable => Vector::default(),
@@ -174,7 +253,7 @@ fn velocity(object_description: &ObjectDescription) -> Vector {
 
 fn add_acceleration_inputs(
     acceleration: Vector,
-    input_neuron_handle_mapping: InputNeuronHandleMapping,
+    input_neuron_handle_mapping: &InputNeuronHandleMapping,
     mut add_input_fn: impl FnMut(Handle, f64),
 ) {
     let axial_acceleration_handle = axial_acceleration_handle(
@@ -200,8 +279,28 @@ fn add_acceleration_inputs(
     }
 }
 
+fn add_vision_inputs<T>(
+    vision_neuron_inputs: T,
+    input_neuron_handle_mapping: &InputNeuronHandleMapping,
+    mut add_input_fn: impl FnMut(Handle, f64),
+) where
+    T: IntoIterator<Item = Option<f64>>,
+{
+    input_neuron_handle_mapping
+        .vision
+        .iter()
+        .zip(vision_neuron_inputs.into_iter())
+        .filter_map(|(handle, input)| Some((handle, input?)))
+        .for_each(|(handle, input)| {
+            /// Arbitrary value
+            const MAXIMAL_DISTINGUISHABLE_DISTANCE_IN_METERS: f64 = 1200.0;
+            let normalized_input = (input / MAXIMAL_DISTINGUISHABLE_DISTANCE_IN_METERS).min(1.0);
+            add_input_fn(*handle, normalized_input);
+        });
+}
+
 /// Arbitrary value
-const MIN_PERCEIVABLE_ACCELERATION: f64 = 0.0001;
+const MIN_PERCEIVABLE_ACCELERATION: f64 = 0.000_1;
 
 fn axial_acceleration_handle(
     axial_acceleration: f64,
@@ -229,16 +328,17 @@ fn lateral_acceleration_handle(
     }
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 struct NeuronHandleMapping {
     input: InputNeuronHandleMapping,
     output: OutputNeuronHandleMapping,
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 struct InputNeuronHandleMapping {
     axial_acceleration: AxialAccelerationHandleMapping,
     lateral_acceleration: LateralAccelerationHandleMapping,
+    vision: Vec<Handle>,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -280,6 +380,9 @@ fn map_handles(developed_neural_network: &DevelopedNeuralNetwork) -> NeuronHandl
                 left: get_neuron_handle(input_neurons, 2),
                 right: get_neuron_handle(input_neurons, 3),
             },
+            vision: (FIRST_VISION_INDEX..INPUT_NEURON_COUNT)
+                .map(|index| get_neuron_handle(input_neurons, index))
+                .collect(),
         },
         output: OutputNeuronHandleMapping {
             axial_acceleration: AxialAccelerationHandleMapping {
@@ -335,6 +438,7 @@ mod tests {
     use myelin_neural_network::NeuralNetworkMock;
     use nearly_eq::assert_nearly_eq;
     use std::f64::consts::PI;
+    use std::iter;
 
     #[test]
     fn axial_acceleration_handle_returns_correct_handle_for_minus_one() {
@@ -413,12 +517,15 @@ mod tests {
                 left: Handle(2),
                 right: Handle(3),
             },
+            vision: (FIRST_VISION_INDEX..INPUT_NEURON_COUNT)
+                .map(Handle)
+                .collect(),
         };
 
         let mut values = HashMap::new();
         add_acceleration_inputs(
             configuration.input_acceleration,
-            mapping,
+            &mapping,
             |handle, value| {
                 values.insert(handle, value);
             },
@@ -574,21 +681,7 @@ mod tests {
             .expect_normalized_potential_of_neuron(partial_eq(mapping.output.torque.clockwise))
             .returns(Ok(Some(0.4)));
 
-        let object_description = ObjectBuilder::default()
-            .shape(
-                PolygonBuilder::default()
-                    .vertex(0.0, 0.0)
-                    .vertex(0.0, 10.0)
-                    .vertex(10.0, 10.0)
-                    .vertex(10.0, 0.0)
-                    .build()
-                    .unwrap(),
-            )
-            .mobility(Mobility::Movable(Vector::default()))
-            .location(0.0, 0.0)
-            .rotation(Radians::try_new(PI).unwrap())
-            .build()
-            .unwrap();
+        let object_description = object_description().build().unwrap();
 
         let expected_force = Force {
             linear: Vector {
@@ -612,6 +705,24 @@ mod tests {
         }
     }
 
+    fn object_description() -> ObjectBuilder {
+        let mut builder = ObjectBuilder::default();
+        builder
+            .shape(
+                PolygonBuilder::default()
+                    .vertex(0.0, 0.0)
+                    .vertex(0.0, 10.0)
+                    .vertex(10.0, 10.0)
+                    .vertex(10.0, 0.0)
+                    .build()
+                    .unwrap(),
+            )
+            .mobility(Mobility::Movable(Vector::default()))
+            .location(0.0, 0.0)
+            .rotation(Radians::try_new(PI).unwrap());
+        builder
+    }
+
     fn mock_developed_neural_network() -> DevelopedNeuralNetwork {
         DevelopedNeuralNetwork {
             input_neuron_handles: (0..INPUT_NEURON_COUNT).map(Handle).collect(),
@@ -619,5 +730,279 @@ mod tests {
             neural_network: box NeuralNetworkMock::new(),
             genome: Genome::default(),
         }
+    }
+
+    #[test]
+    #[cfg_attr(target_os = "macos", ignore)]
+    fn objects_in_fov_is_empty_with_no_surrounding_objects() {
+        test_objects_in_fov_are_as_expected(ExpectedFovObjects {
+            first_objects_in_ray: Vec::new(),
+            second_objects_in_ray: Vec::new(),
+            third_objects_in_ray: Vec::new(),
+            fourth_objects_in_ray: Vec::new(),
+            fifth_objects_in_ray: Vec::new(),
+            sixth_objects_in_ray: Vec::new(),
+            seventh_objects_in_ray: Vec::new(),
+            eight_objects_in_ray: Vec::new(),
+            ninth_objects_in_ray: Vec::new(),
+            tenth_objects_in_ray: Vec::new(),
+            expected_objects: vec![Vec::new(); 10],
+        })
+    }
+
+    #[test]
+    #[cfg_attr(target_os = "macos", ignore)]
+    fn objects_in_fov_are_filtered_correctly() {
+        let mock_behavior = ObjectBehaviorMock::new();
+        let mut counter = 0;
+        let mut genenerate_objects =
+            |amount| generate_objects(amount, &mock_behavior, &mut counter);
+
+        let fourth_objects = genenerate_objects(6);
+        let sixth_objects = genenerate_objects(2);
+        let seventh_objects = genenerate_objects(1);
+
+        test_objects_in_fov_are_as_expected(ExpectedFovObjects {
+            first_objects_in_ray: Vec::new(),
+            second_objects_in_ray: Vec::new(),
+            third_objects_in_ray: Vec::new(),
+            fourth_objects_in_ray: fourth_objects.clone(),
+            fifth_objects_in_ray: Vec::new(),
+            sixth_objects_in_ray: sixth_objects.clone(),
+            seventh_objects_in_ray: seventh_objects.clone(),
+            eight_objects_in_ray: Vec::new(),
+            ninth_objects_in_ray: Vec::new(),
+            tenth_objects_in_ray: Vec::new(),
+            expected_objects: vec![
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                fourth_objects,
+                Vec::new(),
+                sixth_objects,
+                seventh_objects,
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+            ],
+        })
+    }
+
+    #[derive(Debug, Default)]
+    struct ExpectedFovObjects<'a> {
+        first_objects_in_ray: Snapshot<'a>,
+        second_objects_in_ray: Snapshot<'a>,
+        third_objects_in_ray: Snapshot<'a>,
+        fourth_objects_in_ray: Snapshot<'a>,
+        fifth_objects_in_ray: Snapshot<'a>,
+        sixth_objects_in_ray: Snapshot<'a>,
+        seventh_objects_in_ray: Snapshot<'a>,
+        eight_objects_in_ray: Snapshot<'a>,
+        ninth_objects_in_ray: Snapshot<'a>,
+        tenth_objects_in_ray: Snapshot<'a>,
+        expected_objects: Vec<Vec<Object<'a>>>,
+    }
+
+    fn test_objects_in_fov_are_as_expected(expected_fov_objects: ExpectedFovObjects<'_>) {
+        let own_description = object_description().build().unwrap();
+        let mut world_interactor = WorldInteractorMock::new();
+
+        let mut connect_ray_to_expectation = |ray, expectation| {
+            world_interactor
+                .expect_find_objects_in_ray(partial_eq(own_description.location), partial_eq(ray))
+                .returns(expectation);
+        };
+
+        let first_ray = Vector {
+            x: 0.173_648_177_666_930_41,
+            y: 0.984_807_753_012_208,
+        };
+        connect_ray_to_expectation(first_ray, expected_fov_objects.first_objects_in_ray);
+
+        let second_ray = Vector {
+            x: -0.173_648_177_666_930_25,
+            y: 0.984_807_753_012_208_1,
+        };
+        connect_ray_to_expectation(second_ray, expected_fov_objects.second_objects_in_ray);
+
+        let third_ray = Vector {
+            x: -0.499_999_999_999_999_9,
+            /// On macOS, the actual value is for some reason 0.866_025_403_784_438_7
+            y: 0.866_025_403_784_438_6,
+        };
+        connect_ray_to_expectation(third_ray, expected_fov_objects.third_objects_in_ray);
+
+        let fourth_ray = Vector {
+            x: -0.766_044_443_118_977_9,
+            y: 0.642_787_609_686_539_5,
+        };
+        connect_ray_to_expectation(fourth_ray, expected_fov_objects.fourth_objects_in_ray);
+
+        let fifth_ray = Vector {
+            x: -0.939_692_620_785_908_3,
+            y: 0.342_020_143_325_668_8,
+        };
+        connect_ray_to_expectation(fifth_ray, expected_fov_objects.fifth_objects_in_ray);
+
+        let sixth_ray = Vector {
+            x: -0.999_999_999_999_999_9,
+            y: 0.000_000_000_000_000_083_266_726_846_886_74,
+        };
+        connect_ray_to_expectation(sixth_ray, expected_fov_objects.sixth_objects_in_ray);
+
+        let seventh_ray = Vector {
+            /// On macOS, the actual value is for some reason 0.939_692_620_785_908_4
+            x: -0.939_692_620_785_908_4,
+            y: -0.342_020_143_325_668_44,
+        };
+        connect_ray_to_expectation(seventh_ray, expected_fov_objects.seventh_objects_in_ray);
+
+        let eight_ray = Vector {
+            x: -0.766_044_443_118_978_2,
+            y: -0.642_787_609_686_539,
+        };
+        connect_ray_to_expectation(eight_ray, expected_fov_objects.eight_objects_in_ray);
+
+        let ninth_ray = Vector {
+            x: -0.500_000_000_000_000_2,
+            y: -0.866_025_403_784_438_5,
+        };
+        connect_ray_to_expectation(ninth_ray, expected_fov_objects.ninth_objects_in_ray);
+
+        let tenth_ray = Vector {
+            x: -0.173_648_177_666_930_53,
+            y: -0.984_807_753_012_208,
+        };
+        connect_ray_to_expectation(tenth_ray, expected_fov_objects.tenth_objects_in_ray);
+
+        let objects_in_fov: Vec<_> = objects_in_fov(&own_description, &world_interactor).collect();
+        assert_eq!(
+            expected_fov_objects.expected_objects.len(),
+            objects_in_fov.len()
+        );
+        for (expected_objects_in_ray, objects_in_ray) in expected_fov_objects
+            .expected_objects
+            .iter()
+            .zip(objects_in_fov.into_iter())
+        {
+            let objects_in_ray: Vec<_> = objects_in_ray.collect();
+            assert_eq!(expected_objects_in_ray.len(), objects_in_ray.len());
+            for (expected_object, object) in
+                expected_objects_in_ray.iter().zip(objects_in_ray.iter())
+            {
+                assert_eq!(expected_object.id, object.id);
+                assert_eq!(expected_object.description, object.description);
+            }
+        }
+    }
+
+    #[test]
+    fn no_objects_in_fov_are_mapped_to_no_neural_inputs() {
+        let own_description = object_description().build().unwrap();
+        let objects_in_fov: Vec<Vec<_>> = Vec::new();
+        let inputs = objects_in_fov_to_neuron_inputs(&own_description, objects_in_fov);
+        assert_eq!(0, inputs.count());
+    }
+
+    #[test]
+    fn objects_in_fov_are_mapped_to_neural_inputs() {
+        let mut counter = 0;
+        let mock_behavior = ObjectBehaviorMock::new();
+
+        let mut genenerate_objects = |amount| {
+            /// This arbitrary shift jumbles the objects up,
+            /// later testing if their distances are sorted
+            const SHIFT: usize = 2;
+            generate_objects(amount, &mock_behavior, &mut counter)
+                .into_iter()
+                .cycle()
+                .skip(SHIFT)
+                .take(amount)
+                .collect()
+        };
+
+        let own_description = object_description().build().unwrap();
+        let objects_in_fov = vec![
+            Vec::new(),
+            Vec::new(),
+            genenerate_objects(6),
+            Vec::new(),
+            genenerate_objects(2),
+            Vec::new(),
+            genenerate_objects(1),
+            genenerate_objects(4),
+            Vec::new(),
+            Vec::new(),
+        ];
+        assert_eq!(RAYCAST_COUNT, objects_in_fov.len());
+        let inputs: Vec<_> =
+            objects_in_fov_to_neuron_inputs(&own_description, objects_in_fov).collect();
+
+        let no_distances = vec![None; MAX_OBJECTS_PER_RAYCAST];
+        let first_distances = no_distances.clone();
+        let second_distances = no_distances.clone();
+        let points_to_distances = |points: &[f64]| {
+            // Return the length of a vector from [0, 0] to [point, point]
+            // Fill the returned values with `None` until `MAX_OBJECTS_PER_RAYCAST`
+            points
+                .iter()
+                .map(|&point| 2.0 * f64::powf(point, 2.0))
+                .map(f64::sqrt)
+                .map(Some)
+                .chain(iter::repeat(None))
+                .take(MAX_OBJECTS_PER_RAYCAST)
+                .collect()
+        };
+        let third_distances = points_to_distances(&[1.0, 2.0, 3.0]);
+        let fourth_distances = no_distances.clone();
+        let fifth_distances = points_to_distances(&[7.0, 8.0]);
+        let sixth_distances = no_distances.clone();
+        let seventh_distances = points_to_distances(&[9.0]);
+        let eight_distances = points_to_distances(&[10.0, 11.0, 12.0]);
+        let ninth_distances = no_distances.clone();
+        let tenth_distances = no_distances;
+
+        let expected_inputs: Vec<Option<f64>> = vec![
+            first_distances,
+            second_distances,
+            third_distances,
+            fourth_distances,
+            fifth_distances,
+            sixth_distances,
+            seventh_distances,
+            eight_distances,
+            ninth_distances,
+            tenth_distances,
+        ]
+        .into_iter()
+        .flatten()
+        .collect();
+        assert_eq!(
+            RAYCAST_COUNT * MAX_OBJECTS_PER_RAYCAST,
+            expected_inputs.len()
+        );
+
+        assert_eq!(expected_inputs, inputs);
+    }
+
+    fn generate_objects<'a, 'b>(
+        amount: usize,
+        object_behavior: &'a dyn ObjectBehavior,
+        counter: &'b mut usize,
+    ) -> Vec<Object<'a>> {
+        (0..amount)
+            .map(|_| {
+                let object = Object {
+                    id: *counter,
+                    behavior: object_behavior,
+                    description: object_description()
+                        .location(1.0 + *counter as f64, 1.0 + *counter as f64)
+                        .build()
+                        .unwrap(),
+                };
+                *counter += 1;
+                object
+            })
+            .collect()
     }
 }
