@@ -16,46 +16,46 @@
 
 #[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
-pub use random_chance_checker_impl::*;
+pub use random_impl::*;
 use std::fmt::Debug;
 
-mod random_chance_checker_impl;
+mod random_impl;
 
 /// Dedicated random number generator
 #[cfg_attr(any(test, feature = "use-mocks"), mockable(static_references))]
-pub trait RandomChanceChecker: Debug + RandomChanceCheckerClone {
+pub trait Random: Debug + RandomClone {
     /// Returns a random boolean with equal chances of returning `true` or `false`.
-    fn flip_coin(&mut self) -> bool;
+    fn flip_coin(&self) -> bool;
 
     /// Returns a random boolean with a given probability of returning `true`.
     /// The probability is defined in the range `[0.0; 1.0]` where `0.0` means
     /// always return `false` and `1.0` means always return `true`.
     /// # Panics
     /// Panics if `probability` is outside the range [0.0; 1.0].
-    fn flip_coin_with_probability(&mut self, probability: f64) -> bool;
+    fn flip_coin_with_probability(&self, probability: f64) -> bool;
 
     /// Returns a random element from the specified range [min; max)
-    fn random_number_in_range(&mut self, min: i32, max: i32) -> i32;
+    fn random_number_in_range(&self, min: i32, max: i32) -> i32;
 }
 
 /// Supertrait used to make sure that all implementors
-/// of [`RandomChanceChecker`] are [`Clone`]. You don't need
+/// of [`Random`] are [`Clone`]. You don't need
 /// to care about this type.
 ///
-/// [`RandomChanceChecker`]: ./trait.RandomChanceChecker.html
+/// [`Random`]: ./trait.Random.html
 /// [`Clone`]: https://doc.rust-lang.org/nightly/std/clone/trait.Clone.html
 #[doc(hidden)]
-pub trait RandomChanceCheckerClone {
-    fn clone_box<'a>(&self) -> Box<dyn RandomChanceChecker + 'a>
+pub trait RandomClone {
+    fn clone_box<'a>(&self) -> Box<dyn Random + 'a>
     where
         Self: 'a;
 }
 
-impl<T> RandomChanceCheckerClone for T
+impl<T> RandomClone for T
 where
-    T: RandomChanceChecker + Clone,
+    T: Random + Clone,
 {
-    default fn clone_box<'a>(&self) -> Box<dyn RandomChanceChecker + 'a>
+    default fn clone_box<'a>(&self) -> Box<dyn Random + 'a>
     where
         Self: 'a,
     {
@@ -63,7 +63,7 @@ where
     }
 }
 
-impl<'a> Clone for Box<dyn RandomChanceChecker + 'a> {
+impl<'a> Clone for Box<dyn Random + 'a> {
     fn clone(&self) -> Self {
         self.clone_box()
     }

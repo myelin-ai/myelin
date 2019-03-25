@@ -1,7 +1,7 @@
 //! Types relating to a behavior that reproduces at random intervals
 
 use myelin_engine::prelude::*;
-use myelin_random::RandomChanceChecker;
+use myelin_random::Random;
 use std::any::Any;
 
 /// An [`ObjectBehavior`] that spreads itself in random intervals.
@@ -9,7 +9,7 @@ use std::any::Any;
 /// if there is space available in an area around it
 #[derive(Debug)]
 pub struct StochasticSpreading {
-    random_chance_checker: Box<dyn RandomChanceChecker>,
+    random: Box<dyn Random>,
     spreading_probability: f64,
     next_spreading_location: Option<Aabb>,
 }
@@ -17,7 +17,7 @@ pub struct StochasticSpreading {
 impl Clone for StochasticSpreading {
     fn clone(&self) -> Self {
         Self {
-            random_chance_checker: self.random_chance_checker.clone_box(),
+            random: self.random.clone_box(),
             spreading_probability: self.spreading_probability,
             next_spreading_location: self.next_spreading_location,
         }
@@ -28,13 +28,10 @@ impl StochasticSpreading {
     /// Returns a plant that has a probability of `spreading_probability`
     /// `spreading_sensor` is the area around the object, in which it will try to
     /// find a vacant spot to spread.
-    pub fn new(
-        spreading_probability: f64,
-        random_chance_checker: Box<dyn RandomChanceChecker>,
-    ) -> Self {
+    pub fn new(spreading_probability: f64, random: Box<dyn Random>) -> Self {
         Self {
             spreading_probability,
-            random_chance_checker,
+            random,
             next_spreading_location: None,
         }
     }
@@ -44,8 +41,8 @@ impl StochasticSpreading {
         self.next_spreading_location
     }
 
-    fn should_spread(&mut self) -> bool {
-        self.random_chance_checker
+    fn should_spread(&self) -> bool {
+        self.random
             .flip_coin_with_probability(self.spreading_probability)
     }
 
@@ -55,7 +52,7 @@ impl StochasticSpreading {
             calculate_possible_spreading_locations(&own_object.description.shape);
 
         let first_try_index = self
-            .random_chance_checker
+            .random
             .random_number_in_range(0, possible_spreading_locations.len() as i32)
             as usize;
 
@@ -221,18 +218,18 @@ impl ObjectBehavior for StochasticSpreading {
 mod tests {
     use super::*;
     use mockiato::partial_eq;
-    use myelin_random::RandomChanceCheckerMock;
+    use myelin_random::RandomMock;
 
     const SPREADING_CHANGE: f64 = 1.0 / (60.0 * 30.0);
     const EXPECTED_PADDING: f64 = 1.0;
 
     #[test]
     fn does_nothing_when_chance_is_not_hit() {
-        let mut random_chance_checker = RandomChanceCheckerMock::new();
-        random_chance_checker
+        let mut random = RandomMock::new();
+        random
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
             .returns(false);
-        let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random_chance_checker);
+        let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
         let action = object.step(&WorldInteractorMock::new());
         assert!(action.is_none());
     }
@@ -240,14 +237,14 @@ mod tests {
     #[test]
     fn spreads_when_chance_is_hit() {
         let object_behavior = ObjectBehaviorMock::new();
-        let mut random_chance_checker = RandomChanceCheckerMock::new();
-        random_chance_checker
+        let mut random = RandomMock::new();
+        random
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
             .returns(true);
-        random_chance_checker
+        random
             .expect_random_number_in_range(partial_eq(0), partial_eq(8))
             .returns(0);
-        let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random_chance_checker);
+        let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
         let mut world_interactor = WorldInteractorMock::new();
         world_interactor
             .expect_find_objects_in_area(partial_eq(
@@ -280,17 +277,17 @@ mod tests {
 
     #[test]
     fn does_not_spread_when_surrounded() {
-        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        let mut random = RandomMock::new();
         let object_behavior = ObjectBehaviorMock::new();
 
-        random_chance_checker
+        random
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
             .returns(true);
-        random_chance_checker
+        random
             .expect_random_number_in_range(partial_eq(0), partial_eq(8))
             .returns(0);
 
-        let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random_chance_checker);
+        let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
 
         let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
@@ -378,17 +375,17 @@ mod tests {
 
     #[test]
     fn spreads_on_first_available_space_clockwise() {
-        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        let mut random = RandomMock::new();
         let object_behavior = ObjectBehaviorMock::new();
 
-        random_chance_checker
+        random
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
             .returns(true);
-        random_chance_checker
+        random
             .expect_random_number_in_range(partial_eq(0), partial_eq(8))
             .returns(0);
 
-        let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random_chance_checker);
+        let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
 
         let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
@@ -448,16 +445,16 @@ mod tests {
 
     #[test]
     fn can_spread_vertically() {
-        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        let mut random = RandomMock::new();
         let object_behavior = ObjectBehaviorMock::new();
 
-        random_chance_checker
+        random
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
             .returns(true);
-        random_chance_checker
+        random
             .expect_random_number_in_range(partial_eq(0), partial_eq(8))
             .returns(1);
-        let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random_chance_checker);
+        let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
 
         let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
@@ -527,16 +524,16 @@ mod tests {
 
     #[test]
     fn can_spread_horizontally() {
-        let mut random_chance_checker = RandomChanceCheckerMock::new();
+        let mut random = RandomMock::new();
         let object_behavior = ObjectBehaviorMock::new();
 
-        random_chance_checker
+        random
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
             .returns(true);
-        random_chance_checker
+        random
             .expect_random_number_in_range(partial_eq(0), partial_eq(8))
             .returns(1);
-        let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random_chance_checker);
+        let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
 
         let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
@@ -591,15 +588,14 @@ mod tests {
         let mock_behavior = mock_behavior();
         let object_behavior = ObjectBehaviorMock::new();
 
-        let mut first_random_chance_checker = RandomChanceCheckerMock::new();
-        first_random_chance_checker
+        let mut first_random = RandomMock::new();
+        first_random
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
             .returns(true);
-        first_random_chance_checker
+        first_random
             .expect_random_number_in_range(partial_eq(0), partial_eq(8))
             .returns(3);
-        let mut first_object =
-            StochasticSpreading::new(SPREADING_CHANGE, box first_random_chance_checker);
+        let mut first_object = StochasticSpreading::new(SPREADING_CHANGE, box first_random);
         let first_description = object_description_at_location(50.0, 50.0);
 
         let mut first_world_interactor = WorldInteractorMock::new();
@@ -632,15 +628,14 @@ mod tests {
 
         let first_object = first_object;
 
-        let mut second_random_chance_checker = RandomChanceCheckerMock::new();
-        second_random_chance_checker
+        let mut second_random = RandomMock::new();
+        second_random
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
             .returns(true);
-        second_random_chance_checker
+        second_random
             .expect_random_number_in_range(partial_eq(0), partial_eq(8))
             .returns(7);
-        let mut second_object =
-            StochasticSpreading::new(SPREADING_CHANGE, box second_random_chance_checker);
+        let mut second_object = StochasticSpreading::new(SPREADING_CHANGE, box second_random);
 
         let mut second_world_interactor = WorldInteractorMock::new();
 
