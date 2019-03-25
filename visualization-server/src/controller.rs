@@ -1,6 +1,6 @@
 use myelin_engine::prelude::*;
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
-use nameof::name_of_type;
+use nameof::name_of;
 use std::boxed::FnBox;
 use std::collections::HashMap;
 use std::fmt::{self, Debug};
@@ -49,7 +49,7 @@ pub(crate) struct ControllerImpl<'a> {
 
 impl<'a> Debug for ControllerImpl<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct(name_of_type!(ControllerImpl<'a>))
+        f.debug_struct(name_of!(type ControllerImpl<'a>))
             .field("expected_delta", &self.expected_delta)
             .finish()
     }

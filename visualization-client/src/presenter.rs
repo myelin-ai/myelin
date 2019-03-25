@@ -211,7 +211,7 @@ mod tests {
     use crate::view_model;
     use maplit::hashmap;
     use mockiato::{partial_eq, partial_eq_owned, unordered_vec_eq};
-    use nameof::name_of_type;
+    use nameof::name_of;
     use std::cell::RefCell;
     use std::collections::VecDeque;
     use std::fmt::{self, Debug};
@@ -229,7 +229,7 @@ mod tests {
 
     impl<'mock> Debug for DeltaApplierMock<'mock> {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            f.debug_struct(name_of_type!(DeltaApplierMock<'_>)).finish()
+            f.debug_struct(name_of!(type DeltaApplierMock<'_>)).finish()
         }
     }
 

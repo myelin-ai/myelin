@@ -1,5 +1,5 @@
 use crate::controller::{ConnectionAcceptor, CurrentSnapshotFn};
-use nameof::name_of_type;
+use nameof::name_of;
 use std::boxed::FnBox;
 use std::fmt::{self, Debug};
 use std::io;
@@ -65,7 +65,7 @@ impl ConnectionAcceptor for WebsocketConnectionAcceptor {
 
 impl Debug for WebsocketConnectionAcceptor {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct(name_of_type!(WebsocketConnectionAcceptor))
+        f.debug_struct(name_of!(type WebsocketConnectionAcceptor))
             .finish()
     }
 }
