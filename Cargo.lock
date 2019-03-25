@@ -569,6 +569,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "myelin-clone-box"
+version = "0.1.0"
+
+[[package]]
 name = "myelin-engine"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -590,6 +594,7 @@ version = "0.1.0"
 dependencies = [
  "itertools 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "mockiato 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "myelin-clone-box 0.1.0",
  "myelin-neural-network 0.1.0",
  "myelin-random 0.1.0",
  "nameof 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
