@@ -18,6 +18,7 @@ myelin-visualization-core = { path = "../visualization-core" }
 myelin-object-data = { path = "../object-data" }
 myelin-genetics = { path = "../genetics" }
 myelin-neural-network = { path = "../neural-network" }
+myelin-random = { path = "../random" }
 
 serde = "1.0"
 serde_json = "1.0"
