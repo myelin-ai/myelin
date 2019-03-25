@@ -1,3 +1,4 @@
+use crate::orchestrator_impl::NeuralNetworkFactory;
 use crate::*;
 use nameof::name_of;
 use std::fmt::{self, Debug};
@@ -9,11 +10,6 @@ use std::rc::Rc;
 pub struct FlatNeuralNetworkDeveloper {
     neural_network_factory: Rc<NeuralNetworkFactory>,
 }
-
-/// A factory for building a [`NeuralNetwork`]
-///
-/// [`NeuralNetwork`]: ../../../myelin-neural-network/trait.NeuralNetwork.html
-pub type NeuralNetworkFactory = dyn Fn() -> Box<dyn NeuralNetwork>;
 
 impl FlatNeuralNetworkDeveloper {
     /// Constructs a new [`FlatNeuralNetworkDeveloper`]
@@ -33,7 +29,7 @@ impl Debug for FlatNeuralNetworkDeveloper {
     }
 }
 
-impl NeuralNetworkDeveloperFacade for FlatNeuralNetworkDeveloper {
+impl NeuralNetworkDevelopmentOrchestrator for FlatNeuralNetworkDeveloper {
     fn develop_neural_network(
         &self,
         neural_network_development_configuration: &NeuralNetworkDevelopmentConfiguration,

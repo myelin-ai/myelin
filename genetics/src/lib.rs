@@ -25,6 +25,8 @@ use std::fmt::Debug;
 pub mod deriver;
 pub mod developer;
 pub mod genome;
+pub mod mutator;
+pub mod orchestrator_impl;
 
 mod constant;
 
@@ -89,7 +91,9 @@ pub struct DevelopedNeuralNetwork {
 /// [`NeuralNetwork`]: ../myelin-neural-network/trait.NeuralNetwork.html
 /// [`Genome`]: ./struct.Genome.html
 #[cfg_attr(any(test, feature = "use-mocks"), mockable(static_references))]
-pub trait NeuralNetworkDeveloperFacade: Debug + NeuralNetworkDeveloperFacadeClone {
+pub trait NeuralNetworkDevelopmentOrchestrator:
+    Debug + NeuralNetworkDevelopmentOrchestratorClone
+{
     /// Create a [`DevelopedNeuralNetwork`] using the information contained in the provided [`NeuralNetworkDevelopmentConfiguration`]
     ///
     /// [`DevelopedNeuralNetwork`]: ./struct.DevelopedNeuralNetwork.html
@@ -101,26 +105,6 @@ pub trait NeuralNetworkDeveloperFacade: Debug + NeuralNetworkDeveloperFacadeClon
 }
 
 clone_box!(
-    NeuralNetworkDeveloperFacade,
-    NeuralNetworkDeveloperFacadeClone
+    NeuralNetworkDevelopmentOrchestrator,
+    NeuralNetworkDevelopmentOrchestratorClone
 );
-
-/// Provides a function that can be used to develop a neural network
-pub trait NeuralNetworkDeveloper: Debug {
-    /// Develops a neural network and writes it into a [`NeuralNetworkConfigurator`].
-    fn develop_neural_network(self: Box<Self>, configurator: &mut dyn NeuralNetworkConfigurator);
-}
-
-/// Configuration storage for a [`NeuralNetworkDeveloper`].
-pub trait NeuralNetworkConfigurator {
-    /// Add a new unconnected neuron to the network
-    fn push_neuron(&mut self) -> Handle;
-
-    /// Add a new connection between two neurons.
-    /// # Errors
-    /// Returns `Err` if an involved handle is invalid
-    fn add_connection(&mut self, connection: Connection) -> Result<(), ()>;
-
-    /// Marks a neuron as a sensor
-    fn mark_neuron_as_sensor(&mut self, handle: Handle) -> Result<(), ()>;
-}

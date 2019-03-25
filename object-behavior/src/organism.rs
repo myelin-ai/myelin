@@ -3,7 +3,8 @@
 use myelin_engine::prelude::*;
 use myelin_genetics::genome::Genome;
 use myelin_genetics::{
-    DevelopedNeuralNetwork, NeuralNetworkDeveloperFacade, NeuralNetworkDevelopmentConfiguration,
+    DevelopedNeuralNetwork, NeuralNetworkDevelopmentConfiguration,
+    NeuralNetworkDevelopmentOrchestrator,
 };
 use myelin_neural_network::{Handle, Milliseconds, NeuralNetwork};
 use std::any::Any;
@@ -28,7 +29,7 @@ const MAX_ANGULAR_FORCE: f64 = MAX_ACCELERATION_FORCE;
 pub struct OrganismBehavior {
     previous_velocity: Vector,
     developed_neural_network: DevelopedNeuralNetwork,
-    neural_network_developer: Box<dyn NeuralNetworkDeveloperFacade>,
+    neural_network_developer: Box<dyn NeuralNetworkDevelopmentOrchestrator>,
 }
 
 /// 1. Average axial acceleration since last step (forward)
@@ -53,7 +54,7 @@ impl OrganismBehavior {
     /// [`NeuralNetwork`]: ../myelin-neural-network/trait.NeuralNetwork.html
     pub fn new(
         parent_genomes: (Genome, Genome),
-        neural_network_developer: Box<dyn NeuralNetworkDeveloperFacade>,
+        neural_network_developer: Box<dyn NeuralNetworkDevelopmentOrchestrator>,
     ) -> Self {
         let configuration = NeuralNetworkDevelopmentConfiguration {
             parent_genomes,
