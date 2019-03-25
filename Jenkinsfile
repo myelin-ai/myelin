@@ -57,7 +57,7 @@ pipeline {
             changeRequest()
           }
           steps {
-            sh 'cargo doc --no-deps'
+            sh 'cargo doc --all --all-features --no-deps'
             sh '(cd docs && poetry run ./build-index.py)'
           }
         }
