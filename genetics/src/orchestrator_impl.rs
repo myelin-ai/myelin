@@ -28,7 +28,7 @@ impl NeuralNetworkBuilder {
         unimplemented!();
     }
 
-    /// Add a new connection between two neurons.
+    /// Adds a new connection between two neurons.
     /// # Errors
     /// Returns `Err` if an involved handle is invalid
     pub fn add_connection(&mut self, _connection: Connection) -> Result<(), ()> {
