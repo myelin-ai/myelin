@@ -36,33 +36,34 @@ pub struct Connection {
 pub struct ClusterGene {
     /// The neurons of the cluster
     pub neurons: Vec<Neuron>,
-    /// The connections of the cluster that will be placed, defining how information can be passed
+    /// The connections that will be placed when the cluster gene is used.
+    /// They define the flow of information in the neural network.
     pub connections: Vec<Connection>,
-    /// The neuron that will be taken from the cluster that it will be placed on.
-    /// This means it will not generate a neuron during creation if there is a placement target.
+    /// A neuron in this cluster gene. When this cluster is placed onto another cluster,
+    /// instead of creating a new neuron, the target neuron is used. The target neuron is defined
+    /// in the [`HoxPlacement`] of the [`HoxGene`] that defines the placement of this cluster.
     pub placement_neuron: NeuronClusterLocalIndex,
 }
 
 /// Describes the placement behaviour of a [`HoxGene`].
 #[derive(Debug, Clone, PartialEq)]
 pub enum HoxPlacement {
-    /// This hox will place its cluster on all previously instantiated clusters of the given [`ClusterGene`].
+    /// This hox gene's cluster will be placed once for each previously placed cluster of the given [`ClusterGene`].
     ClusterGene {
-        /// Index of the [`ClusterGene`] in the [`Genome`].
-        cluster_gene_index: ClusterGeneIndex,
-        /// Index of a neuron in an already placed cluster. The neuron will be shared the
-        /// [`ClusterGene::placement_neuron`] of the cluster that is currently being placed.
-        target_neuron_index: NeuronClusterLocalIndex,
+        /// Index of a [`ClusterGene`] in the [`Genome`].
+        cluster_gene: ClusterGeneIndex,
+        /// Index of a neuron in an already placed cluster. Counterpart of the [`ClusterGene::placement_neuron`].
+        target_neuron: NeuronClusterLocalIndex,
     },
-    /// This hox will place its cluster on all cluster instances placed by the referenced [`HoxGene`].
+    /// This hox gene's cluster will be placed once for each previously placed cluster of the given [`HoxGene`].
     HoxGene {
-        /// Index of the [`HoxGene`] in the [`Genome`].
-        hox_gene_index: HoxGeneIndex,
-        /// Index of a neuron in an already placed cluster. The neuron will be shared the
-        /// [`ClusterGene::placement_neuron`] of the cluster that is currently being placed.
-        target_neuron_index: NeuronClusterLocalIndex,
+        /// Index of a [`HoxGene`] in the [`Genome`].
+        hox_gene: HoxGeneIndex,
+        /// Index of a neuron in an already placed cluster. Counterpart of the [`ClusterGene::placement_neuron`].
+        target_neuron: NeuronClusterLocalIndex,
     },
-    /// This hox places its cluster without attaching to another. Usually only used in the first hox.
+    /// The cluster of this [`HoxGene`] will be placed without connecting to another one.
+    /// This is usually only used for the first [`HoxGene`].
     Standalone,
 }
 
