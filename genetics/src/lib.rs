@@ -34,7 +34,7 @@ mod constant;
 ///
 /// [`NeuralNetworkDeveloper`]: ./trait.NeuralNetworkDeveloper.html
 /// [`DevelopedNeuralNetwork`]: ./struct.DevelopedNeuralNetwork.html
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct NeuralNetworkDevelopmentConfiguration {
     /// The genomes that will be combined to form a new genome for this neural network.
     /// Will result in [`DevelopedNeuralNetwork.genome`].
