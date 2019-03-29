@@ -21,16 +21,16 @@ pub trait NeuralNetworkConfigurator: Debug {
     /// Adds a new unconnected neuron to the network
     fn push_neuron(&mut self) -> Handle;
 
+    /// Adds a new unconnected neuron to the network and marks is as an input
+    fn push_input_neuron(&mut self) -> Handle;
+
+    /// Adds a new unconnected neuron to the network and marks is as an input
+    fn push_output_neuron(&mut self) -> Handle;
+
     /// Adds a new connection between two neurons.
     /// # Errors
     /// Returns `Err` if an involved handle is invalid
     fn add_connection(&mut self, connection: Connection) -> Result<(), ()>;
-
-    /// Marks a neuron as an input
-    fn mark_neuron_as_input(&mut self, handle: Handle) -> Result<(), ()>;
-
-    /// Marks a neuron as an output
-    fn mark_neuron_as_output(&mut self, handle: Handle) -> Result<(), ()>;
 }
 
 /// Configuration storage for a [`NeuralNetworkDeveloper`].
@@ -53,15 +53,15 @@ impl<'a> NeuralNetworkConfigurator for NeuralNetworkConfiguratorImpl<'a> {
         unimplemented!();
     }
 
+    fn push_input_neuron(&mut self) -> Handle {
+        unimplemented!();
+    }
+
+    fn push_output_neuron(&mut self) -> Handle {
+        unimplemented!();
+    }
+
     fn add_connection(&mut self, _connection: Connection) -> Result<(), ()> {
-        unimplemented!();
-    }
-
-    fn mark_neuron_as_input(&mut self, _handle: Handle) -> Result<(), ()> {
-        unimplemented!();
-    }
-
-    fn mark_neuron_as_output(&mut self, _handle: Handle) -> Result<(), ()> {
         unimplemented!();
     }
 }
