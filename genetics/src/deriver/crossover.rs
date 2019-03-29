@@ -161,7 +161,7 @@ mod tests {
     }
 
     #[test]
-    fn derive_genome_from_parents_with_same_length() {
+    fn derive_genome_from_parents_with_same_length_results_in_genome_with_same_length() {
         let genome_one = Genome {
             hox_genes: vec![hox_gene(0), hox_gene(1)],
             cluster_genes: vec![cluster_gene(2), cluster_gene(3), cluster_gene(4)],
@@ -192,7 +192,7 @@ mod tests {
     }
 
     #[test]
-    fn derive_genome_from_parents_with_left_being_longer() {
+    fn derive_genome_from_parents_with_left_being_longer_takes_genes_from_longer_genome() {
         let genome_one = Genome {
             hox_genes: vec![hox_gene(0), hox_gene(1)],
             cluster_genes: vec![cluster_gene(2), cluster_gene(3), cluster_gene(4)],
@@ -223,7 +223,7 @@ mod tests {
     }
 
     #[test]
-    fn derive_genome_from_parents_with_right_being_longer() {
+    fn derive_genome_from_parents_with_right_being_longer_takes_genes_from_longer_genome() {
         let genome_one = Genome {
             hox_genes: vec![hox_gene(0), hox_gene(1)],
             cluster_genes: vec![cluster_gene(2)],
