@@ -29,7 +29,7 @@ pub(crate) trait FixedIntervalSleeper {
     ) -> Result<(), FixedIntervalSleeperError>;
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub(crate) enum FixedIntervalSleeperError {
     /// Returns the duration since the last execution
     ElapsedTimeIsGreaterThanInterval(Duration),

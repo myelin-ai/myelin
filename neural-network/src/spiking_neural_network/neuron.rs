@@ -33,7 +33,7 @@ pub trait SpikingNeuron: Debug + Default + Clone {
 }
 
 /// An implementation for a spiking neuron
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct SpikingNeuronImpl {
     current_membrane_potential: MembranePotential,
     current_threshold: MembranePotential,
@@ -180,7 +180,7 @@ impl Default for SpikingNeuronImpl {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 enum Phase {
     RestingState,
     Depolarization,

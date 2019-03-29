@@ -5,7 +5,7 @@ use std::any::Any;
 
 /// A purely static and non-interactive behavior.
 /// This type will never perform any actions.
-#[derive(Debug, Default, Clone)]
+#[derive(Clone, Debug, Default)]
 pub struct Static;
 
 impl ObjectBehavior for Static {

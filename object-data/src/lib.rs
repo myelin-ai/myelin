@@ -21,7 +21,7 @@ use std::fmt::Debug;
 use mockiato::mockable;
 
 /// The data associated with an object
-#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct AdditionalObjectDescription {
     /// The name of an object
     pub name: Option<String>,
@@ -32,7 +32,7 @@ pub struct AdditionalObjectDescription {
 
 /// The part of an object that is responsible for custom
 /// behavior and interactions
-#[derive(Hash, Debug, Eq, PartialEq, Clone, Copy, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub enum Kind {
     /// An intelligent organism featuring a neural network
     Organism,

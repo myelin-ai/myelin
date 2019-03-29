@@ -57,7 +57,7 @@ pub type Snapshot = HashMap<Id, ObjectDescription>;
 pub type ViewModelDelta = HashMap<Id, ObjectDelta>;
 
 /// Describes what happened to an individual object in this
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ObjectDelta {
     /// The object has been added to the world
     Created(ObjectDescription),
@@ -67,7 +67,7 @@ pub enum ObjectDelta {
     Deleted,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ObjectDescription {
     /// The name of the object
     pub name: Option<String>,
@@ -96,7 +96,7 @@ pub struct ObjectDescription {
     pub passable: bool,
 }
 
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct ObjectDescriptionDelta {
     /// The name of the object
     #[allow(clippy::option_option)]
