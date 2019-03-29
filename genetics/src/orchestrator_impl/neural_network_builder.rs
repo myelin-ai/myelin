@@ -1,51 +1,48 @@
+use crate::orchestrator_impl::NeuralNetworkConfigurator;
 use crate::DevelopedNeuralNetwork;
 use myelin_neural_network::{Connection, Handle};
 
 /// Configuration storage for a [`NeuralNetworkDeveloper`].
 #[derive(Debug)]
-pub struct NeuralNetworkConfiguratorImpl {
-    developed_neural_network: DevelopedNeuralNetwork,
+pub struct NeuralNetworkConfiguratorImpl<'a> {
+    developed_neural_network: &'a mut DevelopedNeuralNetwork,
 }
 
-impl NeuralNetworkConfiguratorImpl {
-    /// Creates a new [`NeuralNetworkBuilder`] for a [`DevelopedNeuralNetwork`]
-    pub fn new(developed_neural_network: DevelopedNeuralNetwork) -> Self {
+impl<'a> NeuralNetworkConfiguratorImpl<'a> {
+    pub fn new(developed_neural_network: &'a mut DevelopedNeuralNetwork) -> Self {
         Self {
             developed_neural_network,
         }
     }
+}
 
-    /// Adds a new unconnected neuron to the network
-    pub fn push_neuron(&mut self) -> Handle {
+impl NeuralNetworkConfigurator for NeuralNetworkConfiguratorImpl<'_> {
+    fn push_neuron(&mut self) -> Handle {
         self.developed_neural_network.neural_network.push_neuron()
     }
 
-    /// Adds a new connection between two neurons.
-    /// # Errors
-    /// Returns `Err` if an involved handle is invalid
-    pub fn add_connection(&mut self, connection: Connection) -> Result<(), ()> {
-        self.developed_neural_network
-            .neural_network
-            .add_connection(connection)
-    }
-
-    /// Marks a neuron as an input
-    pub fn mark_neuron_as_input(&mut self, handle: Handle) {
+    fn push_input_neuron(&mut self) -> Handle {
+        let handle = self.push_neuron();
         self.developed_neural_network
             .input_neuron_handles
-            .push(handle)
+            .push(handle);
+
+        handle
     }
 
-    /// Marks a neuron as an output
-    pub fn mark_neuron_as_output(&mut self, handle: Handle) {
+    fn push_output_neuron(&mut self) -> Handle {
+        let handle = self.push_neuron();
         self.developed_neural_network
             .output_neuron_handles
             .push(handle);
+
+        handle
     }
 
-    /// Consumes `self`, returning the built [`DevelopedNeuralNetwork`]
-    pub fn build(self) -> DevelopedNeuralNetwork {
+    fn add_connection(&mut self, connection: Connection) -> Result<(), ()> {
         self.developed_neural_network
+            .neural_network
+            .add_connection(connection)
     }
 }
 
@@ -57,21 +54,19 @@ mod tests {
     use myelin_neural_network::NeuralNetworkMock;
 
     #[test]
-    fn new_and_build_does_nothing() {
+    fn new_does_nothing() {
         let network = NeuralNetworkMock::new();
 
         let genome = Genome::default();
 
-        let developed_network = DevelopedNeuralNetwork {
+        let mut developed_network = DevelopedNeuralNetwork {
             neural_network: box network.clone(),
             genome: genome.clone(),
             input_neuron_handles: Vec::default(),
             output_neuron_handles: Vec::default(),
         };
 
-        let builder = NeuralNetworkConfiguratorImpl::new(developed_network);
-
-        let developed_network = builder.build();
+        NeuralNetworkConfiguratorImpl::new(&mut developed_network);
 
         assert_eq!(genome, developed_network.genome);
         assert_eq!(0, developed_network.input_neuron_handles.len());
@@ -87,18 +82,16 @@ mod tests {
 
         let genome = Genome::default();
 
-        let developed_network = DevelopedNeuralNetwork {
+        let mut developed_network = DevelopedNeuralNetwork {
             neural_network: box network,
             genome: genome.clone(),
             input_neuron_handles: Vec::default(),
             output_neuron_handles: Vec::default(),
         };
 
-        let mut builder = NeuralNetworkConfiguratorImpl::new(developed_network);
+        let mut configurator = NeuralNetworkConfiguratorImpl::new(&mut developed_network);
 
-        let handle = builder.push_neuron();
-
-        let developed_network = builder.build();
+        let handle = configurator.push_neuron();
 
         assert_eq!(expected_handle, handle);
 
@@ -122,18 +115,16 @@ mod tests {
 
         let genome = Genome::default();
 
-        let developed_network = DevelopedNeuralNetwork {
+        let mut developed_network = DevelopedNeuralNetwork {
             neural_network: box network,
             genome: genome.clone(),
             input_neuron_handles: Vec::default(),
             output_neuron_handles: Vec::default(),
         };
 
-        let mut builder = NeuralNetworkConfiguratorImpl::new(developed_network);
+        let mut configurator = NeuralNetworkConfiguratorImpl::new(&mut developed_network);
 
-        let result = builder.add_connection(connection);
-
-        let developed_network = builder.build();
+        let result = configurator.add_connection(connection);
 
         assert!(result.is_ok());
 
@@ -157,18 +148,16 @@ mod tests {
 
         let genome = Genome::default();
 
-        let developed_network = DevelopedNeuralNetwork {
+        let mut developed_network = DevelopedNeuralNetwork {
             neural_network: box network,
             genome: genome.clone(),
             input_neuron_handles: Vec::default(),
             output_neuron_handles: Vec::default(),
         };
 
-        let mut builder = NeuralNetworkConfiguratorImpl::new(developed_network);
+        let mut configurator = NeuralNetworkConfiguratorImpl::new(&mut developed_network);
 
-        let result = builder.add_connection(connection);
-
-        let developed_network = builder.build();
+        let result = configurator.add_connection(connection);
 
         assert!(result.is_err());
 
@@ -181,28 +170,28 @@ mod tests {
     fn mark_neuron_as_input_adds_handle_to_input_neurons() {
         let expected_handle = Handle(42);
 
-        let network = NeuralNetworkMock::new();
+        let mut network = NeuralNetworkMock::new();
+        network.expect_push_neuron().returns(expected_handle);
 
         let genome = Genome::default();
 
-        let developed_network = DevelopedNeuralNetwork {
+        let mut developed_network = DevelopedNeuralNetwork {
             neural_network: box network,
             genome: genome.clone(),
             input_neuron_handles: Vec::default(),
             output_neuron_handles: Vec::default(),
         };
 
-        let mut builder = NeuralNetworkConfiguratorImpl::new(developed_network);
+        let mut configurator = NeuralNetworkConfiguratorImpl::new(&mut developed_network);
 
-        builder.mark_neuron_as_input(expected_handle);
-
-        let developed_network = builder.build();
+        let input_neuron = configurator.push_input_neuron();
 
         assert_eq!(1, developed_network.input_neuron_handles.len());
         assert_eq!(
             &expected_handle,
             developed_network.input_neuron_handles.get(0).unwrap()
         );
+        assert_eq!(expected_handle, input_neuron);
 
         assert_eq!(genome, developed_network.genome);
         assert_eq!(0, developed_network.output_neuron_handles.len());
@@ -212,28 +201,28 @@ mod tests {
     fn mark_neuron_as_output_adds_handle_to_output_neurons() {
         let expected_handle = Handle(42);
 
-        let network = NeuralNetworkMock::new();
+        let mut network = NeuralNetworkMock::new();
+        network.expect_push_neuron().returns(expected_handle);
 
         let genome = Genome::default();
 
-        let developed_network = DevelopedNeuralNetwork {
+        let mut developed_network = DevelopedNeuralNetwork {
             neural_network: box network,
             genome: genome.clone(),
             input_neuron_handles: Vec::default(),
             output_neuron_handles: Vec::default(),
         };
 
-        let mut builder = NeuralNetworkConfiguratorImpl::new(developed_network);
+        let mut configurator = NeuralNetworkConfiguratorImpl::new(&mut developed_network);
 
-        builder.mark_neuron_as_output(expected_handle);
-
-        let developed_network = builder.build();
+        let output_neuron = configurator.push_output_neuron();
 
         assert_eq!(1, developed_network.output_neuron_handles.len());
         assert_eq!(
             &expected_handle,
             developed_network.output_neuron_handles.get(0).unwrap()
         );
+        assert_eq!(expected_handle, output_neuron);
 
         assert_eq!(genome, developed_network.genome);
         assert_eq!(0, developed_network.input_neuron_handles.len());
