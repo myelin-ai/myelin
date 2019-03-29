@@ -3,7 +3,7 @@
 use crate::deriver::GenomeDeriver;
 use crate::mutator::GenomeMutator;
 use crate::*;
-#[cfg(test)]
+#[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
 use nameof::{name_of, name_of_type};
 use std::fmt::{self, Debug};
@@ -16,7 +16,7 @@ pub trait NeuralNetworkDeveloper: Debug {
 }
 
 /// Configuration storage for a [`NeuralNetworkDeveloper`].
-#[cfg_attr(test, mockable)]
+#[cfg_attr(any(test, feature = "use-mocks"), mockable)]
 pub trait NeuralNetworkConfigurator: Debug {
     /// Adds a new unconnected neuron to the network
     fn push_neuron(&mut self) -> Handle;
