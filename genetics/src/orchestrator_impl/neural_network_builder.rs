@@ -3,11 +3,11 @@ use myelin_neural_network::{Connection, Handle};
 
 /// Configuration storage for a [`NeuralNetworkDeveloper`].
 #[derive(Debug)]
-pub struct NeuralNetworkBuilder {
+pub struct NeuralNetworkConfiguratorImpl {
     developed_neural_network: DevelopedNeuralNetwork,
 }
 
-impl NeuralNetworkBuilder {
+impl NeuralNetworkConfiguratorImpl {
     /// Creates a new [`NeuralNetworkBuilder`] for a [`DevelopedNeuralNetwork`]
     pub fn new(developed_neural_network: DevelopedNeuralNetwork) -> Self {
         Self {
@@ -69,7 +69,7 @@ mod tests {
             output_neuron_handles: Vec::default(),
         };
 
-        let builder = NeuralNetworkBuilder::new(developed_network);
+        let builder = NeuralNetworkConfiguratorImpl::new(developed_network);
 
         let developed_network = builder.build();
 
@@ -94,7 +94,7 @@ mod tests {
             output_neuron_handles: Vec::default(),
         };
 
-        let mut builder = NeuralNetworkBuilder::new(developed_network);
+        let mut builder = NeuralNetworkConfiguratorImpl::new(developed_network);
 
         let handle = builder.push_neuron();
 
@@ -129,7 +129,7 @@ mod tests {
             output_neuron_handles: Vec::default(),
         };
 
-        let mut builder = NeuralNetworkBuilder::new(developed_network);
+        let mut builder = NeuralNetworkConfiguratorImpl::new(developed_network);
 
         let result = builder.add_connection(connection);
 
@@ -164,7 +164,7 @@ mod tests {
             output_neuron_handles: Vec::default(),
         };
 
-        let mut builder = NeuralNetworkBuilder::new(developed_network);
+        let mut builder = NeuralNetworkConfiguratorImpl::new(developed_network);
 
         let result = builder.add_connection(connection);
 
@@ -192,7 +192,7 @@ mod tests {
             output_neuron_handles: Vec::default(),
         };
 
-        let mut builder = NeuralNetworkBuilder::new(developed_network);
+        let mut builder = NeuralNetworkConfiguratorImpl::new(developed_network);
 
         builder.mark_neuron_as_input(expected_handle);
 
@@ -223,7 +223,7 @@ mod tests {
             output_neuron_handles: Vec::default(),
         };
 
-        let mut builder = NeuralNetworkBuilder::new(developed_network);
+        let mut builder = NeuralNetworkConfiguratorImpl::new(developed_network);
 
         builder.mark_neuron_as_output(expected_handle);
 
