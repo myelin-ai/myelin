@@ -2,6 +2,7 @@
 
 #![feature(specialization)]
 #![feature(box_syntax)]
+#![feature(non_exhaustive)]
 #![warn(missing_docs, clippy::dbg_macro)]
 #![deny(
     rust_2018_idioms,
@@ -27,6 +28,8 @@ pub mod developer;
 pub mod genome;
 pub mod mutator;
 pub mod orchestrator_impl;
+mod neural_network_development_configuration_builder;
+pub use self::neural_network_development_configuration_builder::*;
 
 mod constant;
 
