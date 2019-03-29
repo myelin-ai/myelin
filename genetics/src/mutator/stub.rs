@@ -9,13 +9,13 @@ pub struct GenomeMutatorStub(PhantomData<()>);
 impl GenomeMutatorStub {
     /// Creates a new [`GenomeMutatorStub`].
     pub fn new() -> Self {
-        unimplemented!();
+        Self::default()
     }
 }
 
 impl GenomeMutator for GenomeMutatorStub {
-    fn mutate_genome(&self, _genome: Genome) -> Genome {
-        unimplemented!();
+    fn mutate_genome(&self, genome: Genome) -> Genome {
+        genome
     }
 }
 
