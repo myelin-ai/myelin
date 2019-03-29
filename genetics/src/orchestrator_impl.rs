@@ -31,23 +31,24 @@ pub trait NeuralNetworkConfigurator: Debug {
 
     /// Marks a neuron as an output
     fn mark_neuron_as_output(&mut self, handle: Handle) -> Result<(), ()>;
-
-    /// Consumes `self`, returning the built [`DevelopedNeuralNetwork`]
-    fn build(self) -> DevelopedNeuralNetwork;
 }
 
 /// Configuration storage for a [`NeuralNetworkDeveloper`].
 #[derive(Debug)]
-pub struct NeuralNetworkConfiguratorImpl {}
+pub struct NeuralNetworkConfiguratorImpl<'a> {
+    developed_neural_network: &'a mut DevelopedNeuralNetwork,
+}
 
-impl NeuralNetworkConfiguratorImpl {
+impl<'a> NeuralNetworkConfiguratorImpl<'a> {
     /// Creates a new [`NeuralNetworkBuilder`] for a [`DevelopedNeuralNetwork`]
-    pub fn new(_developed_neural_network: DevelopedNeuralNetwork) -> Self {
-        unimplemented!()
+    pub fn new(developed_neural_network: &'a mut DevelopedNeuralNetwork) -> Self {
+        Self {
+            developed_neural_network,
+        }
     }
 }
 
-impl NeuralNetworkConfigurator for NeuralNetworkConfiguratorImpl {
+impl<'a> NeuralNetworkConfigurator for NeuralNetworkConfiguratorImpl<'a> {
     fn push_neuron(&mut self) -> Handle {
         unimplemented!();
     }
@@ -61,10 +62,6 @@ impl NeuralNetworkConfigurator for NeuralNetworkConfiguratorImpl {
     }
 
     fn mark_neuron_as_output(&mut self, _handle: Handle) -> Result<(), ()> {
-        unimplemented!();
-    }
-
-    fn build(self) -> DevelopedNeuralNetwork {
         unimplemented!();
     }
 }
@@ -81,7 +78,8 @@ pub type NeuralNetworkDeveloperFactory = dyn for<'a> Fn(
 ) -> Box<dyn NeuralNetworkDeveloper + 'a>;
 
 /// Creates a new [`NeuralNetworkConfigurator`]
-pub type NeuralNetworkConfiguratorFactory = dyn Fn() -> Box<dyn NeuralNetworkConfigurator>;
+pub type NeuralNetworkConfiguratorFactory =
+    dyn for<'a> Fn(&'a mut DevelopedNeuralNetwork) -> Box<dyn NeuralNetworkConfigurator + 'a>;
 
 /// Default implementation of a [`NeuralNetworkDevelopmentOrchestrator`]
 #[derive(Clone)]
