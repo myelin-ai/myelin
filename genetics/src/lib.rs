@@ -2,7 +2,7 @@
 
 #![feature(specialization)]
 #![feature(box_syntax)]
-#![warn(missing_docs, clippy::dbg_macro, clippy::unimplemented)]
+#![warn(missing_docs, clippy::dbg_macro)]
 #![deny(
     rust_2018_idioms,
     future_incompatible,
@@ -15,16 +15,20 @@
     clippy::explicit_into_iter_loop
 )]
 
+use crate::genome::Genome;
 #[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
-use myelin_neural_network::Handle;
-use myelin_neural_network::{Connection, Handle as NeuronHandle, NeuralNetwork};
+use myelin_clone_box::clone_box;
+use myelin_neural_network::{Connection, Handle as NeuronHandle, Handle, NeuralNetwork};
 use std::fmt::Debug;
-pub mod developer;
 
-/// The set of all genes in an organism
-#[derive(Default, Debug, Clone)]
-pub struct Genome;
+pub mod deriver;
+pub mod developer;
+pub mod genome;
+pub mod mutator;
+pub mod orchestrator_impl;
+
+mod constant;
 
 /// Information needed by a [`NeuralNetworkDeveloper`] to build a [`DevelopedNeuralNetwork`]
 ///
@@ -51,7 +55,7 @@ pub struct NeuralNetworkDevelopmentConfiguration {
     pub output_neuron_count: usize,
 }
 
-/// [`NeuralNetwork`] and auxillary data developed by a [`NeuralNetworkDeveloper`].
+/// [`NeuralNetwork`] and auxiliary data developed by a [`NeuralNetworkDeveloper`].
 ///
 /// [`NeuralNetworkDeveloper`]: trait.NeuralNetworkDeveloper.html
 /// [`NeuralNetwork`]: ../myelin-neural-network/trait.NeuralNetwork.html
@@ -87,7 +91,9 @@ pub struct DevelopedNeuralNetwork {
 /// [`NeuralNetwork`]: ../myelin-neural-network/trait.NeuralNetwork.html
 /// [`Genome`]: ./struct.Genome.html
 #[cfg_attr(any(test, feature = "use-mocks"), mockable(static_references))]
-pub trait NeuralNetworkDeveloper: Debug + NeuralNetworkDeveloperClone {
+pub trait NeuralNetworkDevelopmentOrchestrator:
+    Debug + NeuralNetworkDevelopmentOrchestratorClone
+{
     /// Create a [`DevelopedNeuralNetwork`] using the information contained in the provided [`NeuralNetworkDevelopmentConfiguration`]
     ///
     /// [`DevelopedNeuralNetwork`]: ./struct.DevelopedNeuralNetwork.html
@@ -98,28 +104,7 @@ pub trait NeuralNetworkDeveloper: Debug + NeuralNetworkDeveloperClone {
     ) -> DevelopedNeuralNetwork;
 }
 
-/// Supertrait used to make sure that all implementors
-/// of [`NeuralNetworkDeveloper`] are [`Clone`]. You don't need
-/// to care about this type.
-///
-/// [`NeuralNetworkDeveloper`]: ./trait.NeuralNetworkDeveloper.html
-/// [`Clone`]: https://doc.rust-lang.org/nightly/std/clone/trait.Clone.html
-#[doc(hidden)]
-pub trait NeuralNetworkDeveloperClone {
-    fn clone_box(&self) -> Box<dyn NeuralNetworkDeveloper>;
-}
-
-impl<T> NeuralNetworkDeveloperClone for T
-where
-    T: NeuralNetworkDeveloper + Clone + 'static,
-{
-    default fn clone_box(&self) -> Box<dyn NeuralNetworkDeveloper> {
-        box self.clone()
-    }
-}
-
-impl Clone for Box<dyn NeuralNetworkDeveloper> {
-    fn clone(&self) -> Self {
-        self.clone_box()
-    }
-}
+clone_box!(
+    NeuralNetworkDevelopmentOrchestrator,
+    NeuralNetworkDevelopmentOrchestratorClone
+);

@@ -1,8 +1,10 @@
 //! Behavior of an organism that can interact with its surroundings
 
 use myelin_engine::prelude::*;
+use myelin_genetics::genome::Genome;
 use myelin_genetics::{
-    DevelopedNeuralNetwork, Genome, NeuralNetworkDeveloper, NeuralNetworkDevelopmentConfiguration,
+    DevelopedNeuralNetwork, NeuralNetworkDevelopmentConfiguration,
+    NeuralNetworkDevelopmentOrchestrator,
 };
 use myelin_neural_network::{Handle, Milliseconds, NeuralNetwork};
 use std::any::Any;
@@ -33,7 +35,7 @@ const MAX_OBJECTS_PER_RAYCAST: usize = 3;
 pub struct OrganismBehavior {
     previous_velocity: Vector,
     developed_neural_network: DevelopedNeuralNetwork,
-    neural_network_developer: Box<dyn NeuralNetworkDeveloper>,
+    neural_network_developer: Box<dyn NeuralNetworkDevelopmentOrchestrator>,
 }
 
 /// Number of inputs reserved for visible objects
@@ -64,7 +66,7 @@ impl OrganismBehavior {
     /// [`NeuralNetwork`]: ../myelin-neural-network/trait.NeuralNetwork.html
     pub fn new(
         parent_genomes: (Genome, Genome),
-        neural_network_developer: Box<dyn NeuralNetworkDeveloper>,
+        neural_network_developer: Box<dyn NeuralNetworkDevelopmentOrchestrator>,
     ) -> Self {
         let configuration = NeuralNetworkDevelopmentConfiguration {
             parent_genomes,
@@ -726,7 +728,7 @@ mod tests {
             input_neuron_handles: (0..INPUT_NEURON_COUNT).map(Handle).collect(),
             output_neuron_handles: (0..OUTPUT_NEURON_COUNT).map(Handle).collect(),
             neural_network: box NeuralNetworkMock::new(),
-            genome: Genome {},
+            genome: Genome::default(),
         }
     }
 
