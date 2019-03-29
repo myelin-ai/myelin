@@ -69,8 +69,8 @@ mod tests {
         NeuralNetworkConfiguratorImpl::new(&mut developed_network);
 
         assert_eq!(genome, developed_network.genome);
-        assert_eq!(0, developed_network.input_neuron_handles.len());
-        assert_eq!(0, developed_network.output_neuron_handles.len());
+        assert!(developed_network.input_neuron_handles.is_empty());
+        assert!(developed_network.output_neuron_handles.is_empty());
     }
 
     #[test]
@@ -96,8 +96,8 @@ mod tests {
         assert_eq!(expected_handle, handle);
 
         assert_eq!(genome, developed_network.genome);
-        assert_eq!(0, developed_network.input_neuron_handles.len());
-        assert_eq!(0, developed_network.output_neuron_handles.len());
+        assert!(developed_network.input_neuron_handles.is_empty());
+        assert!(developed_network.output_neuron_handles.is_empty());
     }
 
     #[test]
@@ -129,8 +129,8 @@ mod tests {
         assert!(result.is_ok());
 
         assert_eq!(genome, developed_network.genome);
-        assert_eq!(0, developed_network.input_neuron_handles.len());
-        assert_eq!(0, developed_network.output_neuron_handles.len());
+        assert!(developed_network.input_neuron_handles.is_empty());
+        assert!(developed_network.output_neuron_handles.is_empty());
     }
 
     #[test]
@@ -162,8 +162,8 @@ mod tests {
         assert!(result.is_err());
 
         assert_eq!(genome, developed_network.genome);
-        assert_eq!(0, developed_network.input_neuron_handles.len());
-        assert_eq!(0, developed_network.output_neuron_handles.len());
+        assert!(developed_network.input_neuron_handles.is_empty());
+        assert!(developed_network.output_neuron_handles.is_empty());
     }
 
     #[test]
@@ -194,7 +194,7 @@ mod tests {
         assert_eq!(expected_handle, input_neuron);
 
         assert_eq!(genome, developed_network.genome);
-        assert_eq!(0, developed_network.output_neuron_handles.len());
+        assert!(developed_network.output_neuron_handles.is_empty());
     }
 
     #[test]
@@ -225,6 +225,6 @@ mod tests {
         assert_eq!(expected_handle, output_neuron);
 
         assert_eq!(genome, developed_network.genome);
-        assert_eq!(0, developed_network.input_neuron_handles.len());
+        assert!(developed_network.input_neuron_handles.is_empty());
     }
 }
