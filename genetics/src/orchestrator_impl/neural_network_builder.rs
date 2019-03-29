@@ -74,7 +74,7 @@ mod tests {
     }
 
     #[test]
-    fn push_neuron_adds_neuron_to_network() {
+    fn adds_neuron_to_network() {
         let expected_handle = Handle(42);
 
         let mut network = NeuralNetworkMock::new();
@@ -101,7 +101,7 @@ mod tests {
     }
 
     #[test]
-    fn add_connection_adds_connection_to_network() {
+    fn adds_connection_to_network() {
         let connection = Connection {
             from: Handle(42),
             to: Handle(404),
@@ -167,7 +167,7 @@ mod tests {
     }
 
     #[test]
-    fn mark_neuron_as_input_adds_handle_to_input_neurons() {
+    fn adds_input_neuron() {
         let expected_handle = Handle(42);
 
         let mut network = NeuralNetworkMock::new();
@@ -198,7 +198,7 @@ mod tests {
     }
 
     #[test]
-    fn mark_neuron_as_output_adds_handle_to_output_neurons() {
+    fn adds_output_neuron() {
         let expected_handle = Handle(42);
 
         let mut network = NeuralNetworkMock::new();
