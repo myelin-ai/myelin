@@ -3,7 +3,7 @@ use crate::genome::*;
 use std::marker::PhantomData;
 
 /// A [`GenomeMutator`] that does nothing and just returns the passed [`Genome`].
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct GenomeMutatorStub(PhantomData<()>);
 
 impl GenomeMutatorStub {
