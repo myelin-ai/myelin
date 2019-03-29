@@ -1,10 +1,13 @@
 //! Trait and implementations for mutating [`Genome`]s.
 
+pub use self::stub::GenomeMutatorStub;
 use crate::genome::Genome;
 #[cfg(test)]
 use mockiato::mockable;
 use myelin_clone_box::clone_box;
 use std::fmt::Debug;
+
+mod stub;
 
 /// Trait for mutating a [`Genome`].
 #[cfg_attr(test, mockable)]
