@@ -9,35 +9,43 @@ pub struct NeuralNetworkBuilder {
 
 impl NeuralNetworkBuilder {
     /// Creates a new [`NeuralNetworkBuilder`] for a [`DevelopedNeuralNetwork`]
-    pub fn new(_developed_neural_network: DevelopedNeuralNetwork) -> Self {
-        unimplemented!()
+    pub fn new(developed_neural_network: DevelopedNeuralNetwork) -> Self {
+        Self {
+            developed_neural_network,
+        }
     }
 
     /// Adds a new unconnected neuron to the network
     pub fn push_neuron(&mut self) -> Handle {
-        unimplemented!()
+        self.developed_neural_network.neural_network.push_neuron()
     }
 
     /// Adds a new connection between two neurons.
     /// # Errors
     /// Returns `Err` if an involved handle is invalid
-    pub fn add_connection(&mut self, _connection: Connection) -> Result<(), ()> {
-        unimplemented!()
+    pub fn add_connection(&mut self, connection: Connection) -> Result<(), ()> {
+        self.developed_neural_network
+            .neural_network
+            .add_connection(connection)
     }
 
     /// Marks a neuron as an input
-    pub fn mark_neuron_as_input(&mut self, _handle: Handle) {
-        unimplemented!()
+    pub fn mark_neuron_as_input(&mut self, handle: Handle) {
+        self.developed_neural_network
+            .input_neuron_handles
+            .push(handle)
     }
 
     /// Marks a neuron as an output
-    pub fn mark_neuron_as_output(&mut self, _handle: Handle) {
-        unimplemented!();
+    pub fn mark_neuron_as_output(&mut self, handle: Handle) {
+        self.developed_neural_network
+            .output_neuron_handles
+            .push(handle);
     }
 
     /// Consumes `self`, returning the built [`DevelopedNeuralNetwork`]
     pub fn build(self) -> DevelopedNeuralNetwork {
-        unimplemented!();
+        self.developed_neural_network
     }
 }
 
@@ -221,13 +229,13 @@ mod tests {
 
         let developed_network = builder.build();
 
-        assert_eq!(0, developed_network.output_neuron_handles.len());
+        assert_eq!(1, developed_network.output_neuron_handles.len());
         assert_eq!(
             &expected_handle,
             developed_network.output_neuron_handles.get(0).unwrap()
         );
 
         assert_eq!(genome, developed_network.genome);
-        assert_eq!(1, developed_network.input_neuron_handles.len());
+        assert_eq!(0, developed_network.input_neuron_handles.len());
     }
 }
