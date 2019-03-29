@@ -64,9 +64,9 @@ def _line_contains_not_alphabetically_sorted_derive(line: str) -> bool:
     if match is None:
         return False
 
-    derives = [x.strip().lower() for x in match.group(1).split(',')]
+    derives = [x.strip() for x in match.group(1).split(',')]
 
-    return derives is not sorted(derives)
+    return derives != sorted(derives)
 
 
 def _should_include_file(filename: str) -> bool:
