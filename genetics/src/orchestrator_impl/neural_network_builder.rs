@@ -51,24 +51,25 @@ mod tests {
     use super::*;
     use crate::genome::Genome;
     use mockiato::partial_eq;
-    use myelin_neural_network::NeuralNetworkMock;
+    use myelin_neural_network::{NeuralNetwork, NeuralNetworkMock};
+
+    fn create_developed_network(neural_network: Box<dyn NeuralNetwork>) -> DevelopedNeuralNetwork {
+        DevelopedNeuralNetwork {
+            neural_network,
+            genome: Genome::default(),
+            input_neuron_handles: Vec::default(),
+            output_neuron_handles: Vec::default(),
+        }
+    }
 
     #[test]
     fn new_does_nothing() {
         let network = NeuralNetworkMock::new();
 
-        let genome = Genome::default();
-
-        let mut developed_network = DevelopedNeuralNetwork {
-            neural_network: box network.clone(),
-            genome: genome.clone(),
-            input_neuron_handles: Vec::default(),
-            output_neuron_handles: Vec::default(),
-        };
+        let mut developed_network = create_developed_network(box network);
 
         NeuralNetworkConfiguratorImpl::new(&mut developed_network);
 
-        assert_eq!(genome, developed_network.genome);
         assert!(developed_network.input_neuron_handles.is_empty());
         assert!(developed_network.output_neuron_handles.is_empty());
     }
@@ -80,14 +81,7 @@ mod tests {
         let mut network = NeuralNetworkMock::new();
         network.expect_push_neuron().returns(expected_handle);
 
-        let genome = Genome::default();
-
-        let mut developed_network = DevelopedNeuralNetwork {
-            neural_network: box network,
-            genome: genome.clone(),
-            input_neuron_handles: Vec::default(),
-            output_neuron_handles: Vec::default(),
-        };
+        let mut developed_network = create_developed_network(box network);
 
         let mut configurator = NeuralNetworkConfiguratorImpl::new(&mut developed_network);
 
@@ -95,7 +89,6 @@ mod tests {
 
         assert_eq!(expected_handle, handle);
 
-        assert_eq!(genome, developed_network.genome);
         assert!(developed_network.input_neuron_handles.is_empty());
         assert!(developed_network.output_neuron_handles.is_empty());
     }
@@ -113,14 +106,7 @@ mod tests {
             .expect_add_connection(partial_eq(connection.clone()))
             .returns(Ok(()));
 
-        let genome = Genome::default();
-
-        let mut developed_network = DevelopedNeuralNetwork {
-            neural_network: box network,
-            genome: genome.clone(),
-            input_neuron_handles: Vec::default(),
-            output_neuron_handles: Vec::default(),
-        };
+        let mut developed_network = create_developed_network(box network);
 
         let mut configurator = NeuralNetworkConfiguratorImpl::new(&mut developed_network);
 
@@ -128,7 +114,6 @@ mod tests {
 
         assert!(result.is_ok());
 
-        assert_eq!(genome, developed_network.genome);
         assert!(developed_network.input_neuron_handles.is_empty());
         assert!(developed_network.output_neuron_handles.is_empty());
     }
@@ -146,14 +131,7 @@ mod tests {
             .expect_add_connection(partial_eq(connection.clone()))
             .returns(Err(()));
 
-        let genome = Genome::default();
-
-        let mut developed_network = DevelopedNeuralNetwork {
-            neural_network: box network,
-            genome: genome.clone(),
-            input_neuron_handles: Vec::default(),
-            output_neuron_handles: Vec::default(),
-        };
+        let mut developed_network = create_developed_network(box network);
 
         let mut configurator = NeuralNetworkConfiguratorImpl::new(&mut developed_network);
 
@@ -161,7 +139,6 @@ mod tests {
 
         assert!(result.is_err());
 
-        assert_eq!(genome, developed_network.genome);
         assert!(developed_network.input_neuron_handles.is_empty());
         assert!(developed_network.output_neuron_handles.is_empty());
     }
@@ -173,28 +150,20 @@ mod tests {
         let mut network = NeuralNetworkMock::new();
         network.expect_push_neuron().returns(expected_handle);
 
-        let genome = Genome::default();
-
-        let mut developed_network = DevelopedNeuralNetwork {
-            neural_network: box network,
-            genome: genome.clone(),
-            input_neuron_handles: Vec::default(),
-            output_neuron_handles: Vec::default(),
-        };
+        let mut developed_network = create_developed_network(box network);
 
         let mut configurator = NeuralNetworkConfiguratorImpl::new(&mut developed_network);
 
         let input_neuron = configurator.push_input_neuron();
 
         assert_eq!(1, developed_network.input_neuron_handles.len());
+        assert!(developed_network.output_neuron_handles.is_empty());
+
         assert_eq!(
             &expected_handle,
             developed_network.input_neuron_handles.get(0).unwrap()
         );
         assert_eq!(expected_handle, input_neuron);
-
-        assert_eq!(genome, developed_network.genome);
-        assert!(developed_network.output_neuron_handles.is_empty());
     }
 
     #[test]
@@ -204,27 +173,19 @@ mod tests {
         let mut network = NeuralNetworkMock::new();
         network.expect_push_neuron().returns(expected_handle);
 
-        let genome = Genome::default();
-
-        let mut developed_network = DevelopedNeuralNetwork {
-            neural_network: box network,
-            genome: genome.clone(),
-            input_neuron_handles: Vec::default(),
-            output_neuron_handles: Vec::default(),
-        };
+        let mut developed_network = create_developed_network(box network);
 
         let mut configurator = NeuralNetworkConfiguratorImpl::new(&mut developed_network);
 
         let output_neuron = configurator.push_output_neuron();
 
+        assert!(developed_network.input_neuron_handles.is_empty());
         assert_eq!(1, developed_network.output_neuron_handles.len());
+
         assert_eq!(
             &expected_handle,
             developed_network.output_neuron_handles.get(0).unwrap()
         );
         assert_eq!(expected_handle, output_neuron);
-
-        assert_eq!(genome, developed_network.genome);
-        assert!(developed_network.input_neuron_handles.is_empty());
     }
 }
