@@ -29,3 +29,9 @@ impl NeuralNetworkDevelopmentConfigurationBuilder {
         unimplemented!()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+}
