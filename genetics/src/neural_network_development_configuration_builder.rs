@@ -25,13 +25,41 @@ impl NeuralNetworkDevelopmentConfigurationBuilder {
         unimplemented!()
     }
 
-    pub fn build(&self) -> Result<NeuralNetworkDevelopmentConfiguration, ()> {
+    pub fn build(
+        &self,
+    ) -> Result<
+        NeuralNetworkDevelopmentConfiguration,
+        NeuralNetworkDevelopmentConfigurationBuilderrError,
+    > {
         unimplemented!()
     }
+}
+
+/// An error representing the values that have
+/// wrongly been ommited when building finished
+#[derive(Debug, Clone, Default, Eq, PartialEq)]
+pub struct NeuralNetworkDevelopmentConfigurationBuilderrError {
+    /// Flag signaling that `parent_genomes` was never called
+    pub missing_parent_genomes: bool,
+    /// Possible misconfigurations of `input_neuron_count`
+    pub input_neuron_count: Option<ErrorState>,
+    /// Possible misconfigurations of `output_neuron_count`
+    pub output_neuron_count: Option<ErrorState>,
+}
+
+/// Simple representation of a misconfiguration
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum ErrorState {
+    /// Value signaling that a mandatory configuration was never called
+    Missing,
+    /// Value signaling that a given configuration value is not valid
+    InvalidValue(usize),
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    #[test]
+    fn returns_error_when_building_with_no_configuration() {}
 }
