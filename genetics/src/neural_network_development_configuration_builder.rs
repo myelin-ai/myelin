@@ -1,4 +1,4 @@
-use crate::Genome;
+use crate::{Genome, NeuralNetworkDevelopmentConfiguration};
 
 /// Builder for [`NeuralNetworkDevelopmentConfiguration`]
 ///
@@ -12,4 +12,20 @@ pub struct NeuralNetworkDevelopmentConfigurationBuilder {
     output_neuron_count: Option<usize>,
 }
 
-impl NeuralNetworkDevelopmentConfigurationBuilder {}
+impl NeuralNetworkDevelopmentConfigurationBuilder {
+    pub fn parent_genomes(&mut self, parent_genomes: (Genome, Genome)) -> Self {
+        unimplemented!()
+    }
+
+    pub fn input_neuron_count(&mut self, input_neuron_count: usize) -> Self {
+        unimplemented!()
+    }
+
+    pub fn output_neuron_count(&mut self, output_neuron_count: usize) -> Self {
+        unimplemented!()
+    }
+
+    pub fn build(&self) -> Result<NeuralNetworkDevelopmentConfiguration, ()> {
+        unimplemented!()
+    }
+}
