@@ -27,8 +27,8 @@ pub mod deriver;
 pub mod developer;
 pub mod genome;
 pub mod mutator;
-pub mod orchestrator_impl;
 mod neural_network_development_configuration_builder;
+pub mod orchestrator_impl;
 pub use self::neural_network_development_configuration_builder::*;
 
 mod constant;
@@ -37,7 +37,7 @@ mod constant;
 ///
 /// [`NeuralNetworkDeveloper`]: ./trait.NeuralNetworkDeveloper.html
 /// [`DevelopedNeuralNetwork`]: ./struct.DevelopedNeuralNetwork.html
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct NeuralNetworkDevelopmentConfiguration {
     /// The genomes that will be combined to form a new genome for this neural network.
     /// Will result in [`DevelopedNeuralNetwork.genome`].

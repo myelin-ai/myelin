@@ -62,8 +62,17 @@ pub enum ErrorState {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{NeuralNetworkDevelopmentConfigurationBuilder as Builder, *};
 
     #[test]
-    fn returns_error_when_building_with_no_configuration() {}
+    fn returns_error_when_building_with_no_configuration() {
+        let builder = Builder::new();
+        let expected_error = NeuralNetworkDevelopmentConfigurationBuilderrError {
+            missing_parent_genomes: true,
+            input_neuron_count: Some(ErrorState::Missing),
+            output_neuron_count: Some(ErrorState::Missing),
+        };
+        let result = builder.build();
+        assert_eq!(Err(expected_error), result);
+    }
 }
