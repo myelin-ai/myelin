@@ -3,7 +3,7 @@ use crate::{Genome, NeuralNetworkDevelopmentConfiguration};
 /// Builder for [`NeuralNetworkDevelopmentConfiguration`]
 ///
 /// [`NeuralNetworkDevelopmentConfiguration`]: ../struct.NeuralNetworkDevelopmentConfiguration.html
-#[derive(Debug)]
+#[derive(Debug, Default, Clone)]
 pub struct NeuralNetworkDevelopmentConfigurationBuilder {
     parent_genomes: Option<(Genome, Genome)>,
 
@@ -13,6 +13,10 @@ pub struct NeuralNetworkDevelopmentConfigurationBuilder {
 }
 
 impl NeuralNetworkDevelopmentConfigurationBuilder {
+    pub fn new() -> Self {
+        NeuralNetworkDevelopmentConfigurationBuilder::default()
+    }
+
     pub fn parent_genomes(&mut self, parent_genomes: (Genome, Genome)) -> Self {
         unimplemented!()
     }
