@@ -162,8 +162,8 @@ mod tests {
         assert!(developed_network.output_neuron_handles.is_empty());
 
         assert_eq!(
-            &expected_handle,
-            developed_network.input_neuron_handles.get(0).unwrap()
+            vec![expected_handle],
+            developed_network.input_neuron_handles
         );
         assert_eq!(expected_handle, input_neuron);
     }
@@ -185,8 +185,8 @@ mod tests {
         assert_eq!(1, developed_network.output_neuron_handles.len());
 
         assert_eq!(
-            &expected_handle,
-            developed_network.output_neuron_handles.get(0).unwrap()
+            vec![expected_handle],
+            developed_network.output_neuron_handles
         );
         assert_eq!(expected_handle, output_neuron);
     }
