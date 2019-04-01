@@ -9,7 +9,7 @@ struct NameProviderImpl {
 }
 
 /// Provides names read from files
-#[derive(Default, Debug)]
+#[derive(Debug, Default)]
 pub struct NameProviderBuilder {
     names: HashMap<Kind, Vec<String>>,
 }

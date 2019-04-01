@@ -341,26 +341,26 @@ struct InputNeuronHandleMapping {
     vision: Vec<Handle>,
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 struct OutputNeuronHandleMapping {
     axial_acceleration: AxialAccelerationHandleMapping,
     lateral_acceleration: LateralAccelerationHandleMapping,
     torque: TorqueHandleMapping,
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 struct AxialAccelerationHandleMapping {
     forward: Handle,
     backward: Handle,
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 struct LateralAccelerationHandleMapping {
     left: Handle,
     right: Handle,
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 struct TorqueHandleMapping {
     counterclockwise: Handle,
     clockwise: Handle,

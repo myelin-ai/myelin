@@ -68,7 +68,7 @@ pub enum HoxPlacement {
 }
 
 /// Possibly matches a [`Connection`]. See [`HoxGene`]
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct ConnectionFilter {
     /// Equivalent of [`Connection::from`]
     pub from: NeuronClusterLocalIndex,
@@ -94,7 +94,7 @@ pub struct HoxGene {
 }
 
 /// The set of all genes in an organism
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct Genome {
     /// The hox genes of the genome
     pub hox_genes: Vec<HoxGene>,
