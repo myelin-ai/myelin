@@ -13,8 +13,8 @@ authors = [
 edition = "2018"
 
 [dependencies]
-mockiato = { version = "0.3", optional = true }
-myelin-engine = "0.10"
+mockiato = { version = "0.4", optional = true }
+myelin-engine = "0.11"
 myelin-neural-network = { path = "../neural-network" }
 myelin-genetics = { path = "../genetics" }
 myelin-random = { path = "../random" }
@@ -23,11 +23,11 @@ log = "0.4"
 maplit = "1.0"
 
 [dev-dependencies]
-mockiato = "0.3"
+mockiato = "0.4"
 nearly_eq = "0.2"
 
 [dev-dependencies.myelin-engine]
-version = "0.10"
+version = "0.11"
 features = ["use-mocks"]
 
 [dev-dependencies.myelin-neural-network]

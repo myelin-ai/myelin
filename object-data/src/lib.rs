@@ -32,7 +32,7 @@ pub struct AdditionalObjectDescription {
 
 /// The part of an object that is responsible for custom
 /// behavior and interactions
-#[derive(Hash, Debug, Eq, PartialEq, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum Kind {
     /// An intelligent organism featuring a neural network
     Organism,
