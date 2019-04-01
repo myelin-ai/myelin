@@ -19,8 +19,8 @@ class CheckedFile:
     errors: List[Error]
 
 
-derive_statement_re = re.compile(r'#\[derive\((.*)\)\]')
-derive_statement_expected_order = [
+_derive_statement_re = re.compile(r'#\[derive\((.*)\)\]')
+_derive_statement_expected_order = [
     'Debug',
     'Default',
     'Copy',
@@ -73,19 +73,19 @@ def _is_comment_line(line: str) -> bool:
 
 
 def _check_for_derive_errors(line: str) -> Optional[str]:
-    match = derive_statement_re.match(line)
+    match = _derive_statement_re.match(line)
 
     if match is None:
         return None
 
     derives = [x.strip() for x in match.group(1).split(',')]
-    expected_order = [x for x in derive_statement_expected_order if x in derives]
+    expected_order = [x for x in _derive_statement_expected_order if x in derives]
 
     if len(derives) > len(expected_order):
-        return 'Unexpected derive. Please add it to additional-lints.py'
+        return f'Unexpected derive. Please add it to {__file__}'
 
     if derives != expected_order:
-        return 'Derives are not in the correct order. Expected: {}'.format(expected_order)
+        return f'Derives are not in the correct order. Expected: {expected_order}'
 
     return None
 
