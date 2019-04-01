@@ -94,7 +94,7 @@ pub struct HoxGene {
 }
 
 /// The set of all genes in an organism
-#[derive(Debug, Default, Clone, Eq, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct Genome {
     /// The hox genes of the genome
     pub hox_genes: Vec<HoxGene>,

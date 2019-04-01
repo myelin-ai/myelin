@@ -96,7 +96,7 @@ pub struct ObjectDescription {
     pub passable: bool,
 }
 
-#[derive(Debug, Default, Clone, Eq, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct ObjectDescriptionDelta {
     /// The name of the object
     #[allow(clippy::option_option)]
