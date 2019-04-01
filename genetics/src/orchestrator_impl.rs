@@ -10,7 +10,7 @@ use nameof::{name_of, name_of_type};
 use std::fmt::{self, Debug};
 use std::rc::Rc;
 
-mod neural_network_builder;
+mod neural_network_configurator;
 
 /// Provides a function that can be used to develop a neural network
 pub trait NeuralNetworkDeveloper: Debug {
