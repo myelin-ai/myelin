@@ -3,7 +3,7 @@
 use crate::deriver::GenomeDeriver;
 use crate::mutator::GenomeMutator;
 use crate::*;
-#[cfg(test)]
+#[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
 use nameof::{name_of, name_of_type};
 use std::fmt::{self, Debug};
@@ -13,43 +13,56 @@ use std::rc::Rc;
 #[cfg_attr(test, mockable)]
 pub trait NeuralNetworkDeveloper: Debug {
     /// Develops a neural network and writes it into a [`NeuralNetworkConfigurator`].
-    fn develop_neural_network(self: Box<Self>, builder: &mut NeuralNetworkBuilder);
+    fn develop_neural_network(self: Box<Self>, configurator: &mut dyn NeuralNetworkConfigurator);
 }
 
 /// Configuration storage for a [`NeuralNetworkDeveloper`].
-#[derive(Debug)]
-pub struct NeuralNetworkBuilder {}
-
-impl NeuralNetworkBuilder {
-    /// Creates a new [`NeuralNetworkBuilder`] for a [`DevelopedNeuralNetwork`]
-    pub fn new(_developed_neural_network: DevelopedNeuralNetwork) -> Self {
-        unimplemented!()
-    }
-
+#[cfg_attr(any(test, feature = "use-mocks"), mockable)]
+pub trait NeuralNetworkConfigurator: Debug {
     /// Adds a new unconnected neuron to the network
-    pub fn push_neuron(&mut self) -> Handle {
-        unimplemented!();
-    }
+    fn push_neuron(&mut self) -> Handle;
+
+    /// Adds a new unconnected neuron to the network and marks is as an input
+    fn push_input_neuron(&mut self) -> Handle;
+
+    /// Adds a new unconnected neuron to the network and marks is as an input
+    fn push_output_neuron(&mut self) -> Handle;
 
     /// Adds a new connection between two neurons.
     /// # Errors
     /// Returns `Err` if an involved handle is invalid
-    pub fn add_connection(&mut self, _connection: Connection) -> Result<(), ()> {
+    fn add_connection(&mut self, connection: Connection) -> Result<(), ()>;
+}
+
+/// Configuration storage for a [`NeuralNetworkDeveloper`].
+#[derive(Debug)]
+pub struct NeuralNetworkConfiguratorImpl<'a> {
+    developed_neural_network: &'a mut DevelopedNeuralNetwork,
+}
+
+impl<'a> NeuralNetworkConfiguratorImpl<'a> {
+    /// Creates a new [`NeuralNetworkBuilder`] for a [`DevelopedNeuralNetwork`]
+    pub fn new(developed_neural_network: &'a mut DevelopedNeuralNetwork) -> Self {
+        Self {
+            developed_neural_network,
+        }
+    }
+}
+
+impl<'a> NeuralNetworkConfigurator for NeuralNetworkConfiguratorImpl<'a> {
+    fn push_neuron(&mut self) -> Handle {
         unimplemented!();
     }
 
-    /// Marks a neuron as an input
-    pub fn mark_neuron_as_input(&mut self, _handle: Handle) -> Result<(), ()> {
+    fn push_input_neuron(&mut self) -> Handle {
         unimplemented!();
     }
 
-    /// Marks a neuron as an output
-    pub fn mark_neuron_as_output(&mut self, _handle: Handle) -> Result<(), ()> {
+    fn push_output_neuron(&mut self) -> Handle {
         unimplemented!();
     }
 
-    /// Consumes `self`, returning the built [`DevelopedNeuralNetwork`]
-    pub fn build(self) -> DevelopedNeuralNetwork {
+    fn add_connection(&mut self, _connection: Connection) -> Result<(), ()> {
         unimplemented!();
     }
 }
@@ -65,11 +78,16 @@ pub type NeuralNetworkDeveloperFactory = dyn for<'a> Fn(
     Genome,
 ) -> Box<dyn NeuralNetworkDeveloper + 'a>;
 
+/// Creates a new [`NeuralNetworkConfigurator`]
+pub type NeuralNetworkConfiguratorFactory =
+    dyn for<'a> Fn(&'a mut DevelopedNeuralNetwork) -> Box<dyn NeuralNetworkConfigurator + 'a>;
+
 /// Default implementation of a [`NeuralNetworkDevelopmentOrchestrator`]
 #[derive(Clone)]
 pub struct NeuralNetworkDevelopmentOrchestratorImpl {
     neural_network_factory: Rc<NeuralNetworkFactory>,
     neural_network_developer_factory: Rc<NeuralNetworkDeveloperFactory>,
+    neural_network_configurator_factory: Rc<NeuralNetworkConfiguratorFactory>,
     genome_deriver: Box<dyn GenomeDeriver>,
     genome_mutator: Box<dyn GenomeMutator>,
 }
@@ -79,12 +97,14 @@ impl NeuralNetworkDevelopmentOrchestratorImpl {
     pub fn new(
         neural_network_factory: Rc<NeuralNetworkFactory>,
         neural_network_developer_factory: Rc<NeuralNetworkDeveloperFactory>,
+        neural_network_configurator_factory: Rc<NeuralNetworkConfiguratorFactory>,
         genome_deriver: Box<dyn GenomeDeriver>,
         genome_mutator: Box<dyn GenomeMutator>,
     ) -> Self {
         Self {
             neural_network_factory,
             neural_network_developer_factory,
+            neural_network_configurator_factory,
             genome_deriver,
             genome_mutator,
         }
