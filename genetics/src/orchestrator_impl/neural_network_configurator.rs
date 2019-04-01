@@ -60,7 +60,7 @@ mod tests {
         let mut output_neuron_handles = Vec::new();
 
         {
-            let _ = NeuralNetworkConfiguratorImpl::new(
+            NeuralNetworkConfiguratorImpl::new(
                 &mut *network,
                 &mut input_neuron_handles,
                 &mut output_neuron_handles,
