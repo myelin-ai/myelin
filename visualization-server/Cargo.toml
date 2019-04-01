@@ -31,7 +31,7 @@ uuid = { version = "0.7", features = ["v4"] }
 
 [dev-dependencies]
 maplit = "1.0"
-mockiato = "0.3"
+mockiato = "0.4"
 
 [dev-dependencies.myelin-engine]
 version = "0.10"
