@@ -1,7 +1,7 @@
 use super::{Handle, Weight};
 
 /// The synaptic connection between two neurons and its strength.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Connection {
     /// The handle of the origin neuron.
     pub from: Handle,

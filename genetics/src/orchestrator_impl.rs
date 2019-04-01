@@ -1,5 +1,6 @@
 //! Default implementation of [`NeuralNetworkDevelopmentOrchestrator`].
 
+pub use self::neural_network_configurator::NeuralNetworkConfiguratorImpl;
 use crate::deriver::GenomeDeriver;
 use crate::mutator::GenomeMutator;
 use crate::*;
@@ -8,6 +9,8 @@ use mockiato::mockable;
 use nameof::{name_of, name_of_type};
 use std::fmt::{self, Debug};
 use std::rc::Rc;
+
+mod neural_network_configurator;
 
 /// Provides a function that can be used to develop a neural network
 pub trait NeuralNetworkDeveloper: Debug {
@@ -31,39 +34,6 @@ pub trait NeuralNetworkConfigurator: Debug {
     /// # Errors
     /// Returns `Err` if an involved handle is invalid
     fn add_connection(&mut self, connection: Connection) -> Result<(), ()>;
-}
-
-/// Configuration storage for a [`NeuralNetworkDeveloper`].
-#[derive(Debug)]
-pub struct NeuralNetworkConfiguratorImpl<'a> {
-    developed_neural_network: &'a mut DevelopedNeuralNetwork,
-}
-
-impl<'a> NeuralNetworkConfiguratorImpl<'a> {
-    /// Creates a new [`NeuralNetworkBuilder`] for a [`DevelopedNeuralNetwork`]
-    pub fn new(developed_neural_network: &'a mut DevelopedNeuralNetwork) -> Self {
-        Self {
-            developed_neural_network,
-        }
-    }
-}
-
-impl<'a> NeuralNetworkConfigurator for NeuralNetworkConfiguratorImpl<'a> {
-    fn push_neuron(&mut self) -> Handle {
-        unimplemented!();
-    }
-
-    fn push_input_neuron(&mut self) -> Handle {
-        unimplemented!();
-    }
-
-    fn push_output_neuron(&mut self) -> Handle {
-        unimplemented!();
-    }
-
-    fn add_connection(&mut self, _connection: Connection) -> Result<(), ()> {
-        unimplemented!();
-    }
 }
 
 /// A factory for building a [`NeuralNetwork`]
