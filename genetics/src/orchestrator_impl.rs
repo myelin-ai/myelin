@@ -6,6 +6,7 @@ use crate::mutator::GenomeMutator;
 use crate::*;
 #[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
+use myelin_neural_network::NeuralNetwork;
 use nameof::{name_of, name_of_type};
 use std::fmt::{self, Debug};
 use std::rc::Rc;
@@ -48,9 +49,19 @@ pub type NeuralNetworkDeveloperFactory = dyn for<'a> Fn(
     &'a Genome,
 ) -> Box<dyn NeuralNetworkDeveloper + 'a>;
 
+/// List of input neuron handles
+pub type InputNeuronHandles = Vec<Handle>;
+
+/// List of output neuron handles
+pub type OutputNeuronHandles = Vec<Handle>;
+
 /// Creates a new [`NeuralNetworkConfigurator`]
 pub type NeuralNetworkConfiguratorFactory =
-    dyn for<'a> Fn(&'a mut DevelopedNeuralNetwork) -> Box<dyn NeuralNetworkConfigurator + 'a>;
+    dyn for<'a> Fn(
+        &'a mut dyn NeuralNetwork,
+        &'a mut InputNeuronHandles,
+        &'a mut OutputNeuronHandles,
+    ) -> Box<dyn NeuralNetworkConfigurator + 'a>;
 
 /// Default implementation of a [`NeuralNetworkDevelopmentOrchestrator`]
 #[derive(Clone)]
@@ -127,7 +138,7 @@ mod tests {
         });
 
         let neural_network_configurator_factory: Rc<NeuralNetworkConfiguratorFactory> =
-            Rc::new(|_| {
+            Rc::new(|_, _, _| {
                 let neural_network_configurator = NeuralNetworkConfiguratorMock::new();
                 box neural_network_configurator
             });
