@@ -48,7 +48,10 @@ impl NeuralNetworkConfigurator for NeuralNetworkConfiguratorImpl<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::genome::Genome;
+    use crate::genome::{
+        ClusterGene, ClusterGeneIndex, Connection as GenomeConnection, Genome, HoxGene,
+        HoxPlacement, Neuron, NeuronClusterLocalIndex,
+    };
     use mockiato::partial_eq;
     use myelin_neural_network::{NeuralNetwork, NeuralNetworkMock};
 
@@ -186,5 +189,54 @@ mod tests {
             developed_network.output_neuron_handles.get(0).unwrap()
         );
         assert_eq!(expected_handle, output_neuron);
+    }
+
+    #[test]
+    fn genome_is_never_modified() {
+        let mut neural_network = NeuralNetworkMock::new();
+        neural_network
+            .expect_push_neuron()
+            .returns(Handle(42))
+            .times(3);
+
+        let genome = Genome {
+            cluster_genes: vec![ClusterGene {
+                placement_neuron: NeuronClusterLocalIndex(0),
+                neurons: vec![Neuron {}, Neuron {}],
+                connections: vec![GenomeConnection {
+                    from: NeuronClusterLocalIndex(0),
+                    to: NeuronClusterLocalIndex(1),
+                    weight: 1.0,
+                }],
+            }],
+            hox_genes: vec![HoxGene {
+                placement: HoxPlacement::Standalone,
+                cluster_index: ClusterGeneIndex(1),
+                disabled_connections: Vec::new(),
+            }],
+        };
+
+        let mut developed_network = DevelopedNeuralNetwork {
+            neural_network: box neural_network,
+            genome: genome.clone(),
+            input_neuron_handles: vec![Handle(2), Handle(4)],
+            output_neuron_handles: vec![Handle(7), Handle(9)],
+        };
+
+        let mut configurator = NeuralNetworkConfiguratorImpl::new(&mut developed_network);
+
+        configurator.push_neuron();
+        configurator.push_input_neuron();
+        configurator.push_output_neuron();
+
+        assert_eq!(genome, developed_network.genome);
+        assert_eq!(
+            vec![Handle(2), Handle(4), Handle(42)],
+            developed_network.input_neuron_handles
+        );
+        assert_eq!(
+            vec![Handle(7), Handle(9), Handle(42)],
+            developed_network.output_neuron_handles
+        );
     }
 }
