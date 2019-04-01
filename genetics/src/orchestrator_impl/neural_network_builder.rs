@@ -110,7 +110,7 @@ mod tests {
 
         let result = configurator.add_connection(connection);
 
-        assert!(result.is_ok());
+        result.unwrap();
 
         assert!(developed_network.input_neuron_handles.is_empty());
         assert!(developed_network.output_neuron_handles.is_empty());
@@ -135,7 +135,7 @@ mod tests {
 
         let result = configurator.add_connection(connection);
 
-        assert!(result.is_err());
+        result.unwrap_err();
 
         assert!(developed_network.input_neuron_handles.is_empty());
         assert!(developed_network.output_neuron_handles.is_empty());
