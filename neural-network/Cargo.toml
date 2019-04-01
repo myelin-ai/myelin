@@ -6,12 +6,12 @@ authors = ["Jan Nils Ferner <jan@myelin.ch>"]
 edition = "2018"
 
 [dependencies]
-mockiato = { version = "0.3", optional = true }
+mockiato = { version = "0.4", optional = true }
 slab = "0.4"
 
 [dev-dependencies]
 maplit = "1.0"
-mockiato = "0.3"
+mockiato = "0.4"
 nearly_eq = "0.2"
 
 [features]
