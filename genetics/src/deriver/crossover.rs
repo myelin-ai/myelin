@@ -5,7 +5,7 @@ use itertools::Itertools;
 use myelin_random::Random;
 
 /// Implementation of chromosomal crossover
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct ChromosomalCrossoverGenomeDeriver {
     random_chance_checker: Box<dyn Random>,
 }
@@ -79,7 +79,7 @@ mod tests {
     use std::collections::VecDeque;
     use std::thread::panicking;
 
-    #[derive(Clone, Debug, Default)]
+    #[derive(Debug, Default, Clone)]
     struct RandomChanceCheckerMock {
         flip_coin_expected_calls: RefCell<VecDeque<bool>>,
         flip_coin_with_probability_expected_calls: RefCell<VecDeque<bool>>,

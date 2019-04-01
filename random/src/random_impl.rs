@@ -4,7 +4,7 @@ use rand::{thread_rng, Rng};
 use std::cell::RefCell;
 
 /// Random number generator implementation that uses the `rand` crate
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct RandomImpl {
     rng: RefCell<ThreadRng>,
 }

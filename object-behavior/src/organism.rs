@@ -31,7 +31,7 @@ const MAX_OBJECTS_PER_RAYCAST: usize = 3;
 
 /// An organism that can interact with its surroundings via a neural network,
 /// built from a set of genes
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct OrganismBehavior {
     previous_velocity: Vector,
     developed_neural_network: DevelopedNeuralNetwork,
@@ -328,39 +328,39 @@ fn lateral_acceleration_handle(
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 struct NeuronHandleMapping {
     input: InputNeuronHandleMapping,
     output: OutputNeuronHandleMapping,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 struct InputNeuronHandleMapping {
     axial_acceleration: AxialAccelerationHandleMapping,
     lateral_acceleration: LateralAccelerationHandleMapping,
     vision: Vec<Handle>,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 struct OutputNeuronHandleMapping {
     axial_acceleration: AxialAccelerationHandleMapping,
     lateral_acceleration: LateralAccelerationHandleMapping,
     torque: TorqueHandleMapping,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 struct AxialAccelerationHandleMapping {
     forward: Handle,
     backward: Handle,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 struct LateralAccelerationHandleMapping {
     left: Handle,
     right: Handle,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 struct TorqueHandleMapping {
     counterclockwise: Handle,
     clockwise: Handle,

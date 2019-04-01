@@ -405,7 +405,7 @@ mod tests {
         }
     }
 
-    #[derive(Clone, Debug)]
+    #[derive(Debug, Clone)]
     struct ErrorMock;
 
     impl Display for ErrorMock {

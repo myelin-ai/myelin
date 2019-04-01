@@ -25,7 +25,7 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 
 /// A handle to a neuron
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct Handle(pub usize);
 
 /// A modifier of incoming spikes

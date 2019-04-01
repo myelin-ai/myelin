@@ -9,7 +9,7 @@ use std::collections::HashMap;
 pub type ViewModelDelta = HashMap<Id, ObjectDelta>;
 
 /// Describes what happened to an individual object in this
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ObjectDelta {
     /// The object has been added to the world
     Created(ObjectDescription),
@@ -22,7 +22,7 @@ pub enum ObjectDelta {
 /// The delta of a [`ObjectDescription`].
 ///
 /// [`ObjectDescription`]: ../../engine/object/struct.ObjectDescription.html
-#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ObjectDescriptionDelta {
     /// The vertices defining the shape of the object
     /// in relation to its [`position`]

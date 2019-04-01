@@ -34,6 +34,7 @@ derive_statement_expected_order = [
     'Deserialize',
 ]
 
+
 def check_files(filenames: List[str]) -> List[CheckedFile]:
     return [_check_file(filename) for filename in filenames if _should_include_file(filename)]
 

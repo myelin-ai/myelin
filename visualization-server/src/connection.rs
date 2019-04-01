@@ -93,7 +93,7 @@ mod mock {
         }
     }
 
-    #[derive(Clone, Debug)]
+    #[derive(Debug, Clone)]
     pub(crate) struct SocketErrorMock;
 
     impl Display for SocketErrorMock {

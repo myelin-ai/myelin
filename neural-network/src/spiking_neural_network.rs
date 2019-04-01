@@ -15,7 +15,7 @@ use std::collections::HashMap;
 pub type DefaultSpikingNeuralNetwork = SpikingNeuralNetwork<SpikingNeuronImpl>;
 
 /// A spiking neural network
-#[derive(Clone, Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct SpikingNeuralNetwork<N>
 where
     N: SpikingNeuron + 'static,

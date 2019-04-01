@@ -1,26 +1,26 @@
 //! Contains types for the full [`Genome`]
 
 /// The index of a [`Neuron`] in a [`ClusterGene`]
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct NeuronClusterLocalIndex(pub usize);
 
 /// The index of a [`HoxGene`] in a [`Genome`]
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct HoxGeneIndex(pub usize);
 
 /// The index of a [`ClusterGene`] in a [`Genome`]
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct ClusterGeneIndex(pub usize);
 
 /// A neuron
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Neuron {}
 
 /// Weight of a [`Connection`]
 pub type Weight = f64;
 
 /// Definition of the connection between two neurons.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Connection {
     /// The index of the neuron that will be used for the start of the connection
     pub from: NeuronClusterLocalIndex,
@@ -32,7 +32,7 @@ pub struct Connection {
 
 /// The definition of a cluster blueprint, defining the neurons, the neuron that will be attached
 /// to the target when the cluster is placed, and the connections inside the cluster.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ClusterGene {
     /// The neurons of the cluster
     pub neurons: Vec<Neuron>,
@@ -46,7 +46,7 @@ pub struct ClusterGene {
 }
 
 /// Describes the placement behaviour of a [`HoxGene`].
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum HoxPlacement {
     /// This hox gene's cluster will be placed once for each previously placed cluster of the given [`ClusterGene`].
     ClusterGene {
@@ -68,7 +68,7 @@ pub enum HoxPlacement {
 }
 
 /// Possibly matches a [`Connection`]. See [`HoxGene`]
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct ConnectionFilter {
     /// Equivalent of [`Connection::from`]
     pub from: NeuronClusterLocalIndex,
@@ -83,7 +83,7 @@ impl From<Connection> for ConnectionFilter {
 }
 
 /// A gene defining the placement of neuron clusters.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct HoxGene {
     /// Placement target of the hox
     pub placement: HoxPlacement,
@@ -94,7 +94,7 @@ pub struct HoxGene {
 }
 
 /// The set of all genes in an organism
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct Genome {
     /// The hox genes of the genome
     pub hox_genes: Vec<HoxGene>,
