@@ -31,7 +31,3 @@ features = ["use-mocks"]
 [dev-dependencies.myelin-random]
 path = "../random"
 features = ["use-mocks"]
-
-[dev-dependencies.myelin-neural-network]
-path = "../neural-network"
-features = ["use-mocks"]
