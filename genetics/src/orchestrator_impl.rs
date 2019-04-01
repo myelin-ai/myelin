@@ -156,6 +156,12 @@ mod tests {
             box neural_network
         });
 
+        let neural_network_configurator_factory: Rc<NeuralNetworkConfiguratorFactory> =
+            Rc::new(|_| {
+                let neural_network_configurator = NeuralNetworkConfiguratorMock::new();
+                box neural_network_configurator
+            });
+
         let neural_network_builder_factory: Rc<NeuralNetworkDeveloperFactory> = {
             let development_configuration = development_configuration.clone();
             let mutated_genome = mutated_genome.clone();
@@ -185,6 +191,7 @@ mod tests {
         let orchestrator = NeuralNetworkDevelopmentOrchestratorImpl::new(
             neural_network_factory,
             neural_network_builder_factory,
+            neural_network_configurator_factory,
             box genome_deriver,
             box genome_mutator,
         );
