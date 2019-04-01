@@ -4,7 +4,7 @@ import glob
 import re
 import sys
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 
 @dataclass(frozen=True)
@@ -20,7 +20,19 @@ class CheckedFile:
 
 
 derive_statement_re = re.compile(r'#\[derive\((.*)\)\]')
-
+derive_statement_expected_order = [
+    'Debug',
+    'Default',
+    'Copy',
+    'Clone',
+    'Eq',
+    'PartialEq',
+    'Hash',
+    'Ord',
+    'PartialOrd',
+    'Serialize',
+    'Deserialize',
+]
 
 def check_files(filenames: List[str]) -> List[CheckedFile]:
     return [_check_file(filename) for filename in filenames if _should_include_file(filename)]
@@ -43,9 +55,10 @@ def _check_for_errors_in_file(file) -> List[Error]:
             errors.append(
                 Error(lines=[(number, line.rstrip())], message='Use box syntax instead of Box::new'))
 
-        if _line_contains_not_alphabetically_sorted_derive(line):
+        derive_error = _check_for_derive_errors(line)
+        if derive_error is not None:
             errors.append(
-                Error(lines=[(number, line.rstrip())], message='Sort derived traits alphabetically'))
+                Error(lines=[(number, line.rstrip())], message=derive_error))
 
     return errors
 
@@ -58,15 +71,22 @@ def _is_comment_line(line: str) -> bool:
     return line.strip().startswith('//')
 
 
-def _line_contains_not_alphabetically_sorted_derive(line: str) -> bool:
+def _check_for_derive_errors(line: str) -> Optional[str]:
     match = derive_statement_re.match(line)
 
     if match is None:
-        return False
+        return None
 
     derives = [x.strip() for x in match.group(1).split(',')]
+    expected_order = [x for x in derive_statement_expected_order if x in derives]
 
-    return derives != sorted(derives)
+    if len(derives) > len(expected_order):
+        return 'Unexpected derive. Please add it to additional-lints.py'
+
+    if derives != expected_order:
+        return 'Derives are not in the correct order. Expected: {}'.format(expected_order)
+
+    return None
 
 
 def _should_include_file(filename: str) -> bool:
