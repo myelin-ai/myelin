@@ -1,6 +1,6 @@
 //! Default implementation of [`NeuralNetworkDevelopmentOrchestrator`].
 
-pub use self::NeuralNetworkConfigurator;
+pub use self::neural_network_configurator::NeuralNetworkConfiguratorImpl;
 use crate::deriver::GenomeDeriver;
 use crate::mutator::GenomeMutator;
 use crate::*;
