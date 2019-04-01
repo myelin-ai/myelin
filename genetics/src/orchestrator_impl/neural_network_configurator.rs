@@ -9,6 +9,7 @@ pub struct NeuralNetworkConfiguratorImpl<'a> {
 }
 
 impl<'a> NeuralNetworkConfiguratorImpl<'a> {
+    /// Creates a new [`NeuralNetworkBuilder`] for a [`DevelopedNeuralNetwork`]
     pub fn new(developed_neural_network: &'a mut DevelopedNeuralNetwork) -> Self {
         Self {
             developed_neural_network,
