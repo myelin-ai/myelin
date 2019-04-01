@@ -62,7 +62,7 @@ mod tests {
     }
 
     #[test]
-    fn new_does_nothing() {
+    fn new_does_not_mutate_neural_network() {
         let network = NeuralNetworkMock::new();
 
         let mut developed_network = create_developed_network(box network);
