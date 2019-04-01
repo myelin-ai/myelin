@@ -26,7 +26,6 @@ impl NeuralNetworkConfigurator for NeuralNetworkConfiguratorImpl<'_> {
         self.developed_neural_network
             .input_neuron_handles
             .push(handle);
-
         handle
     }
 
@@ -35,7 +34,6 @@ impl NeuralNetworkConfigurator for NeuralNetworkConfiguratorImpl<'_> {
         self.developed_neural_network
             .output_neuron_handles
             .push(handle);
-
         handle
     }
 
