@@ -75,7 +75,7 @@ pub type NeuralNetworkFactory = dyn Fn() -> Box<dyn NeuralNetwork>;
 /// Creates a new [`NeuralNetworkDeveloper`]
 pub type NeuralNetworkDeveloperFactory = dyn for<'a> Fn(
     &'a NeuralNetworkDevelopmentConfiguration,
-    Genome,
+    &'a Genome,
 ) -> Box<dyn NeuralNetworkDeveloper + 'a>;
 
 /// Creates a new [`NeuralNetworkConfigurator`]
@@ -168,7 +168,7 @@ mod tests {
 
             Rc::new(move |configuration, genome| {
                 assert_eq!(development_configuration, *configuration);
-                assert_eq!(mutated_genome, genome);
+                assert_eq!(&mutated_genome, genome);
 
                 let mut neural_network_developer = NeuralNetworkDeveloperMock::new();
                 neural_network_developer.expect_develop_neural_network(any());
