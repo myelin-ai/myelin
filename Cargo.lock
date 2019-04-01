@@ -560,33 +560,12 @@ dependencies = [
 
 [[package]]
 name = "mockiato"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "mockiato-codegen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "nameof 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "nearly_eq 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "mockiato"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "mockiato-codegen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "nameof 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "nearly_eq 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "mockiato-codegen"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "heck 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "proc-macro2 0.4.27 (registry+https://github.com/rust-lang/crates.io-index)",
- "quote 0.6.11 (registry+https://github.com/rust-lang/crates.io-index)",
- "syn 0.15.26 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -606,15 +585,16 @@ version = "0.1.0"
 
 [[package]]
 name = "myelin-engine"
-version = "0.10.0"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "alga 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "mockiato 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "mockiato 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "myelin-geometry 2.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "nalgebra 0.17.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "nameof 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "ncollide2d 0.18.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nearly_eq 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "nphysics2d 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.88 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.88 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -659,7 +639,7 @@ dependencies = [
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "maplit 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "mockiato 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "myelin-engine 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "myelin-engine 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "myelin-genetics 0.1.0",
  "myelin-neural-network 0.1.0",
  "myelin-random 0.1.0",
@@ -693,7 +673,7 @@ dependencies = [
  "js-sys 0.3.17 (registry+https://github.com/rust-lang/crates.io-index)",
  "maplit 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "mockiato 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "myelin-engine 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "myelin-engine 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "myelin-object-data 0.1.0",
  "myelin-visualization-core 0.1.0",
  "nameof 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -708,7 +688,7 @@ dependencies = [
  "bincode 1.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "maplit 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "mockiato 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "myelin-engine 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "myelin-engine 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "myelin-object-data 0.1.0",
  "serde 1.0.88 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.88 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -723,7 +703,7 @@ dependencies = [
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "maplit 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "mockiato 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "myelin-engine 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "myelin-engine 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "myelin-genetics 0.1.0",
  "myelin-neural-network 0.1.0",
  "myelin-object-behavior 0.1.0",
@@ -744,7 +724,7 @@ name = "myelin-worldgen"
 version = "0.1.0"
 dependencies = [
  "mockiato 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "myelin-engine 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "myelin-engine 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "myelin-object-behavior 0.1.0",
  "myelin-object-data 0.1.0",
  "nameof 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1853,11 +1833,9 @@ dependencies = [
 "checksum mio 0.6.16 (registry+https://github.com/rust-lang/crates.io-index)" = "71646331f2619b1026cc302f87a2b8b648d5c6dd6937846a16cc8ce0f347f432"
 "checksum mio-uds 0.6.7 (registry+https://github.com/rust-lang/crates.io-index)" = "966257a94e196b11bb43aca423754d87429960a768de9414f3691d6957abf125"
 "checksum miow 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "8c1f2f3b1cf331de6896aabf6e9d55dca90356cc9960cca7eaaf408a355ae919"
-"checksum mockiato 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "6471b78be0484ea684daff3d489d1ddcaaa4c4979fffbec77238bcbec80c2ed3"
 "checksum mockiato 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "278c22549f48e9c1159d574290728b644fa534623d455f39f4fad810a0a6d170"
-"checksum mockiato-codegen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c3dd56cbe83bcb967037d2406826d97dc4eef14c5b37084e44892404ac3c876d"
 "checksum mockiato-codegen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "a02876f9e6e389795781924012560ea7c56abed31ed5e97a2de16ddcf1d8c634"
-"checksum myelin-engine 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b72f661ab7aa66c4bc455a2268c5e8052b08cd25a93ecbd9561a61146bc1b733"
+"checksum myelin-engine 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)" = "50b988c1c944672adb19f85f1a5ddbef6b756c4ed0623a216d1e4b722231ea1a"
 "checksum myelin-geometry 2.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "126b695ee9aec87ca54dcc7180fd7dd01724564949ab0e60d62644b5e2b9255a"
 "checksum nalgebra 0.17.1 (registry+https://github.com/rust-lang/crates.io-index)" = "ad7190397e73f47014191c4758b2666e616354e36f33f39da9311842db9eca56"
 "checksum nameof 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "de505220bd1936e4726be0f5eb3e8762e4f5bea33e37cf4d5a481f489cf41469"
