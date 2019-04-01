@@ -104,9 +104,34 @@ impl Debug for NeuralNetworkDevelopmentOrchestratorImpl {
 impl NeuralNetworkDevelopmentOrchestrator for NeuralNetworkDevelopmentOrchestratorImpl {
     fn develop_neural_network(
         &self,
-        _neural_network_development_configuration: &NeuralNetworkDevelopmentConfiguration,
+        configuration: &NeuralNetworkDevelopmentConfiguration,
     ) -> DevelopedNeuralNetwork {
-        unimplemented!();
+        let genome = self
+            .genome_deriver
+            .derive_genome_from_parents(configuration.parent_genomes.clone());
+        let mutated_genome = self.genome_mutator.mutate_genome(genome);
+
+        let mut neural_network = (self.neural_network_factory)();
+        let mut input_neuron_handles = Vec::new();
+        let mut output_neuron_handles = Vec::new();
+
+        {
+            let mut neural_network_configurator = (self.neural_network_configurator_factory)(
+                &mut *neural_network,
+                &mut input_neuron_handles,
+                &mut output_neuron_handles,
+            );
+            let neural_network_developer =
+                (self.neural_network_developer_factory)(configuration, &mutated_genome);
+            neural_network_developer.develop_neural_network(&mut *neural_network_configurator);
+        }
+
+        DevelopedNeuralNetwork {
+            genome: mutated_genome,
+            neural_network,
+            input_neuron_handles,
+            output_neuron_handles,
+        }
     }
 }
 
