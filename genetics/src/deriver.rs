@@ -13,7 +13,7 @@ mod crossover;
 #[cfg_attr(test, mockable)]
 pub trait GenomeDeriver: Debug + GenomeDeriverClone {
     /// Derives a new [`Genome`] from two parent [`Genome`]s.
-    fn derive_genome_from_parents(&mut self, parent_genomes: (Genome, Genome)) -> Genome;
+    fn derive_genome_from_parents(&self, parent_genomes: (Genome, Genome)) -> Genome;
 }
 
 clone_box!(GenomeDeriver, GenomeDeriverClone);
