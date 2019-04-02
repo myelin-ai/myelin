@@ -151,7 +151,7 @@ mod tests {
     use myelin_neural_network::NeuralNetworkMock;
 
     #[test]
-    fn develop_neural_network_works() {
+    fn orchestrates_neural_network_development() {
         let parent_genome_one = create_genome_with_single_hox_gene(1);
         let parent_genome_two = create_genome_with_single_hox_gene(2);
         let merged_genome = create_genome_with_single_hox_gene(3);
