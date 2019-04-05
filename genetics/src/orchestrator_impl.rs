@@ -159,8 +159,8 @@ mod tests {
 
         let development_configuration = NeuralNetworkDevelopmentConfiguration {
             parent_genomes: (parent_genome_one.clone(), parent_genome_two.clone()),
-            input_neuron_count: 1,
-            output_neuron_count: 1,
+            input_neuron_count: NonZeroUsize::new(1).unwrap(),
+            output_neuron_count: NonZeroUsize::new(1).unwrap(),
         };
 
         let neural_network_factory: Rc<NeuralNetworkFactory> = Rc::new(|| {

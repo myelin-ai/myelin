@@ -9,6 +9,7 @@ use myelin_genetics::{
 use myelin_neural_network::{Handle, Milliseconds, NeuralNetwork};
 use std::any::Any;
 use std::collections::HashMap;
+use std::num::NonZeroUsize;
 
 /// The hightest relative acceleration an organism can detect.
 /// The value was chosen as many sources, [including Wikipedia](https://en.wikipedia.org/wiki/G-LOC#Thresholds) report
@@ -46,16 +47,22 @@ const VISION_INPUT_COUNT: usize = RAYCAST_COUNT * MAX_OBJECTS_PER_RAYCAST;
 /// 3. Average lateral acceleration since last step (left)
 /// 4. Average lateral acceleration since last step (right)
 /// Rest: Distances to objects in FOV from right to left
-const INPUT_NEURON_COUNT: usize = 4 + VISION_INPUT_COUNT;
+fn input_neuron_count() -> NonZeroUsize {
+    NonZeroUsize::new(4 + VISION_INPUT_COUNT).unwrap()
+}
 
-const FIRST_VISION_INDEX: usize = INPUT_NEURON_COUNT - VISION_INPUT_COUNT + 1;
+fn first_vision_index() -> usize {
+    input_neuron_count().get() - VISION_INPUT_COUNT + 1
+}
 
 /// 2. axial force (backward)
 /// 3. lateral force (left)
 /// 4. lateral force (right)
 /// 5. torque (counterclockwise)
 /// 6. torque (clockwise)
-const OUTPUT_NEURON_COUNT: usize = 6;
+fn output_neuron_count() -> NonZeroUsize {
+    NonZeroUsize::new(6).unwrap()
+}
 
 impl OrganismBehavior {
     /// Create a new `OrganismBehavior` from a pair of parent [`Genome`]s.
@@ -70,8 +77,8 @@ impl OrganismBehavior {
     ) -> Self {
         let configuration = NeuralNetworkDevelopmentConfiguration {
             parent_genomes,
-            input_neuron_count: INPUT_NEURON_COUNT,
-            output_neuron_count: OUTPUT_NEURON_COUNT,
+            input_neuron_count: input_neuron_count(),
+            output_neuron_count: output_neuron_count(),
         };
 
         Self {
@@ -380,7 +387,7 @@ fn map_handles(developed_neural_network: &DevelopedNeuralNetwork) -> NeuronHandl
                 left: get_neuron_handle(input_neurons, 2),
                 right: get_neuron_handle(input_neurons, 3),
             },
-            vision: (FIRST_VISION_INDEX..INPUT_NEURON_COUNT)
+            vision: (first_vision_index()..input_neuron_count().get())
                 .map(|index| get_neuron_handle(input_neurons, index))
                 .collect(),
         },
@@ -517,7 +524,7 @@ mod tests {
                 left: Handle(2),
                 right: Handle(3),
             },
-            vision: (FIRST_VISION_INDEX..INPUT_NEURON_COUNT)
+            vision: (first_vision_index()..input_neuron_count().get())
                 .map(Handle)
                 .collect(),
         };
@@ -725,8 +732,8 @@ mod tests {
 
     fn mock_developed_neural_network() -> DevelopedNeuralNetwork {
         DevelopedNeuralNetwork {
-            input_neuron_handles: (0..INPUT_NEURON_COUNT).map(Handle).collect(),
-            output_neuron_handles: (0..OUTPUT_NEURON_COUNT).map(Handle).collect(),
+            input_neuron_handles: (0..input_neuron_count().get()).map(Handle).collect(),
+            output_neuron_handles: (0..output_neuron_count().get()).map(Handle).collect(),
             neural_network: box NeuralNetworkMock::new(),
             genome: Genome::default(),
         }

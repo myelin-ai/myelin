@@ -21,6 +21,7 @@ use mockiato::mockable;
 use myelin_clone_box::clone_box;
 use myelin_neural_network::{Connection, Handle, NeuralNetwork};
 use std::fmt::Debug;
+use std::num::NonZeroUsize;
 
 pub mod deriver;
 pub mod developer;
@@ -46,13 +47,13 @@ pub struct NeuralNetworkDevelopmentConfiguration {
     /// Will result in [`DevelopedNeuralNetwork.input_neuron_handles`].
     ///
     /// [`DevelopedNeuralNetwork.input_neuron_handles`]: ./struct.DevelopedNeuralNetwork.html#structfield.input_neuron_handles
-    pub input_neuron_count: usize,
+    pub input_neuron_count: NonZeroUsize,
 
     /// The number of neurons that shall emit outputs
     /// Will result in [`DevelopedNeuralNetwork.output_neuron_handles`].
     ///
     /// [`DevelopedNeuralNetwork.output_neuron_handles`]: ./struct.DevelopedNeuralNetwork.html#structfield.output_neuron_handles
-    pub output_neuron_count: usize,
+    pub output_neuron_count: NonZeroUsize,
 }
 
 /// [`NeuralNetwork`] and auxiliary data developed by a [`NeuralNetworkDeveloper`].
