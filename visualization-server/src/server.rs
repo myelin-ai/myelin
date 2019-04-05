@@ -7,8 +7,14 @@ use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
 use myelin_engine::prelude::*;
 use myelin_engine::simulation::SimulationBuilder;
+use myelin_genetics::deriver::ChromosomalCrossoverGenomeDeriver;
 use myelin_genetics::developer::FlatNeuralNetworkDeveloper;
 use myelin_genetics::genome::Genome;
+use myelin_genetics::mutator::GenomeMutatorStub;
+use myelin_genetics::orchestrator_impl::{
+    NeuralNetworkConfiguratorFactory, NeuralNetworkConfiguratorImpl, NeuralNetworkDeveloperFactory,
+    NeuralNetworkDevelopmentOrchestratorImpl, NeuralNetworkFactory,
+};
 use myelin_neural_network::spiking_neural_network::DefaultSpikingNeuralNetwork;
 use myelin_object_behavior::organism::OrganismBehavior;
 use myelin_object_behavior::stochastic_spreading::StochasticSpreading;
@@ -41,9 +47,28 @@ where
         box StochasticSpreading::new(1.0 / 5_000.0, box RandomImpl::new())
     };
     let organism_factory = box || -> Box<dyn ObjectBehavior> {
+        let neural_network_factory: Rc<NeuralNetworkFactory> =
+            Rc::new(|| box DefaultSpikingNeuralNetwork::new());
+        let neural_network_developer_factory: Rc<NeuralNetworkDeveloperFactory> =
+            Rc::new(|configuration, _| box FlatNeuralNetworkDeveloper::new(configuration));
+        let neural_network_configurator_factory: Rc<NeuralNetworkConfiguratorFactory> = Rc::new(
+            |neural_network, input_neural_handles, output_neuron_handles| {
+                box NeuralNetworkConfiguratorImpl::new(
+                    neural_network,
+                    input_neural_handles,
+                    output_neuron_handles,
+                )
+            },
+        );
         box OrganismBehavior::new(
             (Genome::default(), Genome::default()),
-            box FlatNeuralNetworkDeveloper::new(Rc::new(|| box DefaultSpikingNeuralNetwork::new())),
+            box NeuralNetworkDevelopmentOrchestratorImpl::new(
+                neural_network_factory,
+                neural_network_developer_factory,
+                neural_network_configurator_factory,
+                box ChromosomalCrossoverGenomeDeriver::new(box RandomImpl::new()),
+                box GenomeMutatorStub::new(),
+            ),
         )
     };
     let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };

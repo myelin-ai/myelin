@@ -1,54 +1,42 @@
-use crate::orchestrator_impl::NeuralNetworkFactory;
+use crate::orchestrator_impl::{NeuralNetworkConfigurator, NeuralNetworkDeveloper};
 use crate::*;
-use nameof::name_of;
-use std::fmt::{self, Debug};
-use std::rc::Rc;
 
 /// A developer for a flat neural network with no hidden layers.
 /// Uses no actual genetics and sets all connection weights at 1.0
-#[derive(Clone)]
-pub struct FlatNeuralNetworkDeveloper {
-    neural_network_factory: Rc<NeuralNetworkFactory>,
+#[derive(Debug, Clone)]
+pub struct FlatNeuralNetworkDeveloper<'a> {
+    configuration: &'a NeuralNetworkDevelopmentConfiguration,
 }
 
-impl FlatNeuralNetworkDeveloper {
+impl<'a> FlatNeuralNetworkDeveloper<'a> {
     /// Constructs a new [`FlatNeuralNetworkDeveloper`]
     ///
-    /// [`FlatNeuralNetworkDeveloper `]: ./struct. FlatNeuralNetworkDeveloper.html
-    pub fn new(neural_network_factory: Rc<NeuralNetworkFactory>) -> Self {
+    /// [`FlatNeuralNetworkDeveloper `]: ./struct.FlatNeuralNetworkDeveloper.html
+    pub fn new(
+        neural_network_development_configuration: &'a NeuralNetworkDevelopmentConfiguration,
+    ) -> Self {
         Self {
-            neural_network_factory,
+            configuration: neural_network_development_configuration,
         }
     }
 }
 
-impl Debug for FlatNeuralNetworkDeveloper {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct(name_of!(type FlatNeuralNetworkDeveloper))
-            .finish()
-    }
-}
+impl NeuralNetworkDeveloper for FlatNeuralNetworkDeveloper<'_> {
+    fn develop_neural_network(self: Box<Self>, configurator: &mut dyn NeuralNetworkConfigurator) {
+        let input_neuron_count = self.configuration.input_neuron_count;
+        let output_neuron_count = self.configuration.output_neuron_count;
 
-impl NeuralNetworkDevelopmentOrchestrator for FlatNeuralNetworkDeveloper {
-    fn develop_neural_network(
-        &self,
-        neural_network_development_configuration: &NeuralNetworkDevelopmentConfiguration,
-    ) -> DevelopedNeuralNetwork {
-        let mut neural_network = (self.neural_network_factory)();
-
-        let input_neuron_handles: Vec<Handle> = (0..neural_network_development_configuration
-            .input_neuron_count)
-            .map(|_| neural_network.push_neuron())
+        let input_neuron_handles: Vec<Handle> = (0..input_neuron_count)
+            .map(|_| configurator.push_input_neuron())
             .collect();
 
-        let output_neuron_handles: Vec<Handle> = (0..neural_network_development_configuration
-            .output_neuron_count)
-            .map(|_| neural_network.push_neuron())
+        let output_neuron_handles: Vec<Handle> = (0..output_neuron_count)
+            .map(|_| configurator.push_output_neuron())
             .collect();
 
-        for &input_neuron in input_neuron_handles.iter() {
+        for input_neuron in input_neuron_handles {
             for &output_neuron in output_neuron_handles.iter() {
-                neural_network
+                configurator
                     .add_connection(Connection {
                         from: input_neuron,
                         to: output_neuron,
@@ -57,45 +45,45 @@ impl NeuralNetworkDevelopmentOrchestrator for FlatNeuralNetworkDeveloper {
                     .expect("Internal error: Stored neuron handle was invalid");
             }
         }
-
-        DevelopedNeuralNetwork {
-            neural_network,
-            genome: Genome::default(),
-            input_neuron_handles,
-            output_neuron_handles,
-        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myelin_neural_network::spiking_neural_network::DefaultSpikingNeuralNetwork;
+    use crate::orchestrator_impl::NeuralNetworkConfiguratorMock;
+    use mockiato::partial_eq;
 
     #[test]
-    fn develops_correct_number_of_input_neurons() {
+    fn develops_correct_number_of_input_and_output_neurons() {
         let configuration = configuration();
-        let neural_network_factory = neural_network_factory();
-        let developer = FlatNeuralNetworkDeveloper::new(neural_network_factory);
-        let neural_network = developer.develop_neural_network(&configuration);
+        let input_neuron_count = configuration.input_neuron_count as u64;
+        let output_neuron_count = configuration.output_neuron_count as u64;
+        let connection_count = input_neuron_count * output_neuron_count;
 
-        assert_eq!(
-            configuration.input_neuron_count,
-            neural_network.input_neuron_handles.len()
-        );
-    }
+        let mut configurator = {
+            let mut configurator = NeuralNetworkConfiguratorMock::new();
+            configurator
+                .expect_push_input_neuron()
+                .times(input_neuron_count)
+                .returns(Handle(1));
+            configurator
+                .expect_push_output_neuron()
+                .times(output_neuron_count)
+                .returns(Handle(2));
+            configurator
+                .expect_add_connection(partial_eq(Connection {
+                    from: Handle(1),
+                    to: Handle(2),
+                    weight: 1.0,
+                }))
+                .times(connection_count)
+                .returns(Ok(()));
+            box configurator
+        };
+        let developer = box FlatNeuralNetworkDeveloper::new(&configuration);
 
-    #[test]
-    fn develops_correct_number_of_output_neurons() {
-        let configuration = configuration();
-        let neural_network_factory = neural_network_factory();
-        let developer = FlatNeuralNetworkDeveloper::new(neural_network_factory);
-        let developed_neural_network = developer.develop_neural_network(&configuration);
-
-        assert_eq!(
-            configuration.output_neuron_count,
-            developed_neural_network.output_neuron_handles.len()
-        );
+        developer.develop_neural_network(&mut *configurator);
     }
 
     fn configuration() -> NeuralNetworkDevelopmentConfiguration {
@@ -104,9 +92,5 @@ mod tests {
             input_neuron_count: 3,
             output_neuron_count: 5,
         }
-    }
-
-    fn neural_network_factory() -> Rc<NeuralNetworkFactory> {
-        Rc::new(|| box DefaultSpikingNeuralNetwork::default())
     }
 }
