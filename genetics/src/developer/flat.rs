@@ -23,8 +23,8 @@ impl<'a> FlatNeuralNetworkDeveloper<'a> {
 
 impl NeuralNetworkDeveloper for FlatNeuralNetworkDeveloper<'_> {
     fn develop_neural_network(self: Box<Self>, configurator: &mut dyn NeuralNetworkConfigurator) {
-        let input_neuron_count = self.configuration.input_neuron_count;
-        let output_neuron_count = self.configuration.output_neuron_count;
+        let input_neuron_count = self.configuration.input_neuron_count.get();
+        let output_neuron_count = self.configuration.output_neuron_count.get();
 
         let input_neuron_handles: Vec<Handle> = (0..input_neuron_count)
             .map(|_| configurator.push_input_neuron())
@@ -57,8 +57,8 @@ mod tests {
     #[test]
     fn develops_correct_number_of_input_and_output_neurons() {
         let configuration = configuration();
-        let input_neuron_count = configuration.input_neuron_count as u64;
-        let output_neuron_count = configuration.output_neuron_count as u64;
+        let input_neuron_count = configuration.input_neuron_count.get() as u64;
+        let output_neuron_count = configuration.output_neuron_count.get() as u64;
         let connection_count = input_neuron_count * output_neuron_count;
 
         let mut configurator = {
@@ -89,8 +89,8 @@ mod tests {
     fn configuration() -> NeuralNetworkDevelopmentConfiguration {
         NeuralNetworkDevelopmentConfiguration {
             parent_genomes: (Genome::default(), Genome::default()),
-            input_neuron_count: 3,
-            output_neuron_count: 5,
+            input_neuron_count: NonZeroUsize::new(3).unwrap(),
+            output_neuron_count: NonZeroUsize::new(5).unwrap(),
         }
     }
 }
