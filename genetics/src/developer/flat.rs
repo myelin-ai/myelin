@@ -1,11 +1,13 @@
 use crate::orchestrator_impl::{NeuralNetworkConfigurator, NeuralNetworkDeveloper};
 use crate::*;
+use myelin_random::Random;
 
 /// A developer for a flat neural network with no hidden layers.
 /// Uses no actual genetics and sets all connection weights at 1.0
 #[derive(Debug, Clone)]
 pub struct FlatNeuralNetworkDeveloper<'a> {
     configuration: &'a NeuralNetworkDevelopmentConfiguration,
+    random: Box<dyn Random>,
 }
 
 impl<'a> FlatNeuralNetworkDeveloper<'a> {
@@ -14,9 +16,11 @@ impl<'a> FlatNeuralNetworkDeveloper<'a> {
     /// [`FlatNeuralNetworkDeveloper `]: ./struct.FlatNeuralNetworkDeveloper.html
     pub fn new(
         neural_network_development_configuration: &'a NeuralNetworkDevelopmentConfiguration,
+        random: Box<dyn Random>,
     ) -> Self {
         Self {
             configuration: neural_network_development_configuration,
+            random,
         }
     }
 }
@@ -40,7 +44,7 @@ impl NeuralNetworkDeveloper for FlatNeuralNetworkDeveloper<'_> {
                     .add_connection(Connection {
                         from: input_neuron,
                         to: output_neuron,
-                        weight: 1.0,
+                        weight: self.random.random_float_in_range(0.0, 1.0),
                     })
                     .expect("Internal error: Stored neuron handle was invalid");
             }
@@ -53,6 +57,7 @@ mod tests {
     use super::*;
     use crate::orchestrator_impl::NeuralNetworkConfiguratorMock;
     use mockiato::partial_eq;
+    use myelin_random::RandomMock;
 
     #[test]
     fn develops_correct_number_of_input_and_output_neurons() {
@@ -60,6 +65,10 @@ mod tests {
         let input_neuron_count = configuration.input_neuron_count.get() as u64;
         let output_neuron_count = configuration.output_neuron_count.get() as u64;
         let connection_count = input_neuron_count * output_neuron_count;
+
+        fn connection_weight(i: u64) -> f64 {
+            1.0 / (i + 1) as f64
+        }
 
         let mut configurator = {
             let mut configurator = NeuralNetworkConfiguratorMock::new();
@@ -71,17 +80,32 @@ mod tests {
                 .expect_push_output_neuron()
                 .times(output_neuron_count)
                 .returns(Handle(2));
-            configurator
-                .expect_add_connection(partial_eq(Connection {
-                    from: Handle(1),
-                    to: Handle(2),
-                    weight: 1.0,
-                }))
-                .times(connection_count)
-                .returns(Ok(()));
+            configurator.expect_add_connection_calls_in_order();
+            for i in 0..connection_count {
+                configurator
+                    .expect_add_connection(partial_eq(Connection {
+                        from: Handle(1),
+                        to: Handle(2),
+                        weight: connection_weight(i),
+                    }))
+                    .returns(Ok(()));
+            }
             box configurator
         };
-        let developer = box FlatNeuralNetworkDeveloper::new(&configuration);
+
+        let random = {
+            let mut random = RandomMock::new();
+            random.expect_random_float_in_range_calls_in_order();
+
+            for i in 0..connection_count {
+                random
+                    .expect_random_float_in_range(partial_eq(0.0), partial_eq(1.0))
+                    .returns(connection_weight(i));
+            }
+            box random
+        };
+
+        let developer = box FlatNeuralNetworkDeveloper::new(&configuration, random);
 
         developer.develop_neural_network(&mut *configurator);
     }

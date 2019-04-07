@@ -50,7 +50,9 @@ where
         let neural_network_factory: Rc<NeuralNetworkFactory> =
             Rc::new(|| box DefaultSpikingNeuralNetwork::new());
         let neural_network_developer_factory: Rc<NeuralNetworkDeveloperFactory> =
-            Rc::new(|configuration, _| box FlatNeuralNetworkDeveloper::new(configuration));
+            Rc::new(|configuration, _| {
+                box FlatNeuralNetworkDeveloper::new(configuration, box RandomImpl::new())
+            });
         let neural_network_configurator_factory: Rc<NeuralNetworkConfiguratorFactory> = Rc::new(
             |neural_network, input_neural_handles, output_neuron_handles| {
                 box NeuralNetworkConfiguratorImpl::new(
