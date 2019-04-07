@@ -19,8 +19,9 @@ use crate::genome::Genome;
 #[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
 use myelin_clone_box::clone_box;
-use myelin_neural_network::{Connection, Handle as NeuronHandle, Handle, NeuralNetwork};
+use myelin_neural_network::{Connection, Handle, NeuralNetwork};
 use std::fmt::Debug;
+use std::num::NonZeroUsize;
 
 pub mod deriver;
 pub mod developer;
@@ -34,7 +35,7 @@ mod constant;
 ///
 /// [`NeuralNetworkDeveloper`]: ./trait.NeuralNetworkDeveloper.html
 /// [`DevelopedNeuralNetwork`]: ./struct.DevelopedNeuralNetwork.html
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct NeuralNetworkDevelopmentConfiguration {
     /// The genomes that will be combined to form a new genome for this neural network.
     /// Will result in [`DevelopedNeuralNetwork.genome`].
@@ -46,13 +47,13 @@ pub struct NeuralNetworkDevelopmentConfiguration {
     /// Will result in [`DevelopedNeuralNetwork.input_neuron_handles`].
     ///
     /// [`DevelopedNeuralNetwork.input_neuron_handles`]: ./struct.DevelopedNeuralNetwork.html#structfield.input_neuron_handles
-    pub input_neuron_count: usize,
+    pub input_neuron_count: NonZeroUsize,
 
     /// The number of neurons that shall emit outputs
     /// Will result in [`DevelopedNeuralNetwork.output_neuron_handles`].
     ///
     /// [`DevelopedNeuralNetwork.output_neuron_handles`]: ./struct.DevelopedNeuralNetwork.html#structfield.output_neuron_handles
-    pub output_neuron_count: usize,
+    pub output_neuron_count: NonZeroUsize,
 }
 
 /// [`NeuralNetwork`] and auxiliary data developed by a [`NeuralNetworkDeveloper`].
@@ -77,13 +78,13 @@ pub struct DevelopedNeuralNetwork {
     /// [`NeuralNetworkDevelopmentConfiguration.input_neuron_count`].
     ///
     /// [`NeuralNetworkDevelopmentConfiguration.input_neuron_count`]: ./struct.NeuralNetworkDevelopmentConfiguration.html#structfield.input_neuron_count
-    pub input_neuron_handles: Vec<NeuronHandle>,
+    pub input_neuron_handles: Vec<Handle>,
 
     /// The handles to generated neurons that emit outputs, originating from
     /// [`NeuralNetworkDevelopmentConfiguration.output_neuron_count`].
     ///
     /// [`NeuralNetworkDevelopmentConfiguration.output_neuron_count`]: ./struct.NeuralNetworkDevelopmentConfiguration.html#structfield.output_neuron_count
-    pub output_neuron_handles: Vec<NeuronHandle>,
+    pub output_neuron_handles: Vec<Handle>,
 }
 
 /// A factory for producing a [`NeuralNetwork`] out of a [`Genome`]
