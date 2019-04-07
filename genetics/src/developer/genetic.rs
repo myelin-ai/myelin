@@ -1,11 +1,6 @@
 use crate::genome::Genome;
-use crate::orchestrator_impl::{
-    NeuralNetworkConfigurator, NeuralNetworkDeveloper, NeuralNetworkFactory,
-};
+use crate::orchestrator_impl::{NeuralNetworkConfigurator, NeuralNetworkDeveloper};
 use crate::NeuralNetworkDevelopmentConfiguration;
-use nameof::name_of;
-use std::fmt::{self, Debug};
-use std::rc::Rc;
 
 /// Bootstraps the neural network based on the genome
 #[derive(Debug, Clone)]
