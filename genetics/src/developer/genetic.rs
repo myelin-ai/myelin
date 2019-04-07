@@ -1,5 +1,7 @@
 use crate::genome::Genome;
-use crate::orchestrator_impl::{NeuralNetworkDeveloper, NeuralNetworkFactory, NeuralNetworkConfigurator};
+use crate::orchestrator_impl::{
+    NeuralNetworkConfigurator, NeuralNetworkDeveloper, NeuralNetworkFactory,
+};
 use crate::NeuralNetworkDevelopmentConfiguration;
 use nameof::name_of;
 use std::fmt::{self, Debug};
@@ -33,11 +35,12 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::orchestrator_impl::NeuralNetworkConfiguratorMock;
     use crate::genome::{
         ClusterGene, ClusterGeneIndex, Connection as ConnectionDefinition, HoxGene, HoxPlacement,
         Neuron as NeuronDefinition, NeuronClusterLocalIndex,
     };
+    use crate::orchestrator_impl::NeuralNetworkConfiguratorMock;
+    use std::num::NonZeroUsize;
 
     #[test]
     fn creates_standalone_cluster_properly() {
@@ -58,8 +61,8 @@ mod tests {
     fn test_config() -> NeuralNetworkDevelopmentConfiguration {
         NeuralNetworkDevelopmentConfiguration {
             parent_genomes: (Genome::default(), Genome::default()),
-            input_neuron_count: 1,
-            output_neuron_count: 1,
+            input_neuron_count: NonZeroUsize::new(1).unwrap(),
+            output_neuron_count: NonZeroUsize::new(1).unwrap(),
         }
     }
 
