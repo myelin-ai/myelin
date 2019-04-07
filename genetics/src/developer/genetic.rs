@@ -1,7 +1,5 @@
 use crate::genome::Genome;
-use crate::orchestrator_impl::{
-    NeuralNetworkBuilder, NeuralNetworkDeveloper, NeuralNetworkFactory,
-};
+use crate::orchestrator_impl::{NeuralNetworkDeveloper, NeuralNetworkFactory, NeuralNetworkConfigurator};
 use crate::NeuralNetworkDevelopmentConfiguration;
 use nameof::name_of;
 use std::fmt::{self, Debug};
@@ -27,7 +25,7 @@ impl GeneticNeuralNetworkDeveloper {
 }
 
 impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
-    fn develop_neural_network(self: Box<Self>, builder: &mut NeuralNetworkBuilder) {
+    fn develop_neural_network(self: Box<Self>, configurator: &mut dyn NeuralNetworkConfigurator) {
         unimplemented!()
     }
 }
@@ -35,6 +33,7 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::orchestrator_impl::NeuralNetworkConfiguratorMock;
     use crate::genome::{
         ClusterGene, ClusterGeneIndex, Connection as ConnectionDefinition, HoxGene, HoxPlacement,
         Neuron as NeuronDefinition, NeuronClusterLocalIndex,
@@ -48,9 +47,9 @@ mod tests {
         let mut config = test_config();
 
         let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
-        let mut writer = NeuralNetworkBuilder {};
+        let mut configurator = NeuralNetworkConfiguratorMock::new();
 
-        developer.develop_neural_network(&mut writer);
+        developer.develop_neural_network(&mut configurator);
 
         // TODO: actual check if the developer did everything right
         unimplemented!("unfinished");
