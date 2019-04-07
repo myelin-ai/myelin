@@ -42,7 +42,7 @@ mod tests {
         let mut genome = test_genome_stub();
         genome = add_cluster_zero_to_genome(genome);
         genome = add_hox_gene_zero_to_genome(genome);
-        let mut config = test_config();
+        let config = test_config();
 
         let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
         let mut configurator = NeuralNetworkConfiguratorMock::new();
