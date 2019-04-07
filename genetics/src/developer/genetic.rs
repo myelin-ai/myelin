@@ -10,6 +10,9 @@ pub struct GeneticNeuralNetworkDeveloper {
 }
 
 impl GeneticNeuralNetworkDeveloper {
+    /// Creates a new [`GeneticNeuralNetworkDeveloper`].
+    ///
+    /// [`GeneticNeuralNetworkDeveloper`]: ./struct.GeneticNeuralNetworkDeveloper.html
     pub fn new(
         development_configuration: NeuralNetworkDevelopmentConfiguration,
         genome: Genome,
