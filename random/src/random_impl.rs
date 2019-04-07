@@ -43,6 +43,10 @@ impl Random for RandomImpl {
     fn random_number_in_range(&self, min: i32, max: i32) -> i32 {
         self.rng.borrow_mut().gen_range(min, max)
     }
+
+    fn random_float_in_range(&self, min: f64, max: f64) -> f64 {
+        self.rng.borrow_mut().gen_range(min, max)
+    }
 }
 
 #[cfg(test)]
@@ -116,5 +120,30 @@ mod tests {
 
         let number = random.random_number_in_range(MIN, MAX);
         assert_eq!(1, number);
+    }
+
+    #[should_panic]
+    #[test]
+    fn panics_when_float_min_is_higher_than_max() {
+        let random = RandomImpl::default();
+        random.random_float_in_range(1.0, 0.0);
+    }
+
+    #[should_panic]
+    #[test]
+    fn panics_when_float_min_is_max() {
+        let random = RandomImpl::default();
+        const ONLY_BOUND: f64 = 1.0;
+        random.random_float_in_range(ONLY_BOUND, ONLY_BOUND);
+    }
+
+    #[test]
+    fn returned_float_is_in_range() {
+        let random = RandomImpl::default();
+        const MIN: f64 = -1.0;
+        const MAX: f64 = 3.0;
+
+        let number = random.random_float_in_range(MIN, MAX);
+        assert!(number >= MIN && number < MAX);
     }
 }
