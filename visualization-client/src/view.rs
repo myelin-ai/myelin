@@ -159,3 +159,56 @@ fn map_kind_to_color(kind: &Kind) -> &'static str {
         Kind::Terrain => constant::color::TERRAIN,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::view::compare_objects;
+    use crate::view_model::{Kind, Object, Polygon};
+    use std::cmp::Ordering;
+
+    #[test]
+    fn higher_object_is_ordered_greater() {
+        let object_one = Object {
+            shape: Polygon { vertices: vec![] },
+            kind: Kind::Organism,
+            height: 20.0,
+            name_label: None,
+        };
+
+        let object_two = Object {
+            shape: Polygon { vertices: vec![] },
+            kind: Kind::Organism,
+            height: 10.0,
+            name_label: None,
+        };
+
+        assert_eq!(Ordering::Greater, compare_objects(&object_one, &object_two));
+        assert_eq!(Ordering::Less, compare_objects(&object_two, &object_one));
+    }
+
+    #[test]
+    fn kind_is_respected_in_ordering() {
+        let object_one = Object {
+            shape: Polygon { vertices: vec![] },
+            kind: Kind::Organism,
+            height: 10.0,
+            name_label: None,
+        };
+
+        let object_two = Object {
+            shape: Polygon { vertices: vec![] },
+            kind: Kind::Plant,
+            height: 10.0,
+            name_label: None,
+        };
+
+        assert_eq!(
+            Kind::Organism.cmp(&Kind::Plant),
+            compare_objects(&object_one, &object_two)
+        );
+        assert_eq!(
+            Kind::Plant.cmp(&Kind::Organism),
+            compare_objects(&object_two, &object_one)
+        );
+    }
+}
