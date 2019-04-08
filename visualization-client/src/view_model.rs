@@ -4,6 +4,7 @@ use std::cmp::{Ordering, PartialOrd};
 pub struct Object {
     pub shape: Polygon,
     pub kind: Kind,
+    pub height: f64,
     pub name_label: Option<Label>,
 }
 

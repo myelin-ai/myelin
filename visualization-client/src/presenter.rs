@@ -8,7 +8,6 @@ use crate::view_model;
 use myelin_engine::prelude::*;
 use myelin_object_data::Kind;
 use std::borrow::Borrow;
-use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
@@ -21,7 +20,7 @@ use mockiato::mockable;
 
 #[cfg_attr(test, mockable)]
 pub(crate) trait View: fmt::Debug {
-    fn draw_objects(&self, objects: &[view_model::Object]);
+    fn draw_objects(&self, objects: Vec<view_model::Object>);
     fn flush(&self);
 }
 
@@ -38,16 +37,14 @@ impl Presenter for CanvasPresenter {
         self.delta_applier
             .apply_delta(&mut self.current_snapshot, delta)?;
 
-        let mut objects: Vec<_> = map_objects(
+        let objects: Vec<_> = map_objects(
             &self.current_snapshot,
             self.global_polygon_translator.borrow(),
         )
         .collect();
 
-        objects.sort_by(compare_objects);
-
         self.view.flush();
-        self.view.draw_objects(&objects);
+        self.view.draw_objects(objects);
 
         Ok(())
     }
@@ -126,13 +123,6 @@ pub struct ObjectDescriptionDelta {
     pub mobility: Option<Mobility>,
 }
 
-fn compare_objects(
-    view_model::Object { kind: kind_one, .. }: &view_model::Object,
-    view_model::Object { kind: kind_two, .. }: &view_model::Object,
-) -> Ordering {
-    kind_one.cmp(kind_two)
-}
-
 fn map_objects<'a>(
     snapshot: &'a Snapshot,
     global_polygon_translator: &'a dyn GlobalPolygonTranslator,
@@ -142,6 +132,7 @@ fn map_objects<'a>(
         .map(move |business_object| view_model::Object {
             shape: translate_shape_into_view_model(business_object, global_polygon_translator),
             kind: translate_kind_into_view_model(business_object.kind),
+            height: business_object.height,
             name_label: translate_name_into_view_model(business_object),
         })
 }
@@ -350,6 +341,7 @@ mod tests {
         let expected_view_model_1 = vec![view_model::Object {
             shape: view_model_polygon_1.clone(),
             kind: view_model::Kind::Plant,
+            height: 1.6_f64,
             name_label: None,
         }];
         let view_model_delta_1 = hashmap! {
@@ -364,11 +356,13 @@ mod tests {
             view_model::Object {
                 shape: view_model_polygon_1.clone(),
                 kind: view_model::Kind::Plant,
+                height: 1.6_f64,
                 name_label: None,
             },
             view_model::Object {
                 shape: view_model_polygon_2.clone(),
                 kind: view_model::Kind::Plant,
+                height: 2_f64,
                 name_label: None,
             },
         ];

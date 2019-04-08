@@ -3,6 +3,7 @@ pub mod constant;
 
 use crate::presenter::View;
 use crate::view_model::*;
+use std::cmp::Ordering;
 use std::fmt;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement};
@@ -14,9 +15,11 @@ pub(crate) struct CanvasView {
 }
 
 impl View for CanvasView {
-    fn draw_objects(&self, objects: &[Object]) {
+    fn draw_objects(&self, mut objects: Vec<Object>) {
+        objects.sort_by(compare_objects);
+
         for object in objects {
-            self.draw_object(object);
+            self.draw_object(&object);
         }
     }
 
@@ -72,6 +75,27 @@ impl CanvasView {
                     )
                 });
         }
+    }
+}
+
+fn compare_objects(
+    Object {
+        kind: kind_one,
+        height: height_one,
+        ..
+    }: &Object,
+    Object {
+        kind: kind_two,
+        height: height_two,
+        ..
+    }: &Object,
+) -> Ordering {
+    match height_one
+        .partial_cmp(&height_two)
+        .expect("Height values must not be NAN")
+    {
+        Ordering::Equal => kind_one.cmp(kind_two),
+        ordering => ordering,
     }
 }
 
