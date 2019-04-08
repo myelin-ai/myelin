@@ -82,7 +82,7 @@ mod tests {
     }
 
     #[test]
-    fn places_hox() {
+    fn places_hox_placing_first_cluster_on_cluster_of_initial_hox() {
         let genome = genome_stub();
         let genome = add_first_cluster_to_genome(genome);
 
