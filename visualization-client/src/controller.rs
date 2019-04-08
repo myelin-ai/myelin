@@ -160,13 +160,15 @@ fn translate_object_description_delta(
 mod tests {
     use super::*;
     use maplit::hashmap;
-    use mockiato::partial_eq_owned;
+    use mockiato::{partial_eq, partial_eq_owned};
     use myelin_engine::geometry::*;
-    use myelin_object_data::{AdditionalObjectDescriptionSerializerMock, Kind};
+    use myelin_object_data::{
+        AdditionalObjectDescriptionDeserializerMock, AdditionalObjectDescriptionSerializerMock,
+        Kind,
+    };
     use myelin_visualization_core::view_model_delta::{ObjectDelta, ObjectDescriptionDelta};
     use std::cell::RefCell;
     use std::error::Error;
-    use std::sync::atomic::{AtomicBool, Ordering};
     use std::thread::panicking;
 
     #[derive(Debug)]
@@ -299,47 +301,6 @@ mod tests {
         }
     }
 
-    #[derive(Debug, Default)]
-    struct AdditionalObjectDescriptionDeserializerMock {
-        expect_deserialize: Option<(Vec<u8>, AdditionalObjectDescription)>,
-        expect_deserialize_called: AtomicBool,
-    }
-
-    impl Drop for AdditionalObjectDescriptionDeserializerMock {
-        fn drop(&mut self) {
-            if !panicking()
-                && self.expect_deserialize.is_some()
-                && !self.expect_deserialize_called.load(Ordering::SeqCst)
-            {
-                panic!("Expected method was not called")
-            }
-        }
-    }
-
-    impl AdditionalObjectDescriptionDeserializerMock {
-        fn new(parameter: Vec<u8>, return_value: AdditionalObjectDescription) -> Self {
-            Self {
-                expect_deserialize: Some((parameter, return_value)),
-                expect_deserialize_called: AtomicBool::default(),
-            }
-        }
-    }
-
-    impl AdditionalObjectDescriptionDeserializer for AdditionalObjectDescriptionDeserializerMock {
-        fn deserialize(&self, data: &[u8]) -> Result<AdditionalObjectDescription, Box<dyn Error>> {
-            if let Some((parameter, return_value)) = &self.expect_deserialize {
-                if parameter.as_slice() != data {
-                    panic!("Was called with {:?}, but expected {:?}", data, parameter)
-                } else {
-                    self.expect_deserialize_called.store(true, Ordering::SeqCst);
-                    Ok(return_value.clone())
-                }
-            } else {
-                panic!("Call was not expected")
-            }
-        }
-    }
-
     #[test]
     fn deserializes_and_calls_presenter() {
         let data = vec![100, 124, 135, 253, 234, 122];
@@ -351,7 +312,7 @@ mod tests {
             123 => ObjectDelta::Updated(object_description_delta())
         };
 
-        let associated_ojbect_data_bytes = String::from("A very pretty looking cat").into_bytes();
+        let associated_object_data_bytes = String::from("A very pretty looking cat").into_bytes();
         let additional_object_description = AdditionalObjectDescription {
             name: Some(String::from("Cat")),
             kind: Kind::Organism,
@@ -360,11 +321,16 @@ mod tests {
 
         let additional_object_description_serializer =
             AdditionalObjectDescriptionSerializerMock::new();
-        let additional_object_description_deserializer =
-            AdditionalObjectDescriptionDeserializerMock::new(
-                associated_ojbect_data_bytes,
-                additional_object_description,
-            );
+
+        let additional_object_data_deserializer: Box<dyn AdditionalObjectDescriptionDeserializer> = {
+            let mut deserializer = AdditionalObjectDescriptionDeserializerMock::new();
+
+            deserializer
+                .expect_deserialize(partial_eq(associated_object_data_bytes.clone()))
+                .returns(Ok(additional_object_description));
+
+            box deserializer
+        };
 
         let view_model_deserializer =
             ViewModelDeserializerMock::new(data.clone(), view_model_delta.clone());
@@ -373,7 +339,7 @@ mod tests {
             box presenter,
             box view_model_deserializer,
             box additional_object_description_serializer,
-            box additional_object_description_deserializer,
+            additional_object_data_deserializer,
         );
 
         controller.on_message(&data).unwrap();

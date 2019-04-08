@@ -470,6 +470,8 @@ mod tests {
     use super::*;
     use mockiato::partial_eq;
     use myelin_neural_network::NeuralNetworkMock;
+    use myelin_object_data::AdditionalObjectDescriptionDeserializerMock;
+    use myelin_object_data::{AdditionalObjectDescription, Kind};
     use nearly_eq::assert_nearly_eq;
     use std::f64::consts::PI;
     use std::iter;
@@ -934,10 +936,15 @@ mod tests {
     fn no_objects_in_fov_are_mapped_to_no_neural_inputs() {
         let own_description = object_description().build().unwrap();
         let objects_in_fov: Vec<Vec<_>> = Vec::new();
-        let additional_object_data_serializer =
-            box AdditionalObjectDescriptionDeserializerMock::new_empty();
+
+        let additional_object_data_deserializer: Box<dyn AdditionalObjectDescriptionDeserializer> = {
+            let deserializer = AdditionalObjectDescriptionDeserializerMock::new();
+
+            box deserializer
+        };
+
         let inputs = objects_in_fov_to_neuron_inputs(
-            &additional_object_data_serializer,
+            &*additional_object_data_deserializer,
             &own_description,
             objects_in_fov,
         );
@@ -975,8 +982,30 @@ mod tests {
             Vec::new(),
         ];
         assert_eq!(RAYCAST_COUNT, objects_in_fov.len());
-        let inputs: Vec<_> =
-            objects_in_fov_to_neuron_inputs(&own_description, objects_in_fov).collect();
+
+        let additional_object_data_deserializer: Box<dyn AdditionalObjectDescriptionDeserializer> = {
+            let mut deserializer = AdditionalObjectDescriptionDeserializerMock::new();
+
+            let data: Vec<u8> = Vec::new();
+
+            deserializer
+                .expect_deserialize(partial_eq(data))
+                .returns(Ok(AdditionalObjectDescription {
+                    name: None,
+                    kind: Kind::Organism,
+                    height: 1.0,
+                }))
+                .times(..);
+
+            box deserializer
+        };
+
+        let inputs: Vec<_> = objects_in_fov_to_neuron_inputs(
+            &*additional_object_data_deserializer,
+            &own_description,
+            objects_in_fov,
+        )
+        .collect();
 
         let no_distances = vec![None; MAX_OBJECTS_PER_RAYCAST];
         let first_distances = no_distances.clone();

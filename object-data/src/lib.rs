@@ -18,7 +18,7 @@
 use myelin_clone_box::clone_box;
 use serde_derive::{Deserialize, Serialize};
 use std::error::Error;
-use std::fmt::Debug;
+use std::fmt::{self, Debug, Display};
 
 #[cfg(feature = "use-mocks")]
 use mockiato::mockable;
@@ -62,12 +62,15 @@ pub trait AdditionalObjectDescriptionSerializer: Debug {
 /// Handles deserialization for `AdditionalObjectDescription`
 ///
 /// [`AdditionalObjectDescription`]: ./struct.AdditionalObjectDescription.html
-#[cfg_attr(feature = "use-mocks", mockable)]
+#[cfg_attr(feature = "use-mocks", mockable(static_references))]
 pub trait AdditionalObjectDescriptionDeserializer:
     Debug + AdditionalObjectDescriptionDeserializerClone
 {
     /// Deserialize into associated object data
-    fn deserialize(&self, data: &[u8]) -> Result<AdditionalObjectDescription, Box<dyn Error>>;
+    fn deserialize(
+        &self,
+        data: &[u8],
+    ) -> Result<AdditionalObjectDescription, AdditionalObjectDescriptionDeserializerError>;
 }
 
 clone_box!(
@@ -95,10 +98,28 @@ impl AdditionalObjectDescriptionSerializer for AdditionalObjectDescriptionBincod
 pub struct AdditionalObjectDescriptionBincodeDeserializer {}
 
 impl AdditionalObjectDescriptionDeserializer for AdditionalObjectDescriptionBincodeDeserializer {
-    fn deserialize(&self, data: &[u8]) -> Result<AdditionalObjectDescription, Box<dyn Error>> {
-        bincode::deserialize(data).map_err(Into::into)
+    fn deserialize(
+        &self,
+        data: &[u8],
+    ) -> Result<AdditionalObjectDescription, AdditionalObjectDescriptionDeserializerError> {
+        bincode::deserialize(data).map_err(|err| AdditionalObjectDescriptionDeserializerError {
+            message: err.description().to_string(),
+        })
     }
 }
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AdditionalObjectDescriptionDeserializerError {
+    message: String,
+}
+
+impl Display for AdditionalObjectDescriptionDeserializerError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl Error for AdditionalObjectDescriptionDeserializerError {}
 
 #[cfg(test)]
 mod tests {
