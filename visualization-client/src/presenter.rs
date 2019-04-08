@@ -75,6 +75,9 @@ pub struct ObjectDescription {
     /// The object's kind
     pub kind: Kind,
 
+    /// The object's height in meters
+    pub height: f64,
+
     /// The vertices defining the shape of the object
     /// in relation to its [`position`]
     ///
@@ -279,6 +282,7 @@ mod tests {
         ObjectDescription {
             name: None,
             kind: Kind::Plant,
+            height: 1.6,
             shape: PolygonBuilder::default()
                 .vertex(-10.0, -10.0)
                 .vertex(10.0, -10.0)
@@ -297,6 +301,7 @@ mod tests {
         ObjectDescription {
             name: None,
             kind: Kind::Plant,
+            height: 2.0,
             shape: PolygonBuilder::default()
                 .vertex(-20.0, -20.0)
                 .vertex(20.0, -20.0)

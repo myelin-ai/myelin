@@ -93,7 +93,7 @@ fn translate_object_description(
         .deserialize(&object_description.associated_data)
         .expect("Unable to deserialize associated object data");
 
-    let AdditionalObjectDescription { name, kind } = additional_object_description;
+    let AdditionalObjectDescription { name, kind, height } = additional_object_description;
 
     let ObjectDescription {
         shape,
@@ -107,6 +107,7 @@ fn translate_object_description(
     presenter::ObjectDescription {
         name,
         kind,
+        height,
         shape,
         location,
         rotation,
@@ -252,6 +253,7 @@ mod tests {
             .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
                 name: Some(String::from("Cat")),
                 kind: Kind::Organism,
+                height: 0.5,
             }))
             .returns(String::from("A very pretty looking cat").into_bytes());
 
@@ -272,6 +274,7 @@ mod tests {
                 &AdditionalObjectDescription {
                     name: Some(String::from("Cat")),
                     kind: Kind::Organism,
+                    height: 0.5,
                 },
             )),
         }
@@ -352,6 +355,7 @@ mod tests {
         let additional_object_description = AdditionalObjectDescription {
             name: Some(String::from("Cat")),
             kind: Kind::Organism,
+            height: 0.4,
         };
 
         let additional_object_description_serializer =
