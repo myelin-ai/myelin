@@ -1,7 +1,5 @@
 use crate::genome::Genome;
-use crate::orchestrator_impl::{
-    NeuralNetworkConfigurator, NeuralNetworkDeveloper, NeuralNetworkFactory,
-};
+use crate::orchestrator_impl::{NeuralNetworkConfigurator, NeuralNetworkDeveloper};
 use crate::NeuralNetworkDevelopmentConfiguration;
 
 /// Bootstraps the neural network based on the genome
@@ -27,7 +25,7 @@ impl GeneticNeuralNetworkDeveloper {
 }
 
 impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
-    fn develop_neural_network(self: Box<Self>, configurator: &mut dyn NeuralNetworkConfigurator) {
+    fn develop_neural_network(self: Box<Self>, _configurator: &mut dyn NeuralNetworkConfigurator) {
         unimplemented!()
     }
 }
@@ -40,17 +38,15 @@ mod tests {
         Neuron, NeuronClusterLocalIndex,
     };
     use crate::orchestrator_impl::NeuralNetworkConfiguratorMock;
-    use crate::DevelopedNeuralNetwork;
-    use mockiato::partial_eq;
     use myelin_neural_network::Handle;
     use std::num::NonZeroUsize;
 
     #[test]
     fn creates_standalone_cluster_properly() {
         let genome = genome_stub();
-        let genome = add_cluster_zero_to_genome(genome);
+        let genome = add_first_cluster_to_genome(genome);
         let genome = add_initial_hox_gene_to_genome(genome);
-        let config = test_config();
+        let config = config_stub();
 
         let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
         let mut configurator = NeuralNetworkConfiguratorMock::new();
@@ -64,7 +60,7 @@ mod tests {
         developer.develop_neural_network(&mut configurator);
     }
 
-    fn test_config() -> NeuralNetworkDevelopmentConfiguration {
+    fn config_stub() -> NeuralNetworkDevelopmentConfiguration {
         NeuralNetworkDevelopmentConfiguration {
             parent_genomes: (Genome::default(), Genome::default()),
             input_neuron_count: NonZeroUsize::new(1).unwrap(),
@@ -76,16 +72,11 @@ mod tests {
         Genome::default()
     }
 
-    fn add_cluster_zero_to_genome(mut genome: Genome) -> Genome {
+    fn add_first_cluster_to_genome(mut genome: Genome) -> Genome {
         genome.cluster_genes.insert(
             0,
             ClusterGene {
-                neurons: vec![
-                    Neuron {},
-                    Neuron {},
-                    Neuron {},
-                    Neuron {},
-                ],
+                neurons: vec![Neuron {}, Neuron {}, Neuron {}, Neuron {}],
                 connections: vec![
                     ConnectionDefinition {
                         from: NeuronClusterLocalIndex(0),
@@ -115,15 +106,11 @@ mod tests {
         genome
     }
 
-    fn add_cluster_one_to_genome(mut genome: Genome) -> Genome {
+    fn _add_second_cluster_to_genome(mut genome: Genome) -> Genome {
         genome.cluster_genes.insert(
             1,
             ClusterGene {
-                neurons: vec![
-                    Neuron {},
-                    Neuron {},
-                    Neuron {},
-                ],
+                neurons: vec![Neuron {}, Neuron {}, Neuron {}],
                 connections: vec![
                     ConnectionDefinition {
                         from: NeuronClusterLocalIndex(0),
