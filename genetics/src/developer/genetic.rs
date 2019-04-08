@@ -51,13 +51,38 @@ mod tests {
         let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
         let mut configurator = NeuralNetworkConfiguratorMock::new();
 
-        configurator.expect_push_neuron().returns(Handle(1));
-        configurator.expect_push_neuron().returns(Handle(2));
-        configurator.expect_push_neuron().returns(Handle(3));
-        configurator.expect_push_neuron().returns(Handle(4));
-        configurator.expect_push_neuron_calls_in_order();
+        expect_push_amount_of_neurons(&mut configurator, 4);
 
         developer.develop_neural_network(&mut configurator);
+    }
+
+    #[test]
+    fn places_cluster() {
+        let genome = genome_stub();
+        let genome = add_first_cluster_to_genome(genome);
+        let genome = add_second_cluster_to_genome(genome);
+
+        let genome = add_initial_hox_gene_to_genome(genome);
+        let genome = add_hox_gene_placing_second_cluster_on_first_cluster(genome);
+
+        let config = config_stub();
+
+        let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
+        let mut configurator = NeuralNetworkConfiguratorMock::new();
+
+        expect_push_amount_of_neurons(&mut configurator, 7);
+
+        developer.develop_neural_network(&mut configurator);
+    }
+
+    fn expect_push_amount_of_neurons(
+        configurator: &mut NeuralNetworkConfiguratorMock<'_>,
+        neuron_count: usize,
+    ) {
+        for handle in 0..neuron_count {
+            configurator.expect_push_neuron().returns(Handle(handle));
+        }
+        configurator.expect_push_neuron_calls_in_order();
     }
 
     fn config_stub() -> NeuralNetworkDevelopmentConfiguration {
@@ -106,7 +131,7 @@ mod tests {
         genome
     }
 
-    fn _add_second_cluster_to_genome(mut genome: Genome) -> Genome {
+    fn add_second_cluster_to_genome(mut genome: Genome) -> Genome {
         genome.cluster_genes.insert(
             1,
             ClusterGene {
@@ -153,4 +178,18 @@ mod tests {
         genome
     }
 
+    fn add_hox_gene_placing_second_cluster_on_first_cluster(mut genome: Genome) -> Genome {
+        genome.hox_genes.insert(
+            1,
+            HoxGene {
+                placement: HoxPlacement::ClusterGene {
+                    cluster_gene: ClusterGeneIndex(0),
+                    target_neuron: NeuronClusterLocalIndex(2),
+                },
+                cluster_index: ClusterGeneIndex(1),
+                disabled_connections: Vec::new(),
+            },
+        );
+        genome
+    }
 }
