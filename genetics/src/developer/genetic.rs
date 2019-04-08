@@ -47,10 +47,10 @@ mod tests {
 
     #[test]
     fn creates_standalone_cluster_properly() {
-        let mut genome = test_genome_stub();
-        genome = add_cluster_zero_to_genome(genome);
+        let mut genome = genome_stub();
+        genome = add_first_cluster_to_genome(genome);
         genome = add_initial_hox_gene_to_genome(genome);
-        let config = test_config();
+        let config = config_stub();
 
         let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
         let mut configurator = NeuralNetworkConfiguratorMock::new();
@@ -64,7 +64,7 @@ mod tests {
         developer.develop_neural_network(&mut configurator);
     }
 
-    fn test_config() -> NeuralNetworkDevelopmentConfiguration {
+    fn config_stub() -> NeuralNetworkDevelopmentConfiguration {
         NeuralNetworkDevelopmentConfiguration {
             parent_genomes: (Genome::default(), Genome::default()),
             input_neuron_count: NonZeroUsize::new(1).unwrap(),
@@ -76,16 +76,11 @@ mod tests {
         Genome::default()
     }
 
-    fn add_cluster_zero_to_genome(mut genome: Genome) -> Genome {
+    fn add_first_cluster_to_genome(mut genome: Genome) -> Genome {
         genome.cluster_genes.insert(
             0,
             ClusterGene {
-                neurons: vec![
-                    Neuron {},
-                    Neuron {},
-                    Neuron {},
-                    Neuron {},
-                ],
+                neurons: vec![Neuron {}, Neuron {}, Neuron {}, Neuron {}],
                 connections: vec![
                     ConnectionDefinition {
                         from: NeuronClusterLocalIndex(0),
@@ -115,15 +110,11 @@ mod tests {
         genome
     }
 
-    fn add_cluster_one_to_genome(mut genome: Genome) -> Genome {
+    fn add_second_cluster_to_genome(mut genome: Genome) -> Genome {
         genome.cluster_genes.insert(
             1,
             ClusterGene {
-                neurons: vec![
-                    Neuron {},
-                    Neuron {},
-                    Neuron {},
-                ],
+                neurons: vec![Neuron {}, Neuron {}, Neuron {}],
                 connections: vec![
                     ConnectionDefinition {
                         from: NeuronClusterLocalIndex(0),
