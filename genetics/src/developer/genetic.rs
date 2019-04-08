@@ -45,7 +45,7 @@ mod tests {
     use std::num::NonZeroUsize;
 
     #[test]
-    fn creates_standalone_cluster_properly() {
+    fn creates_standalone_cluster() {
         let genome = genome_stub();
         let genome = add_first_cluster_to_genome(genome);
         let genome = add_initial_hox_gene_to_genome(genome);
