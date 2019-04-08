@@ -47,9 +47,9 @@ mod tests {
 
     #[test]
     fn creates_standalone_cluster_properly() {
-        let mut genome = test_genome_stub();
-        genome = add_cluster_zero_to_genome(genome);
-        genome = add_initial_hox_gene_to_genome(genome);
+        let genome = genome_stub();
+        let genome = add_cluster_zero_to_genome(genome);
+        let genome = add_initial_hox_gene_to_genome(genome);
         let config = test_config();
 
         let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
