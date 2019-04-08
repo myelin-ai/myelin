@@ -1,7 +1,5 @@
 use crate::genome::Genome;
-use crate::orchestrator_impl::{
-    NeuralNetworkConfigurator, NeuralNetworkDeveloper, NeuralNetworkFactory,
-};
+use crate::orchestrator_impl::{NeuralNetworkConfigurator, NeuralNetworkDeveloper};
 use crate::NeuralNetworkDevelopmentConfiguration;
 
 /// Bootstraps the neural network based on the genome
@@ -27,7 +25,7 @@ impl GeneticNeuralNetworkDeveloper {
 }
 
 impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
-    fn develop_neural_network(self: Box<Self>, configurator: &mut dyn NeuralNetworkConfigurator) {
+    fn develop_neural_network(self: Box<Self>, _configurator: &mut dyn NeuralNetworkConfigurator) {
         unimplemented!()
     }
 }
@@ -40,8 +38,6 @@ mod tests {
         Neuron, NeuronClusterLocalIndex,
     };
     use crate::orchestrator_impl::NeuralNetworkConfiguratorMock;
-    use crate::DevelopedNeuralNetwork;
-    use mockiato::partial_eq;
     use myelin_neural_network::Handle;
     use std::num::NonZeroUsize;
 
@@ -110,7 +106,7 @@ mod tests {
         genome
     }
 
-    fn add_second_cluster_to_genome(mut genome: Genome) -> Genome {
+    fn _add_second_cluster_to_genome(mut genome: Genome) -> Genome {
         genome.cluster_genes.insert(
             1,
             ClusterGene {
