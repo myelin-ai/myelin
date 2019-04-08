@@ -38,6 +38,8 @@ mod tests {
         Neuron, NeuronClusterLocalIndex,
     };
     use crate::orchestrator_impl::NeuralNetworkConfiguratorMock;
+    use mockiato::partial_eq;
+    use myelin_neural_network::Connection;
     use myelin_neural_network::Handle;
     use std::num::NonZeroUsize;
 
@@ -52,6 +54,7 @@ mod tests {
         let mut configurator = NeuralNetworkConfiguratorMock::new();
 
         expect_push_amount_of_neurons(&mut configurator, 4);
+        expect_first_cluster_connections(&mut configurator);
 
         developer.develop_neural_network(&mut configurator);
     }
@@ -71,8 +74,30 @@ mod tests {
         let mut configurator = NeuralNetworkConfiguratorMock::new();
 
         expect_push_amount_of_neurons(&mut configurator, 7);
+        expect_first_cluster_connections(&mut configurator);
 
         developer.develop_neural_network(&mut configurator);
+    }
+
+    fn expect_first_cluster_connections(configurator: &mut NeuralNetworkConfiguratorMock<'_>) {
+        first_cluster_connections()
+            .into_iter()
+            .map(connection_definition_to_connection)
+            .for_each(|connection| {
+                configurator
+                    .expect_add_connection(partial_eq(connection))
+                    .returns(Ok(()));
+            });
+    }
+
+    fn connection_definition_to_connection(
+        connection_definition: ConnectionDefinition,
+    ) -> Connection {
+        Connection {
+            from: Handle(connection_definition.from.0),
+            to: Handle(connection_definition.to.0),
+            weight: connection_definition.weight,
+        }
     }
 
     fn expect_push_amount_of_neurons(
@@ -102,33 +127,37 @@ mod tests {
             0,
             ClusterGene {
                 neurons: vec![Neuron {}, Neuron {}, Neuron {}, Neuron {}],
-                connections: vec![
-                    ConnectionDefinition {
-                        from: NeuronClusterLocalIndex(0),
-                        to: NeuronClusterLocalIndex(1),
-                        weight: 0.5,
-                    },
-                    ConnectionDefinition {
-                        from: NeuronClusterLocalIndex(0),
-                        to: NeuronClusterLocalIndex(2),
-                        weight: 0.7,
-                    },
-                    ConnectionDefinition {
-                        from: NeuronClusterLocalIndex(0),
-                        to: NeuronClusterLocalIndex(3),
-                        weight: 0.2,
-                    },
-                    ConnectionDefinition {
-                        from: NeuronClusterLocalIndex(3),
-                        to: NeuronClusterLocalIndex(1),
-                        weight: 0.3,
-                    },
-                ],
+                connections: first_cluster_connections(),
                 placement_neuron: NeuronClusterLocalIndex(1),
             },
         );
 
         genome
+    }
+
+    fn first_cluster_connections() -> Vec<ConnectionDefinition> {
+        vec![
+            ConnectionDefinition {
+                from: NeuronClusterLocalIndex(0),
+                to: NeuronClusterLocalIndex(1),
+                weight: 0.5,
+            },
+            ConnectionDefinition {
+                from: NeuronClusterLocalIndex(0),
+                to: NeuronClusterLocalIndex(2),
+                weight: 0.7,
+            },
+            ConnectionDefinition {
+                from: NeuronClusterLocalIndex(0),
+                to: NeuronClusterLocalIndex(3),
+                weight: 0.2,
+            },
+            ConnectionDefinition {
+                from: NeuronClusterLocalIndex(3),
+                to: NeuronClusterLocalIndex(1),
+                weight: 0.3,
+            },
+        ]
     }
 
     fn add_second_cluster_to_genome(mut genome: Genome) -> Genome {
