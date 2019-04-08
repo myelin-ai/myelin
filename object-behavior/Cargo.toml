@@ -18,9 +18,11 @@ myelin-engine = "0.11"
 myelin-neural-network = { path = "../neural-network" }
 myelin-genetics = { path = "../genetics" }
 myelin-random = { path = "../random" }
+myelin-object-data = { path = "../object-data" }
 rand = "0.6"
 log = "0.4"
 maplit = "1.0"
+itertools = "0.8"
 
 [dev-dependencies]
 mockiato = "0.4"

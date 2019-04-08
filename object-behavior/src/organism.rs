@@ -1,5 +1,6 @@
 //! Behavior of an organism that can interact with its surroundings
 
+use itertools::Itertools;
 use myelin_engine::prelude::*;
 use myelin_genetics::genome::Genome;
 use myelin_genetics::{
@@ -7,6 +8,7 @@ use myelin_genetics::{
     NeuralNetworkDevelopmentOrchestrator,
 };
 use myelin_neural_network::{Handle, Milliseconds, NeuralNetwork};
+use myelin_object_data::AdditionalObjectDescriptionDeserializer;
 use std::any::Any;
 use std::collections::HashMap;
 use std::num::NonZeroUsize;
@@ -37,6 +39,7 @@ pub struct OrganismBehavior {
     previous_velocity: Vector,
     developed_neural_network: DevelopedNeuralNetwork,
     neural_network_developer: Box<dyn NeuralNetworkDevelopmentOrchestrator>,
+    additional_object_data_deserializer: Box<dyn AdditionalObjectDescriptionDeserializer>,
 }
 
 /// Number of inputs reserved for visible objects
@@ -74,6 +77,7 @@ impl OrganismBehavior {
     pub fn new(
         parent_genomes: (Genome, Genome),
         neural_network_developer: Box<dyn NeuralNetworkDevelopmentOrchestrator>,
+        additional_object_data_deserializer: Box<dyn AdditionalObjectDescriptionDeserializer>,
     ) -> Self {
         let configuration = NeuralNetworkDevelopmentConfiguration {
             parent_genomes,
@@ -86,6 +90,7 @@ impl OrganismBehavior {
             developed_neural_network: neural_network_developer
                 .develop_neural_network(&configuration),
             neural_network_developer,
+            additional_object_data_deserializer,
         }
     }
 }
@@ -116,8 +121,11 @@ impl ObjectBehavior for OrganismBehavior {
         );
 
         let objects_in_fov = objects_in_fov(&own_object.description, world_interactor);
-        let vision_neuron_inputs =
-            objects_in_fov_to_neuron_inputs(&own_object.description, objects_in_fov);
+        let vision_neuron_inputs = objects_in_fov_to_neuron_inputs(
+            &*self.additional_object_data_deserializer,
+            &own_object.description,
+            objects_in_fov,
+        );
 
         add_vision_inputs(
             vision_neuron_inputs,
@@ -222,6 +230,7 @@ fn objects_in_fov<'a>(
 }
 
 fn objects_in_fov_to_neuron_inputs<'a, T, U>(
+    additional_object_data_deserializer: &'a dyn AdditionalObjectDescriptionDeserializer,
     own_description: &'a ObjectDescription,
     objects: T,
 ) -> impl Iterator<Item = Option<f64>> + 'a
@@ -232,23 +241,41 @@ where
     objects
         .into_iter()
         .map(move |objects_in_ray| {
-            let objects_in_ray: Vec<_> = objects_in_ray.into_iter().collect();
-            let distances_capacity = MAX_OBJECTS_PER_RAYCAST.max(objects_in_ray.len());
-            let mut distances = Vec::with_capacity(distances_capacity);
-            distances.extend(
-                objects_in_ray
-                    .iter()
-                    .map(|object| object.description.location - own_description.location)
-                    .map(Vector::from)
-                    .map(Vector::magnitude)
-                    .map(Some),
-            );
+            let mut distances: Vec<_> = objects_in_ray
+                .into_iter()
+                .map(|object| {
+                    (
+                        additional_object_data_deserializer
+                            .deserialize(&object.description.associated_data)
+                            .expect("Unable to deserialize data"),
+                        distance_between_objects(&object.description, &own_description),
+                    )
+                })
+                .sorted_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+                .scan(0.0, |running_max, (associated_data, distance)| {
+                    let item = if associated_data.height <= *running_max {
+                        None
+                    } else {
+                        *running_max = associated_data.height;
+                        Some(distance)
+                    };
 
-            distances.sort_by(|a, b| a.partial_cmp(b).unwrap());
+                    Some(item)
+                })
+                .take(MAX_OBJECTS_PER_RAYCAST)
+                .collect();
+
             distances.resize(MAX_OBJECTS_PER_RAYCAST, None);
             distances
         })
         .flatten()
+}
+
+fn distance_between_objects(
+    first_object: &ObjectDescription,
+    second_object: &ObjectDescription,
+) -> f64 {
+    Vector::magnitude(Vector::from(first_object.location - second_object.location))
 }
 
 fn velocity(object_description: &ObjectDescription) -> Vector {
@@ -907,7 +934,13 @@ mod tests {
     fn no_objects_in_fov_are_mapped_to_no_neural_inputs() {
         let own_description = object_description().build().unwrap();
         let objects_in_fov: Vec<Vec<_>> = Vec::new();
-        let inputs = objects_in_fov_to_neuron_inputs(&own_description, objects_in_fov);
+        let additional_object_data_serializer =
+            box AdditionalObjectDescriptionDeserializerMock::new_empty();
+        let inputs = objects_in_fov_to_neuron_inputs(
+            &additional_object_data_serializer,
+            &own_description,
+            objects_in_fov,
+        );
         assert_eq!(0, inputs.count());
     }
 
