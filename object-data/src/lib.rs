@@ -12,7 +12,10 @@
     clippy::large_digit_groups,
     clippy::explicit_into_iter_loop
 )]
+#![feature(box_syntax)]
+#![feature(specialization)]
 
+use myelin_clone_box::clone_box;
 use serde_derive::{Deserialize, Serialize};
 use std::error::Error;
 use std::fmt::Debug;
@@ -60,15 +63,22 @@ pub trait AdditionalObjectDescriptionSerializer: Debug {
 ///
 /// [`AdditionalObjectDescription`]: ./struct.AdditionalObjectDescription.html
 #[cfg_attr(feature = "use-mocks", mockable)]
-pub trait AdditionalObjectDescriptionDeserializer: Debug {
+pub trait AdditionalObjectDescriptionDeserializer:
+    Debug + AdditionalObjectDescriptionDeserializerClone
+{
     /// Deserialize into associated object data
     fn deserialize(&self, data: &[u8]) -> Result<AdditionalObjectDescription, Box<dyn Error>>;
 }
 
+clone_box!(
+    AdditionalObjectDescriptionDeserializer,
+    AdditionalObjectDescriptionDeserializerClone
+);
+
 /// Implements an `AdditionalObjectDescriptionSerializer` using bincode
 ///
 /// [`AdditionalObjectDescriptionSerializer`]: ./trait.AdditionalObjectDescriptionSerializer.html
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct AdditionalObjectDescriptionBincodeSerializer {}
 
 impl AdditionalObjectDescriptionSerializer for AdditionalObjectDescriptionBincodeSerializer {
@@ -81,7 +91,7 @@ impl AdditionalObjectDescriptionSerializer for AdditionalObjectDescriptionBincod
 /// Implements an `AdditionalObjectDescriptionDeserializer` using bincode
 ///
 /// [`AdditionalObjectDescriptionDeserializer`]: ./trait.AdditionalObjectDescriptionDeserializer.html
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct AdditionalObjectDescriptionBincodeDeserializer {}
 
 impl AdditionalObjectDescriptionDeserializer for AdditionalObjectDescriptionBincodeDeserializer {
