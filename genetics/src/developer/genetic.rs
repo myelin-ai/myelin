@@ -41,6 +41,7 @@ mod tests {
     use mockiato::partial_eq;
     use myelin_neural_network::Connection;
     use myelin_neural_network::Handle;
+    use std::cmp::Ordering;
     use std::num::NonZeroUsize;
 
     #[test]
@@ -75,6 +76,7 @@ mod tests {
 
         expect_push_amount_of_neurons(&mut configurator, 7);
         expect_first_cluster_connections(&mut configurator);
+        expect_second_cluster_placed_on_first_cluster_connections(&mut configurator);
 
         developer.develop_neural_network(&mut configurator);
     }
@@ -90,6 +92,25 @@ mod tests {
             });
     }
 
+    fn expect_second_cluster_placed_on_first_cluster_connections(
+        configurator: &mut NeuralNetworkConfiguratorMock<'_>,
+    ) {
+        second_cluster_connections()
+            .into_iter()
+            .map(|connection_definition| {
+                connection_definition_to_placed_connection(ConnectionTranslationParameters {
+                    connection: connection_definition,
+                    offset: 4,
+                    placement_neuron_index: 0,
+                })
+            })
+            .for_each(|connection| {
+                configurator
+                    .expect_add_connection(partial_eq(connection))
+                    .returns(Ok(()));
+            });
+    }
+
     fn connection_definition_to_connection(
         connection_definition: ConnectionDefinition,
     ) -> Connection {
@@ -98,6 +119,38 @@ mod tests {
             to: Handle(connection_definition.to.0),
             weight: connection_definition.weight,
         }
+    }
+
+    fn connection_definition_to_placed_connection(
+        connection_translation_parameters: ConnectionTranslationParameters,
+    ) -> Connection {
+        let ConnectionTranslationParameters {
+            connection,
+            offset,
+            placement_neuron_index,
+        } = connection_translation_parameters;
+
+        let translate_index_to_handle = move |index: NeuronClusterLocalIndex| {
+            let index = index.0;
+            let translated_index = match index.cmp(&placement_neuron_index) {
+                Ordering::Equal => index,
+                Ordering::Less => offset + index,
+                Ordering::Greater => offset + index - 1,
+            };
+            Handle(translated_index)
+        };
+
+        Connection {
+            from: translate_index_to_handle(connection.from),
+            to: translate_index_to_handle(connection.to),
+            weight: connection.weight,
+        }
+    }
+
+    struct ConnectionTranslationParameters {
+        connection: ConnectionDefinition,
+        offset: usize,
+        placement_neuron_index: usize,
     }
 
     fn expect_push_amount_of_neurons(
@@ -165,33 +218,37 @@ mod tests {
             1,
             ClusterGene {
                 neurons: vec![Neuron {}, Neuron {}, Neuron {}],
-                connections: vec![
-                    ConnectionDefinition {
-                        from: NeuronClusterLocalIndex(0),
-                        to: NeuronClusterLocalIndex(2),
-                        weight: 0.4,
-                    },
-                    ConnectionDefinition {
-                        from: NeuronClusterLocalIndex(1),
-                        to: NeuronClusterLocalIndex(2),
-                        weight: 0.6,
-                    },
-                    ConnectionDefinition {
-                        from: NeuronClusterLocalIndex(2),
-                        to: NeuronClusterLocalIndex(0),
-                        weight: 0.45,
-                    },
-                    ConnectionDefinition {
-                        from: NeuronClusterLocalIndex(2),
-                        to: NeuronClusterLocalIndex(1),
-                        weight: 0.82,
-                    },
-                ],
+                connections: second_cluster_connections(),
                 placement_neuron: NeuronClusterLocalIndex(0),
             },
         );
 
         genome
+    }
+
+    fn second_cluster_connections() -> Vec<ConnectionDefinition> {
+        vec![
+            ConnectionDefinition {
+                from: NeuronClusterLocalIndex(0),
+                to: NeuronClusterLocalIndex(2),
+                weight: 0.4,
+            },
+            ConnectionDefinition {
+                from: NeuronClusterLocalIndex(1),
+                to: NeuronClusterLocalIndex(2),
+                weight: 0.6,
+            },
+            ConnectionDefinition {
+                from: NeuronClusterLocalIndex(2),
+                to: NeuronClusterLocalIndex(0),
+                weight: 0.45,
+            },
+            ConnectionDefinition {
+                from: NeuronClusterLocalIndex(2),
+                to: NeuronClusterLocalIndex(1),
+                weight: 0.82,
+            },
+        ]
     }
 
     fn add_initial_hox_gene_to_genome(mut genome: Genome) -> Genome {
