@@ -91,7 +91,7 @@ fn compare_objects(
     }: &Object,
 ) -> Ordering {
     match height_one
-        .partial_cmp(&height_two)
+        .partial_cmp(height_two)
         .expect("Height values must not be NAN")
     {
         Ordering::Equal => kind_one.cmp(kind_two),
