@@ -72,7 +72,7 @@ mod tests {
         }
     }
 
-    fn test_genome_stub() -> Genome {
+    fn genome_stub() -> Genome {
         Genome::default()
     }
 
