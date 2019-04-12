@@ -21,13 +21,16 @@ use std::fmt::Debug;
 use mockiato::mockable;
 
 /// The data associated with an object
-#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AdditionalObjectDescription {
     /// The name of an object
     pub name: Option<String>,
 
     /// The kind of an object
     pub kind: Kind,
+
+    /// The object's height in meters
+    pub height: f64,
 }
 
 /// The part of an object that is responsible for custom
@@ -99,6 +102,7 @@ mod tests {
         let additional_object_description = AdditionalObjectDescription {
             name: Some(String::from("Foo")),
             kind: Kind::Plant,
+            height: 1.8,
         };
 
         let serialized_data = serializer.serialize(&additional_object_description);

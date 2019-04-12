@@ -102,6 +102,7 @@ mod tests {
         ObjectDescription {
             name: None,
             kind: Kind::Organism,
+            height: 1.2,
             location: Point { x: 10.0, y: 20.0 },
             shape: PolygonBuilder::default()
                 .vertex(-50.0, -50.0)
