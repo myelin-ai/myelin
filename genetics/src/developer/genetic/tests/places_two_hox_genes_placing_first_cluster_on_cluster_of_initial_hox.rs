@@ -1,7 +1,7 @@
 use super::*;
 
 #[test]
-fn places_two_hox_genes_placing_first_cluster_on_cluster_of_initial_hox() {
+fn places_two_hox_genes_placing_first_cluster_gene_on_cluster_of_initial_hox() {
     let genome = genome_stub();
     let genome = add_cluster_gene_to_genome(genome);
     let genome = add_initial_hox_gene_to_genome(genome);
