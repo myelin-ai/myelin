@@ -937,8 +937,11 @@ mod tests {
         let own_description = object_description().build().unwrap();
         let objects_in_fov: Vec<Vec<_>> = Vec::new();
 
-        let additional_object_data_deserializer =
-            box AdditionalObjectDescriptionDeserializerMock::new();
+        let additional_object_data_deserializer: Box<dyn AdditionalObjectDescriptionDeserializer> = {
+            let deserializer = AdditionalObjectDescriptionDeserializerMock::new();
+
+            box deserializer
+        };
 
         let inputs = objects_in_fov_to_neuron_inputs(
             &*additional_object_data_deserializer,
