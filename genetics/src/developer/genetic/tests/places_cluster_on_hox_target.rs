@@ -77,17 +77,17 @@ fn expect_first_cluster_connections(configurator: &mut NeuralNetworkConfigurator
 fn expect_first_cluster_placed_on_first_hox_by_second_hox(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
 ) {
-    expect_first_cluster_placed_on_hox(configurator, 4, 1, 3)
+    expect_first_cluster_placed_on_hox()(configurator, 4, 1, 3)
 }
 
 fn expect_first_cluster_placed_on_second_hox_by_third_hox(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
 ) {
-    expect_first_cluster_placed_on_hox(configurator, 7, 1, 6)
+    expect_first_cluster_placed_on_hox()(configurator, 7, 1, 6)
 }
 
 fn expect_first_cluster_placed_on_first_hox_by_third_hox(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
 ) {
-    expect_first_cluster_placed_on_hox(configurator, 7, 1, 3)
+    expect_first_cluster_placed_on_hox()(configurator, 7, 1, 3)
 }
