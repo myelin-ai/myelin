@@ -257,7 +257,7 @@ where
                 })
                 .sorted_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
                 .scan(0.0, |running_max, (associated_data, distance)| {
-                    let item = if associated_data.height <= *running_max {
+                    let item = if associated_data.height < *running_max {
                         None
                     } else {
                         *running_max = associated_data.height;
