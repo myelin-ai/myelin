@@ -1004,13 +1004,32 @@ mod tests {
             let data: Vec<u8> = Vec::new();
 
             deserializer
+                .expect_deserialize(partial_eq(data.clone()))
+                .returns(Ok(AdditionalObjectDescription {
+                    name: None,
+                    kind: Kind::Organism,
+                    height: 1.0,
+                }))
+                .times(5);
+
+            deserializer
+                .expect_deserialize(partial_eq(data.clone()))
+                .returns(Ok(AdditionalObjectDescription {
+                    name: None,
+                    kind: Kind::Organism,
+                    height: 2.0,
+                }));
+
+            deserializer
                 .expect_deserialize(partial_eq(data))
                 .returns(Ok(AdditionalObjectDescription {
                     name: None,
                     kind: Kind::Organism,
                     height: 1.0,
                 }))
-                .times(0..);
+                .times(8);
+
+            deserializer.expect_deserialize_calls_in_order();
 
             box deserializer
         };
@@ -1037,7 +1056,7 @@ mod tests {
                 .take(MAX_OBJECTS_PER_RAYCAST)
                 .collect()
         };
-        let third_distances = points_to_distances(&[1.0, 2.0, 3.0]);
+        let third_distances = points_to_distances(&[1.0]);
         let fourth_distances = no_distances.clone();
         let fifth_distances = points_to_distances(&[7.0, 8.0]);
         let sixth_distances = no_distances.clone();
