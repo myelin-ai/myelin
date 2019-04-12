@@ -91,26 +91,3 @@ fn expect_first_cluster_placed_on_first_hox_by_third_hox(
 ) {
     expect_first_cluster_placed_on_hox(configurator, 7, 1, 3)
 }
-
-fn expect_first_cluster_placed_on_hox(
-    configurator: &mut NeuralNetworkConfiguratorMock<'_>,
-    cluster_offset: usize,
-    placement_neuron_index: usize,
-    placement_neuron_handle: usize,
-) {
-    first_cluster_connections()
-        .into_iter()
-        .map(|connection_definition| {
-            connection_definition_to_placed_connection(ConnectionTranslationParameters {
-                connection: connection_definition,
-                cluster_offset,
-                placement_neuron_index,
-                placement_neuron_handle,
-            })
-        })
-        .for_each(|connection| {
-            configurator
-                .expect_add_connection(partial_eq(connection))
-                .returns(Ok(()));
-        });
-}
