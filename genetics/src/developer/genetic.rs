@@ -101,6 +101,41 @@ mod tests {
         developer.develop_neural_network(&mut configurator);
     }
 
+    #[test]
+    fn places_nothing_when_hox_gene_points_to_non_existent_cluster_gene() {
+        let genome = genome_stub();
+        let genome = add_initial_hox_gene_to_genome(genome);
+        let config = config_stub();
+
+        let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
+        let mut configurator = NeuralNetworkConfiguratorMock::new();
+
+        developer.develop_neural_network(&mut configurator);
+    }
+
+    #[test]
+    fn places_nothing_when_genome_is_empty() {
+        let genome = genome_stub();
+        let config = config_stub();
+
+        let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
+        let mut configurator = NeuralNetworkConfiguratorMock::new();
+
+        developer.develop_neural_network(&mut configurator);
+    }
+
+    #[test]
+    fn places_nothing_when_genome_only_contains_clusters_genes() {
+        let genome = genome_stub();
+        let genome = add_first_cluster_to_genome(genome);
+        let config = config_stub();
+
+        let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
+        let mut configurator = NeuralNetworkConfiguratorMock::new();
+
+        developer.develop_neural_network(&mut configurator);
+    }
+
     fn expect_first_cluster_connections(configurator: &mut NeuralNetworkConfiguratorMock<'_>) {
         first_cluster_connections()
             .into_iter()
