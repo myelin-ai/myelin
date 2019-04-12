@@ -153,7 +153,7 @@ mod tests {
     use std::cmp::Ordering;
 
     #[test]
-    fn taller_object_is_ordered_greater() {
+    fn objects_are_ordered_by_height() {
         let object_one = Object {
             shape: Polygon { vertices: vec![] },
             kind: Kind::Organism,
