@@ -16,6 +16,7 @@ mod places_hox_placing_first_cluster_on_cluster_of_initial_hox;
 mod places_nothing_when_genome_is_empty;
 mod places_nothing_when_genome_only_contains_clusters_genes;
 mod places_nothing_when_hox_gene_points_to_non_existent_cluster_gene;
+mod places_two_hox_genes_placing_first_cluster_on_cluster_of_initial_hox;
 
 fn connection_definition_to_connection(connection_definition: ConnectionDefinition) -> Connection {
     Connection {
