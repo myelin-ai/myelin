@@ -21,19 +21,6 @@ fn places_cluster() {
     developer.develop_neural_network(&mut configurator);
 }
 
-fn add_second_cluster_to_genome(mut genome: Genome) -> Genome {
-    genome.cluster_genes.insert(
-        1,
-        ClusterGene {
-            neurons: vec![Neuron {}, Neuron {}, Neuron {}],
-            connections: second_cluster_connections(),
-            placement_neuron: NeuronClusterLocalIndex(0),
-        },
-    );
-
-    genome
-}
-
 fn add_hox_gene_placing_second_cluster_on_first_cluster(mut genome: Genome) -> Genome {
     genome.hox_genes.insert(
         1,
@@ -58,49 +45,4 @@ fn expect_first_cluster_connections(configurator: &mut NeuralNetworkConfigurator
                 .expect_add_connection(partial_eq(connection))
                 .returns(Ok(()));
         });
-}
-
-fn expect_second_cluster_placed_on_first_cluster_connections(
-    configurator: &mut NeuralNetworkConfiguratorMock<'_>,
-) {
-    second_cluster_connections()
-        .into_iter()
-        .map(|connection_definition| {
-            connection_definition_to_placed_connection(ConnectionTranslationParameters {
-                connection: connection_definition,
-                cluster_offset: 4,
-                placement_neuron_index: 0,
-                placement_neuron_handle: 2,
-            })
-        })
-        .for_each(|connection| {
-            configurator
-                .expect_add_connection(partial_eq(connection))
-                .returns(Ok(()));
-        });
-}
-
-fn second_cluster_connections() -> Vec<ConnectionDefinition> {
-    vec![
-        ConnectionDefinition {
-            from: NeuronClusterLocalIndex(0),
-            to: NeuronClusterLocalIndex(2),
-            weight: 0.4,
-        },
-        ConnectionDefinition {
-            from: NeuronClusterLocalIndex(1),
-            to: NeuronClusterLocalIndex(2),
-            weight: 0.6,
-        },
-        ConnectionDefinition {
-            from: NeuronClusterLocalIndex(2),
-            to: NeuronClusterLocalIndex(0),
-            weight: 0.45,
-        },
-        ConnectionDefinition {
-            from: NeuronClusterLocalIndex(2),
-            to: NeuronClusterLocalIndex(1),
-            weight: 0.82,
-        },
-    ]
 }

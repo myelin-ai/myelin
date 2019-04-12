@@ -156,3 +156,61 @@ fn expect_first_cluster_placed_on_hox(
                 .returns(Ok(()));
         });
 }
+
+fn add_second_cluster_to_genome(mut genome: Genome) -> Genome {
+    genome.cluster_genes.insert(
+        1,
+        ClusterGene {
+            neurons: vec![Neuron {}, Neuron {}, Neuron {}],
+            connections: second_cluster_connections(),
+            placement_neuron: NeuronClusterLocalIndex(0),
+        },
+    );
+
+    genome
+}
+
+fn second_cluster_connections() -> Vec<ConnectionDefinition> {
+    vec![
+        ConnectionDefinition {
+            from: NeuronClusterLocalIndex(0),
+            to: NeuronClusterLocalIndex(2),
+            weight: 0.4,
+        },
+        ConnectionDefinition {
+            from: NeuronClusterLocalIndex(1),
+            to: NeuronClusterLocalIndex(2),
+            weight: 0.6,
+        },
+        ConnectionDefinition {
+            from: NeuronClusterLocalIndex(2),
+            to: NeuronClusterLocalIndex(0),
+            weight: 0.45,
+        },
+        ConnectionDefinition {
+            from: NeuronClusterLocalIndex(2),
+            to: NeuronClusterLocalIndex(1),
+            weight: 0.82,
+        },
+    ]
+}
+
+fn expect_second_cluster_placed_on_first_cluster_connections(
+    configurator: &mut NeuralNetworkConfiguratorMock<'_>,
+) {
+    second_cluster_connections()
+        .into_iter()
+        .map(|connection_definition| {
+            connection_definition_to_placed_connection(ConnectionTranslationParameters {
+                connection: connection_definition,
+                cluster_offset: 4,
+                placement_neuron_index: 0,
+                placement_neuron_handle: 2,
+            })
+        })
+        .for_each(|connection| {
+            configurator
+                .expect_add_connection(partial_eq(connection))
+                .returns(Ok(()));
+        });
+}
