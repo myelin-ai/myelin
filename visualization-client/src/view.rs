@@ -82,7 +82,7 @@ fn compare_objects(object_one: &Object, object_two: &Object) -> Ordering {
     object_one
         .height
         .partial_cmp(&object_two.height)
-        .expect("Height values must not be NAN")
+        .expect("Tried to compare heights with non-comparable values")
 }
 
 fn get_2d_context(canvas: &HtmlCanvasElement) -> CanvasRenderingContext2d {
