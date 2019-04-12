@@ -992,7 +992,7 @@ mod tests {
                     kind: Kind::Organism,
                     height: 1.0,
                 }))
-                .times(..);
+                .times(0..);
 
             box deserializer
         };
