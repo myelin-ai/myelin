@@ -78,25 +78,11 @@ impl CanvasView {
     }
 }
 
-fn compare_objects(
-    Object {
-        kind: kind_one,
-        height: height_one,
-        ..
-    }: &Object,
-    Object {
-        kind: kind_two,
-        height: height_two,
-        ..
-    }: &Object,
-) -> Ordering {
-    match height_one
-        .partial_cmp(height_two)
+fn compare_objects(object_one: &Object, object_two: &Object) -> Ordering {
+    object_one
+        .height
+        .partial_cmp(&object_two.height)
         .expect("Height values must not be NAN")
-    {
-        Ordering::Equal => kind_one.cmp(kind_two),
-        ordering => ordering,
-    }
 }
 
 fn get_2d_context(canvas: &HtmlCanvasElement) -> CanvasRenderingContext2d {
