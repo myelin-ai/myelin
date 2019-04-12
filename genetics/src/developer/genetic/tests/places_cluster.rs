@@ -50,19 +50,5 @@ fn expect_first_cluster_connections(configurator: &mut NeuralNetworkConfigurator
 fn expect_second_cluster_placed_on_first_cluster_connections(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
 ) {
-    second_cluster_connections()
-        .into_iter()
-        .map(|connection_definition| {
-            connection_definition_to_placed_connection(ConnectionTranslationParameters {
-                connection: connection_definition,
-                cluster_offset: 4,
-                placement_neuron_index: 0,
-                placement_neuron_handle: 2,
-            })
-        })
-        .for_each(|connection| {
-            configurator
-                .expect_add_connection(partial_eq(connection))
-                .returns(Ok(()));
-        });
+    expect_second_cluster_placed_on_hox()(configurator, 4, 0, 2);
 }
