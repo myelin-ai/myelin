@@ -171,30 +171,4 @@ mod tests {
         assert_eq!(Ordering::Greater, compare_objects(&object_one, &object_two));
         assert_eq!(Ordering::Less, compare_objects(&object_two, &object_one));
     }
-
-    #[test]
-    fn kind_is_respected_in_ordering() {
-        let object_one = Object {
-            shape: Polygon { vertices: vec![] },
-            kind: Kind::Organism,
-            height: 10.0,
-            name_label: None,
-        };
-
-        let object_two = Object {
-            shape: Polygon { vertices: vec![] },
-            kind: Kind::Plant,
-            height: 10.0,
-            name_label: None,
-        };
-
-        assert_eq!(
-            Kind::Organism.cmp(&Kind::Plant),
-            compare_objects(&object_one, &object_two)
-        );
-        assert_eq!(
-            Kind::Plant.cmp(&Kind::Organism),
-            compare_objects(&object_two, &object_one)
-        );
-    }
 }
