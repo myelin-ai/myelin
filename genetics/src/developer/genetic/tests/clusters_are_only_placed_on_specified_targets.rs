@@ -1,0 +1,89 @@
+use super::*;
+
+#[test]
+fn clusters_are_only_placed_on_specified_targets() {
+    let genome = genome_stub();
+    let genome = add_first_cluster_to_genome(genome);
+    let genome = add_second_cluster_to_genome(genome);
+
+    let genome = add_initial_hox_gene_to_genome(genome);
+    let genome = add_hox_gene_placing_first_cluster_on_first_hox(genome);
+    let genome = add_hox_gene_placing_second_cluster_on_first_hox(genome);
+    let genome = add_hox_gene_placing_second_cluster_on_first_cluster(genome);
+
+    let config = config_stub();
+
+    let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
+    let mut configurator = NeuralNetworkConfiguratorMock::new();
+
+    expect_push_amount_of_neurons(&mut configurator, 10);
+    expect_first_cluster_connections(&mut configurator);
+    expect_first_cluster_placed_on_first_hox_by_second_hox(&mut configurator);
+    expect_second_cluster_placed_on_first_hox_by_third_hox(&mut configurator);
+    expect_second_cluster_placed_on_first_placed_cluster_by_fourth_hox(&mut configurator);
+    expect_second_cluster_placed_on_second_placed_cluster_by_fourth_hox(&mut configurator);
+
+    developer.develop_neural_network(&mut configurator);
+}
+
+fn add_hox_gene_placing_first_cluster_on_first_hox(mut genome: Genome) -> Genome {
+    genome.hox_genes.push(HoxGene {
+        placement: HoxPlacement::HoxGene {
+            hox_gene: HoxGeneIndex(0),
+            target_neuron: NeuronClusterLocalIndex(3),
+        },
+        cluster_index: ClusterGeneIndex(0),
+        disabled_connections: Vec::new(),
+    });
+    genome
+}
+
+fn expect_first_cluster_connections(configurator: &mut NeuralNetworkConfiguratorMock<'_>) {
+    first_cluster_connections()
+        .into_iter()
+        .map(connection_definition_to_connection)
+        .for_each(|connection| {
+            configurator
+                .expect_add_connection(partial_eq(connection))
+                .returns(Ok(()));
+        });
+}
+
+fn add_hox_gene_placing_second_cluster_on_first_hox(mut genome: Genome) -> Genome {
+    genome.hox_genes.insert(
+        1,
+        HoxGene {
+            placement: HoxPlacement::HoxGene {
+                hox_gene: HoxGeneIndex(0),
+                target_neuron: NeuronClusterLocalIndex(2),
+            },
+            cluster_index: ClusterGeneIndex(1),
+            disabled_connections: Vec::new(),
+        },
+    );
+    genome
+}
+
+fn expect_first_cluster_placed_on_first_hox_by_second_hox(
+    configurator: &mut NeuralNetworkConfiguratorMock<'_>,
+) {
+    expect_first_cluster_placed_on_hox()(configurator, 4, 1, 3)
+}
+
+fn expect_second_cluster_placed_on_first_hox_by_third_hox(
+    configurator: &mut NeuralNetworkConfiguratorMock<'_>,
+) {
+    expect_first_cluster_placed_on_hox()(configurator, 7, 0, 2)
+}
+
+fn expect_second_cluster_placed_on_first_placed_cluster_by_fourth_hox(
+    configurator: &mut NeuralNetworkConfiguratorMock<'_>,
+) {
+    expect_first_cluster_placed_on_hox()(configurator, 9, 0, 2)
+}
+
+fn expect_second_cluster_placed_on_second_placed_cluster_by_fourth_hox(
+    configurator: &mut NeuralNetworkConfiguratorMock<'_>,
+) {
+    expect_first_cluster_placed_on_hox()(configurator, 11, 0, 5)
+}
