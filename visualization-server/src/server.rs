@@ -101,7 +101,7 @@ where
 
     let conection_acceptor_factory_fn = Arc::new(move |current_snapshot_fn| {
         let client_factory_fn = Arc::new(|websocket_client, current_snapshot_fn| {
-            let interval = Duration::from_float_secs(SIMULATED_TIMESTEP_IN_SI_UNITS);
+            let interval = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
             let fixed_interval_sleeper = FixedIntervalSleeperImpl::default();
             let presenter = DeltaPresenter::default();
             let view_model_serializer = BincodeSerializer::default();
@@ -132,7 +132,7 @@ where
             as Box<dyn ConnectionAcceptor>
     });
 
-    let expected_delta = Duration::from_float_secs(SIMULATED_TIMESTEP_IN_SI_UNITS);
+    let expected_delta = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
 
     let mut controller = ControllerImpl::new(
         worldgen.generate(),

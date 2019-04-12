@@ -78,25 +78,11 @@ impl CanvasView {
     }
 }
 
-fn compare_objects(
-    Object {
-        kind: kind_one,
-        height: height_one,
-        ..
-    }: &Object,
-    Object {
-        kind: kind_two,
-        height: height_two,
-        ..
-    }: &Object,
-) -> Ordering {
-    match height_one
-        .partial_cmp(height_two)
-        .expect("Height values must not be NAN")
-    {
-        Ordering::Equal => kind_one.cmp(kind_two),
-        ordering => ordering,
-    }
+fn compare_objects(object_one: &Object, object_two: &Object) -> Ordering {
+    object_one
+        .height
+        .partial_cmp(&object_two.height)
+        .expect("Tried to compare heights with non-comparable values")
 }
 
 fn get_2d_context(canvas: &HtmlCanvasElement) -> CanvasRenderingContext2d {
@@ -167,7 +153,7 @@ mod tests {
     use std::cmp::Ordering;
 
     #[test]
-    fn higher_object_is_ordered_greater() {
+    fn objects_are_ordered_by_height() {
         let object_one = Object {
             shape: Polygon { vertices: vec![] },
             kind: Kind::Organism,
@@ -184,31 +170,5 @@ mod tests {
 
         assert_eq!(Ordering::Greater, compare_objects(&object_one, &object_two));
         assert_eq!(Ordering::Less, compare_objects(&object_two, &object_one));
-    }
-
-    #[test]
-    fn kind_is_respected_in_ordering() {
-        let object_one = Object {
-            shape: Polygon { vertices: vec![] },
-            kind: Kind::Organism,
-            height: 10.0,
-            name_label: None,
-        };
-
-        let object_two = Object {
-            shape: Polygon { vertices: vec![] },
-            kind: Kind::Plant,
-            height: 10.0,
-            name_label: None,
-        };
-
-        assert_eq!(
-            Kind::Organism.cmp(&Kind::Plant),
-            compare_objects(&object_one, &object_two)
-        );
-        assert_eq!(
-            Kind::Plant.cmp(&Kind::Organism),
-            compare_objects(&object_two, &object_one)
-        );
     }
 }
