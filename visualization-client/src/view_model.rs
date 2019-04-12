@@ -1,5 +1,3 @@
-use std::cmp::{Ordering, PartialOrd};
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Object {
     pub shape: Polygon,
