@@ -238,6 +238,10 @@ where
     T: IntoIterator<Item = U> + 'a,
     U: IntoIterator<Item = Object<'a>> + 'a,
 {
+    let own_associated_data = additional_object_data_deserializer
+        .deserialize(&own_description.associated_data)
+        .expect("Unable to deserialize data");
+
     objects
         .into_iter()
         .map(move |objects_in_ray| {
@@ -259,6 +263,10 @@ where
                         *running_max = associated_data.height;
                         Some(distance)
                     };
+
+                    if associated_data.height > own_associated_data.height {
+                        *running_max = std::f64::MAX;
+                    }
 
                     Some(item)
                 })
@@ -938,7 +946,14 @@ mod tests {
         let objects_in_fov: Vec<Vec<_>> = Vec::new();
 
         let additional_object_data_deserializer: Box<dyn AdditionalObjectDescriptionDeserializer> = {
-            let deserializer = AdditionalObjectDescriptionDeserializerMock::new();
+            let mut deserializer = AdditionalObjectDescriptionDeserializerMock::new();
+            deserializer
+                .expect_deserialize(partial_eq(own_description.associated_data.clone()))
+                .returns(Ok(AdditionalObjectDescription {
+                    name: None,
+                    kind: Kind::Organism,
+                    height: 1.0,
+                }));
 
             box deserializer
         };
