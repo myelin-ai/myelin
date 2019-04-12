@@ -16,19 +16,6 @@ fn creates_standalone_cluster() {
     developer.develop_neural_network(&mut configurator);
 }
 
-fn add_first_cluster_to_genome(mut genome: Genome) -> Genome {
-    genome.cluster_genes.insert(
-        0,
-        ClusterGene {
-            neurons: vec![Neuron {}, Neuron {}, Neuron {}, Neuron {}],
-            connections: first_cluster_connections(),
-            placement_neuron: NeuronClusterLocalIndex(1),
-        },
-    );
-
-    genome
-}
-
 fn expect_first_cluster_connections(configurator: &mut NeuralNetworkConfiguratorMock<'_>) {
     first_cluster_connections()
         .into_iter()
@@ -38,29 +25,4 @@ fn expect_first_cluster_connections(configurator: &mut NeuralNetworkConfigurator
                 .expect_add_connection(partial_eq(connection))
                 .returns(Ok(()));
         });
-}
-
-fn first_cluster_connections() -> Vec<ConnectionDefinition> {
-    vec![
-        ConnectionDefinition {
-            from: NeuronClusterLocalIndex(0),
-            to: NeuronClusterLocalIndex(1),
-            weight: 0.5,
-        },
-        ConnectionDefinition {
-            from: NeuronClusterLocalIndex(0),
-            to: NeuronClusterLocalIndex(2),
-            weight: 0.7,
-        },
-        ConnectionDefinition {
-            from: NeuronClusterLocalIndex(0),
-            to: NeuronClusterLocalIndex(3),
-            weight: 0.2,
-        },
-        ConnectionDefinition {
-            from: NeuronClusterLocalIndex(3),
-            to: NeuronClusterLocalIndex(1),
-            weight: 0.3,
-        },
-    ]
 }

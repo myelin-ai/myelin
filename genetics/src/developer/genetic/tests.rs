@@ -12,6 +12,7 @@ use std::num::NonZeroUsize;
 
 mod creates_standalone_cluster;
 mod places_cluster;
+mod places_cluster_on_hox_target;
 mod places_hox_placing_first_cluster_on_cluster_of_initial_hox;
 mod places_nothing_when_genome_is_empty;
 mod places_nothing_when_genome_only_contains_clusters_genes;
@@ -31,16 +32,17 @@ fn connection_definition_to_placed_connection(
 ) -> Connection {
     let ConnectionTranslationParameters {
         connection,
-        offset,
+        cluster_offset,
         placement_neuron_index,
+        placement_neuron_handle,
     } = connection_translation_parameters;
 
     let translate_index_to_handle = move |index: NeuronClusterLocalIndex| {
         let index = index.0;
         let translated_index = match index.cmp(&placement_neuron_index) {
-            Ordering::Equal => index,
-            Ordering::Less => offset + index,
-            Ordering::Greater => offset + index - 1,
+            Ordering::Equal => placement_neuron_handle,
+            Ordering::Less => cluster_offset + index,
+            Ordering::Greater => cluster_offset + index - 1,
         };
         Handle(translated_index)
     };
@@ -54,8 +56,9 @@ fn connection_definition_to_placed_connection(
 
 struct ConnectionTranslationParameters {
     connection: ConnectionDefinition,
-    offset: usize,
+    cluster_offset: usize,
     placement_neuron_index: usize,
+    placement_neuron_handle: usize,
 }
 
 fn expect_push_amount_of_neurons(
@@ -91,4 +94,42 @@ fn add_initial_hox_gene_to_genome(mut genome: Genome) -> Genome {
     );
 
     genome
+}
+
+fn add_first_cluster_to_genome(mut genome: Genome) -> Genome {
+    genome.cluster_genes.insert(
+        0,
+        ClusterGene {
+            neurons: vec![Neuron {}, Neuron {}, Neuron {}, Neuron {}],
+            connections: first_cluster_connections(),
+            placement_neuron: NeuronClusterLocalIndex(1),
+        },
+    );
+
+    genome
+}
+
+fn first_cluster_connections() -> Vec<ConnectionDefinition> {
+    vec![
+        ConnectionDefinition {
+            from: NeuronClusterLocalIndex(0),
+            to: NeuronClusterLocalIndex(1),
+            weight: 0.5,
+        },
+        ConnectionDefinition {
+            from: NeuronClusterLocalIndex(0),
+            to: NeuronClusterLocalIndex(2),
+            weight: 0.7,
+        },
+        ConnectionDefinition {
+            from: NeuronClusterLocalIndex(0),
+            to: NeuronClusterLocalIndex(3),
+            weight: 0.2,
+        },
+        ConnectionDefinition {
+            from: NeuronClusterLocalIndex(3),
+            to: NeuronClusterLocalIndex(1),
+            weight: 0.3,
+        },
+    ]
 }

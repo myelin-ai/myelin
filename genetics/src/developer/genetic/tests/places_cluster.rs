@@ -21,19 +21,6 @@ fn places_cluster() {
     developer.develop_neural_network(&mut configurator);
 }
 
-fn add_first_cluster_to_genome(mut genome: Genome) -> Genome {
-    genome.cluster_genes.insert(
-        0,
-        ClusterGene {
-            neurons: vec![Neuron {}, Neuron {}, Neuron {}, Neuron {}],
-            connections: first_cluster_connections(),
-            placement_neuron: NeuronClusterLocalIndex(1),
-        },
-    );
-
-    genome
-}
-
 fn add_second_cluster_to_genome(mut genome: Genome) -> Genome {
     genome.cluster_genes.insert(
         1,
@@ -81,8 +68,9 @@ fn expect_second_cluster_placed_on_first_cluster_connections(
         .map(|connection_definition| {
             connection_definition_to_placed_connection(ConnectionTranslationParameters {
                 connection: connection_definition,
-                offset: 4,
-                placement_neuron_index: 1,
+                cluster_offset: 4,
+                placement_neuron_index: 0,
+                placement_neuron_handle: 2,
             })
         })
         .for_each(|connection| {
@@ -90,31 +78,6 @@ fn expect_second_cluster_placed_on_first_cluster_connections(
                 .expect_add_connection(partial_eq(connection))
                 .returns(Ok(()));
         });
-}
-
-fn first_cluster_connections() -> Vec<ConnectionDefinition> {
-    vec![
-        ConnectionDefinition {
-            from: NeuronClusterLocalIndex(0),
-            to: NeuronClusterLocalIndex(1),
-            weight: 0.5,
-        },
-        ConnectionDefinition {
-            from: NeuronClusterLocalIndex(0),
-            to: NeuronClusterLocalIndex(2),
-            weight: 0.7,
-        },
-        ConnectionDefinition {
-            from: NeuronClusterLocalIndex(0),
-            to: NeuronClusterLocalIndex(3),
-            weight: 0.2,
-        },
-        ConnectionDefinition {
-            from: NeuronClusterLocalIndex(3),
-            to: NeuronClusterLocalIndex(1),
-            weight: 0.3,
-        },
-    ]
 }
 
 fn second_cluster_connections() -> Vec<ConnectionDefinition> {

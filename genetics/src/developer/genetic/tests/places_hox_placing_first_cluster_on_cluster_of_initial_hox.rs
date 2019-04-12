@@ -35,19 +35,6 @@ fn add_hox_gene_placing_first_cluster_on_first_hox_clusters(mut genome: Genome) 
     genome
 }
 
-fn add_first_cluster_to_genome(mut genome: Genome) -> Genome {
-    genome.cluster_genes.insert(
-        0,
-        ClusterGene {
-            neurons: vec![Neuron {}, Neuron {}, Neuron {}, Neuron {}],
-            connections: first_cluster_connections(),
-            placement_neuron: NeuronClusterLocalIndex(1),
-        },
-    );
-
-    genome
-}
-
 fn expect_first_cluster_connections(configurator: &mut NeuralNetworkConfiguratorMock<'_>) {
     first_cluster_connections()
         .into_iter()
@@ -67,8 +54,9 @@ fn expect_first_cluster_placed_on_first_cluster_connections(
         .map(|connection_definition| {
             connection_definition_to_placed_connection(ConnectionTranslationParameters {
                 connection: connection_definition,
-                offset: 4,
+                cluster_offset: 4,
                 placement_neuron_index: 1,
+                placement_neuron_handle: 3,
             })
         })
         .for_each(|connection| {
@@ -76,29 +64,4 @@ fn expect_first_cluster_placed_on_first_cluster_connections(
                 .expect_add_connection(partial_eq(connection))
                 .returns(Ok(()));
         });
-}
-
-fn first_cluster_connections() -> Vec<ConnectionDefinition> {
-    vec![
-        ConnectionDefinition {
-            from: NeuronClusterLocalIndex(0),
-            to: NeuronClusterLocalIndex(1),
-            weight: 0.5,
-        },
-        ConnectionDefinition {
-            from: NeuronClusterLocalIndex(0),
-            to: NeuronClusterLocalIndex(2),
-            weight: 0.7,
-        },
-        ConnectionDefinition {
-            from: NeuronClusterLocalIndex(0),
-            to: NeuronClusterLocalIndex(3),
-            weight: 0.2,
-        },
-        ConnectionDefinition {
-            from: NeuronClusterLocalIndex(3),
-            to: NeuronClusterLocalIndex(1),
-            weight: 0.3,
-        },
-    ]
 }
