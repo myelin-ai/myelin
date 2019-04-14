@@ -123,6 +123,7 @@ impl HardcodedGenerator {
         let object_data = AdditionalObjectDescription {
             name: None,
             kind: Kind::Water,
+            height: 0.1,
         };
 
         let object_description = ObjectBuilder::default()
@@ -200,6 +201,7 @@ impl HardcodedGenerator {
         let object_data = AdditionalObjectDescription {
             name: None,
             kind: Kind::Terrain,
+            height: 10.0,
         };
 
         let x_offset = width / 2.0;
@@ -228,6 +230,7 @@ impl HardcodedGenerator {
         let object_data = AdditionalObjectDescription {
             name: None,
             kind: Kind::Plant,
+            height: 0.5,
         };
 
         ObjectBuilder::default()
@@ -255,6 +258,7 @@ impl HardcodedGenerator {
         let object_data = AdditionalObjectDescription {
             name,
             kind: Kind::Organism,
+            height: 1.0,
         };
 
         ObjectBuilder::default()
@@ -345,6 +349,7 @@ mod tests {
             .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
                 name: None,
                 kind: Kind::Terrain,
+                height: 10.0,
             }))
             .returns(Vec::new())
             .times(4);
@@ -353,6 +358,7 @@ mod tests {
             .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
                 name: None,
                 kind: Kind::Water,
+                height: 0.1,
             }))
             .returns(Vec::new())
             .times(1);
@@ -361,6 +367,7 @@ mod tests {
             .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
                 name: None,
                 kind: Kind::Plant,
+                height: 0.5,
             }))
             .returns(Vec::new())
             .times(176);
@@ -369,6 +376,7 @@ mod tests {
             .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
                 name: None,
                 kind: Kind::Organism,
+                height: 1.0,
             }))
             .returns(Vec::new())
             .times(5);

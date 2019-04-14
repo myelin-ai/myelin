@@ -3,6 +3,7 @@ pub mod constant;
 
 use crate::presenter::View;
 use crate::view_model::*;
+use std::cmp::Ordering;
 use std::fmt;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement};
@@ -14,9 +15,11 @@ pub(crate) struct CanvasView {
 }
 
 impl View for CanvasView {
-    fn draw_objects(&self, objects: &[Object]) {
+    fn draw_objects(&self, mut objects: Vec<Object>) {
+        objects.sort_by(compare_objects);
+
         for object in objects {
-            self.draw_object(object);
+            self.draw_object(&object);
         }
     }
 
@@ -73,6 +76,13 @@ impl CanvasView {
                 });
         }
     }
+}
+
+fn compare_objects(object_one: &Object, object_two: &Object) -> Ordering {
+    object_one
+        .height
+        .partial_cmp(&object_two.height)
+        .expect("Tried to compare heights with non-comparable values")
 }
 
 fn get_2d_context(canvas: &HtmlCanvasElement) -> CanvasRenderingContext2d {
@@ -133,5 +143,32 @@ fn map_kind_to_color(kind: &Kind) -> &'static str {
         Kind::Plant => constant::color::PLANT,
         Kind::Water => constant::color::WATER,
         Kind::Terrain => constant::color::TERRAIN,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::view::compare_objects;
+    use crate::view_model::{Kind, Object, Polygon};
+    use std::cmp::Ordering;
+
+    #[test]
+    fn objects_are_ordered_by_height() {
+        let object_one = Object {
+            shape: Polygon { vertices: vec![] },
+            kind: Kind::Organism,
+            height: 20.0,
+            name_label: None,
+        };
+
+        let object_two = Object {
+            shape: Polygon { vertices: vec![] },
+            kind: Kind::Organism,
+            height: 10.0,
+            name_label: None,
+        };
+
+        assert_eq!(Ordering::Greater, compare_objects(&object_one, &object_two));
+        assert_eq!(Ordering::Less, compare_objects(&object_two, &object_one));
     }
 }

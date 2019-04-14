@@ -1,9 +1,8 @@
-use std::cmp::{Ordering, PartialOrd};
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Object {
     pub shape: Polygon,
     pub kind: Kind,
+    pub height: f64,
     pub name_label: Option<Label>,
 }
 
@@ -18,22 +17,12 @@ pub struct Point {
     pub y: f64,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Ord)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Kind {
     Organism,
     Plant,
     Water,
     Terrain,
-}
-
-impl PartialOrd for Kind {
-    fn partial_cmp(&self, other: &Kind) -> Option<Ordering> {
-        Some(match (self, other) {
-            (Kind::Organism, _) => Ordering::Greater,
-            (_, Kind::Organism) => Ordering::Less,
-            _ => Ordering::Equal,
-        })
-    }
 }
 
 /// A text label that can be drawn anywhere on the screen
