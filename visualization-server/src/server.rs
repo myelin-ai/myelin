@@ -73,7 +73,7 @@ where
                 box ChromosomalCrossoverGenomeDeriver::new(box RandomImpl::new()),
                 box GenomeMutatorStub::new(),
             ),
-            box AdditionalObjectDescriptionBincodeDeserializer::new(),
+            box AdditionalObjectDescriptionBincodeDeserializer::default(),
         )
     };
     let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
