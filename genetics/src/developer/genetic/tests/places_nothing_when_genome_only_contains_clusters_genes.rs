@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn places_nothing_when_genome_only_contains_clusters_genes() {
-    let mut genome = genome_stub();
+    let mut genome = Genome::stub();
     add_cluster_to_genome(&mut genome);
     let config = config_stub();
 

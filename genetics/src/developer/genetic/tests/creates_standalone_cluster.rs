@@ -2,9 +2,9 @@ use super::*;
 
 #[test]
 fn creates_standalone_cluster() {
-    let mut genome = genome_stub();
-    add_first_cluster_to_genome(&mut genome);
-    add_initial_hox_gene_to_genome(&mut genome);
+    let mut genome = Genome::stub();
+    genome.add_first_cluster().add_initial_hox_gene();
+
     let config = config_stub();
 
     let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);

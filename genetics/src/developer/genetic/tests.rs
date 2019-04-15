@@ -21,6 +21,87 @@ mod places_nothing_when_hox_gene_points_to_non_existent_cluster_gene;
 mod places_two_hox_genes_placing_first_cluster_on_cluster_of_initial_hox;
 mod places_two_standalone_clusters;
 
+impl Genome {
+    fn stub() -> Self {
+        Genome::default()
+    }
+
+    fn add_first_cluster(&mut self) -> &mut Self {
+        self.cluster_genes.insert(
+            0,
+            ClusterGene {
+                neurons: vec![Neuron::new(); 4],
+                connections: first_cluster_connections(),
+                placement_neuron: NeuronClusterLocalIndex(1),
+            },
+        );
+        self
+    }
+
+    fn add_second_cluster(&mut self) -> &mut Self {
+        self.cluster_genes.insert(
+            1,
+            ClusterGene {
+                neurons: vec![Neuron::new(); 3],
+                connections: second_cluster_connections(),
+                placement_neuron: NeuronClusterLocalIndex(0),
+            },
+        );
+        self
+    }
+
+    fn add_initial_hox_gene(&mut self) -> &mut Self {
+        self.hox_genes.insert(
+            0,
+            HoxGene {
+                placement: HoxPlacement::Standalone,
+                cluster_index: ClusterGeneIndex(0),
+                disabled_connections: vec![],
+            },
+        );
+        self
+    }
+
+    fn add_hox_gene_placing_second_cluster_on_first_cluster(&mut self) -> &mut Self {
+        self.add_hox_gene_placing_cluster_on_cluster(ClusterOnClusterTestParameters {
+            cluster_gene: ClusterGeneIndex(0),
+            target_neuron: NeuronClusterLocalIndex(2),
+            cluster_index: ClusterGeneIndex(1),
+        });
+        self
+    }
+
+    fn add_hox_gene_placing_cluster_on_cluster(
+        &mut self,
+        parameters: ClusterOnClusterTestParameters,
+    ) -> &mut Self {
+        self.hox_genes.push(HoxGene {
+            placement: HoxPlacement::ClusterGene {
+                cluster_gene: parameters.cluster_gene,
+                target_neuron: parameters.target_neuron,
+            },
+            cluster_index: parameters.cluster_index,
+            disabled_connections: Vec::new(),
+        });
+        self
+    }
+
+    fn add_hox_gene_placing_cluster_on_hox(
+        &mut self,
+        parameters: ClusterOnHoxTestParameters,
+    ) -> &mut Self {
+        self.hox_genes.push(HoxGene {
+            placement: HoxPlacement::HoxGene {
+                hox_gene: parameters.hox_gene,
+                target_neuron: parameters.target_neuron,
+            },
+            cluster_index: parameters.cluster_index,
+            disabled_connections: Vec::new(),
+        });
+        self
+    }
+}
+
 fn connection_definition_to_connection(connection_definition: ConnectionDefinition) -> Connection {
     Connection {
         from: Handle(connection_definition.from.0),
@@ -81,75 +162,10 @@ fn config_stub() -> NeuralNetworkDevelopmentConfiguration {
     }
 }
 
-fn genome_stub() -> Genome {
-    Genome::default()
-}
-
-fn add_initial_hox_gene_to_genome(genome: &mut Genome) {
-    genome.hox_genes.insert(
-        0,
-        HoxGene {
-            placement: HoxPlacement::Standalone,
-            cluster_index: ClusterGeneIndex(0),
-            disabled_connections: vec![],
-        },
-    );
-}
-
-fn add_first_cluster_to_genome(genome: &mut Genome) {
-    genome.cluster_genes.insert(
-        0,
-        ClusterGene {
-            neurons: vec![Neuron::new(); 4],
-            connections: first_cluster_connections(),
-            placement_neuron: NeuronClusterLocalIndex(1),
-        },
-    );
-}
-
-fn add_hox_gene_placing_second_cluster_on_first_cluster(genome: &mut Genome) {
-    add_hox_gene_placing_cluster_on_cluster(
-        genome,
-        ClusterOnClusterTestParameters {
-            cluster_gene: ClusterGeneIndex(0),
-            target_neuron: NeuronClusterLocalIndex(2),
-            cluster_index: ClusterGeneIndex(1),
-        },
-    )
-}
-
-fn add_hox_gene_placing_cluster_on_cluster(
-    genome: &mut Genome,
-    parameters: ClusterOnClusterTestParameters,
-) {
-    genome.hox_genes.push(HoxGene {
-        placement: HoxPlacement::ClusterGene {
-            cluster_gene: parameters.cluster_gene,
-            target_neuron: parameters.target_neuron,
-        },
-        cluster_index: parameters.cluster_index,
-        disabled_connections: Vec::new(),
-    })
-}
-
 struct ClusterOnClusterTestParameters {
     cluster_gene: ClusterGeneIndex,
     target_neuron: NeuronClusterLocalIndex,
     cluster_index: ClusterGeneIndex,
-}
-
-fn add_hox_gene_placing_cluster_on_hox(
-    genome: &mut Genome,
-    parameters: ClusterOnHoxTestParameters,
-) {
-    genome.hox_genes.push(HoxGene {
-        placement: HoxPlacement::HoxGene {
-            hox_gene: parameters.hox_gene,
-            target_neuron: parameters.target_neuron,
-        },
-        cluster_index: parameters.cluster_index,
-        disabled_connections: Vec::new(),
-    })
 }
 
 struct ClusterOnHoxTestParameters {
@@ -247,17 +263,6 @@ struct ExpectConnectionsParameters {
     cluster_offset: usize,
     placement_neuron_index: usize,
     placement_neuron_handle: usize,
-}
-
-fn add_second_cluster_to_genome(genome: &mut Genome) {
-    genome.cluster_genes.insert(
-        1,
-        ClusterGene {
-            neurons: vec![Neuron::new(); 3],
-            connections: second_cluster_connections(),
-            placement_neuron: NeuronClusterLocalIndex(0),
-        },
-    );
 }
 
 fn second_cluster_connections() -> Vec<ConnectionDefinition> {

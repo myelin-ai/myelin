@@ -2,12 +2,12 @@ use super::*;
 
 #[test]
 fn places_two_hoxes_after_each_other() {
-    let mut genome = genome_stub();
-    add_first_cluster_to_genome(&mut genome);
-
-    add_initial_hox_gene_to_genome(&mut genome);
-    add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(&mut genome, HoxGeneIndex(0));
-    add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(&mut genome, HoxGeneIndex(1));
+    let mut genome = Genome::stub();
+    genome
+        .add_first_cluster()
+        .add_initial_hox_gene()
+        .add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(HoxGeneIndex(0))
+        .add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(HoxGeneIndex(1));
 
     let config = config_stub();
 
@@ -24,12 +24,12 @@ fn places_two_hoxes_after_each_other() {
 
 #[test]
 fn places_two_hoxes_with_the_same_target() {
-    let mut genome = genome_stub();
-    add_first_cluster_to_genome(&mut genome);
-
-    add_initial_hox_gene_to_genome(&mut genome);
-    add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(&mut genome, HoxGeneIndex(0));
-    add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(&mut genome, HoxGeneIndex(0));
+    let mut genome = Genome::stub();
+    genome
+        .add_first_cluster()
+        .add_initial_hox_gene()
+        .add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(HoxGeneIndex(0))
+        .add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(HoxGeneIndex(0));
 
     let config = config_stub();
 
@@ -44,20 +44,19 @@ fn places_two_hoxes_with_the_same_target() {
     developer.develop_neural_network(&mut configurator);
 }
 
-fn add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(
-    genome: &mut Genome,
-    hox_index: HoxGeneIndex,
-) {
-    add_hox_gene_placing_cluster_on_hox(
-        genome,
-        ClusterOnHoxTestParameters {
+impl Genome {
+    fn add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(
+        &mut self,
+        hox_index: HoxGeneIndex,
+    ) -> &mut Self {
+        self.add_hox_gene_placing_cluster_on_hox(ClusterOnHoxTestParameters {
             hox_gene: hox_index,
             target_neuron: NeuronClusterLocalIndex(3),
             cluster_index: ClusterGeneIndex(0),
-        },
-    )
+        });
+        self
+    }
 }
-
 fn expect_first_cluster_placed_on_first_hox_by_second_hox(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
 ) {
