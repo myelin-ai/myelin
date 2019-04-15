@@ -1001,33 +1001,23 @@ mod tests {
         let additional_object_data_deserializer: Box<dyn AdditionalObjectDescriptionDeserializer> = {
             let mut deserializer = AdditionalObjectDescriptionDeserializerMock::new();
 
-            let data: Vec<u8> = Vec::new();
+            let expect_deserialize =
+                |deserializer: &mut AdditionalObjectDescriptionDeserializerMock<'_>,
+                 height: f64,
+                 times: u64| {
+                    deserializer
+                        .expect_deserialize(partial_eq(Vec::<u8>::new()))
+                        .returns(Ok(AdditionalObjectDescription {
+                            name: None,
+                            kind: Kind::Organism,
+                            height,
+                        }))
+                        .times(times);
+                };
 
-            deserializer
-                .expect_deserialize(partial_eq(data.clone()))
-                .returns(Ok(AdditionalObjectDescription {
-                    name: None,
-                    kind: Kind::Organism,
-                    height: 1.0,
-                }))
-                .times(5);
-
-            deserializer
-                .expect_deserialize(partial_eq(data.clone()))
-                .returns(Ok(AdditionalObjectDescription {
-                    name: None,
-                    kind: Kind::Organism,
-                    height: 2.0,
-                }));
-
-            deserializer
-                .expect_deserialize(partial_eq(data))
-                .returns(Ok(AdditionalObjectDescription {
-                    name: None,
-                    kind: Kind::Organism,
-                    height: 1.0,
-                }))
-                .times(8);
+            expect_deserialize(&mut deserializer, 1.0, 5);
+            expect_deserialize(&mut deserializer, 2.0, 1);
+            expect_deserialize(&mut deserializer, 1.0, 8);
 
             deserializer.expect_deserialize_calls_in_order();
 
