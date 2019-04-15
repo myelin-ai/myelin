@@ -22,16 +22,12 @@ fn places_two_hox_genes_placing_first_cluster_gene_on_cluster_of_initial_hox() {
     developer.develop_neural_network(&mut configurator);
 }
 
-fn add_hox_gene_placing_clusters_on_clusters_of_first_cluster_gene(mut genome: Genome) -> Genome {
-    genome.hox_genes.push(HoxGene {
-        placement: HoxPlacement::ClusterGene {
-            cluster_gene: ClusterGeneIndex(0),
-            target_neuron: NeuronClusterLocalIndex(3),
-        },
+fn add_hox_gene_placing_clusters_on_clusters_of_first_cluster_gene(genome: &mut Genome) {
+    add_hox_gene_placing_cluster_on_cluster(genome, ClusterOnClusterTestParameters{
+        cluster_gene: ClusterGeneIndex(0),
+        target_neuron: NeuronClusterLocalIndex(3),
         cluster_index: ClusterGeneIndex(0),
-        disabled_connections: Vec::new(),
-    });
-    genome
+    })
 }
 
 fn expect_second_hox_places_first_cluster_on_initially_placed_cluster(
