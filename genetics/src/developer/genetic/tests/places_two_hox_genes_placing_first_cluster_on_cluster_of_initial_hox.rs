@@ -4,9 +4,9 @@ use super::*;
 fn places_two_hox_genes_placing_first_cluster_gene_on_cluster_of_initial_hox() {
     let genome = genome_stub();
     let genome = add_first_cluster_to_genome(genome);
-    let genome = add_initial_hox_gene_to_genome(genome);
-    let genome = add_hox_gene_placing_clusters_on_clusters_of_first_cluster_gene(genome);
-    let genome = add_hox_gene_placing_clusters_on_clusters_of_first_cluster_gene(genome);
+    let mut genome = add_initial_hox_gene_to_genome(genome);
+    add_hox_gene_placing_clusters_on_clusters_of_first_cluster_gene(&mut genome);
+    add_hox_gene_placing_clusters_on_clusters_of_first_cluster_gene(&mut genome);
 
     let config = config_stub();
 
