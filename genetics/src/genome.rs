@@ -53,7 +53,7 @@ pub struct ClusterGene {
 }
 
 /// Describes the placement behaviour of a [`HoxGene`].
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum HoxPlacement {
     /// This hox gene's cluster will be placed once for each previously placed cluster of the given [`ClusterGene`].
     ClusterGene {
@@ -90,7 +90,7 @@ impl From<Connection> for ConnectionFilter {
 }
 
 /// A gene defining the placement of neuron clusters.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct HoxGene {
     /// Placement target of the hox
     pub placement: HoxPlacement,
