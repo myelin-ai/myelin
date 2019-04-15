@@ -32,38 +32,29 @@ impl GenomeStubBuilder {
     }
 
     fn add_first_cluster(&mut self) -> &mut Self {
-        self.genome.cluster_genes.insert(
-            0,
-            ClusterGene {
-                neurons: vec![Neuron::new(); 4],
-                connections: first_cluster_connections(),
-                placement_neuron: NeuronClusterLocalIndex(1),
-            },
-        );
+        self.genome.cluster_genes.push(ClusterGene {
+            neurons: vec![Neuron::new(); 4],
+            connections: first_cluster_connections(),
+            placement_neuron: NeuronClusterLocalIndex(1),
+        });
         self
     }
 
     fn add_second_cluster(&mut self) -> &mut Self {
-        self.genome.cluster_genes.insert(
-            1,
-            ClusterGene {
-                neurons: vec![Neuron::new(); 3],
-                connections: second_cluster_connections(),
-                placement_neuron: NeuronClusterLocalIndex(0),
-            },
-        );
+        self.genome.cluster_genes.push(ClusterGene {
+            neurons: vec![Neuron::new(); 3],
+            connections: second_cluster_connections(),
+            placement_neuron: NeuronClusterLocalIndex(0),
+        });
         self
     }
 
     fn add_initial_hox_gene(&mut self) -> &mut Self {
-        self.genome.hox_genes.insert(
-            0,
-            HoxGene {
-                placement: HoxPlacement::Standalone,
-                cluster_index: ClusterGeneIndex(0),
-                disabled_connections: vec![],
-            },
-        );
+        self.genome.hox_genes.push(HoxGene {
+            placement: HoxPlacement::Standalone,
+            cluster_index: ClusterGeneIndex(0),
+            disabled_connections: vec![],
+        });
         self
     }
 
