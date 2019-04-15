@@ -2,10 +2,10 @@ use super::*;
 
 #[test]
 fn places_two_standalone_clusters() {
-    let genome = genome_stub();
-    let genome = add_first_cluster_to_genome(genome);
-    let genome = add_initial_hox_gene_to_genome(genome);
-    let genome = add_initial_hox_gene_to_genome(genome);
+    let mut genome = genome_stub();
+    add_first_cluster_to_genome(&mut genome);
+    add_initial_hox_gene_to_genome(&mut genome);
+    add_initial_hox_gene_to_genome(&mut genome);
     let config = config_stub();
 
     let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);

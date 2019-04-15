@@ -2,10 +2,10 @@ use super::*;
 
 #[test]
 fn places_two_hoxes_after_each_other() {
-    let genome = genome_stub();
-    let genome = add_first_cluster_to_genome(genome);
+    let mut genome = genome_stub();
+    add_first_cluster_to_genome(&mut genome);
 
-    let mut genome = add_initial_hox_gene_to_genome(genome);
+    add_initial_hox_gene_to_genome(&mut genome);
     add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(&mut genome, HoxGeneIndex(0));
     add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(&mut genome, HoxGeneIndex(1));
 
@@ -24,10 +24,10 @@ fn places_two_hoxes_after_each_other() {
 
 #[test]
 fn places_two_hoxes_with_the_same_target() {
-    let genome = genome_stub();
-    let genome = add_first_cluster_to_genome(genome);
+    let mut genome = genome_stub();
+    add_first_cluster_to_genome(&mut genome);
 
-    let mut genome = add_initial_hox_gene_to_genome(genome);
+    add_initial_hox_gene_to_genome(&mut genome);
     add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(&mut genome, HoxGeneIndex(0));
     add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(&mut genome, HoxGeneIndex(0));
 

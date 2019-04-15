@@ -2,11 +2,11 @@ use super::*;
 
 #[test]
 fn places_cluster() {
-    let genome = genome_stub();
-    let genome = add_first_cluster_to_genome(genome);
-    let genome = add_second_cluster_to_genome(genome);
+    let mut genome = genome_stub();
+    add_first_cluster_to_genome(&mut genome);
+    add_second_cluster_to_genome(&mut genome);
 
-    let mut genome = add_initial_hox_gene_to_genome(genome);
+    add_initial_hox_gene_to_genome(&mut genome);
     add_hox_gene_placing_second_cluster_on_first_cluster(&mut genome);
 
     let config = config_stub();

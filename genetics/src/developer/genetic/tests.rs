@@ -85,7 +85,7 @@ fn genome_stub() -> Genome {
     Genome::default()
 }
 
-fn add_initial_hox_gene_to_genome(mut genome: Genome) -> Genome {
+fn add_initial_hox_gene_to_genome(genome: &mut Genome) {
     genome.hox_genes.insert(
         0,
         HoxGene {
@@ -94,11 +94,9 @@ fn add_initial_hox_gene_to_genome(mut genome: Genome) -> Genome {
             disabled_connections: vec![],
         },
     );
-
-    genome
 }
 
-fn add_first_cluster_to_genome(mut genome: Genome) -> Genome {
+fn add_first_cluster_to_genome(genome: &mut Genome) {
     genome.cluster_genes.insert(
         0,
         ClusterGene {
@@ -107,8 +105,6 @@ fn add_first_cluster_to_genome(mut genome: Genome) -> Genome {
             placement_neuron: NeuronClusterLocalIndex(1),
         },
     );
-
-    genome
 }
 
 fn add_hox_gene_placing_second_cluster_on_first_cluster(genome: &mut Genome) {
@@ -263,7 +259,7 @@ struct ExpectConnectionsParameters {
     placement_neuron_handle: usize,
 }
 
-fn add_second_cluster_to_genome(mut genome: Genome) -> Genome {
+fn add_second_cluster_to_genome(genome: &mut Genome) {
     genome.cluster_genes.insert(
         1,
         ClusterGene {
@@ -272,8 +268,6 @@ fn add_second_cluster_to_genome(mut genome: Genome) -> Genome {
             placement_neuron: NeuronClusterLocalIndex(0),
         },
     );
-
-    genome
 }
 
 fn second_cluster_connections() -> Vec<ConnectionDefinition> {
