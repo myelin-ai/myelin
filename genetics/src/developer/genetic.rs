@@ -1,7 +1,7 @@
-use crate::genome::{ClusterGene, ConnectionFilter, Genome, HoxGene, HoxPlacement};
+use crate::genome::{self, ClusterGene, ConnectionFilter, Genome, HoxGene, HoxPlacement};
 use crate::orchestrator_impl::{NeuralNetworkConfigurator, NeuralNetworkDeveloper};
 use crate::NeuralNetworkDevelopmentConfiguration;
-use myelin_neural_network::Connection;
+use myelin_neural_network::{Connection, Handle};
 
 #[cfg(test)]
 mod tests;
@@ -49,31 +49,38 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
                         .map(|_| configurator.push_neuron())
                         .collect();
 
-                    let filtered_connections =
-                        cluster_gene.connections.iter().filter_map(|connection| {
-                            let connection_filter = ConnectionFilter {
-                                from: connection.from,
-                                to: connection.to,
-                            };
-                            if !hox_gene.disabled_connections.contains(&connection_filter) {
-                                let from = *neuron_handles.get(connection.from.0)?;
-                                let to = *neuron_handles.get(connection.to.0)?;
-
-                                Some((from, to, connection.weight))
-                            } else {
-                                None
-                            }
+                    cluster_gene
+                        .connections
+                        .iter()
+                        .filter_map(|connection| {
+                            filter_map_enabled_connection(connection, &neuron_handles, &hox_gene)
+                        })
+                        .for_each(|connection| {
+                            configurator.add_connection(connection).unwrap();
                         });
-
-                    for (from, to, weight) in filtered_connections {
-                        configurator
-                            .add_connection(Connection { from, to, weight })
-                            .unwrap();
-                    }
                 }
                 _ => unimplemented!(),
             }
         }
+    }
+}
+
+fn filter_map_enabled_connection(
+    connection: &genome::Connection,
+    neuron_handles: &[Handle],
+    hox_gene: &HoxGene,
+) -> Option<Connection> {
+    let connection_filter = ConnectionFilter {
+        from: connection.from,
+        to: connection.to,
+    };
+    if !hox_gene.disabled_connections.contains(&connection_filter) {
+        let from = *neuron_handles.get(connection.from.0)?;
+        let to = *neuron_handles.get(connection.to.0)?;
+        let weight = connection.weight;
+        Some(Connection { from, to, weight })
+    } else {
+        None
     }
 }
 
