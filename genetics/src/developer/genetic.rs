@@ -40,39 +40,44 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
 
         let hox_genes_to_cluster_genes = map_hox_genes_to_cluster_genes(hox_genes, &cluster_genes);
 
-        hox_genes_to_cluster_genes.map(|(hox_gene, cluster_gene)| match hox_gene.placement {
-            HoxPlacement::Standalone => {
-                let neuron_handles: Vec<_> = cluster_gene
-                    .neurons
-                    .iter()
-                    .map(|_| configurator.push_neuron())
-                    .collect();
-                cluster_gene
-                    .connections
-                    .iter()
-                    .filter_map(|connection| {
-                        let connection_filter = ConnectionFilter {
-                            from: connection.from,
-                            to: connection.to,
-                        };
-                        if hox_gene.disabled_connections.contains(&connection_filter) {
-                            let from = *neuron_handles.get(connection.from.0)?;
-                            let to = *neuron_handles.get(connection.to.0)?;
+        for (hox_gene, cluster_gene) in hox_genes_to_cluster_genes {
+            match hox_gene.placement {
+                HoxPlacement::Standalone => {
+                    let neuron_handles: Vec<_> = cluster_gene
+                        .neurons
+                        .iter()
+                        .map(|_| configurator.push_neuron())
+                        .collect();
+                    dbg!(&neuron_handles);
+                    dbg!(&cluster_gene.connections);
 
-                            Some((from, to, connection.weight))
-                        } else {
-                            None
-                        }
+                    let filtered_connections =
+                        cluster_gene.connections.iter().filter_map(|connection| {
+                            let connection_filter = ConnectionFilter {
+                                from: connection.from,
+                                to: connection.to,
+                            };
+                            dbg!(&hox_gene.disabled_connections);
+                            dbg!(&connection_filter);
+                            if !hox_gene.disabled_connections.contains(&connection_filter) {
+                                let from = *neuron_handles.get(connection.from.0)?;
+                                let to = *neuron_handles.get(connection.to.0)?;
 
-                    })
-                    .for_each(|(from, to, weight)| {
+                                Some((from, to, connection.weight))
+                            } else {
+                                None
+                            }
+                        });
+
+                    for (from, to, weight) in filtered_connections {
                         configurator
                             .add_connection(Connection { from, to, weight })
                             .unwrap();
-                    });
+                    }
+                }
+                _ => unimplemented!(),
             }
-            _ => unimplemented!(),
-        });
+        }
     }
 }
 
