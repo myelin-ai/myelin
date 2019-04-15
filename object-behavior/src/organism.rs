@@ -273,6 +273,7 @@ where
         .flatten()
 }
 
+#[allow(clippy::option_option)]
 fn filter_visible_object(
     running_max: &mut f64,
     object_height: f64,
