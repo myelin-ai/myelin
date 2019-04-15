@@ -1,6 +1,7 @@
-use crate::genome::Genome;
+use crate::genome::{ClusterGene, ConnectionFilter, Genome, HoxGene, HoxPlacement};
 use crate::orchestrator_impl::{NeuralNetworkConfigurator, NeuralNetworkDeveloper};
 use crate::NeuralNetworkDevelopmentConfiguration;
+use myelin_neural_network::Connection;
 
 #[cfg(test)]
 mod tests;
@@ -28,7 +29,59 @@ impl GeneticNeuralNetworkDeveloper {
 }
 
 impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
-    fn develop_neural_network(self: Box<Self>, _configurator: &mut dyn NeuralNetworkConfigurator) {
-        unimplemented!()
+    fn develop_neural_network(self: Box<Self>, configurator: &mut dyn NeuralNetworkConfigurator) {
+        let Self {
+            genome: Genome {
+                hox_genes,
+                cluster_genes,
+            },
+            ..
+        } = *self;
+
+        let hox_genes_to_cluster_genes = map_hox_genes_to_cluster_genes(hox_genes, &cluster_genes);
+
+        hox_genes_to_cluster_genes.map(|(hox_gene, cluster_gene)| match hox_gene.placement {
+            HoxPlacement::Standalone => {
+                let neuron_handles: Vec<_> = cluster_gene
+                    .neurons
+                    .iter()
+                    .map(|_| configurator.push_neuron())
+                    .collect();
+                cluster_gene
+                    .connections
+                    .iter()
+                    .filter_map(|connection| {
+                        let connection_filter = ConnectionFilter {
+                            from: connection.from,
+                            to: connection.to,
+                        };
+                        if hox_gene.disabled_connections.contains(&connection_filter) {
+                            let from = *neuron_handles.get(connection.from.0)?;
+                            let to = *neuron_handles.get(connection.to.0)?;
+
+                            Some((from, to, connection.weight))
+                        } else {
+                            None
+                        }
+
+                    })
+                    .for_each(|(from, to, weight)| {
+                        configurator
+                            .add_connection(Connection { from, to, weight })
+                            .unwrap();
+                    });
+            }
+            _ => unimplemented!(),
+        });
     }
+}
+
+fn map_hox_genes_to_cluster_genes<'a>(
+    hox_genes: Vec<HoxGene>,
+    cluster_genes: &'a [ClusterGene],
+) -> impl Iterator<Item = (HoxGene, &'a ClusterGene)> {
+    hox_genes.into_iter().filter_map(move |hox_gene| {
+        let cluster_gene = cluster_genes.get(hox_gene.cluster_index.0)?;
+        Some((hox_gene, cluster_gene))
+    })
 }
