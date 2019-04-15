@@ -283,7 +283,7 @@ fn distance_between_objects(
     first_object: &ObjectDescription,
     second_object: &ObjectDescription,
 ) -> f64 {
-    Vector::magnitude(Vector::from(first_object.location - second_object.location))
+    Vector::from(first_object.location - second_object.location).magnitude()
 }
 
 fn velocity(object_description: &ObjectDescription) -> Vector {
