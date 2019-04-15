@@ -134,7 +134,7 @@ fn add_hox_gene_placing_cluster_on_cluster(
             cluster_gene: parameters.cluster_gene,
             target_neuron: parameters.target_neuron,
         },
-        cluster_index: parameters.cluster_index
+        cluster_index: parameters.cluster_index,
         disabled_connections: Vec::new(),
     })
 }
