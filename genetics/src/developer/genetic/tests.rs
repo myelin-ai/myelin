@@ -111,14 +111,6 @@ impl GenomeStubBuilder {
     }
 }
 
-fn connection_definition_to_connection(connection_definition: ConnectionDefinition) -> Connection {
-    Connection {
-        from: Handle(connection_definition.from.0),
-        to: Handle(connection_definition.to.0),
-        weight: connection_definition.weight,
-    }
-}
-
 fn connection_definition_to_placed_connection(
     connection_translation_parameters: ConnectionTranslationParameters,
 ) -> Connection {

@@ -86,17 +86,6 @@ impl GenomeStubBuilder {
     }
 }
 
-fn expect_first_cluster_connections(configurator: &mut NeuralNetworkConfiguratorMock<'_>) {
-    first_cluster_connections()
-        .into_iter()
-        .map(connection_definition_to_connection)
-        .for_each(|connection| {
-            configurator
-                .expect_add_connection(partial_eq(connection))
-                .returns(Ok(()));
-        });
-}
-
 fn expect_first_cluster_placed_on_first_hox_by_second_hox(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
 ) {
