@@ -2,8 +2,10 @@ use super::*;
 
 #[test]
 fn creates_standalone_cluster() {
-    let mut genome = Genome::stub();
-    genome.add_first_cluster().add_initial_hox_gene();
+    let genome = GenomeStubBuilder::new()
+        .add_first_cluster()
+        .add_initial_hox_gene()
+        .build();
 
     let config = config_stub();
 

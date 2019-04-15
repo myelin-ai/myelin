@@ -21,13 +21,18 @@ mod places_nothing_when_hox_gene_points_to_non_existent_cluster_gene;
 mod places_two_hox_genes_placing_first_cluster_on_cluster_of_initial_hox;
 mod places_two_standalone_clusters;
 
-impl Genome {
-    fn stub() -> Self {
-        Genome::default()
+#[derive(Debug, Default)]
+struct GenomeStubBuilder {
+    genome: Genome,
+}
+
+impl GenomeStubBuilder {
+    fn new() -> Self {
+        GenomeStubBuilder::default()
     }
 
     fn add_first_cluster(&mut self) -> &mut Self {
-        self.cluster_genes.insert(
+        self.genome.cluster_genes.insert(
             0,
             ClusterGene {
                 neurons: vec![Neuron::new(); 4],
@@ -39,7 +44,7 @@ impl Genome {
     }
 
     fn add_second_cluster(&mut self) -> &mut Self {
-        self.cluster_genes.insert(
+        self.genome.cluster_genes.insert(
             1,
             ClusterGene {
                 neurons: vec![Neuron::new(); 3],
@@ -51,7 +56,7 @@ impl Genome {
     }
 
     fn add_initial_hox_gene(&mut self) -> &mut Self {
-        self.hox_genes.insert(
+        self.genome.hox_genes.insert(
             0,
             HoxGene {
                 placement: HoxPlacement::Standalone,
@@ -75,7 +80,7 @@ impl Genome {
         &mut self,
         parameters: ClusterOnClusterTestParameters,
     ) -> &mut Self {
-        self.hox_genes.push(HoxGene {
+        self.genome.hox_genes.push(HoxGene {
             placement: HoxPlacement::ClusterGene {
                 cluster_gene: parameters.cluster_gene,
                 target_neuron: parameters.target_neuron,
@@ -90,7 +95,7 @@ impl Genome {
         &mut self,
         parameters: ClusterOnHoxTestParameters,
     ) -> &mut Self {
-        self.hox_genes.push(HoxGene {
+        self.genome.hox_genes.push(HoxGene {
             placement: HoxPlacement::HoxGene {
                 hox_gene: parameters.hox_gene,
                 target_neuron: parameters.target_neuron,
@@ -99,6 +104,10 @@ impl Genome {
             disabled_connections: Vec::new(),
         });
         self
+    }
+
+    fn build(&self) -> Genome {
+        self.genome.clone()
     }
 }
 

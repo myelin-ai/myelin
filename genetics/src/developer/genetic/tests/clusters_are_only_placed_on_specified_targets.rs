@@ -2,14 +2,14 @@ use super::*;
 
 #[test]
 fn clusters_are_only_placed_on_specified_targets() {
-    let mut genome = Genome::stub();
-    genome
+    let genome = GenomeStubBuilder::new()
         .add_first_cluster()
         .add_second_cluster()
         .add_initial_hox_gene()
         .add_hox_gene_placing_first_cluster_on_first_hox()
         .add_hox_gene_placing_second_cluster_on_first_hox()
-        .add_hox_gene_placing_second_cluster_on_first_cluster();
+        .add_hox_gene_placing_second_cluster_on_first_cluster()
+        .build();
 
     let config = config_stub();
 
@@ -28,15 +28,15 @@ fn clusters_are_only_placed_on_specified_targets() {
 
 #[test]
 fn clusters_are_only_placed_on_specified_targets_when_target_is_hox_that_targeted_cluster_type() {
-    let mut genome = Genome::stub();
-    genome
+    let genome = GenomeStubBuilder::new()
         .add_first_cluster()
         .add_second_cluster()
         .add_initial_hox_gene()
         .add_hox_gene_placing_first_cluster_on_first_hox()
         .add_hox_gene_placing_second_cluster_on_first_hox()
         .add_hox_gene_placing_second_cluster_on_first_cluster()
-        .add_hox_gene_placing_first_cluster_on_fourth_hox();
+        .add_hox_gene_placing_first_cluster_on_fourth_hox()
+        .build();
 
     let config = config_stub();
 
@@ -57,7 +57,7 @@ fn clusters_are_only_placed_on_specified_targets_when_target_is_hox_that_targete
     developer.develop_neural_network(&mut configurator);
 }
 
-impl Genome {
+impl GenomeStubBuilder {
     fn add_hox_gene_placing_first_cluster_on_first_hox(&mut self) -> &mut Self {
         self.add_hox_gene_placing_cluster_on_hox(ClusterOnHoxTestParameters {
             hox_gene: HoxGeneIndex(0),
@@ -75,6 +75,15 @@ impl Genome {
         });
         self
     }
+
+    fn add_hox_gene_placing_first_cluster_on_fourth_hox(&mut self) -> &mut Self {
+        self.add_hox_gene_placing_cluster_on_hox(ClusterOnHoxTestParameters {
+            hox_gene: HoxGeneIndex(3),
+            target_neuron: NeuronClusterLocalIndex(1),
+            cluster_index: ClusterGeneIndex(0),
+        });
+        self
+    }
 }
 
 fn expect_first_cluster_connections(configurator: &mut NeuralNetworkConfiguratorMock<'_>) {
@@ -86,17 +95,6 @@ fn expect_first_cluster_connections(configurator: &mut NeuralNetworkConfigurator
                 .expect_add_connection(partial_eq(connection))
                 .returns(Ok(()));
         });
-}
-
-impl Genome {
-    fn add_hox_gene_placing_first_cluster_on_fourth_hox(&mut self) -> &mut Self {
-        self.add_hox_gene_placing_cluster_on_hox(ClusterOnHoxTestParameters {
-            hox_gene: HoxGeneIndex(3),
-            target_neuron: NeuronClusterLocalIndex(1),
-            cluster_index: ClusterGeneIndex(0),
-        });
-        self
-    }
 }
 
 fn expect_first_cluster_placed_on_first_hox_by_second_hox(

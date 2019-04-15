@@ -2,11 +2,11 @@ use super::*;
 
 #[test]
 fn places_hox_placing_first_cluster_on_cluster_of_initial_hox() {
-    let mut genome = Genome::stub();
-    genome
+    let genome = GenomeStubBuilder::new()
         .add_first_cluster()
         .add_initial_hox_gene()
-        .add_hox_gene_placing_first_cluster_on_first_hox_clusters();
+        .add_hox_gene_placing_first_cluster_on_first_hox_clusters()
+        .build();
 
     let config = config_stub();
 
@@ -20,7 +20,7 @@ fn places_hox_placing_first_cluster_on_cluster_of_initial_hox() {
     developer.develop_neural_network(&mut configurator);
 }
 
-impl Genome {
+impl GenomeStubBuilder {
     fn add_hox_gene_placing_first_cluster_on_first_hox_clusters(&mut self) -> &mut Self {
         self.add_hox_gene_placing_cluster_on_hox(ClusterOnHoxTestParameters {
             hox_gene: HoxGeneIndex(0),

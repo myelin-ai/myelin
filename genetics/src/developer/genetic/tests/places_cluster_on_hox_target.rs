@@ -2,12 +2,12 @@ use super::*;
 
 #[test]
 fn places_two_hoxes_after_each_other() {
-    let mut genome = Genome::stub();
-    genome
+    let genome = GenomeStubBuilder::new()
         .add_first_cluster()
         .add_initial_hox_gene()
         .add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(HoxGeneIndex(0))
-        .add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(HoxGeneIndex(1));
+        .add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(HoxGeneIndex(1))
+        .build();
 
     let config = config_stub();
 
@@ -24,12 +24,12 @@ fn places_two_hoxes_after_each_other() {
 
 #[test]
 fn places_two_hoxes_with_the_same_target() {
-    let mut genome = Genome::stub();
-    genome
+    let genome = GenomeStubBuilder::new()
         .add_first_cluster()
         .add_initial_hox_gene()
         .add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(HoxGeneIndex(0))
-        .add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(HoxGeneIndex(0));
+        .add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(HoxGeneIndex(0))
+        .build();
 
     let config = config_stub();
 
@@ -44,7 +44,7 @@ fn places_two_hoxes_with_the_same_target() {
     developer.develop_neural_network(&mut configurator);
 }
 
-impl Genome {
+impl GenomeStubBuilder {
     fn add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(
         &mut self,
         hox_index: HoxGeneIndex,

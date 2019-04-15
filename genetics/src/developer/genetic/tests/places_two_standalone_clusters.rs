@@ -2,11 +2,11 @@ use super::*;
 
 #[test]
 fn places_two_standalone_clusters() {
-    let mut genome = Genome::stub();
-    genome
+    let genome = GenomeStubBuilder::new()
         .add_first_cluster()
         .add_initial_hox_gene()
-        .add_initial_hox_gene();
+        .add_initial_hox_gene()
+        .build();
 
     let config = config_stub();
 
