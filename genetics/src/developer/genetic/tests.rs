@@ -124,8 +124,11 @@ fn connection_definition_to_placed_connection(
     let translate_index_to_handle = move |index: NeuronClusterLocalIndex| {
         let index = index.0;
         let translated_index = match index.cmp(&placement_neuron_index) {
+            // Use the global handle passed to the function
             Ordering::Equal => placement_neuron_handle,
+            // Calculate the global handle by adding the offset
             Ordering::Less => cluster_offset + index,
+            // Because we handled the `Equal` case already, we are off by one
             Ordering::Greater => cluster_offset + index - 1,
         };
         Handle(translated_index)
