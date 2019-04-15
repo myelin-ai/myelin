@@ -34,19 +34,13 @@ impl GenomeStubBuilder {
 fn expect_first_cluster_placed_on_first_cluster_connections(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
 ) {
-    first_cluster_connections()
-        .into_iter()
-        .map(|connection_definition| {
-            connection_definition_to_placed_connection(ConnectionTranslationParameters {
-                connection: connection_definition,
-                cluster_offset: 4,
-                placement_neuron_index: 1,
-                placement_neuron_handle: 3,
-            })
-        })
-        .for_each(|connection| {
-            configurator
-                .expect_add_connection(partial_eq(connection))
-                .returns(Ok(()));
-        });
+    expect_connections(
+        configurator,
+        first_cluster_connections(),
+        ExpectConnectionsParameters {
+            cluster_offset: 4,
+            placement_neuron_index: 1,
+            placement_neuron_handle: 3,
+        },
+    )
 }
