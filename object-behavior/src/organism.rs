@@ -210,7 +210,7 @@ fn objects_in_fov<'a>(
     let half_of_fov_angle = Radians::try_from_degrees(FOV_ANGLE as f64 / 2.0).unwrap();
     let rightmost_angle = own_direction.rotate_clockwise(half_of_fov_angle);
     (0..RAYCAST_COUNT).map(move |angle_step| {
-        // Todo: The following three lines produce slightly different numbers on macOS
+        // Todo(#361): The following three lines produce slightly different numbers on macOS
         let angle_in_degrees = angle_step as f64 * ANGLE_PER_RAYCAST;
         let angle_in_radians = Radians::try_from_degrees(angle_in_degrees).unwrap();
         let fov_direction = rightmost_angle.rotate(angle_in_radians);
