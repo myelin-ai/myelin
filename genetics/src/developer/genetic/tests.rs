@@ -108,21 +108,27 @@ fn connection_definition_to_placed_connection(
     let ConnectionTranslationParameters {
         connection,
         cluster_offset,
-        placement_neuron_index,
-        placement_neuron_handle,
+        placement_neuron,
     } = connection_translation_parameters;
 
     let translate_index_to_handle = move |index: NeuronClusterLocalIndex| {
         let index = index.0;
-        let translated_index = match index.cmp(&placement_neuron_index) {
-            // Use the global handle passed to the function
-            Ordering::Equal => placement_neuron_handle,
-            // Calculate the global handle by adding the offset
-            Ordering::Less => cluster_offset + index,
-            // Because we handled the `Equal` case already, we are off by one
-            Ordering::Greater => cluster_offset + index - 1,
-        };
-        Handle(translated_index)
+        Handle(match placement_neuron {
+            Some(PlacementNeuronTranslation {
+                index: placement_neuron_index,
+                handle: placement_neuron_handle,
+            }) => {
+                match index.cmp(&placement_neuron_index) {
+                    // Use the global handle passed to the function
+                    Ordering::Equal => placement_neuron_handle,
+                    // Calculate the global handle by adding the offset
+                    Ordering::Less => cluster_offset + index,
+                    // Because we handled the `Equal` case already, we are off by one
+                    Ordering::Greater => cluster_offset + index - 1,
+                }
+            }
+            None => cluster_offset + index,
+        })
     };
 
     Connection {
@@ -135,8 +141,7 @@ fn connection_definition_to_placed_connection(
 struct ConnectionTranslationParameters {
     connection: ConnectionDefinition,
     cluster_offset: usize,
-    placement_neuron_index: usize,
-    placement_neuron_handle: usize,
+    placement_neuron: Option<PlacementNeuronTranslation>,
 }
 
 fn expect_push_amount_of_neurons(
@@ -222,8 +227,7 @@ fn expect_first_cluster_placed_standalone(
         first_cluster_connections(),
         ExpectConnectionsParameters {
             cluster_offset,
-            placement_neuron_index: 0,
-            placement_neuron_handle: 0,
+            placement_neuron: None,
         },
     )
 }
@@ -233,8 +237,7 @@ fn expect_connections(
     connections: Vec<ConnectionDefinition>,
     ExpectConnectionsParameters {
         cluster_offset,
-        placement_neuron_index,
-        placement_neuron_handle,
+        placement_neuron,
     }: ExpectConnectionsParameters,
 ) {
     connections
@@ -243,11 +246,11 @@ fn expect_connections(
             connection_definition_to_placed_connection(ConnectionTranslationParameters {
                 connection,
                 cluster_offset,
-                placement_neuron_index,
-                placement_neuron_handle,
+                placement_neuron: placement_neuron.clone(),
             })
         })
         .for_each(|connection| {
+            dbg!(&connection);
             configurator
                 .expect_add_connection(partial_eq(connection))
                 .returns(Ok(()));
@@ -256,8 +259,13 @@ fn expect_connections(
 
 struct ExpectConnectionsParameters {
     cluster_offset: usize,
-    placement_neuron_index: usize,
-    placement_neuron_handle: usize,
+    placement_neuron: Option<PlacementNeuronTranslation>,
+}
+
+#[derive(Debug, Clone)]
+struct PlacementNeuronTranslation {
+    index: usize,
+    handle: usize,
 }
 
 fn second_cluster_connections() -> Vec<ConnectionDefinition> {

@@ -41,8 +41,10 @@ fn expect_second_hox_places_first_cluster_on_initially_placed_cluster(
         configurator,
         ExpectConnectionsParameters {
             cluster_offset: 4,
-            placement_neuron_index: 1,
-            placement_neuron_handle: 3,
+            placement_neuron: Some(PlacementNeuronTranslation {
+                index: 1,
+                handle: 3,
+            }),
         },
     )
 }
@@ -54,8 +56,10 @@ fn expect_third_hox_places_first_cluster_on_initially_placed_cluster(
         configurator,
         ExpectConnectionsParameters {
             cluster_offset: 7,
-            placement_neuron_index: 1,
-            placement_neuron_handle: 3,
+            placement_neuron: Some(PlacementNeuronTranslation {
+                index: 1,
+                handle: 3,
+            }),
         },
     )
 }
@@ -67,8 +71,10 @@ fn expect_third_hox_places_first_cluster_on_second_placed_cluster(
         configurator,
         ExpectConnectionsParameters {
             cluster_offset: 10,
-            placement_neuron_index: 1,
-            placement_neuron_handle: 3,
+            placement_neuron: Some(PlacementNeuronTranslation {
+                index: 1,
+                handle: 3,
+            }),
         },
     )
 }

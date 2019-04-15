@@ -28,8 +28,10 @@ fn expect_second_cluster_placed_on_first_cluster_connections(
         configurator,
         ExpectConnectionsParameters {
             cluster_offset: 4,
-            placement_neuron_index: 0,
-            placement_neuron_handle: 2,
+            placement_neuron: Some(PlacementNeuronTranslation {
+                index: 0,
+                handle: 2,
+            }),
         },
     );
 }

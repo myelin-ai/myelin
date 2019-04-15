@@ -42,13 +42,13 @@ fn expect_first_cluster_connections_without_disabled_connections(
 ) {
     expect_connections(
         configurator,
-        first_cluster_connections().into_iter().skip(1).collect(),
-        ExpectConnectionsParameters {
-            cluster_offset: 0,
-            placement_neuron_index: 0,
-            placement_neuron_handle: 0,
-        },
-    );
+        first_cluster_connections().into_iter().skip(1).collect(),ExpectConnectionsParameters {
+    cluster_offset: 0,
+    placement_neuron: Some(PlacementNeuronTranslation {
+        index: 0,
+        handle: 0,
+    }),
+},);
 }
 
 impl GenomeStubBuilder {
