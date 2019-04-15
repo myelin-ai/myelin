@@ -48,8 +48,6 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
                         .iter()
                         .map(|_| configurator.push_neuron())
                         .collect();
-                    dbg!(&neuron_handles);
-                    dbg!(&cluster_gene.connections);
 
                     let filtered_connections =
                         cluster_gene.connections.iter().filter_map(|connection| {
@@ -57,8 +55,6 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
                                 from: connection.from,
                                 to: connection.to,
                             };
-                            dbg!(&hox_gene.disabled_connections);
-                            dbg!(&connection_filter);
                             if !hox_gene.disabled_connections.contains(&connection_filter) {
                                 let from = *neuron_handles.get(connection.from.0)?;
                                 let to = *neuron_handles.get(connection.to.0)?;

@@ -250,7 +250,6 @@ fn expect_connections(
             })
         })
         .for_each(|connection| {
-            dbg!(&connection);
             configurator
                 .expect_add_connection(partial_eq(connection))
                 .returns(Ok(()));
