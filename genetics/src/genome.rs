@@ -13,8 +13,15 @@ pub struct HoxGeneIndex(pub usize);
 pub struct ClusterGeneIndex(pub usize);
 
 /// A neuron
-#[derive(Debug, Clone, PartialEq)]
-pub struct Neuron {}
+#[derive(Debug, Default, Clone, PartialEq)]
+pub struct Neuron;
+
+impl Neuron {
+    /// Build a new Neuron
+    pub fn new() -> Self {
+        Neuron::default()
+    }
+}
 
 /// Weight of a [`Connection`]
 pub type Weight = f64;

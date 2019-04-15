@@ -101,7 +101,7 @@ fn add_first_cluster_to_genome(mut genome: Genome) -> Genome {
     genome.cluster_genes.insert(
         0,
         ClusterGene {
-            neurons: vec![Neuron {}, Neuron {}, Neuron {}, Neuron {}],
+            neurons: vec![Neuron::new(); 4],
             connections: first_cluster_connections(),
             placement_neuron: NeuronClusterLocalIndex(1),
         },
@@ -189,7 +189,7 @@ fn add_second_cluster_to_genome(mut genome: Genome) -> Genome {
     genome.cluster_genes.insert(
         1,
         ClusterGene {
-            neurons: vec![Neuron {}, Neuron {}, Neuron {}],
+            neurons: vec![Neuron::new(); 3],
             connections: second_cluster_connections(),
             placement_neuron: NeuronClusterLocalIndex(0),
         },

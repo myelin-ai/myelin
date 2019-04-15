@@ -37,7 +37,7 @@ mod tests {
         Genome {
             cluster_genes: vec![ClusterGene {
                 placement_neuron: NeuronClusterLocalIndex(0),
-                neurons: vec![Neuron {}, Neuron {}],
+                neurons: vec![Neuron::new(); 2],
                 connections: vec![Connection {
                     from: NeuronClusterLocalIndex(0),
                     to: NeuronClusterLocalIndex(1),

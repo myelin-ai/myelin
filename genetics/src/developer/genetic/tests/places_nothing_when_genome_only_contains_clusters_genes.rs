@@ -14,7 +14,7 @@ fn places_nothing_when_genome_only_contains_clusters_genes() {
 
 fn add_cluster_to_genome(mut genome: Genome) -> Genome {
     genome.cluster_genes.push(ClusterGene {
-        neurons: vec![Neuron {}, Neuron {}],
+        neurons: vec![Neuron::new(); 2],
         connections: vec![ConnectionDefinition {
             from: NeuronClusterLocalIndex(0),
             to: NeuronClusterLocalIndex(1),
