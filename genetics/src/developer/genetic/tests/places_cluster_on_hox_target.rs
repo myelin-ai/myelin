@@ -5,11 +5,9 @@ fn places_two_hoxes_after_each_other() {
     let genome = genome_stub();
     let genome = add_first_cluster_to_genome(genome);
 
-    let genome = add_initial_hox_gene_to_genome(genome);
-    let genome =
-        add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(genome, HoxGeneIndex(0));
-    let genome =
-        add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(genome, HoxGeneIndex(1));
+    let mut genome = add_initial_hox_gene_to_genome(genome);
+    add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(&mut genome, HoxGeneIndex(0));
+    add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(&mut genome, HoxGeneIndex(1));
 
     let config = config_stub();
 
@@ -29,11 +27,9 @@ fn places_two_hoxes_with_the_same_target() {
     let genome = genome_stub();
     let genome = add_first_cluster_to_genome(genome);
 
-    let genome = add_initial_hox_gene_to_genome(genome);
-    let genome =
-        add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(genome, HoxGeneIndex(0));
-    let genome =
-        add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(genome, HoxGeneIndex(0));
+    let mut genome = add_initial_hox_gene_to_genome(genome);
+    add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(&mut genome, HoxGeneIndex(0));
+    add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(&mut genome, HoxGeneIndex(0));
 
     let config = config_stub();
 
@@ -49,18 +45,17 @@ fn places_two_hoxes_with_the_same_target() {
 }
 
 fn add_hox_gene_placing_first_cluster_on_clusters_placed_by_hox(
-    mut genome: Genome,
+    genome: &mut Genome,
     hox_index: HoxGeneIndex,
-) -> Genome {
-    genome.hox_genes.push(HoxGene {
-        placement: HoxPlacement::HoxGene {
+) {
+    add_hox_gene_placing_cluster_on_hox(
+        genome,
+        ClusterOnHoxTestParameters {
             hox_gene: hox_index,
             target_neuron: NeuronClusterLocalIndex(3),
+            cluster_index: ClusterGeneIndex(0),
         },
-        cluster_index: ClusterGeneIndex(0),
-        disabled_connections: Vec::new(),
-    });
-    genome
+    )
 }
 
 fn expect_first_cluster_placed_on_first_hox_by_second_hox(
