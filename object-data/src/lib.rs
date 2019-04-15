@@ -108,7 +108,7 @@ impl AdditionalObjectDescriptionDeserializer for AdditionalObjectDescriptionBinc
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct AdditionalObjectDescriptionDeserializerError {
     message: String,
 }
