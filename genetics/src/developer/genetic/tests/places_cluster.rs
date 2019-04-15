@@ -24,5 +24,12 @@ fn places_cluster() {
 fn expect_second_cluster_placed_on_first_cluster_connections(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
 ) {
-    expect_second_cluster_placed_on_hox()(configurator, 4, 0, 2);
+    expect_second_cluster_placed_on_hox()(
+        configurator,
+        ExpectConnectionsParameters {
+            cluster_offset: 4,
+            placement_neuron_index: 0,
+            placement_neuron_handle: 2,
+        },
+    );
 }

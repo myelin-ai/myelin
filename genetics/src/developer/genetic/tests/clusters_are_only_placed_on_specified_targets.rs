@@ -103,35 +103,77 @@ fn add_hox_gene_placing_first_cluster_on_fourth_hox(genome: &mut Genome) {
 fn expect_first_cluster_placed_on_first_hox_by_second_hox(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
 ) {
-    expect_first_cluster_placed_on_hox()(configurator, 4, 1, 3)
+    expect_first_cluster_placed_on_hox()(
+        configurator,
+        ExpectConnectionsParameters {
+            cluster_offset: 4,
+            placement_neuron_index: 1,
+            placement_neuron_handle: 3,
+        },
+    )
 }
 
 fn expect_second_cluster_placed_on_first_hox_by_third_hox(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
 ) {
-    expect_first_cluster_placed_on_hox()(configurator, 7, 0, 2)
+    expect_first_cluster_placed_on_hox()(
+        configurator,
+        ExpectConnectionsParameters {
+            cluster_offset: 7,
+            placement_neuron_index: 0,
+            placement_neuron_handle: 2,
+        },
+    )
 }
 
 fn expect_second_cluster_placed_on_first_placed_cluster_by_fourth_hox(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
 ) {
-    expect_first_cluster_placed_on_hox()(configurator, 9, 0, 2)
+    expect_first_cluster_placed_on_hox()(
+        configurator,
+        ExpectConnectionsParameters {
+            cluster_offset: 9,
+            placement_neuron_index: 0,
+            placement_neuron_handle: 2,
+        },
+    )
 }
 
 fn expect_second_cluster_placed_on_second_placed_cluster_by_fourth_hox(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
 ) {
-    expect_first_cluster_placed_on_hox()(configurator, 11, 0, 5)
+    expect_first_cluster_placed_on_hox()(
+        configurator,
+        ExpectConnectionsParameters {
+            cluster_offset: 11,
+            placement_neuron_index: 0,
+            placement_neuron_handle: 5,
+        },
+    )
 }
 
 fn expect_first_cluster_placed_on_fourth_placed_cluster_by_fifth_hox(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
 ) {
-    expect_first_cluster_placed_on_hox()(configurator, 13, 1, 9)
+    expect_first_cluster_placed_on_hox()(
+        configurator,
+        ExpectConnectionsParameters {
+            cluster_offset: 13,
+            placement_neuron_index: 1,
+            placement_neuron_handle: 9,
+        },
+    )
 }
 
 fn expect_first_cluster_placed_on_fifth_placed_cluster_by_fifth_hox(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
 ) {
-    expect_first_cluster_placed_on_hox()(configurator, 16, 1, 11)
+    expect_first_cluster_placed_on_hox()(
+        configurator,
+        ExpectConnectionsParameters {
+            cluster_offset: 16,
+            placement_neuron_index: 1,
+            placement_neuron_handle: 11,
+        },
+    )
 }

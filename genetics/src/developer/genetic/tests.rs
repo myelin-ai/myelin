@@ -184,31 +184,21 @@ fn first_cluster_connections() -> Vec<ConnectionDefinition> {
 }
 
 fn expect_first_cluster_placed_on_hox(
-) -> impl FnOnce(&mut NeuralNetworkConfiguratorMock<'_>, usize, usize, usize) {
+) -> impl FnOnce(&mut NeuralNetworkConfiguratorMock<'_>, ExpectConnectionsParameters) {
     expect_cluster_placed_on_hox(first_cluster_connections())
 }
 
 fn expect_second_cluster_placed_on_hox(
-) -> impl FnOnce(&mut NeuralNetworkConfiguratorMock<'_>, usize, usize, usize) {
+) -> impl FnOnce(&mut NeuralNetworkConfiguratorMock<'_>, ExpectConnectionsParameters) {
     expect_cluster_placed_on_hox(second_cluster_connections())
 }
 
 fn expect_cluster_placed_on_hox(
     connections: Vec<ConnectionDefinition>,
-) -> impl FnOnce(&mut NeuralNetworkConfiguratorMock<'_>, usize, usize, usize) {
+) -> impl FnOnce(&mut NeuralNetworkConfiguratorMock<'_>, ExpectConnectionsParameters) {
     move |configurator: &mut NeuralNetworkConfiguratorMock<'_>,
-          cluster_offset: usize,
-          placement_neuron_index: usize,
-          placement_neuron_handle: usize| {
-        expect_connections(
-            configurator,
-            connections,
-            ExpectConnectionsParameters {
-                cluster_offset,
-                placement_neuron_index,
-                placement_neuron_handle,
-            },
-        );
+          parameters: ExpectConnectionsParameters| {
+        expect_connections(configurator, connections, parameters);
     }
 }
 
