@@ -43,11 +43,7 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
         for (hox_gene, cluster_gene) in hox_genes_to_cluster_genes {
             match hox_gene.placement {
                 HoxPlacement::Standalone => {
-                    let neuron_handles: Vec<_> = cluster_gene
-                        .neurons
-                        .iter()
-                        .map(|_| configurator.push_neuron())
-                        .collect();
+                    let neuron_handles = push_cluster_neurons(cluster_gene, configurator);
 
                     cluster_gene
                         .connections
@@ -63,6 +59,17 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
             }
         }
     }
+}
+
+fn push_cluster_neurons(
+    cluster_gene: &ClusterGene,
+    configurator: &mut dyn NeuralNetworkConfigurator,
+) -> Vec<Handle> {
+    cluster_gene
+        .neurons
+        .iter()
+        .map(|_| configurator.push_neuron())
+        .collect()
 }
 
 fn filter_map_enabled_connection(
