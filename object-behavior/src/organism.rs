@@ -940,6 +940,21 @@ mod tests {
         }
     }
 
+    fn expect_deserialize_with_height_and_times(
+        deserializer: &mut AdditionalObjectDescriptionDeserializerMock<'_>,
+        height: f64,
+        times: u64,
+    ) {
+        deserializer
+            .expect_deserialize(partial_eq(Vec::<u8>::new()))
+            .returns(Ok(AdditionalObjectDescription {
+                name: None,
+                kind: Kind::Organism,
+                height,
+            }))
+            .times(times);
+    }
+
     #[test]
     fn no_objects_in_fov_are_mapped_to_no_neural_inputs() {
         let own_description = object_description().build().unwrap();
@@ -947,13 +962,8 @@ mod tests {
 
         let additional_object_data_deserializer: Box<dyn AdditionalObjectDescriptionDeserializer> = {
             let mut deserializer = AdditionalObjectDescriptionDeserializerMock::new();
-            deserializer
-                .expect_deserialize(partial_eq(own_description.associated_data.clone()))
-                .returns(Ok(AdditionalObjectDescription {
-                    name: None,
-                    kind: Kind::Organism,
-                    height: 1.0,
-                }));
+
+            expect_deserialize_with_height_and_times(&mut deserializer, 1.0, 1);
 
             box deserializer
         };
@@ -1001,23 +1011,9 @@ mod tests {
         let additional_object_data_deserializer: Box<dyn AdditionalObjectDescriptionDeserializer> = {
             let mut deserializer = AdditionalObjectDescriptionDeserializerMock::new();
 
-            let expect_deserialize =
-                |deserializer: &mut AdditionalObjectDescriptionDeserializerMock<'_>,
-                 height: f64,
-                 times: u64| {
-                    deserializer
-                        .expect_deserialize(partial_eq(Vec::<u8>::new()))
-                        .returns(Ok(AdditionalObjectDescription {
-                            name: None,
-                            kind: Kind::Organism,
-                            height,
-                        }))
-                        .times(times);
-                };
-
-            expect_deserialize(&mut deserializer, 1.0, 5);
-            expect_deserialize(&mut deserializer, 2.0, 1);
-            expect_deserialize(&mut deserializer, 1.0, 8);
+            expect_deserialize_with_height_and_times(&mut deserializer, 1.0, 5);
+            expect_deserialize_with_height_and_times(&mut deserializer, 2.0, 1);
+            expect_deserialize_with_height_and_times(&mut deserializer, 1.0, 8);
 
             deserializer.expect_deserialize_calls_in_order();
 
