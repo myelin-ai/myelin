@@ -19,6 +19,7 @@ mod places_nothing_when_genome_is_empty;
 mod places_nothing_when_genome_only_contains_clusters_genes;
 mod places_nothing_when_hox_gene_points_to_non_existent_cluster_gene;
 mod places_two_hox_genes_placing_first_cluster_on_cluster_of_initial_hox;
+mod places_two_standalone_clusters;
 
 fn connection_definition_to_connection(connection_definition: ConnectionDefinition) -> Connection {
     Connection {
@@ -203,6 +204,27 @@ fn expect_cluster_placed_on_hox(
                     .returns(Ok(()));
             })
     }
+}
+
+fn expect_first_cluster_placed_standalone(
+    configurator: &mut NeuralNetworkConfiguratorMock<'_>,
+    cluster_offset: usize,
+) {
+    first_cluster_connections()
+        .into_iter()
+        .map(|connection_definition| {
+            connection_definition_to_placed_connection(ConnectionTranslationParameters {
+                connection: connection_definition,
+                cluster_offset,
+                placement_neuron_index: 0,
+                placement_neuron_handle: 0,
+            })
+        })
+        .for_each(|connection| {
+            configurator
+                .expect_add_connection(partial_eq(connection))
+                .returns(Ok(()));
+        })
 }
 
 fn add_second_cluster_to_genome(mut genome: Genome) -> Genome {

@@ -56,7 +56,6 @@ fn clusters_are_only_placed_on_specified_targets_when_target_is_hox_that_targete
     developer.develop_neural_network(&mut configurator);
 }
 
-
 fn add_hox_gene_placing_first_cluster_on_first_hox(mut genome: Genome) -> Genome {
     genome.hox_genes.push(HoxGene {
         placement: HoxPlacement::HoxGene {
