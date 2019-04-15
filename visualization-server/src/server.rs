@@ -119,7 +119,6 @@ where
         });
 
         box WebsocketConnectionAcceptor::try_new(
-            // To do: How do we get addr?
             addr,
             client_factory_fn,
             spawn_thread_factory(),
