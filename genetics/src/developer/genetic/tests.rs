@@ -12,6 +12,7 @@ use std::num::NonZeroUsize;
 
 mod clusters_are_only_placed_on_specified_targets;
 mod creates_standalone_cluster;
+mod does_not_create_connections_disabled_on_hox_gene;
 mod places_cluster;
 mod places_cluster_on_hox_target;
 mod places_hox_placing_first_cluster_on_cluster_of_initial_hox;
