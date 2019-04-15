@@ -125,6 +125,26 @@ fn add_hox_gene_placing_second_cluster_on_first_cluster(mut genome: Genome) -> G
     genome
 }
 
+fn add_hox_gene_placing_cluster_on_cluster(
+    genome: &mut Genome,
+    parameters: ClusterOnClusterTestParameters,
+) {
+    genome.hox_genes.push(HoxGene {
+        placement: HoxPlacement::ClusterGene {
+            cluster_gene: parameters.cluster_gene,
+            target_neuron: parameters.target_neuron,
+        },
+        cluster_index: parameters.cluster_index
+        disabled_connections: Vec::new(),
+    })
+}
+
+struct ClusterOnClusterTestParameters {
+    cluster_gene: ClusterGeneIndex,
+    target_neuron: NeuronClusterLocalIndex,
+    cluster_index: ClusterGeneIndex,
+}
+
 fn first_cluster_connections() -> Vec<ConnectionDefinition> {
     vec![
         ConnectionDefinition {
