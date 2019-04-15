@@ -636,12 +636,14 @@ dependencies = [
 name = "myelin-object-behavior"
 version = "0.1.0"
 dependencies = [
+ "itertools 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "maplit 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "mockiato 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "myelin-engine 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "myelin-genetics 0.1.0",
  "myelin-neural-network 0.1.0",
+ "myelin-object-data 0.1.0",
  "myelin-random 0.1.0",
  "nearly_eq 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -653,6 +655,7 @@ version = "0.1.0"
 dependencies = [
  "bincode 1.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "mockiato 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "myelin-clone-box 0.1.0",
  "serde 1.0.88 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.88 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
