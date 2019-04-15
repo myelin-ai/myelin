@@ -257,18 +257,12 @@ where
                 })
                 .sorted_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
                 .scan(0.0, |running_max, (associated_data, distance)| {
-                    let item = if associated_data.height < *running_max {
-                        None
-                    } else {
-                        *running_max = associated_data.height;
-                        Some(distance)
-                    };
-
-                    if associated_data.height > own_associated_data.height {
-                        *running_max = std::f64::MAX;
-                    }
-
-                    Some(item)
+                    filter_visible_object(
+                        running_max,
+                        associated_data.height,
+                        own_associated_data.height,
+                        distance,
+                    )
                 })
                 .take(MAX_OBJECTS_PER_RAYCAST)
                 .collect();
@@ -277,6 +271,42 @@ where
             distances
         })
         .flatten()
+}
+
+fn filter_visible_object(
+    running_max: &mut f64,
+    object_height: f64,
+    own_height: f64,
+    distance: f64,
+) -> Option<Option<f64>> {
+    let distance = filter_shorter_object(running_max, object_height, distance);
+
+    ensure_that_objects_behind_obstacle_that_is_taller_than_self_are_not_visible(
+        running_max,
+        own_height,
+        object_height,
+    );
+
+    Some(distance)
+}
+
+fn filter_shorter_object(running_max: &mut f64, object_height: f64, distance: f64) -> Option<f64> {
+    if object_height < *running_max {
+        None
+    } else {
+        *running_max = object_height;
+        Some(distance)
+    }
+}
+
+fn ensure_that_objects_behind_obstacle_that_is_taller_than_self_are_not_visible(
+    running_max: &mut f64,
+    object_height: f64,
+    own_height: f64,
+) {
+    if object_height > own_height {
+        *running_max = std::f64::MAX
+    }
 }
 
 fn distance_between_objects(
