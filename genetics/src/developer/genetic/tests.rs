@@ -111,19 +111,12 @@ fn add_first_cluster_to_genome(mut genome: Genome) -> Genome {
     genome
 }
 
-fn add_hox_gene_placing_second_cluster_on_first_cluster(mut genome: Genome) -> Genome {
-    genome.hox_genes.insert(
-        1,
-        HoxGene {
-            placement: HoxPlacement::ClusterGene {
-                cluster_gene: ClusterGeneIndex(0),
-                target_neuron: NeuronClusterLocalIndex(2),
-            },
-            cluster_index: ClusterGeneIndex(1),
-            disabled_connections: Vec::new(),
-        },
-    );
-    genome
+fn add_hox_gene_placing_second_cluster_on_first_cluster(genome: &mut Genome) {
+    add_hox_gene_placing_cluster_on_cluster(genome, ClusterOnClusterTestParameters{
+        cluster_gene: ClusterGeneIndex(0),
+        target_neuron: NeuronClusterLocalIndex(2),
+        cluster_index: ClusterGeneIndex(1),
+    })
 }
 
 fn add_hox_gene_placing_cluster_on_cluster(
