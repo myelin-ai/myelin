@@ -139,6 +139,27 @@ struct ClusterOnClusterTestParameters {
     cluster_index: ClusterGeneIndex,
 }
 
+fn add_hox_gene_placing_cluster_on_hox(
+    genome: &mut Genome,
+    parameters: ClusterOnHoxTestParameters,
+) {
+    genome.hox_genes.push(HoxGene {
+        placement: HoxPlacement::HoxGene {
+            hox_gene: parameters.hox_gene,
+            target_neuron: parameters.target_neuron,
+        },
+        cluster_index: parameters.cluster_index,
+        disabled_connections: Vec::new(),
+    })
+}
+
+struct ClusterOnHoxTestParameters {
+    hox_gene: HoxGeneIndex,
+    target_neuron: NeuronClusterLocalIndex,
+    cluster_index: ClusterGeneIndex,
+}
+
+
 fn first_cluster_connections() -> Vec<ConnectionDefinition> {
     vec![
         ConnectionDefinition {
