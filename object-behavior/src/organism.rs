@@ -252,7 +252,7 @@ where
                         additional_object_data_deserializer
                             .deserialize(&object.description.associated_data)
                             .expect("Unable to deserialize data"),
-                        distance_between_objects(&object.description, &own_description),
+                        distance_between_objects(&object.description, own_description),
                     )
                 })
                 .sorted_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
