@@ -78,7 +78,7 @@ mod tests {
 
     fn hox_gene(cluster_index: usize) -> HoxGene {
         HoxGene {
-            placement: HoxPlacement::Standalone,
+            placement_target: HoxPlacement::Standalone,
             cluster_index: ClusterGeneIndex(cluster_index),
             disabled_connections: Vec::new(),
         }

@@ -51,7 +51,7 @@ impl GenomeStubBuilder {
 
     fn add_initial_hox_gene(&mut self) -> &mut Self {
         self.genome.hox_genes.push(HoxGene {
-            placement: HoxPlacement::Standalone,
+            placement_target: HoxPlacement::Standalone,
             cluster_index: ClusterGeneIndex(0),
             disabled_connections: vec![],
         });
@@ -72,7 +72,7 @@ impl GenomeStubBuilder {
         parameters: ClusterOnClusterTestParameters,
     ) -> &mut Self {
         self.genome.hox_genes.push(HoxGene {
-            placement: HoxPlacement::ClusterGene {
+            placement_target: HoxPlacement::ClusterGene {
                 cluster_gene: parameters.cluster_gene,
                 target_neuron: parameters.target_neuron,
             },
@@ -87,7 +87,7 @@ impl GenomeStubBuilder {
         parameters: ClusterOnHoxTestParameters,
     ) -> &mut Self {
         self.genome.hox_genes.push(HoxGene {
-            placement: HoxPlacement::HoxGene {
+            placement_target: HoxPlacement::HoxGene {
                 hox_gene: parameters.hox_gene,
                 target_neuron: parameters.target_neuron,
             },

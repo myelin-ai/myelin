@@ -41,7 +41,7 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
         let hox_genes_to_cluster_genes = map_hox_genes_to_cluster_genes(hox_genes, &cluster_genes);
 
         for (hox_gene, cluster_gene) in hox_genes_to_cluster_genes {
-            match hox_gene.placement {
+            match hox_gene.placement_target {
                 HoxPlacement::Standalone => {
                     let neuron_handles = push_cluster_neurons(cluster_gene, configurator);
                     push_cluster_connections(
@@ -52,8 +52,8 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
                     );
                 }
                 HoxPlacement::ClusterGene {
-                    cluster_gene: target_cluster_gene_index,
-                    target_neuron: target_neuron_index,
+                    cluster_gene: _target_cluster_gene_index,
+                    target_neuron: _target_neuron_index,
                 } => unimplemented!(),
                 HoxPlacement::HoxGene {
                     hox_gene: _target_hox_gene_index,

@@ -45,7 +45,7 @@ mod tests {
                 }],
             }],
             hox_genes: vec![HoxGene {
-                placement: HoxPlacement::Standalone,
+                placement_target: HoxPlacement::Standalone,
                 cluster_index: ClusterGeneIndex(1),
                 disabled_connections: Vec::new(),
             }],
