@@ -52,8 +52,8 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
                     );
                 }
                 HoxPlacement::ClusterGene {
-                    cluster_gene: _target_cluster_gene_index,
-                    target_neuron: _target_neuron_index,
+                    cluster_gene: target_cluster_gene_index,
+                    target_neuron: target_neuron_index,
                 } => unimplemented!(),
                 HoxPlacement::HoxGene {
                     hox_gene: _target_hox_gene_index,

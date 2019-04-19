@@ -92,8 +92,8 @@ impl From<Connection> for ConnectionFilter {
 /// A gene defining the placement of neuron clusters.
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct HoxGene {
-    /// Placement target of the hox
-    pub placement: HoxPlacement,
+    /// The target(s) that the hox places its cluster(s) on
+    pub placement_target: HoxPlacement,
     /// Index of the cluster that will be instantiated and placed.
     pub cluster_index: ClusterGeneIndex,
     /// These connections, if existent, will not be enabled on the placed cluster.
