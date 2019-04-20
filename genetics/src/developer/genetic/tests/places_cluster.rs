@@ -14,7 +14,7 @@ fn places_cluster() {
     let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
     let mut configurator = NeuralNetworkConfiguratorMock::new();
 
-    expect_push_amount_of_neurons(&mut configurator, 7);
+    expect_push_amount_of_neurons(&mut configurator, 6);
     expect_first_cluster_placed_standalone(&mut configurator, 0);
     expect_second_cluster_placed_on_first_cluster_connections(&mut configurator);
 

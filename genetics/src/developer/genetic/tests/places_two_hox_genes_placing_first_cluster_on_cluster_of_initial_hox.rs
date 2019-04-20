@@ -73,7 +73,7 @@ fn expect_third_hox_places_first_cluster_on_second_placed_cluster(
             cluster_offset: 10,
             placement_neuron: Some(PlacementNeuronTranslation {
                 index: 1,
-                handle: 3,
+                handle: 6,
             }),
         },
     )
