@@ -78,7 +78,7 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
                         })
                         .collect();
 
-                     for placed_cluster in placed_clusters.into_iter() {
+                    for placed_cluster in placed_clusters.into_iter() {
                         push_cluster_connections(
                             cluster_gene,
                             &hox_gene,
@@ -91,8 +91,7 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
                             placed_cluster,
                         );
                     }
-                    
-                },
+                }
                 HoxPlacement::HoxGene {
                     hox_gene: target_hox_gene_index,
                     target_neuron: target_neuron_index,
