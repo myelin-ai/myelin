@@ -1,7 +1,8 @@
-use crate::genome::{self, ClusterGene, ConnectionFilter, Genome, HoxGene, HoxPlacement};
+use crate::genome::{self, *};
 use crate::orchestrator_impl::{NeuralNetworkConfigurator, NeuralNetworkDeveloper};
 use crate::NeuralNetworkDevelopmentConfiguration;
 use myelin_neural_network::{Connection, Handle};
+use std::collections::HashMap;
 
 #[cfg(test)]
 mod tests;
@@ -39,32 +40,60 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
         } = *self;
 
         let hox_genes_to_cluster_genes = map_hox_genes_to_cluster_genes(hox_genes, &cluster_genes);
+        let mut cluster_gene_to_placed_clusters: HashMap<ClusterGeneIndex, Vec<PlacedCluster>> =
+            HashMap::new();
+        let mut hox_gene_to_placed_clusters: HashMap<HoxGeneIndex, Vec<PlacedCluster>> =
+            HashMap::new();
 
-        for (hox_gene, cluster_gene) in hox_genes_to_cluster_genes {
+        for (hox_index, (hox_gene, cluster_gene)) in hox_genes_to_cluster_genes.enumerate() {
             match hox_gene.placement_target {
                 HoxPlacement::Standalone => {
-                    let neuron_handles = push_cluster_neurons(cluster_gene, configurator);
+                    let neuron_handles =
+                        push_standalone_cluster_neurons(cluster_gene, configurator);
                     push_cluster_connections(
                         cluster_gene,
                         &hox_gene,
                         &neuron_handles,
                         configurator,
                     );
+                    cluster_gene_to_placed_clusters
+                        .entry(hox_gene.cluster_index)
+                        .or_default()
+                        .push(neuron_handles.clone());
+                    hox_gene_to_placed_clusters
+                        .entry(HoxGeneIndex(hox_index))
+                        .or_default()
+                        .push(neuron_handles);
                 }
                 HoxPlacement::ClusterGene {
                     cluster_gene: _target_cluster_gene_index,
                     target_neuron: _target_neuron_index,
                 } => unimplemented!(),
                 HoxPlacement::HoxGene {
-                    hox_gene: _target_hox_gene_index,
-                    target_neuron: _target_neuron_index,
-                } => unimplemented!(),
+                    hox_gene: target_hox_gene_index,
+                    target_neuron: target_neuron_index,
+                } => {
+                    let neuron_handles = hox_gene_to_placed_clusters
+                        .get(&target_hox_gene_index)
+                        .iter()
+                        .flat_map(|placed_clusters| placed_clusters.iter())
+                        .map(|placed_cluster| {
+                            push_hox_targeted_cluster_neurons(
+                                cluster_gene,
+                                placed_cluster,
+                                target_neuron_index,
+                                configurator,
+                            )
+                        });
+                }
             }
         }
     }
 }
 
-fn push_cluster_neurons(
+type PlacedCluster = Vec<Handle>;
+
+fn push_standalone_cluster_neurons(
     cluster_gene: &ClusterGene,
     configurator: &mut dyn NeuralNetworkConfigurator,
 ) -> Vec<Handle> {
@@ -72,6 +101,30 @@ fn push_cluster_neurons(
         .neurons
         .iter()
         .map(|_| configurator.push_neuron())
+        .collect()
+}
+
+fn push_hox_targeted_cluster_neurons(
+    cluster_gene: &ClusterGene,
+    placed_cluster: &[Handle],
+    target_neuron_index: NeuronClusterLocalIndex,
+    configurator: &mut dyn NeuralNetworkConfigurator,
+) -> Vec<Handle> {
+    let target_neuron_handle = placed_cluster
+        .get(target_neuron_index.0)
+        .expect("Target neuron index out of bounds");
+    cluster_gene
+        .neurons
+        .iter()
+        .enumerate()
+        // This preserves the order of neurons
+        .map(|(index, _)| {
+            if index == cluster_gene.placement_neuron.0 {
+                *target_neuron_handle
+            } else {
+                configurator.push_neuron()
+            }
+        })
         .collect()
 }
 
