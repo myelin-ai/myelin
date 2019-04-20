@@ -40,30 +40,24 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
         } = *self;
 
         let hox_genes_to_cluster_genes = map_hox_genes_to_cluster_genes(hox_genes, &cluster_genes);
-        let mut cluster_gene_to_placed_clusters: HashMap<ClusterGeneIndex, Vec<PlacedCluster>> =
-            HashMap::new();
-        let mut hox_gene_to_placed_clusters: HashMap<HoxGeneIndex, Vec<PlacedCluster>> =
-            HashMap::new();
+        let mut placed_cluster_cache = PlacedClusterCache::default();
 
         for (hox_index, (hox_gene, cluster_gene)) in hox_genes_to_cluster_genes.enumerate() {
             match hox_gene.placement_target {
                 HoxPlacement::Standalone => {
-                    let neuron_handles =
+                    let placed_cluster =
                         push_standalone_cluster_neurons(cluster_gene, configurator);
                     push_cluster_connections(
                         cluster_gene,
                         &hox_gene,
-                        &neuron_handles,
+                        &placed_cluster,
                         configurator,
                     );
-                    cluster_gene_to_placed_clusters
-                        .entry(hox_gene.cluster_index)
-                        .or_default()
-                        .push(neuron_handles.clone());
-                    hox_gene_to_placed_clusters
-                        .entry(HoxGeneIndex(hox_index))
-                        .or_default()
-                        .push(neuron_handles);
+                    placed_cluster_cache.add_placed_cluster_to_cache(
+                        &hox_gene,
+                        HoxGeneIndex(hox_index),
+                        placed_cluster,
+                    );
                 }
                 HoxPlacement::ClusterGene {
                     cluster_gene: _target_cluster_gene_index,
@@ -73,7 +67,8 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
                     hox_gene: target_hox_gene_index,
                     target_neuron: target_neuron_index,
                 } => {
-                    let placed_clusters: Vec<_> = hox_gene_to_placed_clusters
+                    let placed_clusters: Vec<_> = placed_cluster_cache
+                        .hox_gene_to_placed_clusters
                         .get(&target_hox_gene_index)
                         .iter()
                         .flat_map(|placed_clusters| placed_clusters.iter())
@@ -87,21 +82,18 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
                         })
                         .collect();
 
-                    for placed_cluster in placed_clusters {
+                    for placed_cluster in placed_clusters.into_iter() {
                         push_cluster_connections(
                             cluster_gene,
                             &hox_gene,
                             &placed_cluster,
                             configurator,
                         );
-                        cluster_gene_to_placed_clusters
-                            .entry(hox_gene.cluster_index)
-                            .or_default()
-                            .push(placed_cluster.clone());
-                        hox_gene_to_placed_clusters
-                            .entry(HoxGeneIndex(hox_index))
-                            .or_default()
-                            .push(placed_cluster);
+                        placed_cluster_cache.add_placed_cluster_to_cache(
+                            &hox_gene,
+                            HoxGeneIndex(hox_index),
+                            placed_cluster,
+                        );
                     }
                 }
             }
@@ -144,6 +136,30 @@ fn push_hox_targeted_cluster_neurons(
             }
         })
         .collect()
+}
+
+#[derive(Debug, Default)]
+struct PlacedClusterCache {
+    cluster_gene_to_placed_clusters: HashMap<ClusterGeneIndex, Vec<PlacedCluster>>,
+    hox_gene_to_placed_clusters: HashMap<HoxGeneIndex, Vec<PlacedCluster>>,
+}
+
+impl PlacedClusterCache {
+    fn add_placed_cluster_to_cache(
+        &mut self,
+        hox_gene: &HoxGene,
+        hox_index: HoxGeneIndex,
+        placed_cluster: Vec<Handle>,
+    ) {
+        self.cluster_gene_to_placed_clusters
+            .entry(hox_gene.cluster_index)
+            .or_default()
+            .push(placed_cluster.clone());
+        self.hox_gene_to_placed_clusters
+            .entry(hox_index)
+            .or_default()
+            .push(placed_cluster);
+    }
 }
 
 fn push_cluster_connections(
