@@ -73,7 +73,7 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
                     hox_gene: target_hox_gene_index,
                     target_neuron: target_neuron_index,
                 } => {
-                    let neuron_handles = hox_gene_to_placed_clusters
+                    let placed_clusters: Vec<_> = hox_gene_to_placed_clusters
                         .get(&target_hox_gene_index)
                         .iter()
                         .flat_map(|placed_clusters| placed_clusters.iter())
@@ -84,7 +84,25 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
                                 target_neuron_index,
                                 configurator,
                             )
-                        });
+                        })
+                        .collect();
+
+                    for placed_cluster in placed_clusters {
+                        push_cluster_connections(
+                            cluster_gene,
+                            &hox_gene,
+                            &placed_cluster,
+                            configurator,
+                        );
+                        cluster_gene_to_placed_clusters
+                            .entry(hox_gene.cluster_index)
+                            .or_default()
+                            .push(placed_cluster.clone());
+                        hox_gene_to_placed_clusters
+                            .entry(HoxGeneIndex(hox_index))
+                            .or_default()
+                            .push(placed_cluster);
+                    }
                 }
             }
         }
