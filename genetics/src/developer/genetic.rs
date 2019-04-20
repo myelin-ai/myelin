@@ -60,9 +60,39 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
                     );
                 }
                 HoxPlacement::ClusterGene {
-                    cluster_gene: _target_cluster_gene_index,
-                    target_neuron: _target_neuron_index,
-                } => unimplemented!(),
+                    cluster_gene: target_cluster_gene_index,
+                    target_neuron: target_neuron_index,
+                } => {
+                    let placed_clusters: Vec<_> = placed_cluster_cache
+                        .cluster_gene_to_placed_clusters
+                        .get(&target_cluster_gene_index)
+                        .iter()
+                        .flat_map(|placed_clusters| placed_clusters.iter())
+                        .map(|placed_cluster| {
+                            push_targeted_cluster_neurons(
+                                cluster_gene,
+                                placed_cluster,
+                                target_neuron_index,
+                                configurator,
+                            )
+                        })
+                        .collect();
+
+                     for placed_cluster in placed_clusters.into_iter() {
+                        push_cluster_connections(
+                            cluster_gene,
+                            &hox_gene,
+                            &placed_cluster,
+                            configurator,
+                        );
+                        placed_cluster_cache.add_placed_cluster_to_cache(
+                            &hox_gene,
+                            HoxGeneIndex(hox_index),
+                            placed_cluster,
+                        );
+                    }
+                    
+                },
                 HoxPlacement::HoxGene {
                     hox_gene: target_hox_gene_index,
                     target_neuron: target_neuron_index,
@@ -73,7 +103,7 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
                         .iter()
                         .flat_map(|placed_clusters| placed_clusters.iter())
                         .map(|placed_cluster| {
-                            push_hox_targeted_cluster_neurons(
+                            push_targeted_cluster_neurons(
                                 cluster_gene,
                                 placed_cluster,
                                 target_neuron_index,
@@ -114,7 +144,7 @@ fn push_standalone_cluster_neurons(
         .collect()
 }
 
-fn push_hox_targeted_cluster_neurons(
+fn push_targeted_cluster_neurons(
     cluster_gene: &ClusterGene,
     placed_cluster: &[Handle],
     target_neuron_index: NeuronClusterLocalIndex,
