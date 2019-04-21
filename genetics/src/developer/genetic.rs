@@ -78,7 +78,7 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
                         })
                         .collect();
 
-                    for placed_cluster in placed_clusters.into_iter() {
+                    for placed_cluster in placed_clusters {
                         push_cluster_connections(
                             cluster_gene,
                             &hox_gene,
@@ -111,7 +111,7 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
                         })
                         .collect();
 
-                    for placed_cluster in placed_clusters.into_iter() {
+                    for placed_cluster in placed_clusters {
                         push_cluster_connections(
                             cluster_gene,
                             &hox_gene,
