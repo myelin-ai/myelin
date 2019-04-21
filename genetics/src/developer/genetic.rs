@@ -43,8 +43,8 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
         let mut placed_cluster_cache = PlacedClusterCache::default();
 
         for (hox_index, (hox_gene, cluster_gene)) in hox_genes_to_cluster_genes.enumerate() {
-            match hox_gene.placement_target {
-                HoxPlacement::Standalone => {
+            match resolve_hox_placement(&hox_gene.placement_target, &placed_cluster_cache) {
+                ResolvedPlacement::Standalone => {
                     let placed_cluster =
                         push_standalone_cluster_neurons(cluster_gene, configurator);
                     push_cluster_connections(
@@ -59,46 +59,8 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
                         placed_cluster,
                     );
                 }
-                HoxPlacement::ClusterGene {
-                    cluster_gene: target_cluster_gene_index,
-                    target_neuron: target_neuron_index,
-                } => {
-                    let placed_clusters: Vec<_> = placed_cluster_cache
-                        .cluster_gene_to_placed_clusters
-                        .get(&target_cluster_gene_index)
-                        .iter()
-                        .flat_map(|placed_clusters| placed_clusters.iter())
-                        .map(|placed_cluster| {
-                            push_targeted_cluster_neurons(
-                                cluster_gene,
-                                placed_cluster,
-                                target_neuron_index,
-                                configurator,
-                            )
-                        })
-                        .collect();
-
-                    for placed_cluster in placed_clusters {
-                        push_cluster_connections(
-                            cluster_gene,
-                            &hox_gene,
-                            &placed_cluster,
-                            configurator,
-                        );
-                        placed_cluster_cache.add_placed_cluster_to_cache(
-                            &hox_gene,
-                            HoxGeneIndex(hox_index),
-                            placed_cluster,
-                        );
-                    }
-                }
-                HoxPlacement::HoxGene {
-                    hox_gene: target_hox_gene_index,
-                    target_neuron: target_neuron_index,
-                } => {
-                    let placed_clusters: Vec<_> = placed_cluster_cache
-                        .hox_gene_to_placed_clusters
-                        .get(&target_hox_gene_index)
+                ResolvedPlacement::OnPlacedClusters(placed_clusters, target_neuron_index) => {
+                    let placed_clusters: Vec<_> = placed_clusters
                         .iter()
                         .flat_map(|placed_clusters| placed_clusters.iter())
                         .map(|placed_cluster| {
@@ -128,6 +90,40 @@ impl NeuralNetworkDeveloper for GeneticNeuralNetworkDeveloper {
             }
         }
     }
+}
+
+fn resolve_hox_placement<'a>(
+    placement: &HoxPlacement,
+    placed_cluster_cache: &'a PlacedClusterCache,
+) -> ResolvedPlacement<'a> {
+    match placement {
+        HoxPlacement::Standalone => ResolvedPlacement::Standalone,
+        HoxPlacement::ClusterGene {
+            cluster_gene,
+            target_neuron,
+        } => {
+            let placed_clusters = placed_cluster_cache
+                .cluster_gene_to_placed_clusters
+                .get(cluster_gene);
+
+            ResolvedPlacement::OnPlacedClusters(placed_clusters, *target_neuron)
+        }
+        HoxPlacement::HoxGene {
+            hox_gene,
+            target_neuron,
+        } => {
+            let placed_clusters = placed_cluster_cache
+                .hox_gene_to_placed_clusters
+                .get(hox_gene);
+
+            ResolvedPlacement::OnPlacedClusters(placed_clusters, *target_neuron)
+        }
+    }
+}
+
+enum ResolvedPlacement<'a> {
+    Standalone,
+    OnPlacedClusters(Option<&'a Vec<PlacedCluster>>, NeuronClusterLocalIndex),
 }
 
 type PlacedCluster = Vec<Handle>;
