@@ -45,10 +45,7 @@ fn expect_first_cluster_connections_without_disabled_connections(
         first_cluster_connections().into_iter().skip(1).collect(),
         ExpectConnectionsParameters {
             cluster_offset: 0,
-            placement_neuron: Some(PlacementNeuronTranslation {
-                index: 0,
-                handle: 0,
-            }),
+            placement_neuron: None,
         },
     );
 }
@@ -56,7 +53,7 @@ fn expect_first_cluster_connections_without_disabled_connections(
 impl GenomeStubBuilder {
     fn add_initial_hox_gene_with_disabled_connection(&mut self) -> &mut Self {
         self.genome.hox_genes.push(HoxGene {
-            placement: HoxPlacement::Standalone,
+            placement_target: HoxPlacement::Standalone,
             cluster_index: ClusterGeneIndex(0),
             disabled_connections: vec![ConnectionFilter {
                 from: NeuronClusterLocalIndex(0),
@@ -68,7 +65,7 @@ impl GenomeStubBuilder {
 
     fn add_initial_hox_gene_with_valid_and_invalid_disabled_connection(&mut self) -> &mut Self {
         self.genome.hox_genes.push(HoxGene {
-            placement: HoxPlacement::Standalone,
+            placement_target: HoxPlacement::Standalone,
             cluster_index: ClusterGeneIndex(0),
             disabled_connections: vec![
                 ConnectionFilter {
