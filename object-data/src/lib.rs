@@ -12,10 +12,13 @@
     clippy::large_digit_groups,
     clippy::explicit_into_iter_loop
 )]
+#![feature(box_syntax)]
+#![feature(specialization)]
 
+use myelin_clone_box::clone_box;
 use serde_derive::{Deserialize, Serialize};
 use std::error::Error;
-use std::fmt::Debug;
+use std::fmt::{self, Debug, Display};
 
 #[cfg(feature = "use-mocks")]
 use mockiato::mockable;
@@ -59,16 +62,26 @@ pub trait AdditionalObjectDescriptionSerializer: Debug {
 /// Handles deserialization for `AdditionalObjectDescription`
 ///
 /// [`AdditionalObjectDescription`]: ./struct.AdditionalObjectDescription.html
-#[cfg_attr(feature = "use-mocks", mockable)]
-pub trait AdditionalObjectDescriptionDeserializer: Debug {
+#[cfg_attr(feature = "use-mocks", mockable(static_references))]
+pub trait AdditionalObjectDescriptionDeserializer:
+    Debug + AdditionalObjectDescriptionDeserializerClone
+{
     /// Deserialize into associated object data
-    fn deserialize(&self, data: &[u8]) -> Result<AdditionalObjectDescription, Box<dyn Error>>;
+    fn deserialize(
+        &self,
+        data: &[u8],
+    ) -> Result<AdditionalObjectDescription, AdditionalObjectDescriptionDeserializerError>;
 }
+
+clone_box!(
+    AdditionalObjectDescriptionDeserializer,
+    AdditionalObjectDescriptionDeserializerClone
+);
 
 /// Implements an `AdditionalObjectDescriptionSerializer` using bincode
 ///
 /// [`AdditionalObjectDescriptionSerializer`]: ./trait.AdditionalObjectDescriptionSerializer.html
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct AdditionalObjectDescriptionBincodeSerializer {}
 
 impl AdditionalObjectDescriptionSerializer for AdditionalObjectDescriptionBincodeSerializer {
@@ -81,14 +94,32 @@ impl AdditionalObjectDescriptionSerializer for AdditionalObjectDescriptionBincod
 /// Implements an `AdditionalObjectDescriptionDeserializer` using bincode
 ///
 /// [`AdditionalObjectDescriptionDeserializer`]: ./trait.AdditionalObjectDescriptionDeserializer.html
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct AdditionalObjectDescriptionBincodeDeserializer {}
 
 impl AdditionalObjectDescriptionDeserializer for AdditionalObjectDescriptionBincodeDeserializer {
-    fn deserialize(&self, data: &[u8]) -> Result<AdditionalObjectDescription, Box<dyn Error>> {
-        bincode::deserialize(data).map_err(Into::into)
+    fn deserialize(
+        &self,
+        data: &[u8],
+    ) -> Result<AdditionalObjectDescription, AdditionalObjectDescriptionDeserializerError> {
+        bincode::deserialize(data).map_err(|err| AdditionalObjectDescriptionDeserializerError {
+            message: err.description().to_string(),
+        })
     }
 }
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct AdditionalObjectDescriptionDeserializerError {
+    message: String,
+}
+
+impl Display for AdditionalObjectDescriptionDeserializerError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl Error for AdditionalObjectDescriptionDeserializerError {}
 
 #[cfg(test)]
 mod tests {

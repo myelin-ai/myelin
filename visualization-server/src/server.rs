@@ -19,8 +19,10 @@ use myelin_neural_network::spiking_neural_network::DefaultSpikingNeuralNetwork;
 use myelin_object_behavior::organism::OrganismBehavior;
 use myelin_object_behavior::stochastic_spreading::StochasticSpreading;
 use myelin_object_behavior::Static;
-use myelin_object_data::AdditionalObjectDescriptionBincodeSerializer;
 use myelin_object_data::Kind;
+use myelin_object_data::{
+    AdditionalObjectDescriptionBincodeDeserializer, AdditionalObjectDescriptionBincodeSerializer,
+};
 use myelin_random::RandomImpl;
 use myelin_visualization_core::serialization::BincodeSerializer;
 use myelin_worldgen::NameProviderBuilder;
@@ -71,6 +73,7 @@ where
                 box ChromosomalCrossoverGenomeDeriver::new(box RandomImpl::new()),
                 box GenomeMutatorStub::new(),
             ),
+            box AdditionalObjectDescriptionBincodeDeserializer::default(),
         )
     };
     let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
@@ -119,7 +122,6 @@ where
         });
 
         box WebsocketConnectionAcceptor::try_new(
-            // To do: How do we get addr?
             addr,
             client_factory_fn,
             spawn_thread_factory(),
