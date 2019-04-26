@@ -9,7 +9,6 @@ use wasm_bindgen::prelude::*;
 /// Created by [`init()`].
 ///
 /// [`init()`]: ./fn.init.html
-
 #[wasm_bindgen]
 #[derive(Debug)]
 pub struct InputHandler {

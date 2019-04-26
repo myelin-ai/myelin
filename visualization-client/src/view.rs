@@ -1,5 +1,5 @@
 //! Internal module containing the DOM manipulation.
-pub mod constant;
+pub(crate) mod constant;
 
 use crate::presenter::View;
 use crate::view_model::*;
