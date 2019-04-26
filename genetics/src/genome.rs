@@ -66,7 +66,7 @@ pub enum ClusterGeneSpecilization {
     /// The initial cluster placed by the first [standalone hox gene].
     /// It can only be placed once.
     ///
-    /// [standalone hox gene]: [./enum.HoxPlacement.html#variant.Standalone]
+    /// [standalone hox gene]: enum.HoxPlacement.html#variant.Standalone
     Initial,
 
     /// The neuron at the specified index receives external input
