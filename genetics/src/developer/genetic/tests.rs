@@ -37,6 +37,7 @@ impl GenomeStubBuilder {
             neurons: vec![Neuron::new(); 4],
             connections: first_cluster_connections(),
             placement_neuron: NeuronClusterLocalIndex(1),
+            specialization: ClusterGeneSpecilization::default(),
         });
         self
     }
@@ -46,6 +47,7 @@ impl GenomeStubBuilder {
             neurons: vec![Neuron::new(); 3],
             connections: second_cluster_connections(),
             placement_neuron: NeuronClusterLocalIndex(0),
+            specialization: ClusterGeneSpecilization::default(),
         });
         self
     }
