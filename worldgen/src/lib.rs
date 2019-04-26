@@ -27,10 +27,10 @@ mod name_provider;
 /// API for [`World`] generation
 ///
 /// [`World`]: ../myelin_engine/world/trait.World.html
-pub trait WorldGenerator {
+pub trait WorldGenerator<'a> {
     /// Generate a new [`World`] and populates it with [`Objects`]
     ///
     /// [`World`]: ../myelin_engine/world/trait.World.html
     /// [`Objects`]: ../myelin_engine/object/struct.Body.html
-    fn generate(&mut self) -> Box<dyn Simulation>;
+    fn generate(&mut self) -> Box<dyn Simulation + 'a>;
 }
