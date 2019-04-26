@@ -9,7 +9,6 @@ use myelin_genetics::{
 };
 use myelin_neural_network::{Handle, Milliseconds, NeuralNetwork};
 use myelin_object_data::AdditionalObjectDescriptionDeserializer;
-use std::any::Any;
 use std::collections::HashMap;
 use std::num::NonZeroUsize;
 
@@ -144,10 +143,6 @@ impl ObjectBehavior for OrganismBehavior {
             neural_network.as_ref(),
             &own_object.description,
         )
-    }
-
-    fn as_any(&self) -> &dyn Any {
-        self
     }
 }
 

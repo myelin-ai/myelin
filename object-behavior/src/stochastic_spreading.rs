@@ -2,7 +2,6 @@
 
 use myelin_engine::prelude::*;
 use myelin_random::Random;
-use std::any::Any;
 
 /// An [`ObjectBehavior`] that spreads itself in random intervals.
 /// The spreading has a chance to occur in every step
@@ -189,10 +188,6 @@ impl ObjectBehavior for StochasticSpreading {
         } else {
             None
         }
-    }
-
-    fn as_any(&self) -> &'_ dyn Any {
-        self
     }
 }
 
@@ -696,6 +691,13 @@ mod tests {
             }
             action => panic!("Expected Action::Spawn, got {:#?}", action),
         }
+    }
+
+    #[test]
+    fn can_be_downcast_from_trait() {
+        let object_behavior: Box<dyn ObjectBehavior> = box StochasticSpreading::new(SPREADING_CHANGE, box RandomMock::new());
+        let object_behavior_as_any = object_behavior.as_any();
+        let _downcast_behavior: &StochasticSpreading = object_behavior_as_any.downcast_ref().unwrap();
     }
 
     fn object_description_at_location(x: f64, y: f64) -> ObjectDescription {
