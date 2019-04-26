@@ -14,7 +14,7 @@ fn places_cluster() {
     let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
     let mut configurator = NeuralNetworkConfiguratorMock::new();
 
-    expect_push_amount_of_neurons(&mut configurator, 7);
+    expect_push_amount_of_neurons(&mut configurator, 6);
     expect_first_cluster_placed_standalone(&mut configurator, 0);
     expect_second_cluster_placed_on_first_cluster_connections(&mut configurator);
 
@@ -28,8 +28,10 @@ fn expect_second_cluster_placed_on_first_cluster_connections(
         configurator,
         ExpectConnectionsParameters {
             cluster_offset: 4,
-            placement_neuron_index: 0,
-            placement_neuron_handle: 2,
+            placement_neuron: Some(PlacementNeuronTranslation {
+                index: 0,
+                handle: 2,
+            }),
         },
     );
 }

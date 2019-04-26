@@ -39,8 +39,10 @@ fn expect_first_cluster_placed_on_first_cluster_connections(
         first_cluster_connections(),
         ExpectConnectionsParameters {
             cluster_offset: 4,
-            placement_neuron_index: 1,
-            placement_neuron_handle: 3,
+            placement_neuron: Some(PlacementNeuronTranslation {
+                index: 1,
+                handle: 3,
+            }),
         },
     )
 }

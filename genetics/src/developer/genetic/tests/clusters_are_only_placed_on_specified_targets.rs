@@ -16,7 +16,7 @@ fn clusters_are_only_placed_on_specified_targets() {
     let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
     let mut configurator = NeuralNetworkConfiguratorMock::new();
 
-    expect_push_amount_of_neurons(&mut configurator, 10);
+    expect_push_amount_of_neurons(&mut configurator, 13);
     expect_first_cluster_placed_standalone(&mut configurator, 0);
     expect_first_cluster_placed_on_first_hox_by_second_hox(&mut configurator);
     expect_second_cluster_placed_on_first_hox_by_third_hox(&mut configurator);
@@ -43,7 +43,7 @@ fn clusters_are_only_placed_on_specified_targets_when_target_is_hox_that_targete
     let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
     let mut configurator = NeuralNetworkConfiguratorMock::new();
 
-    expect_push_amount_of_neurons(&mut configurator, 10);
+    expect_push_amount_of_neurons(&mut configurator, 19);
     expect_first_cluster_placed_standalone(&mut configurator, 0);
     expect_first_cluster_placed_on_first_hox_by_second_hox(&mut configurator);
     expect_second_cluster_placed_on_first_hox_by_third_hox(&mut configurator);
@@ -93,8 +93,10 @@ fn expect_first_cluster_placed_on_first_hox_by_second_hox(
         configurator,
         ExpectConnectionsParameters {
             cluster_offset: 4,
-            placement_neuron_index: 1,
-            placement_neuron_handle: 3,
+            placement_neuron: Some(PlacementNeuronTranslation {
+                index: 1,
+                handle: 3,
+            }),
         },
     )
 }
@@ -102,12 +104,14 @@ fn expect_first_cluster_placed_on_first_hox_by_second_hox(
 fn expect_second_cluster_placed_on_first_hox_by_third_hox(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
 ) {
-    expect_first_cluster_placed_on_hox()(
+    expect_second_cluster_placed_on_hox()(
         configurator,
         ExpectConnectionsParameters {
             cluster_offset: 7,
-            placement_neuron_index: 0,
-            placement_neuron_handle: 2,
+            placement_neuron: Some(PlacementNeuronTranslation {
+                index: 0,
+                handle: 2,
+            }),
         },
     )
 }
@@ -115,12 +119,14 @@ fn expect_second_cluster_placed_on_first_hox_by_third_hox(
 fn expect_second_cluster_placed_on_first_placed_cluster_by_fourth_hox(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
 ) {
-    expect_first_cluster_placed_on_hox()(
+    expect_second_cluster_placed_on_hox()(
         configurator,
         ExpectConnectionsParameters {
             cluster_offset: 9,
-            placement_neuron_index: 0,
-            placement_neuron_handle: 2,
+            placement_neuron: Some(PlacementNeuronTranslation {
+                index: 0,
+                handle: 2,
+            }),
         },
     )
 }
@@ -128,12 +134,14 @@ fn expect_second_cluster_placed_on_first_placed_cluster_by_fourth_hox(
 fn expect_second_cluster_placed_on_second_placed_cluster_by_fourth_hox(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
 ) {
-    expect_first_cluster_placed_on_hox()(
+    expect_second_cluster_placed_on_hox()(
         configurator,
         ExpectConnectionsParameters {
             cluster_offset: 11,
-            placement_neuron_index: 0,
-            placement_neuron_handle: 5,
+            placement_neuron: Some(PlacementNeuronTranslation {
+                index: 0,
+                handle: 5,
+            }),
         },
     )
 }
@@ -145,8 +153,10 @@ fn expect_first_cluster_placed_on_fourth_placed_cluster_by_fifth_hox(
         configurator,
         ExpectConnectionsParameters {
             cluster_offset: 13,
-            placement_neuron_index: 1,
-            placement_neuron_handle: 9,
+            placement_neuron: Some(PlacementNeuronTranslation {
+                index: 1,
+                handle: 9,
+            }),
         },
     )
 }
@@ -158,8 +168,10 @@ fn expect_first_cluster_placed_on_fifth_placed_cluster_by_fifth_hox(
         configurator,
         ExpectConnectionsParameters {
             cluster_offset: 16,
-            placement_neuron_index: 1,
-            placement_neuron_handle: 11,
+            placement_neuron: Some(PlacementNeuronTranslation {
+                index: 1,
+                handle: 11,
+            }),
         },
     )
 }
