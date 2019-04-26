@@ -37,7 +37,7 @@ mod tests {
         Genome {
             cluster_genes: vec![ClusterGene {
                 placement_neuron: NeuronClusterLocalIndex(0),
-                neurons: vec![Neuron {}, Neuron {}],
+                neurons: vec![Neuron::new(); 2],
                 connections: vec![Connection {
                     from: NeuronClusterLocalIndex(0),
                     to: NeuronClusterLocalIndex(1),
@@ -45,7 +45,7 @@ mod tests {
                 }],
             }],
             hox_genes: vec![HoxGene {
-                placement: HoxPlacement::Standalone,
+                placement_target: HoxPlacement::Standalone,
                 cluster_index: ClusterGeneIndex(1),
                 disabled_connections: Vec::new(),
             }],

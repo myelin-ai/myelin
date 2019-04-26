@@ -2,5 +2,8 @@
 //!
 //! [`NeuralNetworkDeveloper`]: ../trait.NeuralNetworkDeveloper.html
 
-mod flat;
 pub use self::flat::*;
+pub use self::genetic::*;
+
+mod flat;
+mod genetic;

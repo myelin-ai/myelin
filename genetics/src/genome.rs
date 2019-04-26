@@ -13,8 +13,15 @@ pub struct HoxGeneIndex(pub usize);
 pub struct ClusterGeneIndex(pub usize);
 
 /// A neuron
-#[derive(Debug, Clone, PartialEq)]
-pub struct Neuron {}
+#[derive(Debug, Default, Clone, PartialEq)]
+pub struct Neuron;
+
+impl Neuron {
+    /// Build a new Neuron
+    pub fn new() -> Self {
+        Neuron::default()
+    }
+}
 
 /// Weight of a [`Connection`]
 pub type Weight = f64;
@@ -46,7 +53,7 @@ pub struct ClusterGene {
 }
 
 /// Describes the placement behaviour of a [`HoxGene`].
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum HoxPlacement {
     /// This hox gene's cluster will be placed once for each previously placed cluster of the given [`ClusterGene`].
     ClusterGene {
@@ -83,10 +90,10 @@ impl From<Connection> for ConnectionFilter {
 }
 
 /// A gene defining the placement of neuron clusters.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct HoxGene {
-    /// Placement target of the hox
-    pub placement: HoxPlacement,
+    /// The target(s) that the hox places its cluster(s) on
+    pub placement_target: HoxPlacement,
     /// Index of the cluster that will be instantiated and placed.
     pub cluster_index: ClusterGeneIndex,
     /// These connections, if existent, will not be enabled on the placed cluster.
