@@ -11,7 +11,7 @@ authors = [
 edition = "2018"
 
 [dependencies]
-myelin-engine = "0.11"
+myelin-engine = "0.12"
 myelin-worldgen = { path = "../worldgen" }
 myelin-object-behavior = { path = "../object-behavior" }
 myelin-visualization-core = { path = "../visualization-core" }
@@ -34,5 +34,5 @@ maplit = "1.0"
 mockiato = "0.4"
 
 [dev-dependencies.myelin-engine]
-version = "0.11"
+version = "0.12"
 features = ["use-mocks"]

@@ -13,8 +13,8 @@ use std::fmt;
 /// Simulation generation algorithm that creates a fixed simulation
 /// inhabited by two forests, a large central lake and
 /// a row of organisms. The simulation is framed by terrain.
-pub struct HardcodedGenerator {
-    simulation_factory: SimulationFactory,
+pub struct HardcodedGenerator<'a> {
+    simulation_factory: SimulationFactory<'a>,
     plant_factory: PlantFactory,
     organism_factory: OrganismFactory,
     terrain_factory: TerrainFactory,
@@ -23,13 +23,13 @@ pub struct HardcodedGenerator {
     additional_object_description_serializer: Box<dyn AdditionalObjectDescriptionSerializer>,
 }
 
-pub type SimulationFactory = Box<dyn Fn() -> Box<dyn Simulation>>;
+pub type SimulationFactory<'a> = Box<dyn Fn() -> Box<dyn Simulation + 'a> + 'a>;
 pub type PlantFactory = Box<dyn Fn() -> Box<dyn ObjectBehavior>>;
 pub type OrganismFactory = Box<dyn Fn() -> Box<dyn ObjectBehavior>>;
 pub type TerrainFactory = Box<dyn Fn() -> Box<dyn ObjectBehavior>>;
 pub type WaterFactory = Box<dyn Fn() -> Box<dyn ObjectBehavior>>;
 
-impl HardcodedGenerator {
+impl<'a> HardcodedGenerator<'a> {
     /// Creates a new generator, injecting a simulation factory, i.e.
     /// a function that returns a specific [`Simulation`] that
     /// is going to be populated by the simulation generator.
@@ -81,7 +81,7 @@ impl HardcodedGenerator {
     /// let generated_simulation = worldgen.generate();
     /// ```
     pub fn new(
-        simulation_factory: SimulationFactory,
+        simulation_factory: SimulationFactory<'a>,
         plant_factory: PlantFactory,
         organism_factory: OrganismFactory,
         terrain_factory: TerrainFactory,
@@ -283,8 +283,8 @@ impl HardcodedGenerator {
     }
 }
 
-impl WorldGenerator for HardcodedGenerator {
-    fn generate(&mut self) -> Box<dyn Simulation> {
+impl<'a> WorldGenerator<'a> for HardcodedGenerator<'a> {
+    fn generate(&mut self) -> Box<dyn Simulation + 'a> {
         let mut simulation = (self.simulation_factory)();
         self.populate_with_terrain(&mut *simulation);
         self.populate_with_water(&mut *simulation);
@@ -294,9 +294,10 @@ impl WorldGenerator for HardcodedGenerator {
     }
 }
 
-impl fmt::Debug for HardcodedGenerator {
+impl<'a> fmt::Debug for HardcodedGenerator<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct(name_of!(type HardcodedGenerator)).finish()
+        f.debug_struct(name_of!(type HardcodedGenerator<'_>))
+            .finish()
     }
 }
 
@@ -304,12 +305,14 @@ impl fmt::Debug for HardcodedGenerator {
 mod tests {
     use super::*;
     use crate::NameProviderMock;
-    use mockiato::{partial_eq, partial_eq_owned};
+    use mockiato::{any, partial_eq, partial_eq_owned};
     use myelin_object_data::AdditionalObjectDescriptionSerializerMock;
 
     #[test]
     fn generates_simulation() {
-        let simulation_factory = box || -> Box<dyn Simulation> {
+        let behavior = box ObjectBehaviorMock::new();
+        let behavior_ref = behavior.as_ref();
+        let simulation_factory: SimulationFactory<'_> = box || -> Box<dyn Simulation + '_> {
             let description = ObjectBuilder::default()
                 .shape(
                     PolygonBuilder::default()
@@ -324,10 +327,15 @@ mod tests {
                 .mobility(Mobility::Immovable)
                 .build()
                 .unwrap();
-            let behavior = box ObjectBehaviorMock::new();
-
             let mut simulation = SimulationMock::new();
-            simulation.expect_add_object_any_times_and_return((1, description, behavior));
+            simulation
+                .expect_add_object(any(), any())
+                .times(1..)
+                .returns(Object {
+                    id: 1,
+                    description,
+                    behavior: behavior_ref,
+                });
             box simulation
         };
         let plant_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };

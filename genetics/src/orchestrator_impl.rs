@@ -217,7 +217,7 @@ mod tests {
     fn create_genome_with_single_hox_gene(cluster_index: usize) -> Genome {
         Genome {
             hox_genes: vec![HoxGene {
-                placement: HoxPlacement::Standalone,
+                placement_target: HoxPlacement::Standalone,
                 cluster_index: ClusterGeneIndex(cluster_index),
                 disabled_connections: Vec::new(),
             }],
