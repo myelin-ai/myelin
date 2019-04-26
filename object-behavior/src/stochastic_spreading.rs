@@ -695,9 +695,11 @@ mod tests {
 
     #[test]
     fn can_be_downcast_from_trait() {
-        let object_behavior: Box<dyn ObjectBehavior> = box StochasticSpreading::new(SPREADING_CHANGE, box RandomMock::new());
+        let object_behavior: Box<dyn ObjectBehavior> =
+            box StochasticSpreading::new(SPREADING_CHANGE, box RandomMock::new());
         let object_behavior_as_any = object_behavior.as_any();
-        let _downcast_behavior: &StochasticSpreading = object_behavior_as_any.downcast_ref().unwrap();
+        let _downcast_behavior: &StochasticSpreading =
+            object_behavior_as_any.downcast_ref().unwrap();
     }
 
     fn object_description_at_location(x: f64, y: f64) -> ObjectDescription {
