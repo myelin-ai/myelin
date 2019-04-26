@@ -141,7 +141,7 @@ mod tests {
     fn steps_simulation_with_empty_snapshot() {
         let mut simulation = SimulationMock::new();
         simulation.expect_step();
-        simulation.expect_objects_and_return(Vec::new());
+        simulation.expect_objects().returns(Vec::new());
         let mut controller = ControllerImpl::new(
             box simulation,
             Arc::new(move |_| panic!("No connection acceptor is expected to be created")),
@@ -158,7 +158,7 @@ mod tests {
         let mut simulation = SimulationMock::new();
         simulation.expect_step();
 
-        simulation.expect_objects_and_return(vec![Object {
+        simulation.expect_objects().returns(vec![Object {
             id: 0,
             description: object_description(),
             behavior: mock_behavior.as_ref(),
@@ -208,7 +208,7 @@ mod tests {
            0 => object_description()
         };
 
-        simulation.expect_objects_and_return(vec![Object {
+        simulation.expect_objects().returns(vec![Object {
             id: 0,
             description: object_description(),
             behavior: mock_behavior.as_ref(),
