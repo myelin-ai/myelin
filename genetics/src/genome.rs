@@ -76,6 +76,12 @@ pub enum ClusterGeneSpecilization {
     Output(NeuronClusterLocalIndex),
 }
 
+impl Default for ClusterGeneSpecilization {
+    fn default() -> Self {
+        ClusterGeneSpecilization::None
+    }
+}
+
 /// Describes the placement behaviour of a [`HoxGene`].
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum HoxPlacement {
