@@ -76,26 +76,6 @@ pub enum ClusterGeneSpecilization {
     Output(NeuronClusterLocalIndex),
 }
 
-
-/// Additional information about a the responsibilities of a placed [`ClusterGene`].
-#[derive(Debug, Clone)]
-pub enum ClusterGeneKind {
-    /// A normal, good ol' cluster.
-    Regular,
-
-    /// The initial cluster placed by the first [standalone hox gene].
-    /// It can only be placed once.
-    ///
-    /// [standalone hox gene]: [./enum.HoxPlacement.html#variant.Standalone]
-    Initial,
-
-    ///
-    Input(NeuronClusterLocalIndex),
-
-    Output(NeuronClusterLocalIndex),
-}
-
-
 /// Describes the placement behaviour of a [`HoxGene`].
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum HoxPlacement {
