@@ -11,3 +11,7 @@ members = [
     "clone-box",
     "genetics",
 ]
+
+[patch.crates-io.myelin-engine]
+git = "https://github.com/myelin-ai/engine"
+branch = "remove-handwritten-mocks"
