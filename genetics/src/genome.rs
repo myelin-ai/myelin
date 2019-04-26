@@ -58,7 +58,7 @@ pub struct ClusterGene {
 }
 
 /// Additional information about a the responsibilities of a placed [`ClusterGene`].
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ClusterGeneSpecilization {
     /// A normal, good ol' cluster.
     None,
