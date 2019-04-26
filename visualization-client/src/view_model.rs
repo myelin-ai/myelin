@@ -1,24 +1,24 @@
 #[derive(Debug, Clone, PartialEq)]
-pub struct Object {
-    pub shape: Polygon,
-    pub kind: Kind,
-    pub height: f64,
-    pub name_label: Option<Label>,
+pub(crate) struct Object {
+    pub(crate) shape: Polygon,
+    pub(crate) kind: Kind,
+    pub(crate) height: f64,
+    pub(crate) name_label: Option<Label>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Polygon {
-    pub vertices: Vec<Point>,
+pub(crate) struct Polygon {
+    pub(crate) vertices: Vec<Point>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Point {
-    pub x: f64,
-    pub y: f64,
+pub(crate) struct Point {
+    pub(crate) x: f64,
+    pub(crate) y: f64,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum Kind {
+pub(crate) enum Kind {
     Organism,
     Plant,
     Water,
@@ -27,13 +27,13 @@ pub enum Kind {
 
 /// A text label that can be drawn anywhere on the screen
 #[derive(Debug, Clone, PartialEq)]
-pub struct Label {
+pub(crate) struct Label {
     /// The text to draw
-    pub text: String,
+    pub(crate) text: String,
 
     /// The absolute location
-    pub location: Point,
+    pub(crate) location: Point,
 
     /// The font color to use
-    pub font_color: String,
+    pub(crate) font_color: String,
 }

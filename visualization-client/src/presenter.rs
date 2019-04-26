@@ -50,12 +50,12 @@ impl Presenter for CanvasPresenter {
     }
 }
 
-pub type Snapshot = HashMap<Id, ObjectDescription>;
-pub type ViewModelDelta = HashMap<Id, ObjectDelta>;
+pub(crate) type Snapshot = HashMap<Id, ObjectDescription>;
+pub(crate) type ViewModelDelta = HashMap<Id, ObjectDelta>;
 
 /// Describes what happened to an individual object in this
 #[derive(Debug, Clone, PartialEq)]
-pub enum ObjectDelta {
+pub(crate) enum ObjectDelta {
     /// The object has been added to the world
     Created(ObjectDescription),
     /// At least one property of the object has changed
@@ -65,62 +65,62 @@ pub enum ObjectDelta {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ObjectDescription {
+pub(crate) struct ObjectDescription {
     /// The name of the object
-    pub name: Option<String>,
+    pub(crate) name: Option<String>,
 
     /// The object's kind
-    pub kind: Kind,
+    pub(crate) kind: Kind,
 
     /// The object's height in meters
-    pub height: f64,
+    pub(crate) height: f64,
 
     /// The vertices defining the shape of the object
     /// in relation to its [`position`]
     ///
     /// [`position`]: ./struct.ObjectDescription.html#structfield.location
-    pub shape: Polygon,
+    pub(crate) shape: Polygon,
 
     /// The global location of the center of the object
-    pub location: Point,
+    pub(crate) location: Point,
 
     /// The object's rotation
-    pub rotation: Radians,
+    pub(crate) rotation: Radians,
 
     /// The current velocity of the object, defined
     /// as a two dimensional vector relative to the
     /// objects center
-    pub mobility: Mobility,
+    pub(crate) mobility: Mobility,
 
     /// Whether the object is passable or not
-    pub passable: bool,
+    pub(crate) passable: bool,
 }
 
 #[derive(Debug, Default, Clone, PartialEq)]
-pub struct ObjectDescriptionDelta {
+pub(crate) struct ObjectDescriptionDelta {
     /// The name of the object
     #[allow(clippy::option_option)]
-    pub name: Option<Option<String>>,
+    pub(crate) name: Option<Option<String>>,
 
     /// The object's kind
-    pub kind: Option<Kind>,
+    pub(crate) kind: Option<Kind>,
 
     /// The vertices defining the shape of the object
     /// in relation to its [`position`]
     ///
     /// [`position`]: ./struct.ObjectDescription.html#structfield.location
-    pub shape: Option<Polygon>,
+    pub(crate) shape: Option<Polygon>,
 
     /// The current location of the object
-    pub location: Option<Point>,
+    pub(crate) location: Option<Point>,
 
     /// The current rotation of the object
-    pub rotation: Option<Radians>,
+    pub(crate) rotation: Option<Radians>,
 
     /// The current velocity of the object, defined
     /// as a two dimensional vector relative to the
     /// objects center
-    pub mobility: Option<Mobility>,
+    pub(crate) mobility: Option<Mobility>,
 }
 
 fn map_objects<'a>(
