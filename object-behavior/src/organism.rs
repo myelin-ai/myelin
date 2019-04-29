@@ -1192,17 +1192,21 @@ mod tests {
                 .vision
                 .iter()
                 .position(|&vision_handle| vision_handle == handle)
-                .expect(&format!(
-                    "add_input_fn was called with an unexpected vision handle: {:#?}",
-                    handle
-                ));
+                .unwrap_or_else(|| {
+                    panic!(
+                        "add_input_fn was called with an unexpected vision handle: {:#?}",
+                        handle
+                    )
+                });
             inputs_were_added[vision_input_index] = true;
 
-            let expected_input = expected_inputs[vision_input_index].expect(&format!(
-                "add_input_fn was called with a handle that is expected to receive no \
-                 input.\nhandle: {:#?}\ninput: {}",
-                handle, input
-            ));
+            let expected_input = expected_inputs[vision_input_index].unwrap_or_else(|| {
+                panic!(
+                    "add_input_fn was called with a handle that is expected to receive no \
+                     input.\nhandle: {:#?}\ninput: {}",
+                    handle, input
+                )
+            });
             assert_nearly_eq!(expected_input, input);
         };
         add_vision_inputs(
