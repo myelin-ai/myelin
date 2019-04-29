@@ -1143,6 +1143,16 @@ mod tests {
         test_distance_is_converted_to_input(MAX_DISTINGUISHABLE_DISTANCE_IN_METERS + 0.1, 0.0);
     }
 
+    #[test]
+    fn scales_half_of_max_distance() {
+        test_distance_is_converted_to_input(MAX_DISTINGUISHABLE_DISTANCE_IN_METERS * 0.5, 0.5);
+    }
+
+    #[test]
+    fn scales_a_quarter_of_max_distance() {
+        test_distance_is_converted_to_input(MAX_DISTINGUISHABLE_DISTANCE_IN_METERS * 0.25, 0.75);
+    }
+
     fn test_distance_is_converted_to_input(distance: f64, expected_input: f64) {
         let distances = vec![Some(distance)];
         let input_neuron_handle_mapping = stub_input_neuron_handle_mapping();
