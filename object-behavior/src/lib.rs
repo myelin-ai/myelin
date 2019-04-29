@@ -3,6 +3,7 @@
 
 #![feature(specialization)]
 #![feature(box_syntax)]
+#![feature(clamp)]
 #![warn(missing_docs, clippy::dbg_macro, clippy::unimplemented)]
 #![deny(
     rust_2018_idioms,
