@@ -1129,6 +1129,11 @@ mod tests {
     }
 
     #[test]
+    fn clamps_zero_distance() {
+        test_distance_is_converted_to_input(0.0, 1.0);
+    }
+
+    #[test]
     fn clamps_negative_distance() {
         test_distance_is_converted_to_input(-100.0, 1.0);
     }
