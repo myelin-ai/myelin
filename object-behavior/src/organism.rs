@@ -1170,7 +1170,10 @@ mod tests {
             &mut add_input_fn,
         );
 
-        assert!(add_input_fn_was_called);
+        assert!(
+            add_input_fn_was_called,
+            "add_input_fn was not called, but was expected"
+        );
     }
 
     #[test]
