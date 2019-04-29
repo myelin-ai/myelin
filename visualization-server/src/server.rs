@@ -7,11 +7,9 @@ use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
 use myelin_engine::prelude::*;
 use myelin_engine::simulation::SimulationBuilder;
-use myelin_genetics::deriver::ChromosomalCrossoverGenomeDeriver;
-use myelin_genetics::developer::FlatNeuralNetworkDeveloper;
 use myelin_genetics::genome::Genome;
-use myelin_genetics::mutator::GenomeMutatorStub;
-use myelin_genetics::orchestrator_impl::{
+use myelin_genetics::neural_network_development_orchestrator_impl::{
+    ChromosomalCrossoverGenomeDeriver, FlatNeuralNetworkDeveloper, GenomeMutatorStub,
     NeuralNetworkConfiguratorFactory, NeuralNetworkConfiguratorImpl, NeuralNetworkDeveloperFactory,
     NeuralNetworkDevelopmentOrchestratorImpl, NeuralNetworkFactory,
 };

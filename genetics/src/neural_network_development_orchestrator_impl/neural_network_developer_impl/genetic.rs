@@ -1,5 +1,7 @@
 use crate::genome::{self, *};
-use crate::orchestrator_impl::{NeuralNetworkConfigurator, NeuralNetworkDeveloper};
+use crate::neural_network_development_orchestrator_impl::{
+    NeuralNetworkConfigurator, NeuralNetworkDeveloper,
+};
 use crate::NeuralNetworkDevelopmentConfiguration;
 use myelin_neural_network::{Connection, Handle};
 use std::collections::HashMap;

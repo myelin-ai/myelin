@@ -1,6 +1,6 @@
-use super::GenomeDeriver;
 use crate::constant::CROSSOVER_EXTRA_GENE_SELECTION_PROBABILITY;
 use crate::genome::Genome;
+use crate::neural_network_development_orchestrator_impl::GenomeDeriver;
 use itertools::Itertools;
 use myelin_random::Random;
 

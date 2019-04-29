@@ -23,11 +23,8 @@ use myelin_neural_network::{Connection, Handle, NeuralNetwork};
 use std::fmt::Debug;
 use std::num::NonZeroUsize;
 
-pub mod deriver;
-pub mod developer;
 pub mod genome;
-pub mod mutator;
-pub mod orchestrator_impl;
+pub mod neural_network_development_orchestrator_impl;
 
 mod constant;
 
