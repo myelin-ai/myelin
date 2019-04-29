@@ -1163,7 +1163,7 @@ mod tests {
 
     #[test]
     fn clamps_too_far_distance() {
-        let distances = vec![Some(MAX_DISTINGUISHABLE_DISTANCE_IN_METERS * 2.0)];
+        let distances = vec![Some(MAX_DISTINGUISHABLE_DISTANCE_IN_METERS + 0.1)];
         let input_neuron_handle_mapping = stub_input_neuron_handle_mapping();
         let mut add_input_fn_was_called = false;
         let mut add_input_fn = |handle, input| {
