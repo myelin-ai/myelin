@@ -1,8 +1,9 @@
 //! Default implementation of [`NeuralNetworkDevelopmentOrchestrator`].
 
+pub use self::genome_deriver_impl::*;
+pub use self::genome_mutator_impl::*;
 pub use self::neural_network_configurator::NeuralNetworkConfiguratorImpl;
-use crate::deriver::GenomeDeriver;
-use crate::mutator::GenomeMutator;
+pub use self::neural_network_developer_impl::*;
 use crate::*;
 #[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
@@ -11,7 +12,28 @@ use nameof::{name_of, name_of_type};
 use std::fmt::{self, Debug};
 use std::rc::Rc;
 
+mod genome_deriver_impl;
+mod genome_mutator_impl;
 mod neural_network_configurator;
+mod neural_network_developer_impl;
+
+/// Trait for deriving a new [`Genome`] from two parent [`Genome`]s.
+#[cfg_attr(test, mockable)]
+pub trait GenomeDeriver: Debug + GenomeDeriverClone {
+    /// Derives a new [`Genome`] from two parent [`Genome`]s.
+    fn derive_genome_from_parents(&self, parent_genomes: (Genome, Genome)) -> Genome;
+}
+
+clone_box!(GenomeDeriver, GenomeDeriverClone);
+
+/// Trait for mutating a [`Genome`].
+#[cfg_attr(test, mockable)]
+pub trait GenomeMutator: Debug + GenomeMutatorClone {
+    /// Might apply mutations to any part of the genome.
+    fn mutate_genome(&self, genome: Genome) -> Genome;
+}
+
+clone_box!(GenomeMutator, GenomeMutatorClone);
 
 /// Provides a function that can be used to develop a neural network
 #[cfg_attr(test, mockable)]
@@ -144,9 +166,10 @@ impl NeuralNetworkDevelopmentOrchestratorImpl {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::deriver::GenomeDeriverMock;
     use crate::genome::*;
-    use crate::mutator::GenomeMutatorMock;
+    use crate::neural_network_development_orchestrator_impl::{
+        GenomeDeriverMock, GenomeMutatorMock,
+    };
     use mockiato::{any, partial_eq};
     use myelin_neural_network::NeuralNetworkMock;
 
