@@ -348,7 +348,7 @@ fn add_acceleration_inputs(
 }
 
 fn add_vision_inputs<T>(
-    vision_neuron_inputs: T,
+    distances: T,
     input_neuron_handle_mapping: &InputNeuronHandleMapping,
     mut add_input_fn: impl FnMut(Handle, f64),
 ) where
@@ -357,17 +357,17 @@ fn add_vision_inputs<T>(
     input_neuron_handle_mapping
         .vision
         .iter()
-        .zip(vision_neuron_inputs.into_iter())
+        .zip(distances.into_iter())
         .filter_map(|(handle, distance)| Some((handle, distance?)))
         .for_each(|(handle, distance)| {
-            /// Arbitrary value
-            const MAXIMAL_DISTINGUISHABLE_DISTANCE_IN_METERS: f64 = 1200.0;
-            let input_intensity_by_proximity =
-                MAXIMAL_DISTINGUISHABLE_DISTANCE_IN_METERS - distance;
+            let input_intensity_by_proximity = MAX_DISTINGUISHABLE_DISTANCE_IN_METERS - distance;
             let clamped_input = input_intensity_by_proximity.min(1.0).max(0.0);
             add_input_fn(*handle, clamped_input);
         });
 }
+
+/// Arbitrary value
+const MAX_DISTINGUISHABLE_DISTANCE_IN_METERS: f64 = 1200.0;
 
 /// Arbitrary value
 const MIN_PERCEIVABLE_ACCELERATION: f64 = 0.000_1;
