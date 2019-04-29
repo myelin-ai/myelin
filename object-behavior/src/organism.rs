@@ -1122,4 +1122,37 @@ mod tests {
             })
             .collect()
     }
+
+    #[test]
+    fn clamps_negative_distance() {
+        let distances = vec![Some(-100.0)];
+        let input_neuron_handle_mapping = stub_input_neuron_handle_mapping();
+        let mut add_input_fn_was_called = false;
+        let mut add_input_fn = |handle, input| {
+            add_input_fn_was_called = true;
+            assert_eq!(input_neuron_handle_mapping.vision[0], handle);
+            assert_eq!(1.0, input);
+        };
+        add_vision_inputs(
+            distances.into_iter(),
+            &input_neuron_handle_mapping,
+            &mut add_input_fn,
+        );
+
+        assert!(add_input_fn_was_called);
+    }
+
+    fn stub_input_neuron_handle_mapping() -> InputNeuronHandleMapping {
+        InputNeuronHandleMapping {
+            axial_acceleration: AxialAccelerationHandleMapping {
+                forward: Handle(0),
+                backward: Handle(1),
+            },
+            lateral_acceleration: LateralAccelerationHandleMapping {
+                left: Handle(2),
+                right: Handle(3),
+            },
+            vision: vec![Handle(4)],
+        }
+    }
 }
