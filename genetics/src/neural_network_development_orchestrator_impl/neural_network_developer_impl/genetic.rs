@@ -225,10 +225,10 @@ fn filter_map_enabled_connection(
     }
 }
 
-fn map_hox_genes_to_cluster_genes<'a>(
+fn map_hox_genes_to_cluster_genes(
     hox_genes: Vec<HoxGene>,
-    cluster_genes: &'a [ClusterGene],
-) -> impl Iterator<Item = (HoxGene, &'a ClusterGene)> {
+    cluster_genes: &[ClusterGene],
+) -> impl Iterator<Item = (HoxGene, &ClusterGene)> {
     hox_genes.into_iter().filter_map(move |hox_gene| {
         let cluster_gene = cluster_genes.get(hox_gene.cluster_index.0)?;
         Some((hox_gene, cluster_gene))

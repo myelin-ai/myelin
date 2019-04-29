@@ -102,7 +102,7 @@ mod tests {
         let local_addr = connection_acceptor.address();
 
         assert_eq!(address.ip(), local_addr.ip());
-        assert!(local_addr.port() != RANDOM_PORT);
+        assert_ne!(local_addr.port(), RANDOM_PORT);
     }
 
     #[test]
