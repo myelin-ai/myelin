@@ -1162,7 +1162,7 @@ mod tests {
         let mut add_input_fn = |handle, input| {
             add_input_fn_was_called = true;
             assert_eq!(input_neuron_handle_mapping.vision[0], handle);
-            assert_eq!(expected_input, input);
+            assert_nearly_eq!(expected_input, input);
         };
         add_vision_inputs(
             distances.into_iter(),
@@ -1203,7 +1203,7 @@ mod tests {
                  input.\nhandle: {:#?}\ninput: {}",
                 handle, input
             ));
-            assert_eq!(expected_input, input);
+            assert_nearly_eq!(expected_input, input);
         };
         add_vision_inputs(
             distances.into_iter(),
