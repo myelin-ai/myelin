@@ -358,11 +358,11 @@ fn add_vision_inputs<T>(
         .vision
         .iter()
         .zip(vision_neuron_inputs.into_iter())
-        .filter_map(|(handle, input)| Some((handle, input?)))
-        .for_each(|(handle, input)| {
+        .filter_map(|(handle, distance)| Some((handle, distance?)))
+        .for_each(|(handle, distance)| {
             /// Arbitrary value
             const MAXIMAL_DISTINGUISHABLE_DISTANCE_IN_METERS: f64 = 1200.0;
-            let normalized_input = (input / MAXIMAL_DISTINGUISHABLE_DISTANCE_IN_METERS).min(1.0);
+            let normalized_input = (distance / MAXIMAL_DISTINGUISHABLE_DISTANCE_IN_METERS).min(1.0);
             add_input_fn(*handle, normalized_input);
         });
 }
