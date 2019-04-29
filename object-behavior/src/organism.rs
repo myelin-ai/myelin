@@ -363,7 +363,7 @@ fn add_vision_inputs<T>(
             let input_intensity_by_proximity = MAX_DISTINGUISHABLE_DISTANCE_IN_METERS - distance;
             let scaled_input =
                 input_intensity_by_proximity / MAX_DISTINGUISHABLE_DISTANCE_IN_METERS;
-            let clamped_input = scaled_input.min(1.0).max(0.0);
+            let clamped_input = scaled_input.clamp(0.0, 1.0);
             add_input_fn(*handle, clamped_input);
         });
 }
