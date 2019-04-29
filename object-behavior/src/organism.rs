@@ -1173,6 +1173,46 @@ mod tests {
         assert!(add_input_fn_was_called);
     }
 
+    #[test]
+    fn converts_multiple_distances_to_inputs() {
+        let distances = vec![
+            Some(MAX_DISTINGUISHABLE_DISTANCE_IN_METERS),
+            None,
+            Some(0.0),
+        ];
+        let input_neuron_handle_mapping = stub_input_neuron_handle_mapping();
+        let mut inputs_were_added = vec![false; 3];
+        let expected_inputs = vec![Some(0.0), None, Some(1.0)];
+
+        let mut add_input_fn = |handle, input| {
+            let vision_input_index = input_neuron_handle_mapping
+                .vision
+                .iter()
+                .position(|&vision_handle| vision_handle == handle)
+                .expect(&format!(
+                    "add_input_fn was called with an unexpected vision handle: {:#?}",
+                    handle
+                ));
+            inputs_were_added[vision_input_index] = true;
+
+            let expected_input = expected_inputs[vision_input_index].expect(&format!(
+                "add_input_fn was called with a handle that is expected to receive no \
+                 input.\nhandle: {:#?}\ninput: {}",
+                handle, input
+            ));
+            assert_eq!(expected_input, input);
+        };
+        add_vision_inputs(
+            distances.into_iter(),
+            &input_neuron_handle_mapping,
+            &mut add_input_fn,
+        );
+
+        let expected_added_inputs = vec![true, false, true];
+
+        assert_eq!(expected_added_inputs, inputs_were_added);
+    }
+
     fn stub_input_neuron_handle_mapping() -> InputNeuronHandleMapping {
         InputNeuronHandleMapping {
             axial_acceleration: AxialAccelerationHandleMapping {
@@ -1183,7 +1223,7 @@ mod tests {
                 left: Handle(2),
                 right: Handle(3),
             },
-            vision: vec![Handle(4)],
+            vision: vec![Handle(4), Handle(5), Handle(6)],
         }
     }
 }
