@@ -17,3 +17,19 @@ fn cluster_with_initial_marker_can_be_placed() {
 
     developer.develop_neural_network(&mut configurator);
 }
+
+fn cluster_with_input_neuron_marker_can_be_attached_to_initial_cluster() {
+    unimplemented!()
+}
+
+fn input_neuron_marker_is_respected() {
+    unimplemented!()
+}
+
+fn cluster_with_output_neuron_marker_can_be_attached_to_initial_cluster() {
+    unimplemented!()
+}
+
+fn output_neuron_marker_is_respected() {
+    unimplemented!()
+}
