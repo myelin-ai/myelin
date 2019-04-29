@@ -1,7 +1,7 @@
 use super::*;
 use crate::genome::{
     ClusterGene, ClusterGeneIndex, Connection as ConnectionDefinition, HoxGene, HoxGeneIndex,
-    HoxPlacement, Neuron, NeuronClusterLocalIndex,
+    HoxPlacement, Neuron, NeuronClusterLocalIndex, ClusterGeneSpecilization
 };
 use crate::neural_network_development_orchestrator_impl::NeuralNetworkConfiguratorMock;
 use mockiato::partial_eq;
@@ -34,11 +34,19 @@ impl GenomeStubBuilder {
     }
 
     fn add_first_cluster(&mut self) -> &mut Self {
+        self.add_first_cluster_with_specialization(ClusterGeneSpecilization::default())
+    }
+
+    fn add_first_cluster_marked_as_initial_cluster(&mut self) -> &mut Self {
+        self.add_first_cluster_with_specialization(ClusterGeneSpecilization::Initial)
+    }
+
+    fn add_first_cluster_with_specialization(&mut self, specialization: ClusterGeneSpecilization) -> &mut Self {
         self.genome.cluster_genes.push(ClusterGene {
             neurons: vec![Neuron::new(); 4],
             connections: first_cluster_connections(),
             placement_neuron: NeuronClusterLocalIndex(1),
-            specialization: ClusterGeneSpecilization::default(),
+            specialization: specialization,
         });
         self
     }
