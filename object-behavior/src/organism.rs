@@ -362,8 +362,10 @@ fn add_vision_inputs<T>(
         .for_each(|(handle, distance)| {
             /// Arbitrary value
             const MAXIMAL_DISTINGUISHABLE_DISTANCE_IN_METERS: f64 = 1200.0;
-            let normalized_input = (distance / MAXIMAL_DISTINGUISHABLE_DISTANCE_IN_METERS).min(1.0);
-            add_input_fn(*handle, normalized_input);
+            let input_intensity_by_proximity =
+                MAXIMAL_DISTINGUISHABLE_DISTANCE_IN_METERS - distance;
+            let clamped_input = input_intensity_by_proximity.min(1.0).max(0.0);
+            add_input_fn(*handle, clamped_input);
         });
 }
 
