@@ -3,7 +3,7 @@ use crate::genome::{
     ClusterGene, ClusterGeneIndex, Connection as ConnectionDefinition, HoxGene, HoxGeneIndex,
     HoxPlacement, Neuron, NeuronClusterLocalIndex,
 };
-use crate::orchestrator_impl::NeuralNetworkConfiguratorMock;
+use crate::neural_network_development_orchestrator_impl::NeuralNetworkConfiguratorMock;
 use mockiato::partial_eq;
 use myelin_neural_network::Connection;
 use myelin_neural_network::Handle;

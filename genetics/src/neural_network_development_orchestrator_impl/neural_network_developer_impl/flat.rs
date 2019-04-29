@@ -1,4 +1,6 @@
-use crate::orchestrator_impl::{NeuralNetworkConfigurator, NeuralNetworkDeveloper};
+use crate::neural_network_development_orchestrator_impl::{
+    NeuralNetworkConfigurator, NeuralNetworkDeveloper,
+};
 use crate::*;
 use myelin_random::Random;
 
@@ -55,7 +57,7 @@ impl NeuralNetworkDeveloper for FlatNeuralNetworkDeveloper<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::orchestrator_impl::NeuralNetworkConfiguratorMock;
+    use crate::neural_network_development_orchestrator_impl::NeuralNetworkConfiguratorMock;
     use mockiato::partial_eq;
     use myelin_random::RandomMock;
 

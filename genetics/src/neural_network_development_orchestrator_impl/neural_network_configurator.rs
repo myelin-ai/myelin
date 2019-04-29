@@ -1,5 +1,6 @@
-use crate::orchestrator_impl::NeuralNetworkConfigurator;
-use crate::orchestrator_impl::{InputNeuronHandles, OutputNeuronHandles};
+use crate::neural_network_development_orchestrator_impl::{
+    InputNeuronHandles, NeuralNetworkConfigurator, OutputNeuronHandles,
+};
 use myelin_neural_network::{Connection, Handle, NeuralNetwork};
 
 /// Configuration storage for a [`NeuralNetworkDeveloper`].
