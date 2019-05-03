@@ -179,13 +179,14 @@ fn expect_push_amount_of_neurons(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
     neuron_count: usize,
 ) {
-    for handle in 0..neuron_count {
-        configurator.expect_push_neuron().returns(Handle(handle));
-    }
-    configurator.expect_push_neuron_calls_in_order();
+    let neuron_handles = NeuronHandles {
+        regular: (0..neuron_count).collect(),
+        ..NeuronHandles::default()
+    };
+    expect_push_different_kinds_of_neurons(configurator, neuron_handles)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct NeuronHandles {
     regular: Vec<usize>,
     input: Vec<usize>,
