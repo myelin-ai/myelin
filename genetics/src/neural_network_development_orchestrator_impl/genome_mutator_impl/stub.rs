@@ -43,6 +43,7 @@ mod tests {
                     to: NeuronClusterLocalIndex(1),
                     weight: 1.0,
                 }],
+                specialization: ClusterGeneSpecialization::default(),
             }],
             hox_genes: vec![HoxGene {
                 placement_target: HoxPlacement::Standalone,
