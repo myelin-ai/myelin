@@ -96,7 +96,7 @@ mod tests {
 
     #[test]
     fn add_file_for_kind_works_with_one_name() {
-        let mut builder = NameProviderBuilder::default();
+        let mut builder = create_builder();
 
         let names = vec![String::from("Malus domestica")];
         builder.add_names(&names, Kind::Plant);
@@ -111,5 +111,11 @@ mod tests {
             name_provider.get_name(Kind::Plant)
         );
         assert_eq!(None, name_provider.get_name(Kind::Plant));
+    }
+
+    fn create_builder() -> NameProviderBuilder {
+        NameProviderBuilder::new(box |names| {
+            box NameProviderImpl::new(names) as Box<dyn NameProvider>
+        })
     }
 }
