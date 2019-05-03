@@ -33,8 +33,8 @@ fn cluster_with_input_neuron_marker_can_be_attached_to_initial_cluster() {
     let mut configurator = NeuralNetworkConfiguratorMock::new();
 
     let neuron_handles = NeuronHandles {
-        regular: vec![0, 1, 2, 3, 5],
-        input: vec![6],
+        regular: (0..=4).collect(),
+        input: vec![5],
         output: vec![],
     };
     expect_push_different_kinds_of_neurons(&mut configurator, neuron_handles);
@@ -60,9 +60,9 @@ fn cluster_with_output_neuron_marker_can_be_attached_to_initial_cluster() {
     let mut configurator = NeuralNetworkConfiguratorMock::new();
 
     let neuron_handles = NeuronHandles {
-        regular: vec![0, 1, 2, 3, 5],
+        regular: (0..=4).collect(),
         input: vec![],
-        output: vec![6],
+        output: vec![5],
     };
     expect_push_different_kinds_of_neurons(&mut configurator, neuron_handles);
 
@@ -89,9 +89,9 @@ fn input_and_output_clusters_can_be_attached_to_initial_cluster() {
     let mut configurator = NeuralNetworkConfiguratorMock::new();
 
     let neuron_handles = NeuronHandles {
-        regular: vec![0, 1, 2, 3, 5, 7, 8, 9],
-        input: vec![6],
-        output: vec![10],
+        regular: (0..=4).chain(6..=7).collect(),
+        input: vec![5],
+        output: vec![8],
     };
     expect_push_different_kinds_of_neurons(&mut configurator, neuron_handles);
 
@@ -114,7 +114,7 @@ impl GenomeStubBuilder {
     }
 
     fn add_second_cluster_marked_as_output_cluster(&mut self) -> &mut Self {
-        self.add_second_cluster_with_specialization(ClusterGeneSpecilization::Input(
+        self.add_second_cluster_with_specialization(ClusterGeneSpecilization::Output(
             NeuronClusterLocalIndex(2),
         ))
     }
