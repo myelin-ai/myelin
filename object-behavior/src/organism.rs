@@ -348,7 +348,7 @@ fn add_acceleration_inputs(
 }
 
 fn add_vision_inputs<T>(
-    vision_neuron_inputs: T,
+    distances: T,
     input_neuron_handle_mapping: &InputNeuronHandleMapping,
     mut add_input_fn: impl FnMut(Handle, f64),
 ) where
@@ -357,15 +357,19 @@ fn add_vision_inputs<T>(
     input_neuron_handle_mapping
         .vision
         .iter()
-        .zip(vision_neuron_inputs.into_iter())
-        .filter_map(|(handle, input)| Some((handle, input?)))
-        .for_each(|(handle, input)| {
-            /// Arbitrary value
-            const MAXIMAL_DISTINGUISHABLE_DISTANCE_IN_METERS: f64 = 1200.0;
-            let normalized_input = (input / MAXIMAL_DISTINGUISHABLE_DISTANCE_IN_METERS).min(1.0);
-            add_input_fn(*handle, normalized_input);
+        .zip(distances.into_iter())
+        .filter_map(|(handle, distance)| Some((handle, distance?)))
+        .for_each(|(handle, distance)| {
+            let input_intensity_by_proximity = MAX_DISTINGUISHABLE_DISTANCE_IN_METERS - distance;
+            let scaled_input =
+                input_intensity_by_proximity / MAX_DISTINGUISHABLE_DISTANCE_IN_METERS;
+            let clamped_input = scaled_input.clamp(0.0, 1.0);
+            add_input_fn(*handle, clamped_input);
         });
 }
+
+/// Arbitrary value
+const MAX_DISTINGUISHABLE_DISTANCE_IN_METERS: f64 = 1200.0;
 
 /// Arbitrary value
 const MIN_PERCEIVABLE_ACCELERATION: f64 = 0.000_1;
@@ -1119,5 +1123,114 @@ mod tests {
                 object
             })
             .collect()
+    }
+
+    #[test]
+    fn clamps_max_distance() {
+        test_distance_is_converted_to_input(MAX_DISTINGUISHABLE_DISTANCE_IN_METERS, 0.0);
+    }
+
+    #[test]
+    fn clamps_zero_distance() {
+        test_distance_is_converted_to_input(0.0, 1.0);
+    }
+
+    #[test]
+    fn clamps_negative_distance() {
+        test_distance_is_converted_to_input(-100.0, 1.0);
+    }
+
+    #[test]
+    fn clamps_too_far_distance() {
+        test_distance_is_converted_to_input(MAX_DISTINGUISHABLE_DISTANCE_IN_METERS + 0.1, 0.0);
+    }
+
+    #[test]
+    fn scales_half_of_max_distance() {
+        test_distance_is_converted_to_input(MAX_DISTINGUISHABLE_DISTANCE_IN_METERS * 0.5, 0.5);
+    }
+
+    #[test]
+    fn scales_a_quarter_of_max_distance() {
+        test_distance_is_converted_to_input(MAX_DISTINGUISHABLE_DISTANCE_IN_METERS * 0.25, 0.75);
+    }
+
+    fn test_distance_is_converted_to_input(distance: f64, expected_input: f64) {
+        let distances = vec![Some(distance)];
+        let input_neuron_handle_mapping = stub_input_neuron_handle_mapping();
+        let mut add_input_fn_was_called = false;
+        let mut add_input_fn = |handle, input| {
+            add_input_fn_was_called = true;
+            assert_eq!(input_neuron_handle_mapping.vision[0], handle);
+            assert_nearly_eq!(expected_input, input);
+        };
+        add_vision_inputs(
+            distances.into_iter(),
+            &input_neuron_handle_mapping,
+            &mut add_input_fn,
+        );
+
+        assert!(
+            add_input_fn_was_called,
+            "add_input_fn was not called, but was expected"
+        );
+    }
+
+    #[test]
+    fn converts_multiple_distances_to_inputs() {
+        let distances = vec![
+            Some(MAX_DISTINGUISHABLE_DISTANCE_IN_METERS),
+            None,
+            Some(0.0),
+        ];
+        let input_neuron_handle_mapping = stub_input_neuron_handle_mapping();
+        let mut inputs_were_added = vec![false; 3];
+        let expected_inputs = vec![Some(0.0), None, Some(1.0)];
+
+        let mut add_input_fn = |handle, input| {
+            let vision_input_index = input_neuron_handle_mapping
+                .vision
+                .iter()
+                .position(|&vision_handle| vision_handle == handle)
+                .unwrap_or_else(|| {
+                    panic!(
+                        "add_input_fn was called with an unexpected vision handle: {:#?}",
+                        handle
+                    )
+                });
+            inputs_were_added[vision_input_index] = true;
+
+            let expected_input = expected_inputs[vision_input_index].unwrap_or_else(|| {
+                panic!(
+                    "add_input_fn was called with a handle that is expected to receive no \
+                     input.\nhandle: {:#?}\ninput: {}",
+                    handle, input
+                )
+            });
+            assert_nearly_eq!(expected_input, input);
+        };
+        add_vision_inputs(
+            distances.into_iter(),
+            &input_neuron_handle_mapping,
+            &mut add_input_fn,
+        );
+
+        let expected_added_inputs = vec![true, false, true];
+
+        assert_eq!(expected_added_inputs, inputs_were_added);
+    }
+
+    fn stub_input_neuron_handle_mapping() -> InputNeuronHandleMapping {
+        InputNeuronHandleMapping {
+            axial_acceleration: AxialAccelerationHandleMapping {
+                forward: Handle(0),
+                backward: Handle(1),
+            },
+            lateral_acceleration: LateralAccelerationHandleMapping {
+                left: Handle(2),
+                right: Handle(3),
+            },
+            vision: vec![Handle(4), Handle(5), Handle(6)],
+        }
     }
 }
