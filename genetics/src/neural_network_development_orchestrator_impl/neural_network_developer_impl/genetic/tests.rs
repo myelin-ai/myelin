@@ -185,31 +185,39 @@ fn expect_push_amount_of_neurons(
     configurator.expect_push_neuron_calls_in_order();
 }
 
-fn expect_push_amount_of_input_neurons(
-    configurator: &mut NeuralNetworkConfiguratorMock<'_>,
-    neuron_count: usize,
-) {
-    // Arbitrary value
-    const OFFSET: usize = 1_000;
-    for handle in 0..neuron_count {
-        configurator
-            .expect_push_input_neuron()
-            .returns(Handle(handle + OFFSET));
-    }
-    configurator.expect_push_neuron_calls_in_order();
+#[derive(Debug)]
+struct NeuronHandles {
+    regular: Vec<usize>,
+    input: Vec<usize>,
+    output: Vec<usize>,
 }
 
-fn expect_push_amount_of_output_neurons(
+fn expect_push_different_kinds_of_neurons(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
-    neuron_count: usize,
+    neuron_handles: NeuronHandles,
 ) {
-    // Arbitrary value
-    const OFFSET: usize = 2_000;
-    for handle in 0..neuron_count {
+    let NeuronHandles {
+        regular,
+        input,
+        output,
+    } = neuron_handles;
+
+    for handle in regular {
+        configurator.expect_push_neuron().returns(Handle(handle));
+    }
+
+    for handle in input {
+        configurator
+            .expect_push_input_neuron()
+            .returns(Handle(handle));
+    }
+
+    for handle in output {
         configurator
             .expect_push_output_neuron()
-            .returns(Handle(handle + OFFSET));
+            .returns(Handle(handle));
     }
+
     configurator.expect_push_neuron_calls_in_order();
 }
 

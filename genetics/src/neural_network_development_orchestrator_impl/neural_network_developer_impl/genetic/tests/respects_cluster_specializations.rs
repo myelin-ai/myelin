@@ -32,8 +32,12 @@ fn cluster_with_input_neuron_marker_can_be_attached_to_initial_cluster() {
     let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
     let mut configurator = NeuralNetworkConfiguratorMock::new();
 
-    expect_push_amount_of_neurons(&mut configurator, 5);
-    expect_push_amount_of_input_neurons(&mut configurator, 1);
+    let neuron_handles = NeuronHandles {
+        regular: vec![0, 1, 2, 3, 5],
+        input: vec![6],
+        output: vec![],
+    };
+    expect_push_different_kinds_of_neurons(&mut configurator, neuron_handles);
 
     expect_first_cluster_placed_standalone(&mut configurator, 0);
     expect_second_cluster_placed_on_first_cluster_connections(&mut configurator);
@@ -55,8 +59,12 @@ fn cluster_with_output_neuron_marker_can_be_attached_to_initial_cluster() {
     let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
     let mut configurator = NeuralNetworkConfiguratorMock::new();
 
-    expect_push_amount_of_neurons(&mut configurator, 5);
-    expect_push_amount_of_output_neurons(&mut configurator, 1);
+    let neuron_handles = NeuronHandles {
+        regular: vec![0, 1, 2, 3, 5],
+        input: vec![],
+        output: vec![6],
+    };
+    expect_push_different_kinds_of_neurons(&mut configurator, neuron_handles);
 
     expect_first_cluster_placed_standalone(&mut configurator, 0);
     expect_second_cluster_placed_on_first_cluster_connections(&mut configurator);
@@ -80,10 +88,12 @@ fn input_and_output_clusters_can_be_attached_to_initial_cluster() {
     let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
     let mut configurator = NeuralNetworkConfiguratorMock::new();
 
-    expect_push_amount_of_neurons(&mut configurator, 7);
-
-    expect_push_amount_of_input_neurons(&mut configurator, 1);
-    expect_push_amount_of_output_neurons(&mut configurator, 1);
+    let neuron_handles = NeuronHandles {
+        regular: vec![0, 1, 2, 3, 5, 7, 8, 9],
+        input: vec![6],
+        output: vec![10],
+    };
+    expect_push_different_kinds_of_neurons(&mut configurator, neuron_handles);
 
     expect_first_cluster_placed_standalone(&mut configurator, 0);
     expect_second_cluster_placed_on_first_cluster_connections(&mut configurator);
