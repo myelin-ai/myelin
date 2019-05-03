@@ -137,7 +137,20 @@ fn push_standalone_cluster_neurons(
     cluster_gene
         .neurons
         .iter()
-        .map(|_| configurator.push_neuron())
+        .enumerate()
+        .map(|(neuron_index, _)| match cluster_gene.specialization {
+            ClusterGeneSpecilization::Input(input_neuron_index)
+                if neuron_index == input_neuron_index.0 =>
+            {
+                configurator.push_input_neuron()
+            }
+            ClusterGeneSpecilization::Output(output_neuron_index)
+                if neuron_index == output_neuron_index.0 =>
+            {
+                configurator.push_output_neuron()
+            }
+            _ => configurator.push_neuron(),
+        })
         .collect()
 }
 
