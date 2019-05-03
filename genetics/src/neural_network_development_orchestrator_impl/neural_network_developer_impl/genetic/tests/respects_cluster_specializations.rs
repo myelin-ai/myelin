@@ -33,3 +33,15 @@ fn cluster_with_output_neuron_marker_can_be_attached_to_initial_cluster() {
 fn output_neuron_marker_is_respected() {
     unimplemented!()
 }
+
+impl GenomeStubBuilder {
+    fn add_first_cluster_marked_as_initial_cluster(&mut self) -> &mut Self {
+        self.add_first_cluster_with_specialization(ClusterGeneSpecilization::Initial)
+    }
+
+    fn add_second_cluster_marked_as_input_cluster(&mut self) -> &mut Self {
+        self.add_first_cluster_with_specialization(ClusterGeneSpecilization::Input(
+            NeuronClusterLocalIndex(2),
+        ))
+    }
+}
