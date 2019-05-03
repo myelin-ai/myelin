@@ -1,7 +1,7 @@
 //! Default implementation of [`GenomeGenerator`].
 
-use crate::{GenomeGenerator, GenomeGeneratorConfiguration};
 use crate::genome::Genome;
+use crate::{GenomeGenerator, GenomeGeneratorConfiguration};
 
 /// Default implementation of [`GenomeGenerator`].
 #[derive(Debug, Default, Clone)]
