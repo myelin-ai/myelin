@@ -48,8 +48,8 @@ fn create_sensor_cluster_gene_connection(
 ) -> Connection {
     let weight = random.random_float_in_range(MIN_CONNECTION_WEIGHT, MAX_CONNECTION_WEIGHT);
     Connection {
-        from: NeuronClusterLocalIndex(to_index),
-        to: NeuronClusterLocalIndex(from_index),
+        from: NeuronClusterLocalIndex(from_index),
+        to: NeuronClusterLocalIndex(to_index),
         weight,
     }
 }
