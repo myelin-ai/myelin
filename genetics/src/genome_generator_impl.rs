@@ -24,21 +24,14 @@ fn generate_sensor_cluster_gene(random: &dyn Random) -> ClusterGene {
     let connections = (0..neuron_count)
         .zip((0..neuron_count).skip(1))
         .map(|(from_index, to_index)| {
-            let weight_one =
-                random.random_float_in_range(MIN_CONNECTION_WEIGHT, MAX_CONNECTION_WEIGHT);
-            let weight_two =
-                random.random_float_in_range(MIN_CONNECTION_WEIGHT, MAX_CONNECTION_WEIGHT);
+            let from_index = from_index as usize;
+            let to_index = to_index as usize;
 
-            iter::once(Connection {
-                from: NeuronClusterLocalIndex(from_index as usize),
-                to: NeuronClusterLocalIndex(to_index as usize),
-                weight: weight_one,
-            })
-            .chain(iter::once(Connection {
-                from: NeuronClusterLocalIndex(to_index as usize),
-                to: NeuronClusterLocalIndex(from_index as usize),
-                weight: weight_two,
-            }))
+            let connection = create_sensor_cluster_gene_connection(random, from_index, to_index);
+            let reverse_connection =
+                create_sensor_cluster_gene_connection(random, to_index, from_index);
+
+            iter::once(connection).chain(iter::once(reverse_connection))
         })
         .flatten()
         .collect();
@@ -47,6 +40,19 @@ fn generate_sensor_cluster_gene(random: &dyn Random) -> ClusterGene {
         placement_neuron: SENSOR_CLUSTER_PLACEMENT_NEURON,
         neurons,
         connections,
+    }
+}
+
+fn create_sensor_cluster_gene_connection(
+    random: &dyn Random,
+    from_index: usize,
+    to_index: usize,
+) -> Connection {
+    let weight = random.random_float_in_range(MIN_CONNECTION_WEIGHT, MAX_CONNECTION_WEIGHT);
+    Connection {
+        from: NeuronClusterLocalIndex(to_index),
+        to: NeuronClusterLocalIndex(from_index),
+        weight,
     }
 }
 
