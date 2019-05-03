@@ -44,4 +44,8 @@ impl GenomeStubBuilder {
             NeuronClusterLocalIndex(2),
         ))
     }
+
+    fn add_third_cluster_marked_as_output_cluster(&mut self) -> &mut Self {
+        unimplemented!()
+    }
 }
