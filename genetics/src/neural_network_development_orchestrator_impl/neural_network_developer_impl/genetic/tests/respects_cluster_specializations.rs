@@ -46,6 +46,8 @@ impl GenomeStubBuilder {
     }
 
     fn add_third_cluster_marked_as_output_cluster(&mut self) -> &mut Self {
-        unimplemented!()
+        self.add_third_cluster_with_specialization(ClusterGeneSpecilization::Output(
+            NeuronClusterLocalIndex(2),
+        ))
     }
 }

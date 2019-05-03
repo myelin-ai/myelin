@@ -67,6 +67,19 @@ impl GenomeStubBuilder {
         self
     }
 
+    fn add_third_cluster_with_specialization(
+        &mut self,
+        specialization: ClusterGeneSpecilization,
+    ) -> &mut Self {
+        self.genome.cluster_genes.push(ClusterGene {
+            neurons: vec![Neuron::new(); 4],
+            connections: third_cluster_connections(),
+            placement_neuron: NeuronClusterLocalIndex(3),
+            specialization,
+        });
+        self
+    }
+
     fn add_initial_hox_gene(&mut self) -> &mut Self {
         self.genome.hox_genes.push(HoxGene {
             placement_target: HoxPlacement::Standalone,
@@ -306,6 +319,36 @@ fn second_cluster_connections() -> Vec<ConnectionDefinition> {
             from: NeuronClusterLocalIndex(2),
             to: NeuronClusterLocalIndex(1),
             weight: 0.82,
+        },
+    ]
+}
+
+fn third_cluster_connections() -> Vec<ConnectionDefinition> {
+    vec![
+        ConnectionDefinition {
+            from: NeuronClusterLocalIndex(0),
+            to: NeuronClusterLocalIndex(2),
+            weight: 1.0,
+        },
+        ConnectionDefinition {
+            from: NeuronClusterLocalIndex(3),
+            to: NeuronClusterLocalIndex(2),
+            weight: 0.2,
+        },
+        ConnectionDefinition {
+            from: NeuronClusterLocalIndex(0),
+            to: NeuronClusterLocalIndex(3),
+            weight: 0.99,
+        },
+        ConnectionDefinition {
+            from: NeuronClusterLocalIndex(3),
+            to: NeuronClusterLocalIndex(1),
+            weight: 0.1,
+        },
+        ConnectionDefinition {
+            from: NeuronClusterLocalIndex(1),
+            to: NeuronClusterLocalIndex(0),
+            weight: 0.5,
         },
     ]
 }
