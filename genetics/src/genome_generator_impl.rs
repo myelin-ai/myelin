@@ -21,7 +21,6 @@ fn generate_sensor_cluster_gene(random: &dyn Random) -> ClusterGene {
         MAX_NEURONS_PER_SENSOR_CLUSTER,
     );
     let neurons = vec![Neuron {}; neuron_count];
-
     let connections = (0..neuron_count)
         .zip((0..neuron_count).skip(1))
         .map(|(from_index, to_index)| {
@@ -72,6 +71,9 @@ mod tests {
 
     #[test]
     fn generates_random_number_of_neurons() {
+        const NEURON_COUNT: usize = 5;
+        const CONNECTION_COUNT: usize = (NEURON_COUNT - 1) * 2;
+
         let random: Box<dyn Random> = {
             let mut random = RandomMock::new();
             random
@@ -79,63 +81,63 @@ mod tests {
                     partial_eq(MIN_NEURONS_PER_SENSOR_CLUSTER),
                     partial_eq(MAX_NEURONS_PER_SENSOR_CLUSTER),
                 )
-                .returns(5);
-            random.expect_random_float_in_range_calls_in_order();
+                .returns(NEURON_COUNT);
 
-            for index in 0..=7 {
+            random.expect_random_float_in_range_calls_in_order();
+            for index in 0..CONNECTION_COUNT {
                 random
                     .expect_random_float_in_range(
                         partial_eq(MIN_CONNECTION_WEIGHT),
                         partial_eq(MAX_CONNECTION_WEIGHT),
                     )
-                    .returns(f64::from(index));
+                    .returns(connection_weight(index));
             }
             box random
         };
 
         let expected_cluster_gene = ClusterGene {
-            neurons: vec![Neuron {}; 5],
+            neurons: vec![Neuron {}; NEURON_COUNT],
             placement_neuron: SENSOR_CLUSTER_PLACEMENT_NEURON,
             connections: vec![
                 Connection {
                     from: NeuronClusterLocalIndex(0),
                     to: NeuronClusterLocalIndex(1),
-                    weight: 0.0,
+                    weight: connection_weight(0),
                 },
                 Connection {
                     from: NeuronClusterLocalIndex(1),
                     to: NeuronClusterLocalIndex(0),
-                    weight: 1.0,
+                    weight: connection_weight(1),
                 },
                 Connection {
                     from: NeuronClusterLocalIndex(1),
                     to: NeuronClusterLocalIndex(2),
-                    weight: 2.0,
+                    weight: connection_weight(2),
                 },
                 Connection {
                     from: NeuronClusterLocalIndex(2),
                     to: NeuronClusterLocalIndex(1),
-                    weight: 3.0,
+                    weight: connection_weight(3),
                 },
                 Connection {
                     from: NeuronClusterLocalIndex(2),
                     to: NeuronClusterLocalIndex(3),
-                    weight: 4.0,
+                    weight: connection_weight(4),
                 },
                 Connection {
                     from: NeuronClusterLocalIndex(3),
                     to: NeuronClusterLocalIndex(2),
-                    weight: 5.0,
+                    weight: connection_weight(5),
                 },
                 Connection {
                     from: NeuronClusterLocalIndex(3),
                     to: NeuronClusterLocalIndex(4),
-                    weight: 6.0,
+                    weight: connection_weight(6),
                 },
                 Connection {
                     from: NeuronClusterLocalIndex(4),
                     to: NeuronClusterLocalIndex(3),
-                    weight: 7.0,
+                    weight: connection_weight(7),
                 },
             ],
         };
@@ -143,5 +145,9 @@ mod tests {
         let cluster_gene = generate_sensor_cluster_gene(&*random);
 
         assert_eq!(expected_cluster_gene, cluster_gene)
+    }
+
+    fn connection_weight(index: usize) -> f64 {
+        index as f64
     }
 }
