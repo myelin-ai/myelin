@@ -18,6 +18,7 @@ fn cluster_with_initial_marker_can_be_placed() {
     developer.develop_neural_network(&mut configurator);
 }
 
+#[test]
 fn cluster_with_input_neuron_marker_can_be_attached_to_initial_cluster() {
     let genome = GenomeStubBuilder::new()
         .add_first_cluster_marked_as_initial_cluster()
@@ -37,14 +38,17 @@ fn cluster_with_input_neuron_marker_can_be_attached_to_initial_cluster() {
     developer.develop_neural_network(&mut configurator);
 }
 
+#[test]
 fn input_neuron_marker_is_respected() {
     unimplemented!()
 }
 
+#[test]
 fn cluster_with_output_neuron_marker_can_be_attached_to_initial_cluster() {
     unimplemented!()
 }
 
+#[test]
 fn output_neuron_marker_is_respected() {
     unimplemented!()
 }
