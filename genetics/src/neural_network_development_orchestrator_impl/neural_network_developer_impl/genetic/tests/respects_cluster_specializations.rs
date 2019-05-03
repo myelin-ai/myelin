@@ -32,7 +32,9 @@ fn cluster_with_input_neuron_marker_can_be_attached_to_initial_cluster() {
     let developer = box GeneticNeuralNetworkDeveloper::new(config, genome);
     let mut configurator = NeuralNetworkConfiguratorMock::new();
 
-    expect_push_amount_of_neurons(&mut configurator, 6);
+    expect_push_amount_of_neurons(&mut configurator, 5);
+    expect_push_amount_of_input_neurons(&mut configurator, 1);
+
     expect_first_cluster_placed_standalone(&mut configurator, 0);
     expect_second_cluster_placed_on_first_cluster_connections(&mut configurator);
 

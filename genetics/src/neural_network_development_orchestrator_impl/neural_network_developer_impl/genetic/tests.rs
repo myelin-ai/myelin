@@ -185,6 +185,34 @@ fn expect_push_amount_of_neurons(
     configurator.expect_push_neuron_calls_in_order();
 }
 
+fn expect_push_amount_of_input_neurons(
+    configurator: &mut NeuralNetworkConfiguratorMock<'_>,
+    neuron_count: usize,
+) {
+    // Arbitrary value
+    const OFFSET: usize = 1_000;
+    for handle in 0..neuron_count {
+        configurator
+            .expect_push_input_neuron()
+            .returns(Handle(handle + OFFSET));
+    }
+    configurator.expect_push_neuron_calls_in_order();
+}
+
+fn expect_push_amount_of_output_neurons(
+    configurator: &mut NeuralNetworkConfiguratorMock<'_>,
+    neuron_count: usize,
+) {
+    // Arbitrary value
+    const OFFSET: usize = 2_000;
+    for handle in 0..neuron_count {
+        configurator
+            .expect_push_output_neuron()
+            .returns(Handle(handle + OFFSET));
+    }
+    configurator.expect_push_neuron_calls_in_order();
+}
+
 fn config_stub() -> NeuralNetworkDevelopmentConfiguration {
     NeuralNetworkDevelopmentConfiguration {
         parent_genomes: (Genome::default(), Genome::default()),
