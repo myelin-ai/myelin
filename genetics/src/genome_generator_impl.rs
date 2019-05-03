@@ -142,9 +142,6 @@ mod tests {
 
         let cluster_gene = generate_sensor_cluster_gene(&*random);
 
-        dbg!(&expected_cluster_gene);
-        dbg!(&cluster_gene);
-
         assert_eq!(expected_cluster_gene, cluster_gene)
     }
 }
