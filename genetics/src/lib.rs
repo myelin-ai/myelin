@@ -109,7 +109,7 @@ clone_box!(
 );
 
 /// Configuration for [`GenomeGenerator::generate_genome`].
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct GenomeGeneratorConfiguration {
     /// The number of neurons that shall receive inputs.
     pub input_neuron_count: NonZeroUsize,
