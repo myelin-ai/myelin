@@ -6,18 +6,22 @@ use rand::thread_rng;
 use std::collections::HashMap;
 use std::fmt::{self, Debug};
 
+/// A [`NameProvider`] that uses names only once
 #[derive(Debug)]
 pub struct NameProviderImpl {
     names: HashMap<Kind, Vec<String>>,
 }
 
 impl NameProviderImpl {
+    /// Creates a new [`NameProviderImpl`]
     pub fn new(names: HashMap<Kind, Vec<String>>) -> Self {
         Self { names }
     }
 }
 
+/// Creates a new [`NameProvider`] from a list of names
 pub trait NameProviderFactory {
+    /// Creates a new [`NameProvider`] from a list of names
     fn create(&self, names: HashMap<Kind, Vec<String>>) -> Box<dyn NameProvider>;
 }
 
@@ -30,6 +34,7 @@ where
     }
 }
 
+/// Shuffles the names before creating a [`NameProvider`]
 #[derive(Debug, Default)]
 pub struct ShuffledNameProviderFactory;
 
