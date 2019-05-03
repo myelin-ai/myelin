@@ -81,11 +81,14 @@ def _check_for_derive_errors(line: str) -> Optional[str]:
     derives = [x.strip() for x in match.group(1).split(',')]
     expected_order = [x for x in _derive_statement_expected_order if x in derives]
 
+    expected_derives_str = ', '.join(expected_order)
+    expected_derive_attr = f'#[derive({expected_derives_str})]'
+
     if len(derives) > len(expected_order):
         return f'Unexpected derive. Please add it to {__file__}'
 
     if derives != expected_order:
-        return f'Derives are not in the correct order. Expected: {expected_order}'
+        return f'Derives are not in the correct order. Expected: {expected_derive_attr}'
 
     return None
 
