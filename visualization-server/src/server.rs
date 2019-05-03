@@ -23,8 +23,8 @@ use myelin_object_data::{
 };
 use myelin_random::RandomImpl;
 use myelin_visualization_core::serialization::BincodeSerializer;
-use myelin_worldgen::NameProviderBuilder;
 use myelin_worldgen::{HardcodedGenerator, WorldGenerator};
+use myelin_worldgen::{NameProviderBuilder, ShuffledNameProviderFactory};
 use std::fs::read_to_string;
 use std::net::SocketAddr;
 use std::path::Path;
@@ -77,12 +77,13 @@ where
     let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
     let water_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
 
-    let mut name_provider_builder = NameProviderBuilder::default();
+    let mut name_provider_builder =
+        NameProviderBuilder::new(box ShuffledNameProviderFactory::default());
 
     let organism_names = load_names_from_file(Path::new("./object-names/organisms.txt"));
     name_provider_builder.add_names(&organism_names, Kind::Organism);
 
-    let name_provider = name_provider_builder.build_randomized();
+    let name_provider = name_provider_builder.build();
 
     let additional_object_description_serializer =
         box AdditionalObjectDescriptionBincodeSerializer::default();
