@@ -104,23 +104,23 @@ fn input_and_output_clusters_can_be_attached_to_initial_cluster() {
 
 impl GenomeStubBuilder {
     fn add_first_cluster_marked_as_initial_cluster(&mut self) -> &mut Self {
-        self.add_first_cluster_with_specialization(ClusterGeneSpecilization::Initial)
+        self.add_first_cluster_with_specialization(ClusterGeneSpecialization::Initial)
     }
 
     fn add_second_cluster_marked_as_input_cluster(&mut self) -> &mut Self {
-        self.add_second_cluster_with_specialization(ClusterGeneSpecilization::Input(
+        self.add_second_cluster_with_specialization(ClusterGeneSpecialization::Input(
             NeuronClusterLocalIndex(2),
         ))
     }
 
     fn add_second_cluster_marked_as_output_cluster(&mut self) -> &mut Self {
-        self.add_second_cluster_with_specialization(ClusterGeneSpecilization::Output(
+        self.add_second_cluster_with_specialization(ClusterGeneSpecialization::Output(
             NeuronClusterLocalIndex(2),
         ))
     }
 
     fn add_third_cluster_marked_as_output_cluster(&mut self) -> &mut Self {
-        self.add_third_cluster_with_specialization(ClusterGeneSpecilization::Output(
+        self.add_third_cluster_with_specialization(ClusterGeneSpecialization::Output(
             NeuronClusterLocalIndex(2),
         ))
     }

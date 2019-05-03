@@ -21,7 +21,7 @@ impl GenomeStubBuilder {
                 weight: 0.5,
             }],
             placement_neuron: NeuronClusterLocalIndex(1),
-            specialization: ClusterGeneSpecilization::default(),
+            specialization: ClusterGeneSpecialization::default(),
         });
         self
     }

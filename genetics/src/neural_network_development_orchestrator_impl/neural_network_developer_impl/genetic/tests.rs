@@ -1,6 +1,6 @@
 use super::*;
 use crate::genome::{
-    ClusterGene, ClusterGeneIndex, ClusterGeneSpecilization, Connection as ConnectionDefinition,
+    ClusterGene, ClusterGeneIndex, ClusterGeneSpecialization, Connection as ConnectionDefinition,
     HoxGene, HoxGeneIndex, HoxPlacement, Neuron, NeuronClusterLocalIndex,
 };
 use crate::neural_network_development_orchestrator_impl::NeuralNetworkConfiguratorMock;
@@ -34,12 +34,12 @@ impl GenomeStubBuilder {
     }
 
     fn add_first_cluster(&mut self) -> &mut Self {
-        self.add_first_cluster_with_specialization(ClusterGeneSpecilization::default())
+        self.add_first_cluster_with_specialization(ClusterGeneSpecialization::default())
     }
 
     fn add_first_cluster_with_specialization(
         &mut self,
-        specialization: ClusterGeneSpecilization,
+        specialization: ClusterGeneSpecialization,
     ) -> &mut Self {
         self.genome.cluster_genes.push(ClusterGene {
             neurons: vec![Neuron::new(); 4],
@@ -51,12 +51,12 @@ impl GenomeStubBuilder {
     }
 
     fn add_second_cluster(&mut self) -> &mut Self {
-        self.add_second_cluster_with_specialization(ClusterGeneSpecilization::default())
+        self.add_second_cluster_with_specialization(ClusterGeneSpecialization::default())
     }
 
     fn add_second_cluster_with_specialization(
         &mut self,
-        specialization: ClusterGeneSpecilization,
+        specialization: ClusterGeneSpecialization,
     ) -> &mut Self {
         self.genome.cluster_genes.push(ClusterGene {
             neurons: vec![Neuron::new(); 3],
@@ -69,7 +69,7 @@ impl GenomeStubBuilder {
 
     fn add_third_cluster_with_specialization(
         &mut self,
-        specialization: ClusterGeneSpecilization,
+        specialization: ClusterGeneSpecialization,
     ) -> &mut Self {
         self.genome.cluster_genes.push(ClusterGene {
             neurons: vec![Neuron::new(); 4],

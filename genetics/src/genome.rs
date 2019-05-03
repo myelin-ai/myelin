@@ -54,12 +54,12 @@ pub struct ClusterGene {
     pub placement_neuron: NeuronClusterLocalIndex,
 
     /// Additional information about the cluster's responsibilities.
-    pub specialization: ClusterGeneSpecilization,
+    pub specialization: ClusterGeneSpecialization,
 }
 
 /// Additional information about a the responsibilities of a placed [`ClusterGene`].
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum ClusterGeneSpecilization {
+pub enum ClusterGeneSpecialization {
     /// A normal, good ol' cluster.
     None,
 
@@ -76,9 +76,9 @@ pub enum ClusterGeneSpecilization {
     Output(NeuronClusterLocalIndex),
 }
 
-impl Default for ClusterGeneSpecilization {
+impl Default for ClusterGeneSpecialization {
     fn default() -> Self {
-        ClusterGeneSpecilization::None
+        ClusterGeneSpecialization::None
     }
 }
 

@@ -171,15 +171,15 @@ fn push_targeted_cluster_neurons(
 fn push_neuron(
     configurator: &mut dyn NeuralNetworkConfigurator,
     neuron_index: usize,
-    cluster_specialization: &ClusterGeneSpecilization,
+    cluster_specialization: &ClusterGeneSpecialization,
 ) -> Handle {
     match cluster_specialization {
-        ClusterGeneSpecilization::Input(input_neuron_index)
+        ClusterGeneSpecialization::Input(input_neuron_index)
             if neuron_index == input_neuron_index.0 =>
         {
             configurator.push_input_neuron()
         }
-        ClusterGeneSpecilization::Output(output_neuron_index)
+        ClusterGeneSpecialization::Output(output_neuron_index)
             if neuron_index == output_neuron_index.0 =>
         {
             configurator.push_output_neuron()
