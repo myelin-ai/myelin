@@ -42,7 +42,9 @@ impl<'a> HardcodedGenerator<'a> {
     /// use myelin_engine::simulation::SimulationBuilder;
     /// use myelin_object_behavior::Static;
     /// use myelin_object_data::{AdditionalObjectDescriptionBincodeSerializer, Kind};
-    /// use myelin_worldgen::{HardcodedGenerator, NameProviderBuilder, WorldGenerator};
+    /// use myelin_worldgen::{
+    ///     HardcodedGenerator, NameProvider, NameProviderBuilder, NameProviderImpl, WorldGenerator,
+    /// };
     /// use std::fs::read_to_string;
     /// use std::path::Path;
     /// use std::sync::{Arc, RwLock};
@@ -55,7 +57,9 @@ impl<'a> HardcodedGenerator<'a> {
     /// let terrain_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
     /// let water_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
     ///
-    /// let mut name_provider_builder = NameProviderBuilder::default();
+    /// let mut name_provider_builder = NameProviderBuilder::new(Box::new(|names| {
+    ///     Box::new(NameProviderImpl::new(names)) as Box<dyn NameProvider>
+    /// }));
     ///
     /// let organism_names: Vec<String> = read_to_string(Path::new("../object-names/organisms.txt"))
     ///     .expect("Error while reading file")
@@ -64,7 +68,7 @@ impl<'a> HardcodedGenerator<'a> {
     ///     .collect();
     /// name_provider_builder.add_names(&organism_names, Kind::Organism);
     ///
-    /// let name_provider = name_provider_builder.build_randomized();
+    /// let name_provider = name_provider_builder.build();
     ///
     /// let additional_object_description_serializer =
     ///     Box::new(AdditionalObjectDescriptionBincodeSerializer::default());
