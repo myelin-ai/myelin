@@ -25,6 +25,7 @@ use std::num::NonZeroUsize;
 
 pub mod genome;
 pub mod neural_network_development_orchestrator_impl;
+pub mod genome_generator_impl;
 
 mod constant;
 
