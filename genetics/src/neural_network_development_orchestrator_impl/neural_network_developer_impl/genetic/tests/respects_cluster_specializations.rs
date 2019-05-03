@@ -153,7 +153,7 @@ fn expect_second_cluster_placed_on_first_cluster_connections(
 fn expect_third_cluster_placed_on_first_cluster_connections(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
 ) {
-    expect_second_cluster_placed_on_hox()(
+    expect_third_cluster_placed_on_hox()(
         configurator,
         ExpectConnectionsParameters {
             cluster_offset: 6,

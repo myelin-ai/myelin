@@ -276,6 +276,11 @@ fn expect_second_cluster_placed_on_hox(
     expect_cluster_placed_on_hox(second_cluster_connections())
 }
 
+fn expect_third_cluster_placed_on_hox(
+) -> impl FnOnce(&mut NeuralNetworkConfiguratorMock<'_>, ExpectConnectionsParameters) {
+    expect_cluster_placed_on_hox(third_cluster_connections())
+}
+
 fn expect_cluster_placed_on_hox(
     connections: Vec<ConnectionDefinition>,
 ) -> impl FnOnce(&mut NeuralNetworkConfiguratorMock<'_>, ExpectConnectionsParameters) {
