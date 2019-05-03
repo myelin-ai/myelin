@@ -138,9 +138,8 @@ fn push_standalone_cluster_neurons(
         .neurons
         .iter()
         .enumerate()
-        .map(|(neuron_index, _)| {
-            push_neuron(configurator, neuron_index, &cluster_gene.specialization)
-        })
+        .map(|(neuron_index, _)| NeuronClusterLocalIndex(neuron_index))
+        .map(|neuron_index| push_neuron(configurator, neuron_index, &cluster_gene.specialization))
         .collect()
 }
 
@@ -157,9 +156,10 @@ fn push_targeted_cluster_neurons(
         .neurons
         .iter()
         .enumerate()
+        .map(|(neuron_index, _)| NeuronClusterLocalIndex(neuron_index))
         // This preserves the order of neurons
-        .map(|(neuron_index, _)| {
-            if neuron_index == cluster_gene.placement_neuron.0 {
+        .map(|neuron_index| {
+            if neuron_index == cluster_gene.placement_neuron {
                 *target_neuron_handle
             } else {
                 push_neuron(configurator, neuron_index, &cluster_gene.specialization)
@@ -170,17 +170,17 @@ fn push_targeted_cluster_neurons(
 
 fn push_neuron(
     configurator: &mut dyn NeuralNetworkConfigurator,
-    neuron_index: usize,
+    neuron_index: NeuronClusterLocalIndex,
     cluster_specialization: &ClusterGeneSpecialization,
 ) -> Handle {
     match cluster_specialization {
         ClusterGeneSpecialization::Input(input_neuron_index)
-            if neuron_index == input_neuron_index.0 =>
+            if neuron_index == *input_neuron_index =>
         {
             configurator.push_input_neuron()
         }
         ClusterGeneSpecialization::Output(output_neuron_index)
-            if neuron_index == output_neuron_index.0 =>
+            if neuron_index == *output_neuron_index =>
         {
             configurator.push_output_neuron()
         }
