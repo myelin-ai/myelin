@@ -15,7 +15,7 @@ impl GenomeGenerator for GenomeGeneratorImpl {
     }
 }
 
-fn generate_sensor_cluster_gene(random: &dyn Random) -> ClusterGene {
+fn generate_sensor_cluster_gene(random: &dyn Random, specialization: ClusterGeneSpecialization) -> ClusterGene {
     let neuron_count = random.random_usize_in_range(
         MIN_NEURONS_PER_SENSOR_CLUSTER,
         MAX_NEURONS_PER_SENSOR_CLUSTER,
@@ -37,6 +37,7 @@ fn generate_sensor_cluster_gene(random: &dyn Random) -> ClusterGene {
         placement_neuron: SENSOR_CLUSTER_PLACEMENT_NEURON,
         neurons,
         connections,
+        specialization,
     }
 }
 
@@ -98,6 +99,7 @@ mod tests {
         let expected_cluster_gene = ClusterGene {
             neurons: vec![Neuron {}; NEURON_COUNT],
             placement_neuron: SENSOR_CLUSTER_PLACEMENT_NEURON,
+            specialization: ClusterGeneSpecialization::None,
             connections: vec![
                 Connection {
                     from: NeuronClusterLocalIndex(0),
@@ -142,7 +144,7 @@ mod tests {
             ],
         };
 
-        let cluster_gene = generate_sensor_cluster_gene(&*random);
+        let cluster_gene = generate_sensor_cluster_gene(&*random, ClusterGeneSpecialization::None);
 
         assert_eq!(expected_cluster_gene, cluster_gene)
     }
