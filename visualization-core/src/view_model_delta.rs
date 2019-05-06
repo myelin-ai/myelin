@@ -3,7 +3,7 @@
 
 use myelin_engine::prelude::*;
 use myelin_object_data::{AdditionalObjectDescription, ObjectDescription};
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// This step's object deltas
