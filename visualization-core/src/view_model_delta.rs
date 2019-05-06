@@ -4,6 +4,7 @@
 use myelin_engine::prelude::*;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
+use myelin_object_data::{ObjectDescription, AdditionalObjectDescription};
 
 /// This step's object deltas
 pub type ViewModelDelta = HashMap<Id, ObjectDelta>;
@@ -42,5 +43,5 @@ pub struct ObjectDescriptionDelta {
     pub mobility: Option<Mobility>,
 
     /// Arbitrary data associated with this object
-    pub associated_data: Option<Vec<u8>>,
+    pub associated_data: Option<AdditionalObjectDescription>,
 }
