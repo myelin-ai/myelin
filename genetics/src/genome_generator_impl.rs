@@ -15,18 +15,19 @@ impl GenomeGenerator for GenomeGeneratorImpl {
     }
 }
 
-fn generate_sensor_cluster_gene(random: &dyn Random, specialization: ClusterGeneSpecialization) -> ClusterGene {
-    let neuron_count = random.random_usize_in_range(
-        MIN_NEURONS_PER_SENSOR_CLUSTER,
-        MAX_NEURONS_PER_SENSOR_CLUSTER,
-    );
+fn generate_io_cluster_gene(
+    random: &dyn Random,
+    specialization: ClusterGeneSpecialization,
+) -> ClusterGene {
+    let neuron_count =
+        random.random_usize_in_range(MIN_NEURONS_PER_IO_CLUSTER, MAX_NEURONS_PER_IO_CLUSTER);
     let neurons = vec![Neuron {}; neuron_count];
     let connections = (0..neuron_count)
         .zip((0..neuron_count).skip(1))
         .map(|(from_index, to_index)| {
-            let connection = create_sensor_cluster_gene_connection(random, from_index, to_index);
+            let connection = create_io_cluster_gene_connection(random, from_index, to_index);
             let reverse_connection =
-                create_sensor_cluster_gene_connection(random, to_index, from_index);
+                create_io_cluster_gene_connection(random, to_index, from_index);
 
             iter::once(connection).chain(iter::once(reverse_connection))
         })
@@ -34,14 +35,14 @@ fn generate_sensor_cluster_gene(random: &dyn Random, specialization: ClusterGene
         .collect();
 
     ClusterGene {
-        placement_neuron: SENSOR_CLUSTER_PLACEMENT_NEURON,
+        placement_neuron: IO_CLUSTER_PLACEMENT_NEURON,
         neurons,
         connections,
         specialization,
     }
 }
 
-fn create_sensor_cluster_gene_connection(
+fn create_io_cluster_gene_connection(
     random: &dyn Random,
     from_index: usize,
     to_index: usize,
@@ -54,15 +55,14 @@ fn create_sensor_cluster_gene_connection(
     }
 }
 
-/// - Neuron 0: Placement neuron
-/// - Neuron 1: Sensor neuron
-const MIN_NEURONS_PER_SENSOR_CLUSTER: usize = 2;
+const MIN_NEURONS_PER_IO_CLUSTER: usize = 2;
+const IO_CLUSTER_PLACEMENT_NEURON: NeuronClusterLocalIndex = NeuronClusterLocalIndex(0);
+const IO_CLUSTER_IO_NEURON: NeuronClusterLocalIndex = NeuronClusterLocalIndex(1);
 /// Chosen arbitrarily
-const MAX_NEURONS_PER_SENSOR_CLUSTER: usize = 12;
+const MAX_NEURONS_PER_IO_CLUSTER: usize = 12;
 /// Chosen arbitrarily
 const MIN_CONNECTION_WEIGHT: f64 = 0.000_000_1;
 const MAX_CONNECTION_WEIGHT: f64 = 1.0;
-const SENSOR_CLUSTER_PLACEMENT_NEURON: NeuronClusterLocalIndex = NeuronClusterLocalIndex(0);
 
 #[cfg(test)]
 mod tests {
@@ -79,8 +79,8 @@ mod tests {
             let mut random = RandomMock::new();
             random
                 .expect_random_usize_in_range(
-                    partial_eq(MIN_NEURONS_PER_SENSOR_CLUSTER),
-                    partial_eq(MAX_NEURONS_PER_SENSOR_CLUSTER),
+                    partial_eq(MIN_NEURONS_PER_IO_CLUSTER),
+                    partial_eq(MAX_NEURONS_PER_IO_CLUSTER),
                 )
                 .returns(NEURON_COUNT);
 
@@ -98,7 +98,7 @@ mod tests {
 
         let expected_cluster_gene = ClusterGene {
             neurons: vec![Neuron {}; NEURON_COUNT],
-            placement_neuron: SENSOR_CLUSTER_PLACEMENT_NEURON,
+            placement_neuron: IO_CLUSTER_PLACEMENT_NEURON,
             specialization: ClusterGeneSpecialization::None,
             connections: vec![
                 Connection {
@@ -144,7 +144,7 @@ mod tests {
             ],
         };
 
-        let cluster_gene = generate_sensor_cluster_gene(&*random, ClusterGeneSpecialization::None);
+        let cluster_gene = generate_io_cluster_gene(&*random, ClusterGeneSpecialization::None);
 
         assert_eq!(expected_cluster_gene, cluster_gene)
     }
