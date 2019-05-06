@@ -15,6 +15,15 @@
 
 use serde::{Deserialize, Serialize};
 
+/// The behaviourless description of an object that has
+/// been placed inside a [`Simulation`].
+///
+/// [`Simulation`]: myelin_engine::simulation::Simulation
+pub type ObjectDescription = myelin_engine::object::ObjectDescription<AdditionalObjectDescription>;
+
+/// An object that is stored in the simulation
+pub type Object<'a> = myelin_engine::object::Object<'a, AdditionalObjectDescription>;
+
 /// The data associated with an object
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AdditionalObjectDescription {

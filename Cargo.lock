@@ -652,6 +652,7 @@ dependencies = [
 name = "myelin-object-data"
 version = "0.1.0"
 dependencies = [
+ "myelin-engine 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.88 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
