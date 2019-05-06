@@ -499,6 +499,7 @@ mod tests {
     use mockiato::partial_eq;
     use myelin_neural_network::NeuralNetworkMock;
     use myelin_object_data::AdditionalObjectDescription;
+    use myelin_object_data::Kind;
     use nearly_eq::assert_nearly_eq;
     use std::f64::consts::PI;
     use std::iter;
@@ -782,7 +783,12 @@ mod tests {
             )
             .mobility(Mobility::Movable(Vector::default()))
             .location(0.0, 0.0)
-            .rotation(Radians::try_new(PI).unwrap());
+            .rotation(Radians::try_new(PI).unwrap())
+            .associated_data(AdditionalObjectDescription {
+                name: None,
+                kind: Kind::Organism,
+                height: 1.0,
+            });
         builder
     }
 
@@ -819,7 +825,7 @@ mod tests {
         let mock_behavior = ObjectBehaviorMock::new();
         let mut counter = 0;
         let mut genenerate_objects =
-            |amount| generate_objects(amount, &mock_behavior, &mut counter);
+            |amount| generate_objects(amount, &mock_behavior, 1.0, &mut counter);
 
         let fourth_objects = genenerate_objects(6);
         let sixth_objects = genenerate_objects(2);
@@ -973,15 +979,24 @@ mod tests {
         let mut counter = 0;
         let mock_behavior = ObjectBehaviorMock::new();
 
-        let mut genenerate_objects = |amount| {
+        let mut genenerate_objects = |configurations: Vec<(usize, f64)>| -> Vec<Object<'_>> {
             /// This arbitrary shift jumbles the objects up,
             /// later testing if their distances are sorted
             const SHIFT: usize = 2;
-            generate_objects(amount, &mock_behavior, &mut counter)
+
+            let total_amount = configurations.iter().map(|(amount, _)| amount).sum();
+            let objects: Vec<_> = configurations
+                .into_iter()
+                .map(|(amount, height)| {
+                    generate_objects(amount, &mock_behavior, height, &mut counter)
+                })
+                .flatten()
+                .collect();
+            objects
                 .into_iter()
                 .cycle()
                 .skip(SHIFT)
-                .take(amount)
+                .take(total_amount)
                 .collect()
         };
 
@@ -989,12 +1004,12 @@ mod tests {
         let objects_in_fov = vec![
             Vec::new(),
             Vec::new(),
-            genenerate_objects(6),
+            genenerate_objects(vec![(4, 1.0), (1, 2.0), (1, 1.0)]),
             Vec::new(),
-            genenerate_objects(2),
+            genenerate_objects(vec![(2, 1.0)]),
             Vec::new(),
-            genenerate_objects(1),
-            genenerate_objects(4),
+            genenerate_objects(vec![(1, 1.0)]),
+            genenerate_objects(vec![(4, 1.0)]),
             Vec::new(),
             Vec::new(),
         ];
@@ -1018,7 +1033,7 @@ mod tests {
                 .take(MAX_OBJECTS_PER_RAYCAST)
                 .collect()
         };
-        let third_distances = points_to_distances(&[1.0]);
+        let third_distances = points_to_distances(&[1.0, 2.0, 3.0]);
         let fourth_distances = no_distances.clone();
         let fifth_distances = points_to_distances(&[7.0, 8.0]);
         let sixth_distances = no_distances.clone();
@@ -1053,6 +1068,7 @@ mod tests {
     fn generate_objects<'a, 'b>(
         amount: usize,
         object_behavior: &'a dyn ObjectBehavior<AdditionalObjectDescription>,
+        height: f64,
         counter: &'b mut usize,
     ) -> Vec<Object<'a>> {
         (0..amount)
@@ -1062,6 +1078,11 @@ mod tests {
                     behavior: object_behavior,
                     description: object_description()
                         .location(1.0 + *counter as f64, 1.0 + *counter as f64)
+                        .associated_data(AdditionalObjectDescription {
+                            name: None,
+                            kind: Kind::Organism,
+                            height,
+                        })
                         .build()
                         .unwrap(),
                 };

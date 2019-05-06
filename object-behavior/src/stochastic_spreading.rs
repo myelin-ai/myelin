@@ -220,6 +220,7 @@ impl ObjectBehavior<AdditionalObjectDescription> for StochasticSpreading {
 mod tests {
     use super::*;
     use mockiato::partial_eq;
+    use myelin_object_data::Kind;
     use myelin_random::RandomMock;
 
     const SPREADING_CHANGE: f64 = 1.0 / (60.0 * 30.0);
@@ -722,6 +723,11 @@ mod tests {
             )
             .location(x, y)
             .mobility(Mobility::Immovable)
+            .associated_data(AdditionalObjectDescription {
+                name: None,
+                kind: Kind::Plant,
+                height: 0.0,
+            })
             .build()
             .unwrap()
     }
