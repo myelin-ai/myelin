@@ -155,12 +155,15 @@ where
 
     let expected_delta = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
 
+    let mut world_generator = container.resolve::<Box<dyn WorldGenerator<'_>>>().unwrap();
     let mut controller = ControllerImpl::new(
-        container.resolve::<Box<dyn Simulation>>().unwrap(),
+        world_generator.generate(),
         conection_acceptor_factory_fn,
         spawn_thread_factory(),
         expected_delta,
     );
+
+    println!("running");
 
     controller.run();
 }
