@@ -11,11 +11,4 @@ authors = [
 edition = "2018"
 
 [dependencies]
-myelin-clone-box = { path = "../clone-box" }
-serde = "1.0"
-serde_derive = "1.0"
-bincode = "1.0"
-mockiato = { version = "0.5", optional = true }
-
-[features]
-use-mocks = ["mockiato"]
+serde = { version = "1.0", features = ["derive"] }

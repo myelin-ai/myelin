@@ -39,4 +39,3 @@ features = [
 maplit = "1.0"
 nameof = "1.0"
 mockiato = "0.5"
-myelin-object-data = { path = "../object-data", features = ["use-mocks"] }

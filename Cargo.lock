@@ -652,11 +652,7 @@ dependencies = [
 name = "myelin-object-data"
 version = "0.1.0"
 dependencies = [
- "bincode 1.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "mockiato 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "myelin-clone-box 0.1.0",
  "serde 1.0.88 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_derive 1.0.88 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
