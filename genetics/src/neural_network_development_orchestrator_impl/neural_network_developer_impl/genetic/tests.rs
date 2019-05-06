@@ -1,7 +1,7 @@
 use super::*;
 use crate::genome::{
-    ClusterGene, ClusterGeneIndex, Connection as ConnectionDefinition, HoxGene, HoxGeneIndex,
-    HoxPlacement, Neuron, NeuronClusterLocalIndex,
+    ClusterGene, ClusterGeneIndex, ClusterGeneSpecialization, Connection as ConnectionDefinition,
+    HoxGene, HoxGeneIndex, HoxPlacement, Neuron, NeuronClusterLocalIndex,
 };
 use crate::neural_network_development_orchestrator_impl::NeuralNetworkConfiguratorMock;
 use mockiato::partial_eq;
@@ -21,6 +21,7 @@ mod places_nothing_when_genome_only_contains_clusters_genes;
 mod places_nothing_when_hox_gene_points_to_non_existent_cluster_gene;
 mod places_two_hox_genes_placing_first_cluster_on_cluster_of_initial_hox;
 mod places_two_standalone_clusters;
+mod respects_cluster_specializations;
 
 #[derive(Debug, Default)]
 struct GenomeStubBuilder {
@@ -33,19 +34,48 @@ impl GenomeStubBuilder {
     }
 
     fn add_first_cluster(&mut self) -> &mut Self {
+        self.add_first_cluster_with_specialization(ClusterGeneSpecialization::default())
+    }
+
+    fn add_first_cluster_with_specialization(
+        &mut self,
+        specialization: ClusterGeneSpecialization,
+    ) -> &mut Self {
         self.genome.cluster_genes.push(ClusterGene {
             neurons: vec![Neuron::new(); 4],
             connections: first_cluster_connections(),
             placement_neuron: NeuronClusterLocalIndex(1),
+            specialization,
         });
         self
     }
 
     fn add_second_cluster(&mut self) -> &mut Self {
+        self.add_second_cluster_with_specialization(ClusterGeneSpecialization::default())
+    }
+
+    fn add_second_cluster_with_specialization(
+        &mut self,
+        specialization: ClusterGeneSpecialization,
+    ) -> &mut Self {
         self.genome.cluster_genes.push(ClusterGene {
             neurons: vec![Neuron::new(); 3],
             connections: second_cluster_connections(),
             placement_neuron: NeuronClusterLocalIndex(0),
+            specialization,
+        });
+        self
+    }
+
+    fn add_third_cluster_with_specialization(
+        &mut self,
+        specialization: ClusterGeneSpecialization,
+    ) -> &mut Self {
+        self.genome.cluster_genes.push(ClusterGene {
+            neurons: vec![Neuron::new(); 4],
+            connections: third_cluster_connections(),
+            placement_neuron: NeuronClusterLocalIndex(3),
+            specialization,
         });
         self
     }
@@ -149,9 +179,46 @@ fn expect_push_amount_of_neurons(
     configurator: &mut NeuralNetworkConfiguratorMock<'_>,
     neuron_count: usize,
 ) {
-    for handle in 0..neuron_count {
+    let neuron_handles = NeuronHandles {
+        regular: (0..neuron_count).collect(),
+        ..NeuronHandles::default()
+    };
+    expect_push_different_kinds_of_neurons(configurator, neuron_handles)
+}
+
+#[derive(Debug, Default)]
+struct NeuronHandles {
+    regular: Vec<usize>,
+    input: Vec<usize>,
+    output: Vec<usize>,
+}
+
+fn expect_push_different_kinds_of_neurons(
+    configurator: &mut NeuralNetworkConfiguratorMock<'_>,
+    neuron_handles: NeuronHandles,
+) {
+    let NeuronHandles {
+        regular,
+        input,
+        output,
+    } = neuron_handles;
+
+    for handle in regular {
         configurator.expect_push_neuron().returns(Handle(handle));
     }
+
+    for handle in input {
+        configurator
+            .expect_push_input_neuron()
+            .returns(Handle(handle));
+    }
+
+    for handle in output {
+        configurator
+            .expect_push_output_neuron()
+            .returns(Handle(handle));
+    }
+
     configurator.expect_push_neuron_calls_in_order();
 }
 
@@ -208,6 +275,11 @@ fn expect_first_cluster_placed_on_hox(
 fn expect_second_cluster_placed_on_hox(
 ) -> impl FnOnce(&mut NeuralNetworkConfiguratorMock<'_>, ExpectConnectionsParameters) {
     expect_cluster_placed_on_hox(second_cluster_connections())
+}
+
+fn expect_third_cluster_placed_on_hox(
+) -> impl FnOnce(&mut NeuralNetworkConfiguratorMock<'_>, ExpectConnectionsParameters) {
+    expect_cluster_placed_on_hox(third_cluster_connections())
 }
 
 fn expect_cluster_placed_on_hox(
@@ -289,6 +361,36 @@ fn second_cluster_connections() -> Vec<ConnectionDefinition> {
             from: NeuronClusterLocalIndex(2),
             to: NeuronClusterLocalIndex(1),
             weight: 0.82,
+        },
+    ]
+}
+
+fn third_cluster_connections() -> Vec<ConnectionDefinition> {
+    vec![
+        ConnectionDefinition {
+            from: NeuronClusterLocalIndex(0),
+            to: NeuronClusterLocalIndex(2),
+            weight: 1.0,
+        },
+        ConnectionDefinition {
+            from: NeuronClusterLocalIndex(3),
+            to: NeuronClusterLocalIndex(2),
+            weight: 0.2,
+        },
+        ConnectionDefinition {
+            from: NeuronClusterLocalIndex(0),
+            to: NeuronClusterLocalIndex(3),
+            weight: 0.99,
+        },
+        ConnectionDefinition {
+            from: NeuronClusterLocalIndex(3),
+            to: NeuronClusterLocalIndex(1),
+            weight: 0.1,
+        },
+        ConnectionDefinition {
+            from: NeuronClusterLocalIndex(1),
+            to: NeuronClusterLocalIndex(0),
+            weight: 0.5,
         },
     ]
 }

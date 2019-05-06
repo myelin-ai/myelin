@@ -43,13 +43,43 @@ pub struct Connection {
 pub struct ClusterGene {
     /// The neurons of the cluster
     pub neurons: Vec<Neuron>,
+
     /// The connections that will be placed when the cluster gene is used.
     /// They define the flow of information in the neural network.
     pub connections: Vec<Connection>,
+
     /// A neuron in this cluster gene. When this cluster is placed onto another cluster,
     /// instead of creating a new neuron, the target neuron is used. The target neuron is defined
     /// in the [`HoxPlacement`] of the [`HoxGene`] that defines the placement of this cluster.
     pub placement_neuron: NeuronClusterLocalIndex,
+
+    /// Additional information about the cluster's responsibilities.
+    pub specialization: ClusterGeneSpecialization,
+}
+
+/// Additional information about a the responsibilities of a placed [`ClusterGene`].
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum ClusterGeneSpecialization {
+    /// A normal, good ol' cluster.
+    None,
+
+    /// The initial cluster placed by the first [standalone hox gene].
+    /// It can only be placed once.
+    ///
+    /// [standalone hox gene]: enum.HoxPlacement.html#variant.Standalone
+    Initial,
+
+    /// The neuron at the specified index receives external input
+    Input(NeuronClusterLocalIndex),
+
+    /// The membrane potential of the neuron at the specified index serves as output for external behavior
+    Output(NeuronClusterLocalIndex),
+}
+
+impl Default for ClusterGeneSpecialization {
+    fn default() -> Self {
+        ClusterGeneSpecialization::None
+    }
 }
 
 /// Describes the placement behaviour of a [`HoxGene`].
