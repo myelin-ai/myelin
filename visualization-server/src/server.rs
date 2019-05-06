@@ -17,13 +17,14 @@ use myelin_neural_network::spiking_neural_network::DefaultSpikingNeuralNetwork;
 use myelin_object_behavior::organism::OrganismBehavior;
 use myelin_object_behavior::stochastic_spreading::StochasticSpreading;
 use myelin_object_behavior::Static;
-use myelin_object_data::Kind;
 use myelin_object_data::{
     AdditionalObjectDescriptionBincodeDeserializer, AdditionalObjectDescriptionBincodeSerializer,
+    AdditionalObjectDescriptionSerializer,
 };
+use myelin_object_data::{AdditionalObjectDescriptionDeserializer, Kind};
 use myelin_random::RandomImpl;
 use myelin_visualization_core::serialization::BincodeSerializer;
-use myelin_worldgen::{HardcodedGenerator, WorldGenerator};
+use myelin_worldgen::{HardcodedGenerator, NameProvider, NameProviderFactory, WorldGenerator};
 use myelin_worldgen::{NameProviderBuilder, ShuffledNameProviderFactory};
 use std::fs::read_to_string;
 use std::net::SocketAddr;
@@ -33,6 +34,7 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use uuid::Uuid;
+use wonderbox::Container;
 
 /// Starts the simulation and a websocket server, that broadcasts
 /// `ViewModel`s on each step to all clients.
@@ -41,62 +43,83 @@ where
     A: Into<SocketAddr> + Send,
 {
     let addr = addr.into();
+    let mut container = Container::new();
+    container.register_clone::<SocketAddr>(addr.clone());
+    container.register_factory(|_| SimulationBuilder::new().build());
+    container.register_default::<DefaultSpikingNeuralNetwork>();
+    container.register_clone::<Rc<NeuralNetworkDeveloperFactory>>(Rc::new(|configuration, _| {
+        box FlatNeuralNetworkDeveloper::new(configuration, box RandomImpl::new())
+    }));
+    container.register_factory(|_| {
+        box ShuffledNameProviderFactory::default() as Box<dyn NameProviderFactory>
+    });
+    container.register_factory(|container| {
+        let name_provider_factory = container.resolve::<Box<dyn NameProviderFactory>>().unwrap();
+        let mut name_provider_builder = NameProviderBuilder::new(name_provider_factory);
+        let organism_names = load_names_from_file(Path::new("./object-names/organisms.txt"));
+        name_provider_builder.add_names(&organism_names, Kind::Organism);
+        name_provider_builder.build()
+    });
+    container.register_factory(|_| {
+        box AdditionalObjectDescriptionBincodeSerializer::default()
+            as Box<dyn AdditionalObjectDescriptionSerializer>
+    });
 
-    let simulation_factory = box || -> Box<dyn Simulation> { SimulationBuilder::new().build() };
-    let plant_factory = box || -> Box<dyn ObjectBehavior> {
-        box StochasticSpreading::new(1.0 / 5_000.0, box RandomImpl::new())
-    };
-    let organism_factory = box || -> Box<dyn ObjectBehavior> {
-        let neural_network_factory: Rc<NeuralNetworkFactory> =
-            Rc::new(|| box DefaultSpikingNeuralNetwork::new());
-        let neural_network_developer_factory: Rc<NeuralNetworkDeveloperFactory> =
-            Rc::new(|configuration, _| {
-                box FlatNeuralNetworkDeveloper::new(configuration, box RandomImpl::new())
-            });
-        let neural_network_configurator_factory: Rc<NeuralNetworkConfiguratorFactory> = Rc::new(
-            |neural_network, input_neural_handles, output_neuron_handles| {
-                box NeuralNetworkConfiguratorImpl::new(
-                    neural_network,
-                    input_neural_handles,
-                    output_neuron_handles,
-                )
-            },
-        );
-        box OrganismBehavior::new(
-            (Genome::default(), Genome::default()),
-            box NeuralNetworkDevelopmentOrchestratorImpl::new(
-                neural_network_factory,
-                neural_network_developer_factory,
-                neural_network_configurator_factory,
-                box ChromosomalCrossoverGenomeDeriver::new(box RandomImpl::new()),
-                box GenomeMutatorStub::new(),
-            ),
-            box AdditionalObjectDescriptionBincodeDeserializer::default(),
-        )
-    };
-    let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
-    let water_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
+    container.register_factory(move |container| {
+        println!("foo");
+        let plant_factory = box || -> Box<dyn ObjectBehavior> {
+            box StochasticSpreading::new(1.0 / 5_000.0, box RandomImpl::new())
+        };
+        let organism_factory = box || -> Box<dyn ObjectBehavior> {
+            let neural_network_factory: Rc<NeuralNetworkFactory> =
+                Rc::new(|| box DefaultSpikingNeuralNetwork::new());
+            let neural_network_developer_factory: Rc<NeuralNetworkDeveloperFactory> =
+                Rc::new(|configuration, _| {
+                    box FlatNeuralNetworkDeveloper::new(configuration, box RandomImpl::new())
+                });
+            let neural_network_configurator_factory: Rc<NeuralNetworkConfiguratorFactory> = Rc::new(
+                |neural_network, input_neural_handles, output_neuron_handles| {
+                    box NeuralNetworkConfiguratorImpl::new(
+                        neural_network,
+                        input_neural_handles,
+                        output_neuron_handles,
+                    )
+                },
+            );
+            box OrganismBehavior::new(
+                (Genome::default(), Genome::default()),
+                box NeuralNetworkDevelopmentOrchestratorImpl::new(
+                    neural_network_factory,
+                    neural_network_developer_factory,
+                    neural_network_configurator_factory,
+                    box ChromosomalCrossoverGenomeDeriver::new(box RandomImpl::new()),
+                    box GenomeMutatorStub::new(),
+                ),
+                box AdditionalObjectDescriptionBincodeDeserializer::default(),
+            )
+        };
+        let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
+        let water_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
 
-    let mut name_provider_builder =
-        NameProviderBuilder::new(box ShuffledNameProviderFactory::default());
+        let simulation_factory = container
+            .resolve::<Box<dyn Fn() -> Box<dyn Simulation>>>()
+            .unwrap();
+        let name_provider = container.resolve::<Box<dyn NameProvider>>().unwrap();
 
-    let organism_names = load_names_from_file(Path::new("./object-names/organisms.txt"));
-    name_provider_builder.add_names(&organism_names, Kind::Organism);
+        let additional_object_description_serializer = container
+            .resolve::<Box<dyn AdditionalObjectDescriptionSerializer>>()
+            .unwrap();
 
-    let name_provider = name_provider_builder.build();
-
-    let additional_object_description_serializer =
-        box AdditionalObjectDescriptionBincodeSerializer::default();
-
-    let mut worldgen = HardcodedGenerator::new(
-        simulation_factory,
-        plant_factory,
-        organism_factory,
-        terrain_factory,
-        water_factory,
-        name_provider,
-        additional_object_description_serializer,
-    );
+        box HardcodedGenerator::new(
+            simulation_factory,
+            plant_factory,
+            organism_factory,
+            terrain_factory,
+            water_factory,
+            name_provider,
+            additional_object_description_serializer,
+        ) as Box<dyn WorldGenerator<'_>>
+    });
 
     let conection_acceptor_factory_fn = Arc::new(move |current_snapshot_fn| {
         let client_factory_fn = Arc::new(|websocket_client, current_snapshot_fn| {
@@ -133,7 +156,7 @@ where
     let expected_delta = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
 
     let mut controller = ControllerImpl::new(
-        worldgen.generate(),
+        container.resolve::<Box<dyn Simulation>>().unwrap(),
         conection_acceptor_factory_fn,
         spawn_thread_factory(),
         expected_delta,
