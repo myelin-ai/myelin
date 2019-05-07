@@ -26,6 +26,7 @@ use myelin_random::RandomImpl;
 use myelin_visualization_core::serialization::BincodeSerializer;
 use myelin_worldgen::{HardcodedGenerator, NameProvider, NameProviderFactory, WorldGenerator};
 use myelin_worldgen::{NameProviderBuilder, ShuffledNameProviderFactory};
+use std::collections::HashMap;
 use std::fs::read_to_string;
 use std::net::SocketAddr;
 use std::path::Path;
@@ -121,44 +122,62 @@ where
         ) as Box<dyn WorldGenerator<'_>>
     });
 
-    let conection_acceptor_factory_fn = Arc::new(move |current_snapshot_fn| {
-        let client_factory_fn = Arc::new(|websocket_client, current_snapshot_fn| {
-            let interval = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
-            let fixed_interval_sleeper = FixedIntervalSleeperImpl::default();
-            let presenter = DeltaPresenter::default();
-            let view_model_serializer = BincodeSerializer::default();
+    container.register_factory(move |_| {
+        Arc::new(move |current_snapshot_fn| {
+            let client_factory_fn = Arc::new(|websocket_client, current_snapshot_fn| {
+                let interval = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
+                let fixed_interval_sleeper = FixedIntervalSleeperImpl::default();
+                let presenter = DeltaPresenter::default();
+                let view_model_serializer = BincodeSerializer::default();
 
-            let connection = Connection {
-                id: Uuid::new_v4(),
-                socket: box WebsocketClient::new(websocket_client),
-            };
+                let connection = Connection {
+                    id: Uuid::new_v4(),
+                    socket: box WebsocketClient::new(websocket_client),
+                };
 
-            box ClientHandler::new(
-                interval,
-                box fixed_interval_sleeper,
-                box presenter,
-                box view_model_serializer,
-                connection,
+                box ClientHandler::new(
+                    interval,
+                    box fixed_interval_sleeper,
+                    box presenter,
+                    box view_model_serializer,
+                    connection,
+                    current_snapshot_fn,
+                ) as Box<dyn Client>
+            });
+
+            box WebsocketConnectionAcceptor::try_new(
+                addr,
+                client_factory_fn,
+                spawn_thread_factory(),
                 current_snapshot_fn,
-            ) as Box<dyn Client>
-        });
-
-        box WebsocketConnectionAcceptor::try_new(
-            addr,
-            client_factory_fn,
-            spawn_thread_factory(),
-            current_snapshot_fn,
-        )
-        .expect("Failed to create websocket connection acceptor")
-            as Box<dyn ConnectionAcceptor>
+            )
+            .expect("Failed to create websocket connection acceptor")
+                as Box<dyn ConnectionAcceptor>
+        })
+            as Arc<
+                dyn Fn(
+                        Arc<dyn Fn() -> HashMap<Id, ObjectDescription> + Send + Sync>,
+                    ) -> Box<dyn ConnectionAcceptor>
+                    + Send
+                    + Sync,
+            >
     });
 
     let expected_delta = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
 
     let mut world_generator = container.resolve::<Box<dyn WorldGenerator<'_>>>().unwrap();
+    let connection_acceptor_factory_fn = container
+        .resolve::<Arc<
+            dyn Fn(
+                    Arc<dyn Fn() -> HashMap<Id, ObjectDescription> + Send + Sync>,
+                ) -> Box<dyn ConnectionAcceptor>
+                + Send
+                + Sync,
+        >>()
+        .unwrap();
     let mut controller = ControllerImpl::new(
         world_generator.generate(),
-        conection_acceptor_factory_fn,
+        connection_acceptor_factory_fn,
         spawn_thread_factory(),
         expected_delta,
     );
