@@ -10,9 +10,10 @@ use myelin_engine::simulation::SimulationBuilder;
 use myelin_genetics::genome::Genome;
 use myelin_genetics::neural_network_development_orchestrator_impl::{
     ChromosomalCrossoverGenomeDeriver, FlatNeuralNetworkDeveloper, GenomeMutatorStub,
-    NeuralNetworkConfiguratorFactory, NeuralNetworkConfiguratorImpl, NeuralNetworkDeveloperFactory,
-    NeuralNetworkDevelopmentOrchestratorImpl, NeuralNetworkFactory,
+    NeuralNetworkConfiguratorFactory, NeuralNetworkConfiguratorImpl, NeuralNetworkDeveloper,
+    NeuralNetworkDeveloperFactory, NeuralNetworkDevelopmentOrchestratorImpl, NeuralNetworkFactory,
 };
+use myelin_genetics::NeuralNetworkDevelopmentConfiguration;
 use myelin_neural_network::spiking_neural_network::DefaultSpikingNeuralNetwork;
 use myelin_object_behavior::organism::OrganismBehavior;
 use myelin_object_behavior::stochastic_spreading::StochasticSpreading;
@@ -66,38 +67,50 @@ where
             as Box<dyn AdditionalObjectDescriptionSerializer>
     });
 
-    container.register_factory(move |container| {
-        println!("foo");
+    container.register_factory(|_| {
+        fn neural_network_developer_factory<'a>(
+            configuration: &'a NeuralNetworkDevelopmentConfiguration,
+            _: &'a Genome,
+        ) -> Box<dyn NeuralNetworkDeveloper + 'a> {
+            box FlatNeuralNetworkDeveloper::new(configuration, box RandomImpl::new())
+        }
+        Rc::new(neural_network_developer_factory) as Rc<NeuralNetworkDeveloperFactory>
+    });
+
+    container.register_factory(|container| {
         let plant_factory = box || -> Box<dyn ObjectBehavior> {
             box StochasticSpreading::new(1.0 / 5_000.0, box RandomImpl::new())
         };
-        let organism_factory = box || -> Box<dyn ObjectBehavior> {
-            let neural_network_factory: Rc<NeuralNetworkFactory> =
-                Rc::new(|| box DefaultSpikingNeuralNetwork::new());
-            let neural_network_developer_factory: Rc<NeuralNetworkDeveloperFactory> =
-                Rc::new(|configuration, _| {
-                    box FlatNeuralNetworkDeveloper::new(configuration, box RandomImpl::new())
-                });
-            let neural_network_configurator_factory: Rc<NeuralNetworkConfiguratorFactory> = Rc::new(
-                |neural_network, input_neural_handles, output_neuron_handles| {
-                    box NeuralNetworkConfiguratorImpl::new(
-                        neural_network,
-                        input_neural_handles,
-                        output_neuron_handles,
-                    )
-                },
-            );
-            box OrganismBehavior::new(
-                (Genome::default(), Genome::default()),
-                box NeuralNetworkDevelopmentOrchestratorImpl::new(
-                    neural_network_factory,
-                    neural_network_developer_factory,
-                    neural_network_configurator_factory,
-                    box ChromosomalCrossoverGenomeDeriver::new(box RandomImpl::new()),
-                    box GenomeMutatorStub::new(),
-                ),
-                box AdditionalObjectDescriptionBincodeDeserializer::default(),
-            )
+        let organism_factory = {
+            let container = container.clone();
+            box move || -> Box<dyn ObjectBehavior> {
+                let neural_network_factory: Rc<NeuralNetworkFactory> =
+                    Rc::new(|| box DefaultSpikingNeuralNetwork::new());
+                let neural_network_developer_factory = container
+                    .resolve::<Rc<NeuralNetworkDeveloperFactory>>()
+                    .unwrap();
+                let neural_network_configurator_factory: Rc<NeuralNetworkConfiguratorFactory> =
+                    Rc::new(
+                        |neural_network, input_neural_handles, output_neuron_handles| {
+                            box NeuralNetworkConfiguratorImpl::new(
+                                neural_network,
+                                input_neural_handles,
+                                output_neuron_handles,
+                            )
+                        },
+                    );
+                box OrganismBehavior::new(
+                    (Genome::default(), Genome::default()),
+                    box NeuralNetworkDevelopmentOrchestratorImpl::new(
+                        neural_network_factory,
+                        neural_network_developer_factory,
+                        neural_network_configurator_factory,
+                        box ChromosomalCrossoverGenomeDeriver::new(box RandomImpl::new()),
+                        box GenomeMutatorStub::new(),
+                    ),
+                    box AdditionalObjectDescriptionBincodeDeserializer::default(),
+                )
+            }
         };
         let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
         let water_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
@@ -198,15 +211,5 @@ fn load_names_from_file(path: &Path) -> Vec<String> {
 fn spawn_thread_factory() -> Box<ThreadSpawnFn> {
     box move |function| {
         thread::spawn(function);
-    }
-}
-
-struct Foo {
-    bar: String,
-}
-
-impl Foo {
-    fn baz<'a, 'b>(&'a self, flubber: &'b str) -> &'b str {
-        flubber
     }
 }
