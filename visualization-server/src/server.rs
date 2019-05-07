@@ -10,19 +10,21 @@ use myelin_engine::simulation::SimulationBuilder;
 use myelin_genetics::genome::Genome;
 use myelin_genetics::neural_network_development_orchestrator_impl::{
     ChromosomalCrossoverGenomeDeriver, FlatNeuralNetworkDeveloper, GenomeMutatorStub,
-    NeuralNetworkConfiguratorFactory, NeuralNetworkConfiguratorImpl, NeuralNetworkDeveloper,
-    NeuralNetworkDeveloperFactory, NeuralNetworkDevelopmentOrchestratorImpl, NeuralNetworkFactory,
+    InputNeuronHandles, NeuralNetworkConfigurator, NeuralNetworkConfiguratorFactory,
+    NeuralNetworkConfiguratorImpl, NeuralNetworkDeveloper, NeuralNetworkDeveloperFactory,
+    NeuralNetworkDevelopmentOrchestratorImpl, NeuralNetworkFactory, OutputNeuronHandles,
 };
 use myelin_genetics::NeuralNetworkDevelopmentConfiguration;
 use myelin_neural_network::spiking_neural_network::DefaultSpikingNeuralNetwork;
+use myelin_neural_network::NeuralNetwork;
 use myelin_object_behavior::organism::OrganismBehavior;
 use myelin_object_behavior::stochastic_spreading::StochasticSpreading;
 use myelin_object_behavior::Static;
+use myelin_object_data::Kind;
 use myelin_object_data::{
     AdditionalObjectDescriptionBincodeDeserializer, AdditionalObjectDescriptionBincodeSerializer,
     AdditionalObjectDescriptionSerializer,
 };
-use myelin_object_data::{AdditionalObjectDescriptionDeserializer, Kind};
 use myelin_random::RandomImpl;
 use myelin_visualization_core::serialization::BincodeSerializer;
 use myelin_worldgen::{HardcodedGenerator, NameProvider, NameProviderFactory, WorldGenerator};
@@ -77,6 +79,21 @@ where
         Rc::new(neural_network_developer_factory) as Rc<NeuralNetworkDeveloperFactory>
     });
 
+    container.register_factory(|_| {
+        fn neural_network_configurator_factory<'a>(
+            neural_network: &'a mut dyn NeuralNetwork,
+            input_neural_handles: &'a mut InputNeuronHandles,
+            output_neuron_handles: &'a mut OutputNeuronHandles,
+        ) -> Box<dyn NeuralNetworkConfigurator + 'a> {
+            box NeuralNetworkConfiguratorImpl::new(
+                neural_network,
+                input_neural_handles,
+                output_neuron_handles,
+            )
+        }
+        Rc::new(neural_network_configurator_factory) as Rc<NeuralNetworkConfiguratorFactory>
+    });
+
     container.register_factory(|container| {
         let plant_factory = box || -> Box<dyn ObjectBehavior> {
             box StochasticSpreading::new(1.0 / 5_000.0, box RandomImpl::new())
@@ -89,16 +106,9 @@ where
                 let neural_network_developer_factory = container
                     .resolve::<Rc<NeuralNetworkDeveloperFactory>>()
                     .unwrap();
-                let neural_network_configurator_factory: Rc<NeuralNetworkConfiguratorFactory> =
-                    Rc::new(
-                        |neural_network, input_neural_handles, output_neuron_handles| {
-                            box NeuralNetworkConfiguratorImpl::new(
-                                neural_network,
-                                input_neural_handles,
-                                output_neuron_handles,
-                            )
-                        },
-                    );
+                let neural_network_configurator_factory = container
+                    .resolve::<Rc<NeuralNetworkConfiguratorFactory>>()
+                    .unwrap();
                 box OrganismBehavior::new(
                     (Genome::default(), Genome::default()),
                     box NeuralNetworkDevelopmentOrchestratorImpl::new(
