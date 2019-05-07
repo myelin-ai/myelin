@@ -200,3 +200,13 @@ fn spawn_thread_factory() -> Box<ThreadSpawnFn> {
         thread::spawn(function);
     }
 }
+
+struct Foo {
+    bar: String,
+}
+
+impl Foo {
+    fn baz<'a, 'b>(&'a self, flubber: &'b str) -> &'b str {
+        flubber
+    }
+}
