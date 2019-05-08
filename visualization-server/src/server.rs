@@ -2,7 +2,7 @@ use crate::client::ClientHandler;
 use crate::connection::{Connection, WebsocketClient};
 use crate::connection_acceptor::{Client, ThreadSpawnFn, WebsocketConnectionAcceptor};
 use crate::constant::*;
-use crate::controller::{ConnectionAcceptor, Controller, ControllerImpl};
+use crate::controller::{ConnectionAcceptor, Controller, ControllerImpl, CurrentSnapshotFn};
 use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
 use crate::presenter::DeltaPresenter;
 use myelin_engine::prelude::*;
@@ -32,12 +32,14 @@ use myelin_worldgen::{NameProviderBuilder, ShuffledNameProviderFactory};
 use std::collections::HashMap;
 use std::fs::read_to_string;
 use std::net::SocketAddr;
+use std::net::TcpStream;
 use std::path::Path;
 use std::rc::Rc;
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use uuid::Uuid;
+use websocket::sync::Client as WsClient;
 use wonderbox::Container;
 
 /// Starts the simulation and a websocket server, that broadcasts
@@ -151,28 +153,44 @@ where
         ) as Box<dyn WorldGenerator<'_>>
     });
 
-    container.register_factory(move |_| {
+    container.register_factory(|_| {
+        Arc::new(|websocket_client, current_snapshot_fn| {
+            let interval = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
+            let fixed_interval_sleeper = FixedIntervalSleeperImpl::default();
+            let presenter = DeltaPresenter::default();
+            let view_model_serializer = BincodeSerializer::default();
+
+            let connection = Connection {
+                id: Uuid::new_v4(),
+                socket: box WebsocketClient::new(websocket_client),
+            };
+
+            box ClientHandler::new(
+                interval,
+                box fixed_interval_sleeper,
+                box presenter,
+                box view_model_serializer,
+                connection,
+                current_snapshot_fn,
+            ) as Box<dyn Client>
+        })
+            as Arc<
+                dyn Fn(WsClient<TcpStream>, Arc<CurrentSnapshotFn>) -> Box<dyn Client>
+                    + Send
+                    + Sync,
+            >
+    });
+
+    container.register_factory(move |container| {
+        let container = container.clone();
         Arc::new(move |current_snapshot_fn| {
-            let client_factory_fn = Arc::new(|websocket_client, current_snapshot_fn| {
-                let interval = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
-                let fixed_interval_sleeper = FixedIntervalSleeperImpl::default();
-                let presenter = DeltaPresenter::default();
-                let view_model_serializer = BincodeSerializer::default();
-
-                let connection = Connection {
-                    id: Uuid::new_v4(),
-                    socket: box WebsocketClient::new(websocket_client),
-                };
-
-                box ClientHandler::new(
-                    interval,
-                    box fixed_interval_sleeper,
-                    box presenter,
-                    box view_model_serializer,
-                    connection,
-                    current_snapshot_fn,
-                ) as Box<dyn Client>
-            });
+            let client_factory_fn = container
+                .resolve::<Arc<
+                    dyn Fn(WsClient<TcpStream>, Arc<CurrentSnapshotFn>) -> Box<dyn Client>
+                        + Send
+                        + Sync,
+                >>()
+                .unwrap();
 
             box WebsocketConnectionAcceptor::try_new(
                 addr,
