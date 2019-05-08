@@ -48,12 +48,18 @@ where
 {
     let addr = addr.into();
     let mut container = Container::new();
-    container.register_clone::<SocketAddr>(addr.clone());
+    container.register_factory(move |_| addr.clone());
     container.register_factory(|_| SimulationBuilder::new().build());
     container.register_default::<DefaultSpikingNeuralNetwork>();
-    container.register_clone::<Rc<NeuralNetworkDeveloperFactory>>(Rc::new(|configuration, _| {
-        box FlatNeuralNetworkDeveloper::new(configuration, box RandomImpl::new())
-    }));
+    container.register_factory(|_| {
+        fn neural_network_developer_factory<'a>(
+            configuration: &'a NeuralNetworkDevelopmentConfiguration,
+            _: &'a Genome,
+        ) -> Box<dyn NeuralNetworkDeveloper + 'a> {
+            box FlatNeuralNetworkDeveloper::new(configuration, box RandomImpl::new())
+        }
+        Rc::new(neural_network_developer_factory) as Rc<NeuralNetworkDeveloperFactory>
+    });
     container.register_factory(|_| {
         box ShuffledNameProviderFactory::default() as Box<dyn NameProviderFactory>
     });
