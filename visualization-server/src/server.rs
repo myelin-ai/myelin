@@ -95,6 +95,11 @@ fn create_composition_root(addr: SocketAddr) -> Container {
             Rc::new(|| box DefaultSpikingNeuralNetwork::new() as Box<dyn NeuralNetwork>)
                 as Rc<dyn Fn() -> Box<dyn NeuralNetwork>>
         })
+        .register(|_| {
+            box (|function| {
+                thread::spawn(function);
+            }) as Box<ThreadSpawnFn>
+        })
         .register(|container| {
             fn neural_network_developer_factory_factory<'a>(
                 container: &'a Container,
@@ -209,13 +214,13 @@ fn create_composition_root(addr: SocketAddr) -> Container {
             let container = container.clone();
             Arc::new(move |current_snapshot_fn| {
                 let client_factory_fn = container.resolve::<Arc<ClientFactoryFn>>().unwrap();
-
                 let addr = container.resolve::<SocketAddr>().unwrap();
+                let thread_spawn_fn = container.resolve::<Box<ThreadSpawnFn>>().unwrap();
 
                 box WebsocketConnectionAcceptor::try_new(
                     addr,
                     client_factory_fn,
-                    spawn_thread_factory(),
+                    thread_spawn_fn,
                     current_snapshot_fn,
                 )
                 .expect("Failed to create websocket connection acceptor")
@@ -229,10 +234,11 @@ fn create_composition_root(addr: SocketAddr) -> Container {
             let connection_acceptor_factory_fn = container
                 .resolve::<Arc<ConnectionAcceptorFactoryFn>>()
                 .unwrap();
+            let thread_spawn_fn = container.resolve::<Box<ThreadSpawnFn>>().unwrap();
             box ControllerImpl::new(
                 world_generator.generate(),
                 connection_acceptor_factory_fn,
-                spawn_thread_factory(),
+                thread_spawn_fn,
                 expected_delta,
             ) as Box<dyn Controller>
         });
@@ -246,10 +252,4 @@ fn load_names_from_file(path: &Path) -> Vec<String> {
         .lines()
         .map(String::from)
         .collect()
-}
-
-fn spawn_thread_factory() -> Box<ThreadSpawnFn> {
-    box |function| {
-        thread::spawn(function);
-    }
 }
