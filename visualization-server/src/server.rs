@@ -1,6 +1,8 @@
 use crate::client::ClientHandler;
 use crate::connection::{Connection, WebsocketClient};
-use crate::connection_acceptor::{Client, ThreadSpawnFn, WebsocketConnectionAcceptor};
+use crate::connection_acceptor::{
+    Client, ClientFactoryFn, ThreadSpawnFn, WebsocketConnectionAcceptor,
+};
 use crate::constant::*;
 use crate::controller::{
     ConnectionAcceptor, ConnectionAcceptorFactoryFn, Controller, ControllerImpl, CurrentSnapshotFn,
@@ -34,14 +36,12 @@ use myelin_worldgen::{HardcodedGenerator, NameProvider, NameProviderFactory, Wor
 use myelin_worldgen::{NameProviderBuilder, ShuffledNameProviderFactory};
 use std::fs::read_to_string;
 use std::net::SocketAddr;
-use std::net::TcpStream;
 use std::path::Path;
 use std::rc::Rc;
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use uuid::Uuid;
-use websocket::sync::Client as WsClient;
 use wonderbox::{register_autoresolvable, Container};
 
 /// Starts the simulation and a websocket server, that broadcasts
@@ -194,24 +194,13 @@ where
                 connection,
                 current_snapshot_fn,
             ) as Box<dyn Client>
-        })
-            as Arc<
-                dyn Fn(WsClient<TcpStream>, Arc<CurrentSnapshotFn>) -> Box<dyn Client>
-                    + Send
-                    + Sync,
-            >
+        }) as Arc<ClientFactoryFn>
     });
 
     container.register(move |container| {
         let container = container.clone();
         Arc::new(move |current_snapshot_fn| {
-            let client_factory_fn = container
-                .resolve::<Arc<
-                    dyn Fn(WsClient<TcpStream>, Arc<CurrentSnapshotFn>) -> Box<dyn Client>
-                        + Send
-                        + Sync,
-                >>()
-                .unwrap();
+            let client_factory_fn = container.resolve::<Arc<ClientFactoryFn>>().unwrap();
 
             let addr = container.resolve::<SocketAddr>().unwrap();
 
