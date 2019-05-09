@@ -53,9 +53,16 @@ pub fn start_server<A>(addr: A)
 where
     A: Into<SocketAddr> + Send,
 {
+    let container = create_composition_root(addr.into());
+    let mut controller = container.resolve::<Box<dyn Controller>>().unwrap();
+    println!("running");
+
+    controller.run();
+}
+
+fn create_composition_root(addr: SocketAddr) -> Container {
     let mut container = Container::new();
 
-    let addr: SocketAddr = addr.into();
     container.register(move |_| addr.clone());
     container.register(|_| SimulationBuilder::new().build());
     container.register(|_| {
@@ -237,10 +244,7 @@ where
         ) as Box<dyn Controller>
     });
 
-    let mut controller = container.resolve::<Box<dyn Controller>>().unwrap();
-    println!("running");
-
-    controller.run();
+    container
 }
 
 fn load_names_from_file(path: &Path) -> Vec<String> {
