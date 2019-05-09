@@ -55,7 +55,10 @@ where
     let addr: SocketAddr = addr.into();
     container.register(move |_| addr.clone());
     container.register(|_| SimulationBuilder::new().build());
-    container.register(|_| DefaultSpikingNeuralNetwork::default());
+    container.register(|_| {
+        Rc::new(|| box DefaultSpikingNeuralNetwork::new() as Box<dyn NeuralNetwork>)
+            as Rc<dyn Fn() -> Box<dyn NeuralNetwork>>
+    });
     register_autoresolvable!(container, RandomImpl as Box<dyn Random>);
     container.register(|container| {
         fn neural_network_developer_factory_factory<'a>(
@@ -119,8 +122,9 @@ where
         let organism_factory = {
             let container = container.clone();
             box move || -> Box<dyn ObjectBehavior> {
-                let neural_network_factory: Rc<NeuralNetworkFactory> =
-                    Rc::new(|| box DefaultSpikingNeuralNetwork::new());
+                let neural_network_factory = container
+                    .resolve::<Rc<dyn Fn() -> Box<dyn NeuralNetwork>>>()
+                    .unwrap();
                 let neural_network_developer_factory = container
                     .resolve::<Rc<NeuralNetworkDeveloperFactory>>()
                     .unwrap();
