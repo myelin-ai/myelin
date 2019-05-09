@@ -19,6 +19,7 @@ use myelin_clone_box::clone_box;
 use serde_derive::{Deserialize, Serialize};
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
+use wonderbox::autoresolvable;
 
 #[cfg(feature = "use-mocks")]
 use mockiato::mockable;
@@ -82,7 +83,15 @@ clone_box!(
 ///
 /// [`AdditionalObjectDescriptionSerializer`]: ./trait.AdditionalObjectDescriptionSerializer.html
 #[derive(Debug, Default, Clone)]
-pub struct AdditionalObjectDescriptionBincodeSerializer {}
+pub struct AdditionalObjectDescriptionBincodeSerializer;
+
+#[autoresolvable]
+impl AdditionalObjectDescriptionBincodeSerializer {
+    /// Creates a new [`AdditionalObjectDescriptionBincodeSerializer`]
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
 
 impl AdditionalObjectDescriptionSerializer for AdditionalObjectDescriptionBincodeSerializer {
     fn serialize(&self, additional_object_description: &AdditionalObjectDescription) -> Vec<u8> {

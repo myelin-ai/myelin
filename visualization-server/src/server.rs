@@ -87,10 +87,11 @@ where
         name_provider_builder.add_names(&organism_names, Kind::Organism);
         name_provider_builder.build()
     });
-    container.register(|_| {
-        box AdditionalObjectDescriptionBincodeSerializer::default()
+    register_autoresolvable!(
+        container,
+        AdditionalObjectDescriptionBincodeSerializer
             as Box<dyn AdditionalObjectDescriptionSerializer>
-    });
+    );
 
     container.register(|_| {
         fn neural_network_configurator_factory<'a>(
