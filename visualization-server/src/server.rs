@@ -42,7 +42,7 @@ use std::thread;
 use std::time::Duration;
 use uuid::Uuid;
 use websocket::sync::Client as WsClient;
-use wonderbox::Container;
+use wonderbox::{register_autoresolvable, Container};
 
 /// Starts the simulation and a websocket server, that broadcasts
 /// `ViewModel`s on each step to all clients.
@@ -56,7 +56,7 @@ where
     container.register(move |_| addr.clone());
     container.register(|_| SimulationBuilder::new().build());
     container.register(|_| DefaultSpikingNeuralNetwork::default());
-    container.register(|_| box RandomImpl::new() as Box<dyn Random>);
+    register_autoresolvable!(container, RandomImpl as Box<dyn Random>);
     container.register(|container| {
         fn neural_network_developer_factory_factory<'a>(
             container: &'a Container,
@@ -74,8 +74,12 @@ where
         Rc::new(neural_network_developer_factory_factory(container))
             as Rc<NeuralNetworkDeveloperFactory>
     });
-    container
-        .register(|_| box ShuffledNameProviderFactory::default() as Box<dyn NameProviderFactory>);
+
+    register_autoresolvable!(
+        container,
+        ShuffledNameProviderFactory as Box<dyn NameProviderFactory>
+    );
+
     container.register(|container| {
         let name_provider_factory = container.resolve::<Box<dyn NameProviderFactory>>().unwrap();
         let mut name_provider_builder = NameProviderBuilder::new(name_provider_factory);
