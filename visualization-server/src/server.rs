@@ -85,7 +85,7 @@ fn create_composition_root(addr: SocketAddr) -> Container {
     );
 
     container
-        .register(move |_| addr.clone())
+        .register(move |_| addr)
         .register(|_| SimulationBuilder::new().build())
         .register(|_| {
             Rc::new(|| box DefaultSpikingNeuralNetwork::new() as Box<dyn NeuralNetwork>)
@@ -97,8 +97,8 @@ fn create_composition_root(addr: SocketAddr) -> Container {
             }) as Box<ThreadSpawnFn>
         })
         .register(|container| {
-            fn neural_network_developer_factory_factory<'a>(
-                container: &'a Container,
+            fn neural_network_developer_factory_factory(
+                container: &Container,
             ) -> impl for<'b> Fn(
                 &'b NeuralNetworkDevelopmentConfiguration,
                 &'b Genome,
