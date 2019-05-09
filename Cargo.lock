@@ -720,7 +720,7 @@ dependencies = [
  "simple_logger 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "uuid 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "websocket 0.22.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "wonderbox 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wonderbox 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1760,15 +1760,15 @@ dependencies = [
 
 [[package]]
 name = "wonderbox"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "wonderbox-codegen 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wonderbox-codegen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "wonderbox-codegen"
-version = "0.1.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "proc-macro2 0.4.27 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1976,6 +1976,6 @@ dependencies = [
 "checksum winapi-util 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7168bab6e1daee33b4557efd0e95d5ca70a03706d39fa5f3fe7a236f584b03c9"
 "checksum winapi-x86_64-pc-windows-gnu 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 "checksum wincolor 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "561ed901ae465d6185fa7864d63fbd5720d0ef718366c9a4dc83cf6170d7e9ba"
-"checksum wonderbox 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "44755c31069214e1e8b7f477c8e3148d91c84e31ec178555aad63c0c258b298a"
-"checksum wonderbox-codegen 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "56ced650f51de97386e1fa5290ad5090b265faa240963487163778aa5c8d82b2"
+"checksum wonderbox 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "72f2830b97cf68fc9e23e4a1b186f176fa43adb418ee8aaa7ba9981d1a0a7e25"
+"checksum wonderbox-codegen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "5de9b3fc0493e0233a23cd9c7b4197c91c8be260c7a6e0f99ee9892d619ae642"
 "checksum ws2_32-sys 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "d59cefebd0c892fa2dd6de581e937301d8552cb44489cdff035c6187cb63fa5e"

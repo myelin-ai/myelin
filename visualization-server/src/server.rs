@@ -50,10 +50,10 @@ where
 {
     let addr = addr.into();
     let mut container = Container::new();
-    container.register_factory(move |_| addr.clone());
-    container.register_factory(|_| SimulationBuilder::new().build());
-    container.register_default::<DefaultSpikingNeuralNetwork>();
-    container.register_factory(|_| {
+    container.register(move |_| addr.clone());
+    container.register(|_| SimulationBuilder::new().build());
+    container.register(|_| DefaultSpikingNeuralNetwork::default());
+    container.register(|_| {
         fn neural_network_developer_factory<'a>(
             configuration: &'a NeuralNetworkDevelopmentConfiguration,
             _: &'a Genome,
@@ -62,22 +62,21 @@ where
         }
         Rc::new(neural_network_developer_factory) as Rc<NeuralNetworkDeveloperFactory>
     });
-    container.register_factory(|_| {
-        box ShuffledNameProviderFactory::default() as Box<dyn NameProviderFactory>
-    });
-    container.register_factory(|container| {
+    container
+        .register(|_| box ShuffledNameProviderFactory::default() as Box<dyn NameProviderFactory>);
+    container.register(|container| {
         let name_provider_factory = container.resolve::<Box<dyn NameProviderFactory>>().unwrap();
         let mut name_provider_builder = NameProviderBuilder::new(name_provider_factory);
         let organism_names = load_names_from_file(Path::new("./object-names/organisms.txt"));
         name_provider_builder.add_names(&organism_names, Kind::Organism);
         name_provider_builder.build()
     });
-    container.register_factory(|_| {
+    container.register(|_| {
         box AdditionalObjectDescriptionBincodeSerializer::default()
             as Box<dyn AdditionalObjectDescriptionSerializer>
     });
 
-    container.register_factory(|_| {
+    container.register(|_| {
         fn neural_network_developer_factory<'a>(
             configuration: &'a NeuralNetworkDevelopmentConfiguration,
             _: &'a Genome,
@@ -87,7 +86,7 @@ where
         Rc::new(neural_network_developer_factory) as Rc<NeuralNetworkDeveloperFactory>
     });
 
-    container.register_factory(|_| {
+    container.register(|_| {
         fn neural_network_configurator_factory<'a>(
             neural_network: &'a mut dyn NeuralNetwork,
             input_neural_handles: &'a mut InputNeuronHandles,
@@ -102,7 +101,7 @@ where
         Rc::new(neural_network_configurator_factory) as Rc<NeuralNetworkConfiguratorFactory>
     });
 
-    container.register_factory(|container| {
+    container.register(|container| {
         let plant_factory = box || -> Box<dyn ObjectBehavior> {
             box StochasticSpreading::new(1.0 / 5_000.0, box RandomImpl::new())
         };
@@ -153,7 +152,7 @@ where
         ) as Box<dyn WorldGenerator<'_>>
     });
 
-    container.register_factory(|_| {
+    container.register(|_| {
         Arc::new(|websocket_client, current_snapshot_fn| {
             let interval = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
             let fixed_interval_sleeper = FixedIntervalSleeperImpl::default();
@@ -181,7 +180,7 @@ where
             >
     });
 
-    container.register_factory(move |container| {
+    container.register(move |container| {
         let container = container.clone();
         Arc::new(move |current_snapshot_fn| {
             let client_factory_fn = container
