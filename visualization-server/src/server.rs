@@ -25,7 +25,7 @@ use myelin_object_data::{
     AdditionalObjectDescriptionBincodeDeserializer, AdditionalObjectDescriptionBincodeSerializer,
     AdditionalObjectDescriptionSerializer,
 };
-use myelin_random::RandomImpl;
+use myelin_random::{Random, RandomImpl};
 use myelin_visualization_core::serialization::BincodeSerializer;
 use myelin_worldgen::{HardcodedGenerator, NameProvider, NameProviderFactory, WorldGenerator};
 use myelin_worldgen::{NameProviderBuilder, ShuffledNameProviderFactory};
@@ -48,19 +48,30 @@ pub fn start_server<A>(addr: A)
 where
     A: Into<SocketAddr> + Send,
 {
-    let addr = addr.into();
     let mut container = Container::new();
+
+    let addr: SocketAddr = addr.into();
     container.register(move |_| addr.clone());
     container.register(|_| SimulationBuilder::new().build());
     container.register(|_| DefaultSpikingNeuralNetwork::default());
-    container.register(|_| {
-        fn neural_network_developer_factory<'a>(
-            configuration: &'a NeuralNetworkDevelopmentConfiguration,
-            _: &'a Genome,
-        ) -> Box<dyn NeuralNetworkDeveloper + 'a> {
-            box FlatNeuralNetworkDeveloper::new(configuration, box RandomImpl::new())
+    container.register(|_| box RandomImpl::new() as Box<dyn Random>);
+    container.register(|container| {
+        fn neural_network_developer_factory_factory<'a>(
+            container: &'a Container,
+        ) -> Box<
+            dyn for<'b> Fn(
+                &'b NeuralNetworkDevelopmentConfiguration,
+                &'b Genome,
+            ) -> Box<dyn NeuralNetworkDeveloper + 'b>,
+        > {
+            let container = container.clone();
+            box move |configuration, _| {
+                let random = container.resolve::<Box<dyn Random>>().unwrap();
+                box FlatNeuralNetworkDeveloper::new(configuration, random)
+            }
         }
-        Rc::new(neural_network_developer_factory) as Rc<NeuralNetworkDeveloperFactory>
+        Rc::new(neural_network_developer_factory_factory(container))
+            as Rc<NeuralNetworkDeveloperFactory>
     });
     container
         .register(|_| box ShuffledNameProviderFactory::default() as Box<dyn NameProviderFactory>);
@@ -190,6 +201,8 @@ where
                         + Sync,
                 >>()
                 .unwrap();
+
+            let addr = container.resolve::<SocketAddr>().unwrap();
 
             box WebsocketConnectionAcceptor::try_new(
                 addr,
