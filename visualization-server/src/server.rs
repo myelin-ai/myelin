@@ -5,22 +5,20 @@ use crate::connection_acceptor::{
 };
 use crate::constant::*;
 use crate::controller::{
-    ConnectionAcceptor, ConnectionAcceptorFactoryFn, Controller, ControllerImpl, CurrentSnapshotFn,
-    Presenter,
+    ConnectionAcceptor, ConnectionAcceptorFactoryFn, Controller, ControllerImpl, Presenter,
 };
 use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperImpl};
-use crate::presenter::DeltaPresenter;
 use myelin_engine::prelude::*;
 use myelin_engine::simulation::SimulationBuilder;
-use myelin_genetics::genome::Genome;
-use myelin_genetics::neural_network_development_orchestrator_impl::{
-    ChromosomalCrossoverGenomeDeriver, FlatNeuralNetworkDeveloper, GenomeDeriver, GenomeMutator,
-    GenomeMutatorStub, InputNeuronHandles, NeuralNetworkConfigurator,
-    NeuralNetworkConfiguratorFactory, NeuralNetworkConfiguratorImpl, NeuralNetworkDeveloper,
-    NeuralNetworkDeveloperFactory, NeuralNetworkDevelopmentOrchestratorImpl, NeuralNetworkFactory,
-    OutputNeuronHandles,
-};
 use myelin_genetics::{
+    genome::Genome,
+    neural_network_development_orchestrator_impl::{
+        ChromosomalCrossoverGenomeDeriver, FlatNeuralNetworkDeveloper, GenomeDeriver,
+        GenomeMutator, GenomeMutatorStub, InputNeuronHandles, NeuralNetworkConfigurator,
+        NeuralNetworkConfiguratorFactory, NeuralNetworkConfiguratorImpl, NeuralNetworkDeveloper,
+        NeuralNetworkDeveloperFactory, NeuralNetworkDevelopmentOrchestratorImpl,
+        OutputNeuronHandles,
+    },
     NeuralNetworkDevelopmentConfiguration, NeuralNetworkDevelopmentOrchestrator,
 };
 use myelin_neural_network::spiking_neural_network::DefaultSpikingNeuralNetwork;
@@ -55,7 +53,6 @@ where
 {
     let container = create_composition_root(addr.into());
     let mut controller = container.resolve::<Box<dyn Controller>>().unwrap();
-    println!("running");
 
     controller.run();
 }
