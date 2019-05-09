@@ -87,14 +87,23 @@ where
             as Box<dyn AdditionalObjectDescriptionSerializer>
     });
 
-    container.register(|_| {
-        fn neural_network_developer_factory<'a>(
-            configuration: &'a NeuralNetworkDevelopmentConfiguration,
-            _: &'a Genome,
-        ) -> Box<dyn NeuralNetworkDeveloper + 'a> {
-            box FlatNeuralNetworkDeveloper::new(configuration, box RandomImpl::new())
+    container.register(|container| {
+        fn neural_network_developer_factory_factory<'a>(
+            container: &'a Container,
+        ) -> Box<
+            dyn for<'b> Fn(
+                &'b NeuralNetworkDevelopmentConfiguration,
+                &'b Genome,
+            ) -> Box<dyn NeuralNetworkDeveloper + 'b>,
+        > {
+            let container = container.clone();
+            box move |configuration, _| {
+                let random = container.resolve::<Box<dyn Random>>().unwrap();
+                box FlatNeuralNetworkDeveloper::new(configuration, random)
+            }
         }
-        Rc::new(neural_network_developer_factory) as Rc<NeuralNetworkDeveloperFactory>
+        Rc::new(neural_network_developer_factory_factory(container))
+            as Rc<NeuralNetworkDeveloperFactory>
     });
 
     container.register(|_| {
@@ -113,8 +122,12 @@ where
     });
 
     container.register(|container| {
-        let plant_factory = box || -> Box<dyn ObjectBehavior> {
-            box StochasticSpreading::new(1.0 / 5_000.0, box RandomImpl::new())
+        let plant_factory = {
+            let container = container.clone();
+            box move || -> Box<dyn ObjectBehavior> {
+                let random = container.resolve::<Box<dyn Random>>().unwrap();
+                box StochasticSpreading::new(1.0 / 5_000.0, random)
+            }
         };
         let organism_factory = {
             let container = container.clone();
