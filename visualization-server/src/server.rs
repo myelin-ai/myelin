@@ -14,10 +14,11 @@ use myelin_engine::prelude::*;
 use myelin_engine::simulation::SimulationBuilder;
 use myelin_genetics::genome::Genome;
 use myelin_genetics::neural_network_development_orchestrator_impl::{
-    ChromosomalCrossoverGenomeDeriver, FlatNeuralNetworkDeveloper, GenomeMutatorStub,
-    InputNeuronHandles, NeuralNetworkConfigurator, NeuralNetworkConfiguratorFactory,
-    NeuralNetworkConfiguratorImpl, NeuralNetworkDeveloper, NeuralNetworkDeveloperFactory,
-    NeuralNetworkDevelopmentOrchestratorImpl, NeuralNetworkFactory, OutputNeuronHandles,
+    ChromosomalCrossoverGenomeDeriver, FlatNeuralNetworkDeveloper, GenomeDeriver, GenomeMutator,
+    GenomeMutatorStub, InputNeuronHandles, NeuralNetworkConfigurator,
+    NeuralNetworkConfiguratorFactory, NeuralNetworkConfiguratorImpl, NeuralNetworkDeveloper,
+    NeuralNetworkDeveloperFactory, NeuralNetworkDevelopmentOrchestratorImpl, NeuralNetworkFactory,
+    OutputNeuronHandles,
 };
 use myelin_genetics::NeuralNetworkDevelopmentConfiguration;
 use myelin_neural_network::spiking_neural_network::DefaultSpikingNeuralNetwork;
@@ -111,6 +112,13 @@ where
         Rc::new(neural_network_configurator_factory) as Rc<NeuralNetworkConfiguratorFactory>
     });
 
+    register_autoresolvable!(
+        container,
+        ChromosomalCrossoverGenomeDeriver as Box<dyn GenomeDeriver>
+    );
+
+    register_autoresolvable!(container, GenomeMutatorStub as Box<dyn GenomeMutator>);
+
     container.register(|container| {
         let plant_factory = {
             let container = container.clone();
@@ -131,14 +139,16 @@ where
                 let neural_network_configurator_factory = container
                     .resolve::<Rc<NeuralNetworkConfiguratorFactory>>()
                     .unwrap();
+                let genome_deriver = container.resolve::<Box<dyn GenomeDeriver>>().unwrap();
+                let genome_mutator = container.resolve::<Box<dyn GenomeMutator>>().unwrap();
                 box OrganismBehavior::new(
                     (Genome::default(), Genome::default()),
                     box NeuralNetworkDevelopmentOrchestratorImpl::new(
                         neural_network_factory,
                         neural_network_developer_factory,
                         neural_network_configurator_factory,
-                        box ChromosomalCrossoverGenomeDeriver::new(box RandomImpl::new()),
-                        box GenomeMutatorStub::new(),
+                        genome_deriver,
+                        genome_mutator,
                     ),
                     box AdditionalObjectDescriptionBincodeDeserializer::default(),
                 )

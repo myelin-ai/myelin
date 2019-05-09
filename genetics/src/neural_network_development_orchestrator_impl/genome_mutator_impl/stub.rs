@@ -1,11 +1,13 @@
 use crate::genome::*;
 use crate::neural_network_development_orchestrator_impl::GenomeMutator;
 use std::marker::PhantomData;
+use wonderbox::autoresolvable;
 
 /// A [`GenomeMutator`] that does nothing and just returns the passed [`Genome`].
 #[derive(Debug, Default, Clone)]
 pub struct GenomeMutatorStub(PhantomData<()>);
 
+#[autoresolvable]
 impl GenomeMutatorStub {
     /// Creates a new [`GenomeMutatorStub`].
     pub fn new() -> Self {
