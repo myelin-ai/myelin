@@ -2,8 +2,10 @@ use crate::client::ClientHandler;
 use crate::connection::{Connection, WebsocketClient};
 use crate::connection_acceptor::{Client, ThreadSpawnFn, WebsocketConnectionAcceptor};
 use crate::constant::*;
-use crate::controller::{ConnectionAcceptor, Controller, ControllerImpl, CurrentSnapshotFn};
-use crate::fixed_interval_sleeper::FixedIntervalSleeperImpl;
+use crate::controller::{
+    ConnectionAcceptor, Controller, ControllerImpl, CurrentSnapshotFn, Presenter,
+};
+use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperImpl};
 use crate::presenter::DeltaPresenter;
 use myelin_engine::prelude::*;
 use myelin_engine::simulation::SimulationBuilder;
@@ -26,7 +28,7 @@ use myelin_object_data::{
     AdditionalObjectDescriptionSerializer,
 };
 use myelin_random::{Random, RandomImpl};
-use myelin_visualization_core::serialization::BincodeSerializer;
+use myelin_visualization_core::serialization::{BincodeSerializer, ViewModelSerializer};
 use myelin_worldgen::{HardcodedGenerator, NameProvider, NameProviderFactory, WorldGenerator};
 use myelin_worldgen::{NameProviderBuilder, ShuffledNameProviderFactory};
 use std::collections::HashMap;
@@ -156,12 +158,23 @@ where
         ) as Box<dyn WorldGenerator<'_>>
     });
 
-    container.register(|_| {
-        Arc::new(|websocket_client, current_snapshot_fn| {
+    container
+        .register(|_| box FixedIntervalSleeperImpl::default() as Box<dyn FixedIntervalSleeper>);
+
+    container.register(|_| box DeltaPresenter::default() as Box<dyn Presenter>);
+
+    container.register(|_| box BincodeSerializer::default() as Box<dyn ViewModelSerializer>);
+
+    container.register(|container| {
+        let container = container.clone();
+        Arc::new(move |websocket_client, current_snapshot_fn| {
             let interval = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
-            let fixed_interval_sleeper = FixedIntervalSleeperImpl::default();
-            let presenter = DeltaPresenter::default();
-            let view_model_serializer = BincodeSerializer::default();
+            let fixed_interval_sleeper = container
+                .resolve::<Box<dyn FixedIntervalSleeper>>()
+                .unwrap();
+            let presenter = container.resolve::<Box<dyn Presenter>>().unwrap();
+            let view_model_serializer =
+                container.resolve::<Box<dyn ViewModelSerializer>>().unwrap();
 
             let connection = Connection {
                 id: Uuid::new_v4(),
@@ -170,9 +183,9 @@ where
 
             box ClientHandler::new(
                 interval,
-                box fixed_interval_sleeper,
-                box presenter,
-                box view_model_serializer,
+                fixed_interval_sleeper,
+                presenter,
+                view_model_serializer,
                 connection,
                 current_snapshot_fn,
             ) as Box<dyn Client>
