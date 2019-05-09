@@ -58,16 +58,15 @@ where
     container.register(|container| {
         fn neural_network_developer_factory_factory<'a>(
             container: &'a Container,
-        ) -> Box<
-            dyn for<'b> Fn(
-                &'b NeuralNetworkDevelopmentConfiguration,
-                &'b Genome,
-            ) -> Box<dyn NeuralNetworkDeveloper + 'b>,
-        > {
+        ) -> impl for<'b> Fn(
+            &'b NeuralNetworkDevelopmentConfiguration,
+            &'b Genome,
+        ) -> Box<dyn NeuralNetworkDeveloper + 'b> {
             let container = container.clone();
-            box move |configuration, _| {
+            move |configuration, _| {
                 let random = container.resolve::<Box<dyn Random>>().unwrap();
                 box FlatNeuralNetworkDeveloper::new(configuration, random)
+                    as Box<dyn NeuralNetworkDeveloper>
             }
         }
         Rc::new(neural_network_developer_factory_factory(container))
@@ -85,25 +84,6 @@ where
     container.register(|_| {
         box AdditionalObjectDescriptionBincodeSerializer::default()
             as Box<dyn AdditionalObjectDescriptionSerializer>
-    });
-
-    container.register(|container| {
-        fn neural_network_developer_factory_factory<'a>(
-            container: &'a Container,
-        ) -> Box<
-            dyn for<'b> Fn(
-                &'b NeuralNetworkDevelopmentConfiguration,
-                &'b Genome,
-            ) -> Box<dyn NeuralNetworkDeveloper + 'b>,
-        > {
-            let container = container.clone();
-            box move |configuration, _| {
-                let random = container.resolve::<Box<dyn Random>>().unwrap();
-                box FlatNeuralNetworkDeveloper::new(configuration, random)
-            }
-        }
-        Rc::new(neural_network_developer_factory_factory(container))
-            as Rc<NeuralNetworkDeveloperFactory>
     });
 
     container.register(|_| {
