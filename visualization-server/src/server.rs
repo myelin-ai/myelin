@@ -222,19 +222,22 @@ where
         }) as Arc<ConnectionAcceptorFactoryFn>
     });
 
-    let expected_delta = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
+    container.register(|container| {
+        let expected_delta = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
 
-    let mut world_generator = container.resolve::<Box<dyn WorldGenerator<'_>>>().unwrap();
-    let connection_acceptor_factory_fn = container
-        .resolve::<Arc<ConnectionAcceptorFactoryFn>>()
-        .unwrap();
-    let mut controller = ControllerImpl::new(
-        world_generator.generate(),
-        connection_acceptor_factory_fn,
-        spawn_thread_factory(),
-        expected_delta,
-    );
+        let mut world_generator = container.resolve::<Box<dyn WorldGenerator<'_>>>().unwrap();
+        let connection_acceptor_factory_fn = container
+            .resolve::<Arc<ConnectionAcceptorFactoryFn>>()
+            .unwrap();
+        box ControllerImpl::new(
+            world_generator.generate(),
+            connection_acceptor_factory_fn,
+            spawn_thread_factory(),
+            expected_delta,
+        ) as Box<dyn Controller>
+    });
 
+    let mut controller = container.resolve::<Box<dyn Controller>>().unwrap();
     println!("running");
 
     controller.run();
@@ -249,7 +252,7 @@ fn load_names_from_file(path: &Path) -> Vec<String> {
 }
 
 fn spawn_thread_factory() -> Box<ThreadSpawnFn> {
-    box move |function| {
+    box |function| {
         thread::spawn(function);
     }
 }
