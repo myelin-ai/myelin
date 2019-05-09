@@ -8,8 +8,7 @@ use crate::controller::{
     ConnectionAcceptor, ConnectionAcceptorFactoryFn, Controller, ControllerImpl, Presenter,
 };
 use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperImpl};
-use myelin_engine::prelude::*;
-use myelin_engine::simulation::SimulationBuilder;
+use myelin_engine::{prelude::*, simulation::SimulationBuilder};
 use myelin_genetics::{
     genome::Genome,
     neural_network_development_orchestrator_impl::{
@@ -21,20 +20,20 @@ use myelin_genetics::{
     },
     NeuralNetworkDevelopmentConfiguration, NeuralNetworkDevelopmentOrchestrator,
 };
-use myelin_neural_network::spiking_neural_network::DefaultSpikingNeuralNetwork;
-use myelin_neural_network::NeuralNetwork;
-use myelin_object_behavior::organism::OrganismBehavior;
-use myelin_object_behavior::stochastic_spreading::StochasticSpreading;
-use myelin_object_behavior::Static;
-use myelin_object_data::Kind;
+use myelin_neural_network::{spiking_neural_network::DefaultSpikingNeuralNetwork, NeuralNetwork};
+use myelin_object_behavior::{
+    organism::OrganismBehavior, stochastic_spreading::StochasticSpreading, Static,
+};
 use myelin_object_data::{
     AdditionalObjectDescriptionBincodeDeserializer, AdditionalObjectDescriptionBincodeSerializer,
-    AdditionalObjectDescriptionSerializer,
+    AdditionalObjectDescriptionSerializer, Kind,
 };
 use myelin_random::{Random, RandomImpl};
 use myelin_visualization_core::serialization::{BincodeSerializer, ViewModelSerializer};
-use myelin_worldgen::{HardcodedGenerator, NameProvider, NameProviderFactory, WorldGenerator};
-use myelin_worldgen::{NameProviderBuilder, ShuffledNameProviderFactory};
+use myelin_worldgen::{
+    HardcodedGenerator, NameProvider, NameProviderBuilder, NameProviderFactory,
+    ShuffledNameProviderFactory, WorldGenerator,
+};
 use std::fs::read_to_string;
 use std::net::SocketAddr;
 use std::path::Path;
