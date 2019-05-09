@@ -63,63 +63,18 @@ where
 fn create_composition_root(addr: SocketAddr) -> Container {
     let mut container = Container::new();
 
-    container.register(move |_| addr.clone());
-    container.register(|_| SimulationBuilder::new().build());
-    container.register(|_| {
-        Rc::new(|| box DefaultSpikingNeuralNetwork::new() as Box<dyn NeuralNetwork>)
-            as Rc<dyn Fn() -> Box<dyn NeuralNetwork>>
-    });
     register_autoresolvable!(container, RandomImpl as Box<dyn Random>);
-    container.register(|container| {
-        fn neural_network_developer_factory_factory<'a>(
-            container: &'a Container,
-        ) -> impl for<'b> Fn(
-            &'b NeuralNetworkDevelopmentConfiguration,
-            &'b Genome,
-        ) -> Box<dyn NeuralNetworkDeveloper + 'b> {
-            let container = container.clone();
-            move |configuration, _| {
-                let random = container.resolve::<Box<dyn Random>>().unwrap();
-                box FlatNeuralNetworkDeveloper::new(configuration, random)
-                    as Box<dyn NeuralNetworkDeveloper>
-            }
-        }
-        Rc::new(neural_network_developer_factory_factory(container))
-            as Rc<NeuralNetworkDeveloperFactory>
-    });
 
     register_autoresolvable!(
         container,
         ShuffledNameProviderFactory as Box<dyn NameProviderFactory>
     );
 
-    container.register(|container| {
-        let name_provider_factory = container.resolve::<Box<dyn NameProviderFactory>>().unwrap();
-        let mut name_provider_builder = NameProviderBuilder::new(name_provider_factory);
-        let organism_names = load_names_from_file(Path::new("./object-names/organisms.txt"));
-        name_provider_builder.add_names(&organism_names, Kind::Organism);
-        name_provider_builder.build()
-    });
     register_autoresolvable!(
         container,
         AdditionalObjectDescriptionBincodeSerializer
             as Box<dyn AdditionalObjectDescriptionSerializer>
     );
-
-    container.register(|_| {
-        fn neural_network_configurator_factory<'a>(
-            neural_network: &'a mut dyn NeuralNetwork,
-            input_neural_handles: &'a mut InputNeuronHandles,
-            output_neuron_handles: &'a mut OutputNeuronHandles,
-        ) -> Box<dyn NeuralNetworkConfigurator + 'a> {
-            box NeuralNetworkConfiguratorImpl::new(
-                neural_network,
-                input_neural_handles,
-                output_neuron_handles,
-            )
-        }
-        Rc::new(neural_network_configurator_factory) as Rc<NeuralNetworkConfiguratorFactory>
-    });
 
     register_autoresolvable!(
         container,
@@ -133,116 +88,154 @@ fn create_composition_root(addr: SocketAddr) -> Container {
         NeuralNetworkDevelopmentOrchestratorImpl as Box<dyn NeuralNetworkDevelopmentOrchestrator>
     );
 
-    container.register(|container| {
-        let plant_factory = {
-            let container = container.clone();
-            box move || -> Box<dyn ObjectBehavior> {
-                let random = container.resolve::<Box<dyn Random>>().unwrap();
-                box StochasticSpreading::new(1.0 / 5_000.0, random)
+    container
+        .register(move |_| addr.clone())
+        .register(|_| SimulationBuilder::new().build())
+        .register(|_| {
+            Rc::new(|| box DefaultSpikingNeuralNetwork::new() as Box<dyn NeuralNetwork>)
+                as Rc<dyn Fn() -> Box<dyn NeuralNetwork>>
+        })
+        .register(|container| {
+            fn neural_network_developer_factory_factory<'a>(
+                container: &'a Container,
+            ) -> impl for<'b> Fn(
+                &'b NeuralNetworkDevelopmentConfiguration,
+                &'b Genome,
+            ) -> Box<dyn NeuralNetworkDeveloper + 'b> {
+                let container = container.clone();
+                move |configuration, _| {
+                    let random = container.resolve::<Box<dyn Random>>().unwrap();
+                    box FlatNeuralNetworkDeveloper::new(configuration, random)
+                        as Box<dyn NeuralNetworkDeveloper>
+                }
             }
-        };
-        let organism_factory = {
-            let container = container.clone();
-            box move || -> Box<dyn ObjectBehavior> {
-                let neural_network_development_orchestrator = container
-                    .resolve::<Box<dyn NeuralNetworkDevelopmentOrchestrator>>()
-                    .unwrap();
-                box OrganismBehavior::new(
-                    (Genome::default(), Genome::default()),
-                    neural_network_development_orchestrator,
-                    box AdditionalObjectDescriptionBincodeDeserializer::default(),
+            Rc::new(neural_network_developer_factory_factory(container))
+                as Rc<NeuralNetworkDeveloperFactory>
+        })
+        .register(|container| {
+            let name_provider_factory =
+                container.resolve::<Box<dyn NameProviderFactory>>().unwrap();
+            let mut name_provider_builder = NameProviderBuilder::new(name_provider_factory);
+            let organism_names = load_names_from_file(Path::new("./object-names/organisms.txt"));
+            name_provider_builder.add_names(&organism_names, Kind::Organism);
+            name_provider_builder.build()
+        })
+        .register(|_| {
+            fn neural_network_configurator_factory<'a>(
+                neural_network: &'a mut dyn NeuralNetwork,
+                input_neural_handles: &'a mut InputNeuronHandles,
+                output_neuron_handles: &'a mut OutputNeuronHandles,
+            ) -> Box<dyn NeuralNetworkConfigurator + 'a> {
+                box NeuralNetworkConfiguratorImpl::new(
+                    neural_network,
+                    input_neural_handles,
+                    output_neuron_handles,
                 )
             }
-        };
-        let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
-        let water_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
-
-        let simulation_factory = container
-            .resolve::<Box<dyn Fn() -> Box<dyn Simulation>>>()
-            .unwrap();
-        let name_provider = container.resolve::<Box<dyn NameProvider>>().unwrap();
-
-        let additional_object_description_serializer = container
-            .resolve::<Box<dyn AdditionalObjectDescriptionSerializer>>()
-            .unwrap();
-
-        box HardcodedGenerator::new(
-            simulation_factory,
-            plant_factory,
-            organism_factory,
-            terrain_factory,
-            water_factory,
-            name_provider,
-            additional_object_description_serializer,
-        ) as Box<dyn WorldGenerator<'_>>
-    });
-
-    container
-        .register(|_| box FixedIntervalSleeperImpl::default() as Box<dyn FixedIntervalSleeper>);
-
-    container.register(|_| box DeltaPresenter::default() as Box<dyn Presenter>);
-
-    container.register(|_| box BincodeSerializer::default() as Box<dyn ViewModelSerializer>);
-
-    container.register(|container| {
-        let container = container.clone();
-        Arc::new(move |websocket_client, current_snapshot_fn| {
-            let interval = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
-            let fixed_interval_sleeper = container
-                .resolve::<Box<dyn FixedIntervalSleeper>>()
-                .unwrap();
-            let presenter = container.resolve::<Box<dyn Presenter>>().unwrap();
-            let view_model_serializer =
-                container.resolve::<Box<dyn ViewModelSerializer>>().unwrap();
-
-            let connection = Connection {
-                id: Uuid::new_v4(),
-                socket: box WebsocketClient::new(websocket_client),
+            Rc::new(neural_network_configurator_factory) as Rc<NeuralNetworkConfiguratorFactory>
+        })
+        .register(|container| {
+            let plant_factory = {
+                let container = container.clone();
+                box move || -> Box<dyn ObjectBehavior> {
+                    let random = container.resolve::<Box<dyn Random>>().unwrap();
+                    box StochasticSpreading::new(1.0 / 5_000.0, random)
+                }
             };
+            let organism_factory = {
+                let container = container.clone();
+                box move || -> Box<dyn ObjectBehavior> {
+                    let neural_network_development_orchestrator = container
+                        .resolve::<Box<dyn NeuralNetworkDevelopmentOrchestrator>>()
+                        .unwrap();
+                    box OrganismBehavior::new(
+                        (Genome::default(), Genome::default()),
+                        neural_network_development_orchestrator,
+                        box AdditionalObjectDescriptionBincodeDeserializer::default(),
+                    )
+                }
+            };
+            let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
+            let water_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
 
-            box ClientHandler::new(
-                interval,
-                fixed_interval_sleeper,
-                presenter,
-                view_model_serializer,
-                connection,
-                current_snapshot_fn,
-            ) as Box<dyn Client>
-        }) as Arc<ClientFactoryFn>
-    });
+            let simulation_factory = container
+                .resolve::<Box<dyn Fn() -> Box<dyn Simulation>>>()
+                .unwrap();
+            let name_provider = container.resolve::<Box<dyn NameProvider>>().unwrap();
 
-    container.register(move |container| {
-        let container = container.clone();
-        Arc::new(move |current_snapshot_fn| {
-            let client_factory_fn = container.resolve::<Arc<ClientFactoryFn>>().unwrap();
+            let additional_object_description_serializer = container
+                .resolve::<Box<dyn AdditionalObjectDescriptionSerializer>>()
+                .unwrap();
 
-            let addr = container.resolve::<SocketAddr>().unwrap();
+            box HardcodedGenerator::new(
+                simulation_factory,
+                plant_factory,
+                organism_factory,
+                terrain_factory,
+                water_factory,
+                name_provider,
+                additional_object_description_serializer,
+            ) as Box<dyn WorldGenerator<'_>>
+        })
+        .register(|_| box FixedIntervalSleeperImpl::default() as Box<dyn FixedIntervalSleeper>)
+        .register(|_| box BincodeSerializer::default() as Box<dyn ViewModelSerializer>)
+        .register(|container| {
+            let container = container.clone();
+            Arc::new(move |websocket_client, current_snapshot_fn| {
+                let interval = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
+                let fixed_interval_sleeper = container
+                    .resolve::<Box<dyn FixedIntervalSleeper>>()
+                    .unwrap();
+                let presenter = container.resolve::<Box<dyn Presenter>>().unwrap();
+                let view_model_serializer =
+                    container.resolve::<Box<dyn ViewModelSerializer>>().unwrap();
 
-            box WebsocketConnectionAcceptor::try_new(
-                addr,
-                client_factory_fn,
+                let connection = Connection {
+                    id: Uuid::new_v4(),
+                    socket: box WebsocketClient::new(websocket_client),
+                };
+
+                box ClientHandler::new(
+                    interval,
+                    fixed_interval_sleeper,
+                    presenter,
+                    view_model_serializer,
+                    connection,
+                    current_snapshot_fn,
+                ) as Box<dyn Client>
+            }) as Arc<ClientFactoryFn>
+        })
+        .register(move |container| {
+            let container = container.clone();
+            Arc::new(move |current_snapshot_fn| {
+                let client_factory_fn = container.resolve::<Arc<ClientFactoryFn>>().unwrap();
+
+                let addr = container.resolve::<SocketAddr>().unwrap();
+
+                box WebsocketConnectionAcceptor::try_new(
+                    addr,
+                    client_factory_fn,
+                    spawn_thread_factory(),
+                    current_snapshot_fn,
+                )
+                .expect("Failed to create websocket connection acceptor")
+                    as Box<dyn ConnectionAcceptor>
+            }) as Arc<ConnectionAcceptorFactoryFn>
+        })
+        .register(|container| {
+            let expected_delta = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
+
+            let mut world_generator = container.resolve::<Box<dyn WorldGenerator<'_>>>().unwrap();
+            let connection_acceptor_factory_fn = container
+                .resolve::<Arc<ConnectionAcceptorFactoryFn>>()
+                .unwrap();
+            box ControllerImpl::new(
+                world_generator.generate(),
+                connection_acceptor_factory_fn,
                 spawn_thread_factory(),
-                current_snapshot_fn,
-            )
-            .expect("Failed to create websocket connection acceptor")
-                as Box<dyn ConnectionAcceptor>
-        }) as Arc<ConnectionAcceptorFactoryFn>
-    });
-
-    container.register(|container| {
-        let expected_delta = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
-
-        let mut world_generator = container.resolve::<Box<dyn WorldGenerator<'_>>>().unwrap();
-        let connection_acceptor_factory_fn = container
-            .resolve::<Arc<ConnectionAcceptorFactoryFn>>()
-            .unwrap();
-        box ControllerImpl::new(
-            world_generator.generate(),
-            connection_acceptor_factory_fn,
-            spawn_thread_factory(),
-            expected_delta,
-        ) as Box<dyn Controller>
-    });
+                expected_delta,
+            ) as Box<dyn Controller>
+        });
 
     container
 }
