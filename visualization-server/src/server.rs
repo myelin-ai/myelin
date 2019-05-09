@@ -3,7 +3,8 @@ use crate::connection::{Connection, WebsocketClient};
 use crate::connection_acceptor::{Client, ThreadSpawnFn, WebsocketConnectionAcceptor};
 use crate::constant::*;
 use crate::controller::{
-    ConnectionAcceptor, Controller, ControllerImpl, CurrentSnapshotFn, Presenter,
+    ConnectionAcceptor, ConnectionAcceptorFactoryFn, Controller, ControllerImpl, CurrentSnapshotFn,
+    Presenter,
 };
 use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperImpl};
 use crate::presenter::DeltaPresenter;
@@ -31,7 +32,6 @@ use myelin_random::{Random, RandomImpl};
 use myelin_visualization_core::serialization::{BincodeSerializer, ViewModelSerializer};
 use myelin_worldgen::{HardcodedGenerator, NameProvider, NameProviderFactory, WorldGenerator};
 use myelin_worldgen::{NameProviderBuilder, ShuffledNameProviderFactory};
-use std::collections::HashMap;
 use std::fs::read_to_string;
 use std::net::SocketAddr;
 use std::net::TcpStream;
@@ -218,27 +218,14 @@ where
             )
             .expect("Failed to create websocket connection acceptor")
                 as Box<dyn ConnectionAcceptor>
-        })
-            as Arc<
-                dyn Fn(
-                        Arc<dyn Fn() -> HashMap<Id, ObjectDescription> + Send + Sync>,
-                    ) -> Box<dyn ConnectionAcceptor>
-                    + Send
-                    + Sync,
-            >
+        }) as Arc<ConnectionAcceptorFactoryFn>
     });
 
     let expected_delta = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
 
     let mut world_generator = container.resolve::<Box<dyn WorldGenerator<'_>>>().unwrap();
     let connection_acceptor_factory_fn = container
-        .resolve::<Arc<
-            dyn Fn(
-                    Arc<dyn Fn() -> HashMap<Id, ObjectDescription> + Send + Sync>,
-                ) -> Box<dyn ConnectionAcceptor>
-                + Send
-                + Sync,
-        >>()
+        .resolve::<Arc<ConnectionAcceptorFactoryFn>>()
         .unwrap();
     let mut controller = ControllerImpl::new(
         world_generator.generate(),
