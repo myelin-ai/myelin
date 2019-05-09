@@ -20,7 +20,9 @@ use myelin_genetics::neural_network_development_orchestrator_impl::{
     NeuralNetworkDeveloperFactory, NeuralNetworkDevelopmentOrchestratorImpl, NeuralNetworkFactory,
     OutputNeuronHandles,
 };
-use myelin_genetics::NeuralNetworkDevelopmentConfiguration;
+use myelin_genetics::{
+    NeuralNetworkDevelopmentConfiguration, NeuralNetworkDevelopmentOrchestrator,
+};
 use myelin_neural_network::spiking_neural_network::DefaultSpikingNeuralNetwork;
 use myelin_neural_network::NeuralNetwork;
 use myelin_object_behavior::organism::OrganismBehavior;
@@ -119,6 +121,11 @@ where
 
     register_autoresolvable!(container, GenomeMutatorStub as Box<dyn GenomeMutator>);
 
+    register_autoresolvable!(
+        container,
+        NeuralNetworkDevelopmentOrchestratorImpl as Box<dyn NeuralNetworkDevelopmentOrchestrator>
+    );
+
     container.register(|container| {
         let plant_factory = {
             let container = container.clone();
@@ -130,26 +137,12 @@ where
         let organism_factory = {
             let container = container.clone();
             box move || -> Box<dyn ObjectBehavior> {
-                let neural_network_factory = container
-                    .resolve::<Rc<dyn Fn() -> Box<dyn NeuralNetwork>>>()
+                let neural_network_development_orchestrator = container
+                    .resolve::<Box<dyn NeuralNetworkDevelopmentOrchestrator>>()
                     .unwrap();
-                let neural_network_developer_factory = container
-                    .resolve::<Rc<NeuralNetworkDeveloperFactory>>()
-                    .unwrap();
-                let neural_network_configurator_factory = container
-                    .resolve::<Rc<NeuralNetworkConfiguratorFactory>>()
-                    .unwrap();
-                let genome_deriver = container.resolve::<Box<dyn GenomeDeriver>>().unwrap();
-                let genome_mutator = container.resolve::<Box<dyn GenomeMutator>>().unwrap();
                 box OrganismBehavior::new(
                     (Genome::default(), Genome::default()),
-                    box NeuralNetworkDevelopmentOrchestratorImpl::new(
-                        neural_network_factory,
-                        neural_network_developer_factory,
-                        neural_network_configurator_factory,
-                        genome_deriver,
-                        genome_mutator,
-                    ),
+                    neural_network_development_orchestrator,
                     box AdditionalObjectDescriptionBincodeDeserializer::default(),
                 )
             }
