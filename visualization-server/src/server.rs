@@ -143,7 +143,7 @@ fn create_composition_root(addr: SocketAddr) -> Container {
         })
         .register(|container| {
             let container = container.clone();
-            box myelin_worldgen::OrganismFactory(box move || -> Box<dyn ObjectBehavior> {
+            myelin_worldgen::OrganismFactory(box move || -> Box<dyn ObjectBehavior> {
                 let neural_network_development_orchestrator = container
                     .resolve::<Box<dyn NeuralNetworkDevelopmentOrchestrator>>()
                     .unwrap();
@@ -168,12 +168,15 @@ fn create_composition_root(addr: SocketAddr) -> Container {
             let plant_factory = container
                 .resolve::<myelin_worldgen::PlantFactory>()
                 .unwrap();
+
             let organism_factory = container
                 .resolve::<myelin_worldgen::OrganismFactory>()
                 .unwrap();
+
             let terrain_factory = container
                 .resolve::<myelin_worldgen::TerrainFactory>()
                 .unwrap();
+
             let water_factory = container
                 .resolve::<myelin_worldgen::WaterFactory>()
                 .unwrap();
