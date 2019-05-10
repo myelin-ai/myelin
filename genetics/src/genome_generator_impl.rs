@@ -21,7 +21,9 @@ pub trait IoClusterGeneGenerator: Debug {
 }
 
 /// Generates the central cluster gene that connects input
-/// with output clusters (aka "Corpus callosum").
+/// with output clusters (aka "[Corpus callosum]").
+///
+/// [Corpus callosum]: https://en.wikipedia.org/wiki/Corpus_callosum
 #[cfg_attr(any(test, feature = "use-mocks"), mockable)]
 pub trait CorpusCallosumClusterGeneGenerator: Debug {
     /// Generates a new corpus callosum [`ClusterGene`]
