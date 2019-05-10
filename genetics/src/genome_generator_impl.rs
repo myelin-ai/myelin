@@ -17,6 +17,14 @@ pub trait IoClusterGeneGenerator {
     fn generate_output_cluster_gene(&self) -> ClusterGene;
 }
 
+/// Generates the central cluster gene that connects input
+/// with output clusters (aka "Corpus callosum").
+#[cfg_attr(any(test, feature = "use-mocks"), mockable)]
+pub trait CorpusCallosumClusterGeneGenerator {
+    /// Generates a new corpus callossum [`ClusterGene`]
+    fn generate_cluster_gene(&self) -> ClusterGene;
+}
+
 /// Default implementation of [`GenomeGenerator`].
 #[derive(Debug, Default, Clone)]
 pub struct GenomeGeneratorImpl;
