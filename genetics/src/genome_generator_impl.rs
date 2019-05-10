@@ -1,15 +1,16 @@
 //! Default implementation of [`GenomeGenerator`].
 
+pub use self::corpus_callosum_cluster_gene_generator_impl::*;
 pub use self::io_cluster_gene_generator_impl::*;
 use crate::genome::*;
 use crate::{GenomeGenerator, GenomeGeneratorConfiguration};
 #[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
 use std::fmt::Debug;
-pub use self::corpus_callosum_cluster_gene_generator_impl::*;
+use std::num::NonZeroUsize;
 
-mod io_cluster_gene_generator_impl;
 mod corpus_callosum_cluster_gene_generator_impl;
+mod io_cluster_gene_generator_impl;
 
 /// Generates new input and output clusters
 #[cfg_attr(any(test, feature = "use-mocks"), mockable)]
@@ -27,16 +28,16 @@ pub trait IoClusterGeneGenerator: Debug {
 #[cfg_attr(any(test, feature = "use-mocks"), mockable)]
 pub trait CorpusCallosumClusterGeneGenerator: Debug {
     /// Generates a new corpus callosum [`ClusterGene`]
-    fn generate_cluster_gene(&self, config: &CorpusCallosumConfig) -> ClusterGene;
+    fn generate_cluster_gene(&self, configuration: &CorpusCallosumConfiguration) -> ClusterGene;
 }
 
 /// Configuration for generating a new corpus callosum [`ClusterGene`].
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CorpusCallosumConfig {
+pub struct CorpusCallosumConfiguration {
     /// The amount of input neurons
-    pub input_neuron_count: usize,
+    pub input_neuron_count: NonZeroUsize,
     /// The amount of output neurons
-    pub output_neuron_count: usize,
+    pub output_neuron_count: NonZeroUsize,
 }
 
 /// Default implementation of [`GenomeGenerator`].
