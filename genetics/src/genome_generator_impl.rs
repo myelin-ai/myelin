@@ -8,8 +8,8 @@ use mockiato::mockable;
 
 mod io_cluster_gene_generator_impl;
 
-#[cfg_attr(any(test, feature = "use-mocks"), mockable)]
 /// Generates new input and output clusters
+#[cfg_attr(any(test, feature = "use-mocks"), mockable)]
 pub trait IoClusterGeneGenerator {
     /// Generates a new [`ClusterGene`] with the specialization [`ClusterGeneSpecialization::Input`].
     fn generate_input_cluster_gene(&self) -> ClusterGene;
