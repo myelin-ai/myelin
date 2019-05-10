@@ -1,5 +1,7 @@
 use super::Random;
+use super::Shuffler;
 use rand::rngs::ThreadRng;
+use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
 use std::cell::RefCell;
 
@@ -46,6 +48,13 @@ impl Random for RandomImpl {
 
     fn random_float_in_range(&self, min: f64, max: f64) -> f64 {
         self.rng.borrow_mut().gen_range(min, max)
+    }
+}
+
+impl<T> Shuffler<T> for RandomImpl {
+    fn shuffle(&self, mut values: Vec<T>) -> Vec<T> {
+        values.shuffle(&mut *self.rng.borrow_mut());
+        values
     }
 }
 
@@ -145,5 +154,32 @@ mod tests {
 
         let number = random.random_float_in_range(MIN, MAX);
         assert!(number >= MIN && number < MAX);
+    }
+
+    #[test]
+    fn shuffled_vector_has_the_same_length() {
+        let random = RandomImpl::default();
+        let values = vec![10, 20, 30];
+        let shuffled_values = random.shuffle(values.clone());
+        assert_eq!(values.len(), shuffled_values.len());
+    }
+
+    #[test]
+    fn shuffled_vector_contains_the_same_elements() {
+        let random = RandomImpl::default();
+        let values = vec![10, 20, 30];
+        let shuffled_values = random.shuffle(values.clone());
+
+        for element in values {
+            assert!(shuffled_values.contains(&element));
+        }
+    }
+
+    #[test]
+    fn empty_vector_can_be_shuffled() {
+        let random = RandomImpl::default();
+        let empty_vector: Vec<()> = Vec::default();
+        let shuffled_vector = random.shuffle(empty_vector);
+        assert!(shuffled_vector.is_empty());
     }
 }
