@@ -74,6 +74,13 @@ fn utility_container() -> Container {
     let mut container = Container::new();
 
     register_autoresolvable!(container, RandomImpl as Box<dyn Random>);
+    container
+        .register(|_| {
+            box (|function| {
+                thread::spawn(function);
+            }) as Box<ThreadSpawnFn>
+        })
+        .register(|_| box FixedIntervalSleeperImpl::default() as Box<dyn FixedIntervalSleeper>);
 
     container
 }
@@ -88,12 +95,6 @@ fn server_container() -> Container {
     );
 
     container
-        .register(|_| {
-            box (|function| {
-                thread::spawn(function);
-            }) as Box<ThreadSpawnFn>
-        })
-        .register(|_| box FixedIntervalSleeperImpl::default() as Box<dyn FixedIntervalSleeper>)
         .register(|_| box BincodeSerializer::default() as Box<dyn ViewModelSerializer>)
         .register(|container| {
             let expected_delta = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
