@@ -17,10 +17,8 @@ use myelin_neural_network::spiking_neural_network::DefaultSpikingNeuralNetwork;
 use myelin_object_behavior::organism::OrganismBehavior;
 use myelin_object_behavior::stochastic_spreading::StochasticSpreading;
 use myelin_object_behavior::Static;
+use myelin_object_data::AdditionalObjectDescription;
 use myelin_object_data::Kind;
-use myelin_object_data::{
-    AdditionalObjectDescriptionBincodeDeserializer, AdditionalObjectDescriptionBincodeSerializer,
-};
 use myelin_random::RandomImpl;
 use myelin_visualization_core::serialization::BincodeSerializer;
 use myelin_worldgen::{HardcodedGenerator, WorldGenerator};
@@ -42,11 +40,13 @@ where
 {
     let addr = addr.into();
 
-    let simulation_factory = box || -> Box<dyn Simulation> { SimulationBuilder::new().build() };
-    let plant_factory = box || -> Box<dyn ObjectBehavior> {
+    let simulation_factory = box || -> Box<dyn Simulation<AdditionalObjectDescription>> {
+        SimulationBuilder::new().build()
+    };
+    let plant_factory = box || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
         box StochasticSpreading::new(1.0 / 5_000.0, box RandomImpl::new())
     };
-    let organism_factory = box || -> Box<dyn ObjectBehavior> {
+    let organism_factory = box || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
         let neural_network_factory: Rc<NeuralNetworkFactory> =
             Rc::new(|| box DefaultSpikingNeuralNetwork::new());
         let neural_network_developer_factory: Rc<NeuralNetworkDeveloperFactory> =
@@ -71,11 +71,12 @@ where
                 box ChromosomalCrossoverGenomeDeriver::new(box RandomImpl::new()),
                 box GenomeMutatorStub::new(),
             ),
-            box AdditionalObjectDescriptionBincodeDeserializer::default(),
         )
     };
-    let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
-    let water_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
+    let terrain_factory =
+        box || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> { box Static::default() };
+    let water_factory =
+        box || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> { box Static::default() };
 
     let mut name_provider_builder =
         NameProviderBuilder::new(box ShuffledNameProviderFactory::default());
@@ -85,9 +86,6 @@ where
 
     let name_provider = name_provider_builder.build();
 
-    let additional_object_description_serializer =
-        box AdditionalObjectDescriptionBincodeSerializer::default();
-
     let mut worldgen = HardcodedGenerator::new(
         simulation_factory,
         plant_factory,
@@ -95,7 +93,6 @@ where
         terrain_factory,
         water_factory,
         name_provider,
-        additional_object_description_serializer,
     );
 
     let conection_acceptor_factory_fn = Arc::new(move |current_snapshot_fn| {

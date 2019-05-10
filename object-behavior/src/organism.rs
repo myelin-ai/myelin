@@ -8,10 +8,10 @@ use myelin_genetics::{
     NeuralNetworkDevelopmentOrchestrator,
 };
 use myelin_neural_network::{Handle, Milliseconds, NeuralNetwork};
-use myelin_object_data::AdditionalObjectDescriptionDeserializer;
+use myelin_object_data::{AdditionalObjectDescription, Object, ObjectDescription};
+
 use std::collections::HashMap;
 use std::num::NonZeroUsize;
-
 /// The hightest relative acceleration an organism can detect.
 /// The value was chosen as many sources, [including Wikipedia](https://en.wikipedia.org/wiki/G-LOC#Thresholds) report
 /// 5G as a typical threshold for the loss of consciousness in humans.
@@ -38,7 +38,6 @@ pub struct OrganismBehavior {
     previous_velocity: Vector,
     developed_neural_network: DevelopedNeuralNetwork,
     neural_network_developer: Box<dyn NeuralNetworkDevelopmentOrchestrator>,
-    additional_object_data_deserializer: Box<dyn AdditionalObjectDescriptionDeserializer>,
 }
 
 /// Number of inputs reserved for visible objects
@@ -76,7 +75,6 @@ impl OrganismBehavior {
     pub fn new(
         parent_genomes: (Genome, Genome),
         neural_network_developer: Box<dyn NeuralNetworkDevelopmentOrchestrator>,
-        additional_object_data_deserializer: Box<dyn AdditionalObjectDescriptionDeserializer>,
     ) -> Self {
         let configuration = NeuralNetworkDevelopmentConfiguration {
             parent_genomes,
@@ -89,13 +87,15 @@ impl OrganismBehavior {
             developed_neural_network: neural_network_developer
                 .develop_neural_network(&configuration),
             neural_network_developer,
-            additional_object_data_deserializer,
         }
     }
 }
 
-impl ObjectBehavior for OrganismBehavior {
-    fn step(&mut self, world_interactor: &dyn WorldInteractor) -> Option<Action> {
+impl ObjectBehavior<AdditionalObjectDescription> for OrganismBehavior {
+    fn step(
+        &mut self,
+        world_interactor: Box<dyn WorldInteractor<AdditionalObjectDescription> + '_>,
+    ) -> Option<Action<AdditionalObjectDescription>> {
         let elapsed_time = world_interactor.elapsed_time_in_update().as_millis() as Milliseconds;
         let own_object = world_interactor.own_object();
 
@@ -119,12 +119,9 @@ impl ObjectBehavior for OrganismBehavior {
             &mut insert_input_fn,
         );
 
-        let objects_in_fov = objects_in_fov(&own_object.description, world_interactor);
-        let vision_neuron_inputs = objects_in_fov_to_neuron_inputs(
-            &*self.additional_object_data_deserializer,
-            &own_object.description,
-            objects_in_fov,
-        );
+        let objects_in_fov = objects_in_fov(&own_object.description, &*world_interactor);
+        let vision_neuron_inputs =
+            objects_in_fov_to_neuron_inputs(&own_object.description, objects_in_fov);
 
         add_vision_inputs(
             vision_neuron_inputs,
@@ -150,7 +147,7 @@ fn convert_neural_network_output_to_action(
     neuron_handle_mapping: NeuronHandleMapping,
     neural_network: &dyn NeuralNetwork,
     object_description: &ObjectDescription,
-) -> Option<Action> {
+) -> Option<Action<AdditionalObjectDescription>> {
     let axial_force = get_combined_potential(
         neuron_handle_mapping.output.axial_acceleration.forward,
         neuron_handle_mapping.output.axial_acceleration.backward,
@@ -201,7 +198,7 @@ fn convert_neural_network_output_to_action(
 
 fn objects_in_fov<'a>(
     own_description: &'a ObjectDescription,
-    world_interactor: &'a dyn WorldInteractor,
+    world_interactor: &'a dyn WorldInteractor<AdditionalObjectDescription>,
 ) -> impl Iterator<Item = (impl Iterator<Item = Object<'a>> + 'a)> + 'a {
     /// The angle in degrees describing the field of view. [Wikipedia](https://en.wikipedia.org/wiki/Human_eye#Field_of_view).
     const FOV_ANGLE: usize = 200;
@@ -225,7 +222,6 @@ fn objects_in_fov<'a>(
 }
 
 fn objects_in_fov_to_neuron_inputs<'a, T, U>(
-    additional_object_data_deserializer: &'a dyn AdditionalObjectDescriptionDeserializer,
     own_description: &'a ObjectDescription,
     objects: T,
 ) -> impl Iterator<Item = Option<f64>> + 'a
@@ -233,9 +229,7 @@ where
     T: IntoIterator<Item = U> + 'a,
     U: IntoIterator<Item = Object<'a>> + 'a,
 {
-    let own_associated_data = additional_object_data_deserializer
-        .deserialize(&own_description.associated_data)
-        .expect("Unable to deserialize data");
+    let own_associated_data = &own_description.associated_data;
 
     objects
         .into_iter()
@@ -243,12 +237,8 @@ where
             let mut distances: Vec<_> = objects_in_ray
                 .into_iter()
                 .map(|object| {
-                    (
-                        additional_object_data_deserializer
-                            .deserialize(&object.description.associated_data)
-                            .expect("Unable to deserialize data"),
-                        distance_between_objects(&object.description, own_description),
-                    )
+                    let distance = distance_between_objects(&object.description, own_description);
+                    (object.description.associated_data, distance)
                 })
                 .sorted_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
                 .scan(0.0, |running_max, (associated_data, distance)| {
@@ -508,8 +498,8 @@ mod tests {
     use super::*;
     use mockiato::partial_eq;
     use myelin_neural_network::NeuralNetworkMock;
-    use myelin_object_data::AdditionalObjectDescriptionDeserializerMock;
-    use myelin_object_data::{AdditionalObjectDescription, Kind};
+    use myelin_object_data::AdditionalObjectDescription;
+    use myelin_object_data::Kind;
     use nearly_eq::assert_nearly_eq;
     use std::f64::consts::PI;
     use std::iter;
@@ -779,7 +769,7 @@ mod tests {
         }
     }
 
-    fn object_description() -> ObjectBuilder {
+    fn object_description() -> ObjectBuilder<AdditionalObjectDescription> {
         let mut builder = ObjectBuilder::default();
         builder
             .shape(
@@ -793,7 +783,12 @@ mod tests {
             )
             .mobility(Mobility::Movable(Vector::default()))
             .location(0.0, 0.0)
-            .rotation(Radians::try_new(PI).unwrap());
+            .rotation(Radians::try_new(PI).unwrap())
+            .associated_data(AdditionalObjectDescription {
+                name: None,
+                kind: Kind::Organism,
+                height: 1.0,
+            });
         builder
     }
 
@@ -830,7 +825,7 @@ mod tests {
         let mock_behavior = ObjectBehaviorMock::new();
         let mut counter = 0;
         let mut genenerate_objects =
-            |amount| generate_objects(amount, &mock_behavior, &mut counter);
+            |amount| generate_objects(amount, &mock_behavior, 1.0, &mut counter);
 
         let fourth_objects = genenerate_objects(6);
         let sixth_objects = genenerate_objects(2);
@@ -864,16 +859,16 @@ mod tests {
 
     #[derive(Debug, Default)]
     struct ExpectedFovObjects<'a> {
-        first_objects_in_ray: Snapshot<'a>,
-        second_objects_in_ray: Snapshot<'a>,
-        third_objects_in_ray: Snapshot<'a>,
-        fourth_objects_in_ray: Snapshot<'a>,
-        fifth_objects_in_ray: Snapshot<'a>,
-        sixth_objects_in_ray: Snapshot<'a>,
-        seventh_objects_in_ray: Snapshot<'a>,
-        eight_objects_in_ray: Snapshot<'a>,
-        ninth_objects_in_ray: Snapshot<'a>,
-        tenth_objects_in_ray: Snapshot<'a>,
+        first_objects_in_ray: Snapshot<'a, AdditionalObjectDescription>,
+        second_objects_in_ray: Snapshot<'a, AdditionalObjectDescription>,
+        third_objects_in_ray: Snapshot<'a, AdditionalObjectDescription>,
+        fourth_objects_in_ray: Snapshot<'a, AdditionalObjectDescription>,
+        fifth_objects_in_ray: Snapshot<'a, AdditionalObjectDescription>,
+        sixth_objects_in_ray: Snapshot<'a, AdditionalObjectDescription>,
+        seventh_objects_in_ray: Snapshot<'a, AdditionalObjectDescription>,
+        eight_objects_in_ray: Snapshot<'a, AdditionalObjectDescription>,
+        ninth_objects_in_ray: Snapshot<'a, AdditionalObjectDescription>,
+        tenth_objects_in_ray: Snapshot<'a, AdditionalObjectDescription>,
         expected_objects: Vec<Vec<Object<'a>>>,
     }
 
@@ -970,39 +965,12 @@ mod tests {
         }
     }
 
-    fn expect_deserialize_with_height_and_times(
-        deserializer: &mut AdditionalObjectDescriptionDeserializerMock<'_>,
-        height: f64,
-        times: u64,
-    ) {
-        deserializer
-            .expect_deserialize(partial_eq(Vec::<u8>::new()))
-            .returns(Ok(AdditionalObjectDescription {
-                name: None,
-                kind: Kind::Organism,
-                height,
-            }))
-            .times(times);
-    }
-
     #[test]
     fn no_objects_in_fov_are_mapped_to_no_neural_inputs() {
         let own_description = object_description().build().unwrap();
         let objects_in_fov: Vec<Vec<_>> = Vec::new();
 
-        let additional_object_data_deserializer: Box<dyn AdditionalObjectDescriptionDeserializer> = {
-            let mut deserializer = AdditionalObjectDescriptionDeserializerMock::new();
-
-            expect_deserialize_with_height_and_times(&mut deserializer, 1.0, 1);
-
-            box deserializer
-        };
-
-        let inputs = objects_in_fov_to_neuron_inputs(
-            &*additional_object_data_deserializer,
-            &own_description,
-            objects_in_fov,
-        );
+        let inputs = objects_in_fov_to_neuron_inputs(&own_description, objects_in_fov);
         assert_eq!(0, inputs.count());
     }
 
@@ -1011,15 +979,24 @@ mod tests {
         let mut counter = 0;
         let mock_behavior = ObjectBehaviorMock::new();
 
-        let mut genenerate_objects = |amount| {
+        let mut genenerate_objects = |configurations: Vec<(usize, f64)>| -> Vec<Object<'_>> {
             /// This arbitrary shift jumbles the objects up,
             /// later testing if their distances are sorted
             const SHIFT: usize = 2;
-            generate_objects(amount, &mock_behavior, &mut counter)
+
+            let total_amount = configurations.iter().map(|(amount, _)| amount).sum();
+            let objects: Vec<_> = configurations
+                .into_iter()
+                .map(|(amount, height)| {
+                    generate_objects(amount, &mock_behavior, height, &mut counter)
+                })
+                .flatten()
+                .collect();
+            objects
                 .into_iter()
                 .cycle()
                 .skip(SHIFT)
-                .take(amount)
+                .take(total_amount)
                 .collect()
         };
 
@@ -1027,35 +1004,19 @@ mod tests {
         let objects_in_fov = vec![
             Vec::new(),
             Vec::new(),
-            genenerate_objects(6),
+            genenerate_objects(vec![(4, 1.0), (1, 2.0), (1, 1.0)]),
             Vec::new(),
-            genenerate_objects(2),
+            genenerate_objects(vec![(2, 1.0)]),
             Vec::new(),
-            genenerate_objects(1),
-            genenerate_objects(4),
+            genenerate_objects(vec![(1, 1.0)]),
+            genenerate_objects(vec![(4, 1.0)]),
             Vec::new(),
             Vec::new(),
         ];
         assert_eq!(RAYCAST_COUNT, objects_in_fov.len());
 
-        let additional_object_data_deserializer: Box<dyn AdditionalObjectDescriptionDeserializer> = {
-            let mut deserializer = AdditionalObjectDescriptionDeserializerMock::new();
-
-            expect_deserialize_with_height_and_times(&mut deserializer, 1.0, 5);
-            expect_deserialize_with_height_and_times(&mut deserializer, 2.0, 1);
-            expect_deserialize_with_height_and_times(&mut deserializer, 1.0, 8);
-
-            deserializer.expect_deserialize_calls_in_order();
-
-            box deserializer
-        };
-
-        let inputs: Vec<_> = objects_in_fov_to_neuron_inputs(
-            &*additional_object_data_deserializer,
-            &own_description,
-            objects_in_fov,
-        )
-        .collect();
+        let inputs: Vec<_> =
+            objects_in_fov_to_neuron_inputs(&own_description, objects_in_fov).collect();
 
         let no_distances = vec![None; MAX_OBJECTS_PER_RAYCAST];
         let first_distances = no_distances.clone();
@@ -1072,7 +1033,7 @@ mod tests {
                 .take(MAX_OBJECTS_PER_RAYCAST)
                 .collect()
         };
-        let third_distances = points_to_distances(&[1.0]);
+        let third_distances = points_to_distances(&[1.0, 2.0, 3.0]);
         let fourth_distances = no_distances.clone();
         let fifth_distances = points_to_distances(&[7.0, 8.0]);
         let sixth_distances = no_distances.clone();
@@ -1106,7 +1067,8 @@ mod tests {
 
     fn generate_objects<'a, 'b>(
         amount: usize,
-        object_behavior: &'a dyn ObjectBehavior,
+        object_behavior: &'a dyn ObjectBehavior<AdditionalObjectDescription>,
+        height: f64,
         counter: &'b mut usize,
     ) -> Vec<Object<'a>> {
         (0..amount)
@@ -1116,6 +1078,11 @@ mod tests {
                     behavior: object_behavior,
                     description: object_description()
                         .location(1.0 + *counter as f64, 1.0 + *counter as f64)
+                        .associated_data(AdditionalObjectDescription {
+                            name: None,
+                            kind: Kind::Organism,
+                            height,
+                        })
                         .build()
                         .unwrap(),
                 };
