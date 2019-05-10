@@ -113,7 +113,6 @@ clone_box!(
 pub struct GenomeGeneratorConfiguration {
     /// The number of neurons that shall receive inputs.
     pub input_neuron_count: NonZeroUsize,
-
     /// The number of neurons that shall emit outputs
     pub output_neuron_count: NonZeroUsize,
 }
