@@ -9,6 +9,7 @@ use myelin_object_data::{
 use nameof::name_of;
 use std::f64::consts::FRAC_PI_2;
 use std::fmt::{self, Debug, Formatter};
+use wonderbox::autoresolvable;
 
 /// Simulation generation algorithm that creates a fixed simulation
 /// inhabited by two forests, a large central lake and
@@ -63,6 +64,7 @@ impl Debug for WaterFactory {
     }
 }
 
+#[autoresolvable]
 impl<'a> HardcodedGenerator<'a> {
     /// Creates a new generator, injecting a simulation factory, i.e.
     /// a function that returns a specific [`Simulation`] that

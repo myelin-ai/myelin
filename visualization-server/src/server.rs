@@ -83,9 +83,10 @@ fn create_composition_root(addr: SocketAddr) -> Container {
         NeuralNetworkDevelopmentOrchestratorImpl as Box<dyn NeuralNetworkDevelopmentOrchestrator>
     );
 
+    register_autoresolvable!(container, HardcodedGenerator as Box<dyn WorldGenerator<'_>>);
+
     container
         .register(move |_| addr)
-        .register(|_| SimulationBuilder::new().build())
         .register(|_| {
             Rc::new(|| box DefaultSpikingNeuralNetwork::new() as Box<dyn NeuralNetwork>)
                 as Rc<dyn Fn() -> Box<dyn NeuralNetwork>>
@@ -134,48 +135,36 @@ fn create_composition_root(addr: SocketAddr) -> Container {
             }
             Rc::new(neural_network_configurator_factory) as Rc<NeuralNetworkConfiguratorFactory>
         })
-        .register(|container| {
-            let plant_factory = {
-                let container = container.clone();
-                box move || -> Box<dyn ObjectBehavior> {
-                    let random = container.resolve::<Box<dyn Random>>().unwrap();
-                    box StochasticSpreading::new(1.0 / 5_000.0, random)
-                }
-            };
-            let organism_factory = {
-                let container = container.clone();
-                box move || -> Box<dyn ObjectBehavior> {
-                    let neural_network_development_orchestrator = container
-                        .resolve::<Box<dyn NeuralNetworkDevelopmentOrchestrator>>()
-                        .unwrap();
-                    box OrganismBehavior::new(
-                        (Genome::default(), Genome::default()),
-                        neural_network_development_orchestrator,
-                        box AdditionalObjectDescriptionBincodeDeserializer::default(),
-                    )
-                }
-            };
-            let terrain_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
-            let water_factory = box || -> Box<dyn ObjectBehavior> { box Static::default() };
-
-            let simulation_factory = container
-                .resolve::<Box<dyn Fn() -> Box<dyn Simulation>>>()
-                .unwrap();
-            let name_provider = container.resolve::<Box<dyn NameProvider>>().unwrap();
-
-            let additional_object_description_serializer = container
-                .resolve::<Box<dyn AdditionalObjectDescriptionSerializer>>()
-                .unwrap();
-
-            box HardcodedGenerator::new(
-                simulation_factory,
-                plant_factory,
-                organism_factory,
-                terrain_factory,
-                water_factory,
-                name_provider,
-                additional_object_description_serializer,
-            ) as Box<dyn WorldGenerator<'_>>
+        .register(|_| myelin_worldgen::SimulationFactory(box || SimulationBuilder::new().build()))
+        .register(|_| {
+            let container = container.clone();
+            myelin_worldgen::PlantFactory(box move || -> Box<dyn ObjectBehavior> {
+                let random = container.resolve::<Box<dyn Random>>().unwrap();
+                box StochasticSpreading::new(1.0 / 5_000.0, random)
+            })
+        })
+        .register(|_| {
+            let container = container.clone();
+            box myelin_worldgen::OrganismFactory(move || -> Box<dyn ObjectBehavior> {
+                let neural_network_development_orchestrator = container
+                    .resolve::<Box<dyn NeuralNetworkDevelopmentOrchestrator>>()
+                    .unwrap();
+                box OrganismBehavior::new(
+                    (Genome::default(), Genome::default()),
+                    neural_network_development_orchestrator,
+                    box AdditionalObjectDescriptionBincodeDeserializer::default(),
+                )
+            })
+        })
+        .register(|_| {
+            myelin_worldgen::TerrainFactory(box || -> Box<dyn ObjectBehavior> {
+                box Static::default()
+            })
+        })
+        .register(|_| {
+            myelin_worldgen::WaterFactory(box || -> Box<dyn ObjectBehavior> {
+                box Static::default()
+            })
         })
         .register(|_| box FixedIntervalSleeperImpl::default() as Box<dyn FixedIntervalSleeper>)
         .register(|_| box BincodeSerializer::default() as Box<dyn ViewModelSerializer>)
