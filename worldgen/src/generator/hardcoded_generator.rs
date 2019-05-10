@@ -76,20 +76,27 @@ impl<'a> HardcodedGenerator<'a> {
     /// use myelin_engine::simulation::SimulationBuilder;
     /// use myelin_object_behavior::Static;
     /// use myelin_object_data::{AdditionalObjectDescriptionBincodeSerializer, Kind};
-    /// use myelin_worldgen::{
-    ///     HardcodedGenerator, NameProvider, NameProviderBuilder, NameProviderImpl, WorldGenerator,
-    /// };
+    /// use myelin_worldgen::*;
     /// use std::fs::read_to_string;
     /// use std::path::Path;
     /// use std::sync::{Arc, RwLock};
     ///
-    /// let simulation_factory =
-    ///     Box::new(|| -> Box<dyn Simulation> { SimulationBuilder::new().build() });
+    /// let simulation_factory = SimulationFactory(Box::new(|| -> Box<dyn Simulation> {
+    ///     SimulationBuilder::new().build()
+    /// }));
     ///
-    /// let plant_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
-    /// let organism_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
-    /// let terrain_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
-    /// let water_factory = Box::new(|| -> Box<dyn ObjectBehavior> { Box::new(Static::default()) });
+    /// let plant_factory = PlantFactory(Box::new(|| -> Box<dyn ObjectBehavior> {
+    ///     Box::new(Static::default())
+    /// }));
+    /// let organism_factory = OrganismFactory(Box::new(|| -> Box<dyn ObjectBehavior> {
+    ///     Box::new(Static::default())
+    /// }));
+    /// let terrain_factory = TerrainFactory(Box::new(|| -> Box<dyn ObjectBehavior> {
+    ///     Box::new(Static::default())
+    /// }));
+    /// let water_factory = WaterFactory(Box::new(|| -> Box<dyn ObjectBehavior> {
+    ///     Box::new(Static::default())
+    /// }));
     ///
     /// let mut name_provider_builder = NameProviderBuilder::new(Box::new(|names| {
     ///     Box::new(NameProviderImpl::new(names)) as Box<dyn NameProvider>
