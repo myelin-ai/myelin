@@ -55,11 +55,13 @@ where
     controller.run();
 }
 
+struct ServerAddress(SocketAddr);
+
 fn create_composition_root(addr: SocketAddr) -> Container {
     let mut container = Container::new();
 
     container
-        .register(move |_| addr)
+        .register(move |_| ServerAddress(addr))
         .extend(utility_container())
         .extend(server_container())
         .extend(client_container())
@@ -149,7 +151,7 @@ fn client_container() -> Container {
             let container = container.clone();
             Arc::new(move |current_snapshot_fn| {
                 let client_factory_fn = container.resolve::<Arc<ClientFactoryFn>>().unwrap();
-                let addr = container.resolve::<SocketAddr>().unwrap();
+                let addr = container.resolve::<ServerAddress>().unwrap().0;
                 let thread_spawn_fn = container.resolve::<Box<ThreadSpawnFn>>().unwrap();
 
                 box WebsocketConnectionAcceptor::try_new(
