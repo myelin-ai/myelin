@@ -14,7 +14,8 @@
     clippy::enum_glob_use,
     clippy::needless_borrow,
     clippy::large_digit_groups,
-    clippy::explicit_into_iter_loop
+    clippy::explicit_into_iter_loop,
+    clippy::wrong_self_convention
 )]
 
 pub mod serialization;
