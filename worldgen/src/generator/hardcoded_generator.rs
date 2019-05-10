@@ -9,7 +9,6 @@ use myelin_object_data::{
 use nameof::name_of;
 use std::f64::consts::FRAC_PI_2;
 use std::fmt::{self, Debug, Formatter};
-use wonderbox::autoresolvable;
 
 /// Simulation generation algorithm that creates a fixed simulation
 /// inhabited by two forests, a large central lake and
@@ -25,7 +24,7 @@ pub struct HardcodedGenerator<'a> {
 }
 
 /// A factory for creating simulations
-pub struct SimulationFactory<'a>(Box<dyn Fn() -> Box<dyn Simulation + 'a> + 'a>);
+pub struct SimulationFactory<'a>(pub Box<dyn Fn() -> Box<dyn Simulation + 'a> + 'a>);
 impl<'a> Debug for SimulationFactory<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", name_of!(type SimulationFactory<'_>))
@@ -33,7 +32,7 @@ impl<'a> Debug for SimulationFactory<'a> {
 }
 
 /// A factory for creating plants
-pub struct PlantFactory(Box<dyn Fn() -> Box<dyn ObjectBehavior>>);
+pub struct PlantFactory(pub Box<dyn Fn() -> Box<dyn ObjectBehavior>>);
 impl Debug for PlantFactory {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", name_of!(type PlantFactory))
@@ -41,7 +40,7 @@ impl Debug for PlantFactory {
 }
 
 /// A factory for creating organisms
-pub struct OrganismFactory(Box<dyn Fn() -> Box<dyn ObjectBehavior>>);
+pub struct OrganismFactory(pub Box<dyn Fn() -> Box<dyn ObjectBehavior>>);
 impl Debug for OrganismFactory {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", name_of!(type OrganismFactory))
@@ -49,7 +48,7 @@ impl Debug for OrganismFactory {
 }
 
 /// A factory for creating terrain
-pub struct TerrainFactory(Box<dyn Fn() -> Box<dyn ObjectBehavior>>);
+pub struct TerrainFactory(pub Box<dyn Fn() -> Box<dyn ObjectBehavior>>);
 impl Debug for TerrainFactory {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", name_of!(type TerrainFactory))
@@ -57,14 +56,13 @@ impl Debug for TerrainFactory {
 }
 
 /// A factory for creating water
-pub struct WaterFactory(Box<dyn Fn() -> Box<dyn ObjectBehavior>>);
+pub struct WaterFactory(pub Box<dyn Fn() -> Box<dyn ObjectBehavior>>);
 impl Debug for WaterFactory {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", name_of!(type WaterFactory))
     }
 }
 
-#[autoresolvable]
 impl<'a> HardcodedGenerator<'a> {
     /// Creates a new generator, injecting a simulation factory, i.e.
     /// a function that returns a specific [`Simulation`] that
