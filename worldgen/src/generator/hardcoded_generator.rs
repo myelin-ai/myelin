@@ -8,7 +8,7 @@ use myelin_object_data::{
 };
 use nameof::name_of;
 use std::f64::consts::FRAC_PI_2;
-use std::fmt;
+use std::fmt::{self, Debug, Formatter};
 
 /// Simulation generation algorithm that creates a fixed simulation
 /// inhabited by two forests, a large central lake and
@@ -23,11 +23,45 @@ pub struct HardcodedGenerator<'a> {
     additional_object_description_serializer: Box<dyn AdditionalObjectDescriptionSerializer>,
 }
 
-pub type SimulationFactory<'a> = Box<dyn Fn() -> Box<dyn Simulation + 'a> + 'a>;
-pub type PlantFactory = Box<dyn Fn() -> Box<dyn ObjectBehavior>>;
-pub type OrganismFactory = Box<dyn Fn() -> Box<dyn ObjectBehavior>>;
-pub type TerrainFactory = Box<dyn Fn() -> Box<dyn ObjectBehavior>>;
-pub type WaterFactory = Box<dyn Fn() -> Box<dyn ObjectBehavior>>;
+/// A factory for creating simulations
+pub struct SimulationFactory<'a>(Box<dyn Fn() -> Box<dyn Simulation + 'a> + 'a>);
+impl<'a> Debug for SimulationFactory<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", name_of!(type SimulationFactory<'_>))
+    }
+}
+
+/// A factory for creating plants
+pub struct PlantFactory(Box<dyn Fn() -> Box<dyn ObjectBehavior>>);
+impl Debug for PlantFactory {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", name_of!(type PlantFactory))
+    }
+}
+
+/// A factory for creating organisms
+pub struct OrganismFactory(Box<dyn Fn() -> Box<dyn ObjectBehavior>>);
+impl Debug for OrganismFactory {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", name_of!(type OrganismFactory))
+    }
+}
+
+/// A factory for creating terrain
+pub struct TerrainFactory(Box<dyn Fn() -> Box<dyn ObjectBehavior>>);
+impl Debug for TerrainFactory {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", name_of!(type TerrainFactory))
+    }
+}
+
+/// A factory for creating water
+pub struct WaterFactory(Box<dyn Fn() -> Box<dyn ObjectBehavior>>);
+impl Debug for WaterFactory {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", name_of!(type WaterFactory))
+    }
+}
 
 impl<'a> HardcodedGenerator<'a> {
     /// Creates a new generator, injecting a simulation factory, i.e.
@@ -107,19 +141,19 @@ impl<'a> HardcodedGenerator<'a> {
     fn populate_with_terrain(&self, simulation: &mut dyn Simulation) {
         simulation.add_object(
             self.build_terrain((25.0, 500.0), 50.0, 1000.0),
-            (self.terrain_factory)(),
+            (self.terrain_factory.0)(),
         );
         simulation.add_object(
             self.build_terrain((500.0, 25.0), 1000.0, 50.0),
-            (self.terrain_factory)(),
+            (self.terrain_factory.0)(),
         );
         simulation.add_object(
             self.build_terrain((975.0, 500.0), 50.0, 1000.0),
-            (self.terrain_factory)(),
+            (self.terrain_factory.0)(),
         );
         simulation.add_object(
             self.build_terrain((500.0, 975.0), 1000.0, 50.0),
-            (self.terrain_factory)(),
+            (self.terrain_factory.0)(),
         );
     }
 
@@ -150,7 +184,7 @@ impl<'a> HardcodedGenerator<'a> {
             .build()
             .expect("Failed to build water");
 
-        simulation.add_object(object_description, (self.water_factory)());
+        simulation.add_object(object_description, (self.water_factory.0)());
     }
 
     fn populate_with_plants(&self, simulation: &mut dyn Simulation) {
@@ -166,7 +200,7 @@ impl<'a> HardcodedGenerator<'a> {
                 let vertical_position = 103.0 + f64::from(j) * DISPLACEMENT;
 
                 let mut add_plant = |plant: ObjectDescription| {
-                    simulation.add_object(plant, (self.plant_factory)());
+                    simulation.add_object(plant, (self.plant_factory.0)());
                 };
                 add_plant(self.build_plant(
                     HALF_OF_PLANT_WIDTH_AND_HEIGHT,
@@ -196,7 +230,7 @@ impl<'a> HardcodedGenerator<'a> {
 
             simulation.add_object(
                 self.build_organism(coordinate.0, coordinate.1, name),
-                (self.organism_factory)(),
+                (self.organism_factory.0)(),
             );
         }
     }
@@ -289,7 +323,7 @@ impl<'a> HardcodedGenerator<'a> {
 
 impl<'a> WorldGenerator<'a> for HardcodedGenerator<'a> {
     fn generate(&mut self) -> Box<dyn Simulation + 'a> {
-        let mut simulation = (self.simulation_factory)();
+        let mut simulation = (self.simulation_factory.0)();
         self.populate_with_terrain(&mut *simulation);
         self.populate_with_water(&mut *simulation);
         self.populate_with_plants(&mut *simulation);
@@ -316,7 +350,7 @@ mod tests {
     fn generates_simulation() {
         let behavior = box ObjectBehaviorMock::new();
         let behavior_ref = behavior.as_ref();
-        let simulation_factory: SimulationFactory<'_> = box || -> Box<dyn Simulation + '_> {
+        let simulation_factory = SimulationFactory(box || -> Box<dyn Simulation + '_> {
             let description = ObjectBuilder::default()
                 .shape(
                     PolygonBuilder::default()
@@ -341,12 +375,16 @@ mod tests {
                     behavior: behavior_ref,
                 });
             box simulation
-        };
-        let plant_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
-        let organism_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
-        let terrain_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
+        });
+        let plant_factory =
+            PlantFactory(box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() });
+        let organism_factory =
+            OrganismFactory(box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() });
+        let terrain_factory =
+            TerrainFactory(box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() });
 
-        let water_factory = box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() };
+        let water_factory =
+            WaterFactory(box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() });
 
         let mut name_provider = box NameProviderMock::new();
         name_provider
