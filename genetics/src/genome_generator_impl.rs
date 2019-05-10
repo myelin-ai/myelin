@@ -6,10 +6,10 @@ use crate::{GenomeGenerator, GenomeGeneratorConfiguration};
 #[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
 use std::fmt::Debug;
-pub use self::corpus_callossum_cluster_gene_generator_impl::*;
+pub use self::corpus_callosum_cluster_gene_generator_impl::*;
 
 mod io_cluster_gene_generator_impl;
-mod corpus_callossum_cluster_gene_generator_impl;
+mod corpus_callosum_cluster_gene_generator_impl;
 
 /// Generates new input and output clusters
 #[cfg_attr(any(test, feature = "use-mocks"), mockable)]
@@ -24,7 +24,7 @@ pub trait IoClusterGeneGenerator: Debug {
 /// with output clusters (aka "Corpus callosum").
 #[cfg_attr(any(test, feature = "use-mocks"), mockable)]
 pub trait CorpusCallosumClusterGeneGenerator: Debug {
-    /// Generates a new corpus callossum [`ClusterGene`]
+    /// Generates a new corpus callosum [`ClusterGene`]
     fn generate_cluster_gene(&self, config: &CorpusCallosumConfig) -> ClusterGene;
 }
 
