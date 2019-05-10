@@ -52,7 +52,6 @@ where
 {
     let container = create_composition_root(addr.into());
     let mut controller = container.resolve::<Box<dyn Controller>>().unwrap();
-
     controller.run();
 }
 
