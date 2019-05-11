@@ -14,7 +14,7 @@ edition = "2018"
 rand = "0.6"
 mockiato = { version = "0.4", optional = true }
 myelin-clone-box = { path = "../clone-box" }
-wonderbox = "0.3"
+wonderbox = "0.4"
 
 [dev-dependencies]
 mockiato = "0.4"

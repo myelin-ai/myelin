@@ -51,7 +51,7 @@ where
     A: Into<SocketAddr> + Send,
 {
     let container = create_composition_root(addr.into());
-    let mut controller = container.resolve::<Box<dyn Controller>>().unwrap();
+    let mut controller = container.resolve::<Box<dyn Controller>>();
     controller.run();
 }
 
@@ -101,11 +101,10 @@ fn server_container() -> Container {
         .register(|container| {
             let expected_delta = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
 
-            let mut world_generator = container.resolve::<Box<dyn WorldGenerator<'_>>>().unwrap();
-            let connection_acceptor_factory_fn = container
-                .resolve::<Arc<ConnectionAcceptorFactoryFn>>()
-                .unwrap();
-            let thread_spawn_fn = container.resolve::<Box<ThreadSpawnFn>>().unwrap();
+            let mut world_generator = container.resolve::<Box<dyn WorldGenerator<'_>>>();
+            let connection_acceptor_factory_fn =
+                container.resolve::<Arc<ConnectionAcceptorFactoryFn>>();
+            let thread_spawn_fn = container.resolve::<Box<ThreadSpawnFn>>();
             box ControllerImpl::new(
                 world_generator.generate(),
                 connection_acceptor_factory_fn,
@@ -125,12 +124,9 @@ fn client_container() -> Container {
             let container = container.clone();
             Arc::new(move |websocket_client, current_snapshot_fn| {
                 let interval = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
-                let fixed_interval_sleeper = container
-                    .resolve::<Box<dyn FixedIntervalSleeper>>()
-                    .unwrap();
-                let presenter = container.resolve::<Box<dyn Presenter>>().unwrap();
-                let view_model_serializer =
-                    container.resolve::<Box<dyn ViewModelSerializer>>().unwrap();
+                let fixed_interval_sleeper = container.resolve::<Box<dyn FixedIntervalSleeper>>();
+                let presenter = container.resolve::<Box<dyn Presenter>>();
+                let view_model_serializer = container.resolve::<Box<dyn ViewModelSerializer>>();
 
                 let connection = Connection {
                     id: Uuid::new_v4(),
@@ -150,9 +146,9 @@ fn client_container() -> Container {
         .register(move |container| {
             let container = container.clone();
             Arc::new(move |current_snapshot_fn| {
-                let client_factory_fn = container.resolve::<Arc<ClientFactoryFn>>().unwrap();
-                let addr = container.resolve::<ServerAddress>().unwrap().0;
-                let thread_spawn_fn = container.resolve::<Box<ThreadSpawnFn>>().unwrap();
+                let client_factory_fn = container.resolve::<Arc<ClientFactoryFn>>();
+                let addr = container.resolve::<ServerAddress>().0;
+                let thread_spawn_fn = container.resolve::<Box<ThreadSpawnFn>>();
 
                 box WebsocketConnectionAcceptor::try_new(
                     addr,
@@ -184,7 +180,7 @@ fn neural_network_container() -> Container {
             ) -> Box<dyn NeuralNetworkDeveloper + 'b> {
                 let container = container.clone();
                 move |configuration, _| {
-                    let random = container.resolve::<Box<dyn Random>>().unwrap();
+                    let random = container.resolve::<Box<dyn Random>>();
                     box FlatNeuralNetworkDeveloper::new(configuration, random)
                         as Box<dyn NeuralNetworkDeveloper>
                 }
@@ -226,31 +222,20 @@ fn worldgen_container() -> Container {
             })
         })
         .register(|container| {
-            let plant_factory = container
-                .resolve::<myelin_worldgen::PlantFactory>()
-                .unwrap();
+            let plant_factory = container.resolve::<myelin_worldgen::PlantFactory>();
 
-            let organism_factory = container
-                .resolve::<myelin_worldgen::OrganismFactory>()
-                .unwrap();
+            let organism_factory = container.resolve::<myelin_worldgen::OrganismFactory>();
 
-            let terrain_factory = container
-                .resolve::<myelin_worldgen::TerrainFactory>()
-                .unwrap();
+            let terrain_factory = container.resolve::<myelin_worldgen::TerrainFactory>();
 
-            let water_factory = container
-                .resolve::<myelin_worldgen::WaterFactory>()
-                .unwrap();
+            let water_factory = container.resolve::<myelin_worldgen::WaterFactory>();
 
-            let simulation_factory = container
-                .resolve::<myelin_worldgen::SimulationFactory<'_>>()
-                .unwrap();
+            let simulation_factory = container.resolve::<myelin_worldgen::SimulationFactory<'_>>();
 
-            let name_provider = container.resolve::<Box<dyn NameProvider>>().unwrap();
+            let name_provider = container.resolve::<Box<dyn NameProvider>>();
 
-            let additional_object_description_serializer = container
-                .resolve::<Box<dyn AdditionalObjectDescriptionSerializer>>()
-                .unwrap();
+            let additional_object_description_serializer =
+                container.resolve::<Box<dyn AdditionalObjectDescriptionSerializer>>();
 
             box HardcodedGenerator::new(
                 simulation_factory,
@@ -287,8 +272,7 @@ fn object_behavior_container() -> Container {
 
     container
         .register(|container| {
-            let name_provider_factory =
-                container.resolve::<Box<dyn NameProviderFactory>>().unwrap();
+            let name_provider_factory = container.resolve::<Box<dyn NameProviderFactory>>();
             let mut name_provider_builder = NameProviderBuilder::new(name_provider_factory);
             let organism_names = load_names_from_file(Path::new("./object-names/organisms.txt"));
             name_provider_builder.add_names(&organism_names, Kind::Organism);
@@ -297,16 +281,15 @@ fn object_behavior_container() -> Container {
         .register(|container| {
             let container = container.clone();
             myelin_worldgen::PlantFactory(box move || -> Box<dyn ObjectBehavior> {
-                let random = container.resolve::<Box<dyn Random>>().unwrap();
+                let random = container.resolve::<Box<dyn Random>>();
                 box StochasticSpreading::new(1.0 / 5_000.0, random)
             })
         })
         .register(|container| {
             let container = container.clone();
             myelin_worldgen::OrganismFactory(box move || -> Box<dyn ObjectBehavior> {
-                let neural_network_development_orchestrator = container
-                    .resolve::<Box<dyn NeuralNetworkDevelopmentOrchestrator>>()
-                    .unwrap();
+                let neural_network_development_orchestrator =
+                    container.resolve::<Box<dyn NeuralNetworkDevelopmentOrchestrator>>();
                 box OrganismBehavior::new(
                     (Genome::default(), Genome::default()),
                     neural_network_development_orchestrator,
