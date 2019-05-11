@@ -8,6 +8,7 @@ use crate::controller::{
     ConnectionAcceptor, ConnectionAcceptorFactoryFn, Controller, ControllerImpl, Presenter,
 };
 use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperImpl};
+use crate::presenter::DeltaPresenter;
 use myelin_engine::{prelude::*, simulation::SimulationBuilder};
 use myelin_genetics::{
     genome::Genome,
@@ -118,6 +119,8 @@ fn server_container() -> Container {
 
 fn client_container() -> Container {
     let mut container = Container::new();
+
+    register_autoresolvable!(container, DeltaPresenter as Box<dyn Presenter>);
 
     container
         .register(|container| {
