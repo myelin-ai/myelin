@@ -43,3 +43,10 @@ pub trait Random: Debug + RandomClone {
 }
 
 clone_box!(Random, RandomClone);
+
+/// A randomized shuffler
+#[cfg_attr(any(test, feature = "use-mocks"), mockable)]
+pub trait Shuffler<T>: Debug {
+    /// Shuffles a [`Vec`] randomly
+    fn shuffle(&self, values: Vec<T>) -> Vec<T>;
+}

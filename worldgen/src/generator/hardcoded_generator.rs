@@ -3,9 +3,7 @@
 use crate::NameProvider;
 use crate::WorldGenerator;
 use myelin_engine::prelude::*;
-use myelin_object_data::{
-    AdditionalObjectDescription, AdditionalObjectDescriptionSerializer, Kind,
-};
+use myelin_object_data::{AdditionalObjectDescription, Kind, ObjectDescription};
 use nameof::name_of;
 use std::f64::consts::FRAC_PI_2;
 use std::fmt::{self, Debug, Formatter};
@@ -20,11 +18,12 @@ pub struct HardcodedGenerator<'a> {
     terrain_factory: TerrainFactory,
     water_factory: WaterFactory,
     name_provider: Box<dyn NameProvider>,
-    additional_object_description_serializer: Box<dyn AdditionalObjectDescriptionSerializer>,
 }
 
 /// A factory for creating simulations
-pub struct SimulationFactory<'a>(pub Box<dyn Fn() -> Box<dyn Simulation + 'a> + 'a>);
+pub struct SimulationFactory<'a>(
+    pub Box<dyn Fn() -> Box<dyn Simulation<AdditionalObjectDescription> + 'a> + 'a>,
+);
 impl<'a> Debug for SimulationFactory<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", name_of!(type SimulationFactory<'_>))
@@ -32,7 +31,7 @@ impl<'a> Debug for SimulationFactory<'a> {
 }
 
 /// A factory for creating plants
-pub struct PlantFactory(pub Box<dyn Fn() -> Box<dyn ObjectBehavior>>);
+pub struct PlantFactory(pub Box<dyn Fn() -> Box<dyn ObjectBehavior<AdditionalObjectDescription>>>);
 impl Debug for PlantFactory {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", name_of!(type PlantFactory))
@@ -40,7 +39,9 @@ impl Debug for PlantFactory {
 }
 
 /// A factory for creating organisms
-pub struct OrganismFactory(pub Box<dyn Fn() -> Box<dyn ObjectBehavior>>);
+pub struct OrganismFactory(
+    pub Box<dyn Fn() -> Box<dyn ObjectBehavior<AdditionalObjectDescription>>>,
+);
 impl Debug for OrganismFactory {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", name_of!(type OrganismFactory))
@@ -48,7 +49,9 @@ impl Debug for OrganismFactory {
 }
 
 /// A factory for creating terrain
-pub struct TerrainFactory(pub Box<dyn Fn() -> Box<dyn ObjectBehavior>>);
+pub struct TerrainFactory(
+    pub Box<dyn Fn() -> Box<dyn ObjectBehavior<AdditionalObjectDescription>>>,
+);
 impl Debug for TerrainFactory {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", name_of!(type TerrainFactory))
@@ -56,7 +59,7 @@ impl Debug for TerrainFactory {
 }
 
 /// A factory for creating water
-pub struct WaterFactory(pub Box<dyn Fn() -> Box<dyn ObjectBehavior>>);
+pub struct WaterFactory(pub Box<dyn Fn() -> Box<dyn ObjectBehavior<AdditionalObjectDescription>>>);
 impl Debug for WaterFactory {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", name_of!(type WaterFactory))
@@ -75,28 +78,28 @@ impl<'a> HardcodedGenerator<'a> {
     /// use myelin_engine::prelude::*;
     /// use myelin_engine::simulation::SimulationBuilder;
     /// use myelin_object_behavior::Static;
-    /// use myelin_object_data::{AdditionalObjectDescriptionBincodeSerializer, Kind};
+    /// use myelin_object_data::{AdditionalObjectDescription, Kind};
     /// use myelin_worldgen::*;
     /// use std::fs::read_to_string;
     /// use std::path::Path;
     /// use std::sync::{Arc, RwLock};
     ///
-    /// let simulation_factory = SimulationFactory(Box::new(|| -> Box<dyn Simulation> {
-    ///     SimulationBuilder::new().build()
-    /// }));
+    /// let simulation_factory = SimulationFactory(Box::new(
+    ///     || -> Box<dyn Simulation<AdditionalObjectDescription>> { SimulationBuilder::new().build() },
+    /// ));
     ///
-    /// let plant_factory = PlantFactory(Box::new(|| -> Box<dyn ObjectBehavior> {
-    ///     Box::new(Static::default())
-    /// }));
-    /// let organism_factory = OrganismFactory(Box::new(|| -> Box<dyn ObjectBehavior> {
-    ///     Box::new(Static::default())
-    /// }));
-    /// let terrain_factory = TerrainFactory(Box::new(|| -> Box<dyn ObjectBehavior> {
-    ///     Box::new(Static::default())
-    /// }));
-    /// let water_factory = WaterFactory(Box::new(|| -> Box<dyn ObjectBehavior> {
-    ///     Box::new(Static::default())
-    /// }));
+    /// let plant_factory = PlantFactory(Box::new(
+    ///     || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> { Box::new(Static::default()) },
+    /// ));
+    /// let organism_factory = OrganismFactory(Box::new(
+    ///     || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> { Box::new(Static::default()) },
+    /// ));
+    /// let terrain_factory = TerrainFactory(Box::new(
+    ///     || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> { Box::new(Static::default()) },
+    /// ));
+    /// let water_factory = WaterFactory(Box::new(
+    ///     || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> { Box::new(Static::default()) },
+    /// ));
     ///
     /// let mut name_provider_builder = NameProviderBuilder::new(Box::new(|names| {
     ///     Box::new(NameProviderImpl::new(names)) as Box<dyn NameProvider>
@@ -111,9 +114,6 @@ impl<'a> HardcodedGenerator<'a> {
     ///
     /// let name_provider = name_provider_builder.build();
     ///
-    /// let additional_object_description_serializer =
-    ///     Box::new(AdditionalObjectDescriptionBincodeSerializer::default());
-    ///
     /// let mut worldgen = HardcodedGenerator::new(
     ///     simulation_factory,
     ///     plant_factory,
@@ -121,7 +121,6 @@ impl<'a> HardcodedGenerator<'a> {
     ///     terrain_factory,
     ///     water_factory,
     ///     name_provider,
-    ///     additional_object_description_serializer,
     /// );
     /// let generated_simulation = worldgen.generate();
     /// ```
@@ -132,7 +131,6 @@ impl<'a> HardcodedGenerator<'a> {
         terrain_factory: TerrainFactory,
         water_factory: WaterFactory,
         name_provider: Box<dyn NameProvider>,
-        additional_object_description_serializer: Box<dyn AdditionalObjectDescriptionSerializer>,
     ) -> Self {
         Self {
             simulation_factory,
@@ -141,11 +139,10 @@ impl<'a> HardcodedGenerator<'a> {
             terrain_factory,
             water_factory,
             name_provider,
-            additional_object_description_serializer,
         }
     }
 
-    fn populate_with_terrain(&self, simulation: &mut dyn Simulation) {
+    fn populate_with_terrain(&self, simulation: &mut dyn Simulation<AdditionalObjectDescription>) {
         simulation.add_object(
             self.build_terrain((25.0, 500.0), 50.0, 1000.0),
             (self.terrain_factory.0)(),
@@ -164,7 +161,7 @@ impl<'a> HardcodedGenerator<'a> {
         );
     }
 
-    fn populate_with_water(&self, simulation: &mut dyn Simulation) {
+    fn populate_with_water(&self, simulation: &mut dyn Simulation<AdditionalObjectDescription>) {
         let object_data = AdditionalObjectDescription {
             name: None,
             kind: Kind::Water,
@@ -184,17 +181,14 @@ impl<'a> HardcodedGenerator<'a> {
             )
             .location(500.0, 500.0)
             .mobility(Mobility::Immovable)
-            .associated_data(
-                self.additional_object_description_serializer
-                    .serialize(&object_data),
-            )
+            .associated_data(object_data)
             .build()
             .expect("Failed to build water");
 
         simulation.add_object(object_description, (self.water_factory.0)());
     }
 
-    fn populate_with_plants(&self, simulation: &mut dyn Simulation) {
+    fn populate_with_plants(&self, simulation: &mut dyn Simulation<AdditionalObjectDescription>) {
         const HALF_OF_PLANT_WIDTH_AND_HEIGHT: f64 = 10.0;
         const PADDING: f64 = 1.0;
         const DISPLACEMENT: f64 = HALF_OF_PLANT_WIDTH_AND_HEIGHT * 2.0 + PADDING;
@@ -223,7 +217,10 @@ impl<'a> HardcodedGenerator<'a> {
         }
     }
 
-    fn populate_with_organisms(&mut self, simulation: &mut dyn Simulation) {
+    fn populate_with_organisms(
+        &mut self,
+        simulation: &mut dyn Simulation<AdditionalObjectDescription>,
+    ) {
         let coordinates = [
             (300.0, 800.0),
             (400.0, 800.0),
@@ -263,10 +260,7 @@ impl<'a> HardcodedGenerator<'a> {
             )
             .location(location.0, location.1)
             .mobility(Mobility::Immovable)
-            .associated_data(
-                self.additional_object_description_serializer
-                    .serialize(&object_data),
-            )
+            .associated_data(object_data)
             .build()
             .expect("Failed to build terrain")
     }
@@ -291,10 +285,7 @@ impl<'a> HardcodedGenerator<'a> {
             .location(x, y)
             .mobility(Mobility::Immovable)
             .passable(true)
-            .associated_data(
-                self.additional_object_description_serializer
-                    .serialize(&object_data),
-            )
+            .associated_data(object_data)
             .build()
             .expect("Failed to build plant")
     }
@@ -319,17 +310,14 @@ impl<'a> HardcodedGenerator<'a> {
             .location(x, y)
             .rotation(Radians::try_new(FRAC_PI_2).unwrap())
             .mobility(Mobility::Movable(Vector::default()))
-            .associated_data(
-                self.additional_object_description_serializer
-                    .serialize(&object_data),
-            )
+            .associated_data(object_data)
             .build()
             .expect("Failed to build organism")
     }
 }
 
 impl<'a> WorldGenerator<'a> for HardcodedGenerator<'a> {
-    fn generate(&mut self) -> Box<dyn Simulation + 'a> {
+    fn generate(&mut self) -> Box<dyn Simulation<AdditionalObjectDescription> + 'a> {
         let mut simulation = (self.simulation_factory.0)();
         self.populate_with_terrain(&mut *simulation);
         self.populate_with_water(&mut *simulation);
@@ -350,92 +338,71 @@ impl<'a> fmt::Debug for HardcodedGenerator<'a> {
 mod tests {
     use super::*;
     use crate::NameProviderMock;
-    use mockiato::{any, partial_eq, partial_eq_owned};
-    use myelin_object_data::AdditionalObjectDescriptionSerializerMock;
+    use mockiato::{any, partial_eq};
 
     #[test]
     fn generates_simulation() {
         let behavior = box ObjectBehaviorMock::new();
         let behavior_ref = behavior.as_ref();
-        let simulation_factory = SimulationFactory(box || -> Box<dyn Simulation + '_> {
-            let description = ObjectBuilder::default()
-                .shape(
-                    PolygonBuilder::default()
-                        .vertex(-5.0, -5.0)
-                        .vertex(5.0, -5.0)
-                        .vertex(5.0, 5.0)
-                        .vertex(-5.0, 5.0)
-                        .build()
-                        .unwrap(),
-                )
-                .location(5.0, 5.0)
-                .mobility(Mobility::Immovable)
-                .build()
-                .unwrap();
-            let mut simulation = SimulationMock::new();
-            simulation
-                .expect_add_object(any(), any())
-                .times(1..)
-                .returns(Object {
-                    id: 1,
-                    description,
-                    behavior: behavior_ref,
-                });
-            box simulation
-        });
-        let plant_factory =
-            PlantFactory(box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() });
-        let organism_factory =
-            OrganismFactory(box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() });
-        let terrain_factory =
-            TerrainFactory(box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() });
+        let simulation_factory = SimulationFactory(
+            box || -> Box<dyn Simulation<AdditionalObjectDescription> + '_> {
+                let description = ObjectBuilder::default()
+                    .shape(
+                        PolygonBuilder::default()
+                            .vertex(-5.0, -5.0)
+                            .vertex(5.0, -5.0)
+                            .vertex(5.0, 5.0)
+                            .vertex(-5.0, 5.0)
+                            .build()
+                            .unwrap(),
+                    )
+                    .location(5.0, 5.0)
+                    .mobility(Mobility::Immovable)
+                    .associated_data(AdditionalObjectDescription {
+                        name: None,
+                        kind: Kind::Organism,
+                        height: 1.0,
+                    })
+                    .build()
+                    .unwrap();
+                let mut simulation = SimulationMock::new();
+                simulation
+                    .expect_add_object(any(), any())
+                    .times(1..)
+                    .returns(Object {
+                        id: 1,
+                        description,
+                        behavior: behavior_ref,
+                    });
+                box simulation
+            },
+        );
+        let plant_factory = PlantFactory(
+            box || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
+                box ObjectBehaviorMock::new()
+            },
+        );
+        let organism_factory = OrganismFactory(
+            box || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
+                box ObjectBehaviorMock::new()
+            },
+        );
+        let terrain_factory = TerrainFactory(
+            box || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
+                box ObjectBehaviorMock::new()
+            },
+        );
 
-        let water_factory =
-            WaterFactory(box || -> Box<dyn ObjectBehavior> { box ObjectBehaviorMock::new() });
+        let water_factory = WaterFactory(
+            box || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
+                box ObjectBehaviorMock::new()
+            },
+        );
 
         let mut name_provider = box NameProviderMock::new();
         name_provider
             .expect_get_name(partial_eq(Kind::Organism))
             .returns(None)
-            .times(5);
-
-        let mut additional_object_description_serializer =
-            box AdditionalObjectDescriptionSerializerMock::new();
-
-        additional_object_description_serializer
-            .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
-                name: None,
-                kind: Kind::Terrain,
-                height: 10.0,
-            }))
-            .returns(Vec::new())
-            .times(4);
-
-        additional_object_description_serializer
-            .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
-                name: None,
-                kind: Kind::Water,
-                height: 0.1,
-            }))
-            .returns(Vec::new())
-            .times(1);
-
-        additional_object_description_serializer
-            .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
-                name: None,
-                kind: Kind::Plant,
-                height: 0.5,
-            }))
-            .returns(Vec::new())
-            .times(176);
-
-        additional_object_description_serializer
-            .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
-                name: None,
-                kind: Kind::Organism,
-                height: 1.0,
-            }))
-            .returns(Vec::new())
             .times(5);
 
         let mut generator = HardcodedGenerator::new(
@@ -445,7 +412,6 @@ mod tests {
             terrain_factory,
             water_factory,
             name_provider,
-            additional_object_description_serializer,
         );
 
         let _simulation = generator.generate();

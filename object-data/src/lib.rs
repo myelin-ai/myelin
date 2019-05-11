@@ -12,17 +12,17 @@
     clippy::large_digit_groups,
     clippy::explicit_into_iter_loop
 )]
-#![feature(box_syntax)]
-#![feature(specialization)]
 
-use myelin_clone_box::clone_box;
-use serde_derive::{Deserialize, Serialize};
-use std::error::Error;
-use std::fmt::{self, Debug, Display};
-use wonderbox::autoresolvable;
+use serde::{Deserialize, Serialize};
 
-#[cfg(feature = "use-mocks")]
-use mockiato::mockable;
+/// The behaviourless description of an object that has
+/// been placed inside a [`Simulation`].
+///
+/// [`Simulation`]: myelin_engine::simulation::Simulation
+pub type ObjectDescription = myelin_engine::object::ObjectDescription<AdditionalObjectDescription>;
+
+/// An object that is stored in the simulation
+pub type Object<'a> = myelin_engine::object::Object<'a, AdditionalObjectDescription>;
 
 /// The data associated with an object
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -49,120 +49,4 @@ pub enum Kind {
     Water,
     /// Impassable terrain
     Terrain,
-}
-
-/// Handles serialization for `AdditionalObjectDescription`
-///
-/// [`AdditionalObjectDescription`]: ./struct.AdditionalObjectDescription.html
-#[cfg_attr(feature = "use-mocks", mockable)]
-pub trait AdditionalObjectDescriptionSerializer: Debug {
-    /// Serialize associated object data
-    fn serialize(&self, additional_object_description: &AdditionalObjectDescription) -> Vec<u8>;
-}
-
-/// Handles deserialization for `AdditionalObjectDescription`
-///
-/// [`AdditionalObjectDescription`]: ./struct.AdditionalObjectDescription.html
-#[cfg_attr(feature = "use-mocks", mockable(static_references))]
-pub trait AdditionalObjectDescriptionDeserializer:
-    Debug + AdditionalObjectDescriptionDeserializerClone
-{
-    /// Deserialize into associated object data
-    fn deserialize(
-        &self,
-        data: &[u8],
-    ) -> Result<AdditionalObjectDescription, AdditionalObjectDescriptionDeserializerError>;
-}
-
-clone_box!(
-    AdditionalObjectDescriptionDeserializer,
-    AdditionalObjectDescriptionDeserializerClone
-);
-
-/// Implements an `AdditionalObjectDescriptionSerializer` using bincode
-///
-/// [`AdditionalObjectDescriptionSerializer`]: ./trait.AdditionalObjectDescriptionSerializer.html
-#[derive(Debug, Default, Clone)]
-pub struct AdditionalObjectDescriptionBincodeSerializer;
-
-#[autoresolvable]
-impl AdditionalObjectDescriptionBincodeSerializer {
-    /// Creates a new [`AdditionalObjectDescriptionBincodeSerializer`]
-    pub fn new() -> Self {
-        Self::default()
-    }
-}
-
-impl AdditionalObjectDescriptionSerializer for AdditionalObjectDescriptionBincodeSerializer {
-    fn serialize(&self, additional_object_description: &AdditionalObjectDescription) -> Vec<u8> {
-        bincode::serialize(additional_object_description)
-            .expect("Unable to serialize associated object data")
-    }
-}
-
-/// Implements an `AdditionalObjectDescriptionDeserializer` using bincode
-///
-/// [`AdditionalObjectDescriptionDeserializer`]: ./trait.AdditionalObjectDescriptionDeserializer.html
-#[derive(Debug, Default, Clone)]
-pub struct AdditionalObjectDescriptionBincodeDeserializer {}
-
-impl AdditionalObjectDescriptionDeserializer for AdditionalObjectDescriptionBincodeDeserializer {
-    fn deserialize(
-        &self,
-        data: &[u8],
-    ) -> Result<AdditionalObjectDescription, AdditionalObjectDescriptionDeserializerError> {
-        bincode::deserialize(data).map_err(|err| AdditionalObjectDescriptionDeserializerError {
-            message: err.description().to_string(),
-        })
-    }
-}
-
-#[derive(Debug, Clone, Eq, PartialEq)]
-/// Something unexpected happened when trying to deserialize [`AdditionalObjectDescription`]
-pub struct AdditionalObjectDescriptionDeserializerError {
-    message: String,
-}
-
-impl Display for AdditionalObjectDescriptionDeserializerError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.message)
-    }
-}
-
-impl Error for AdditionalObjectDescriptionDeserializerError {}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn serialize_and_deserialize_work() {
-        let serializer = AdditionalObjectDescriptionBincodeSerializer::default();
-        let deserializer = AdditionalObjectDescriptionBincodeDeserializer::default();
-
-        let additional_object_description = AdditionalObjectDescription {
-            name: Some(String::from("Foo")),
-            kind: Kind::Plant,
-            height: 1.8,
-        };
-
-        let serialized_data = serializer.serialize(&additional_object_description);
-        let deserialized_additional_object_description = deserializer
-            .deserialize(&serialized_data)
-            .expect("Unable to deserialize data");
-
-        assert_eq!(
-            additional_object_description,
-            deserialized_additional_object_description
-        );
-    }
-
-    #[test]
-    fn deserialize_fails_with_invalid_data() {
-        let deserializer = AdditionalObjectDescriptionBincodeDeserializer::default();
-
-        let invalid_data = String::from("banana").into_bytes();
-        assert!(deserializer.deserialize(&invalid_data).is_err());
-    }
-
 }

@@ -25,10 +25,7 @@ use myelin_neural_network::{spiking_neural_network::DefaultSpikingNeuralNetwork,
 use myelin_object_behavior::{
     organism::OrganismBehavior, stochastic_spreading::StochasticSpreading, Static,
 };
-use myelin_object_data::{
-    AdditionalObjectDescriptionBincodeDeserializer, AdditionalObjectDescriptionBincodeSerializer,
-    AdditionalObjectDescriptionSerializer, Kind,
-};
+use myelin_object_data::{AdditionalObjectDescription, Kind};
 use myelin_random::{Random, RandomImpl};
 use myelin_visualization_core::serialization::{BincodeSerializer, ViewModelSerializer};
 use myelin_worldgen::{
@@ -90,12 +87,6 @@ fn utility_container() -> Container {
 
 fn server_container() -> Container {
     let mut container = Container::new();
-
-    register_autoresolvable!(
-        container,
-        AdditionalObjectDescriptionBincodeSerializer
-            as Box<dyn AdditionalObjectDescriptionSerializer>
-    );
 
     container
         .register(|_| box BincodeSerializer::default() as Box<dyn ViewModelSerializer>)
@@ -215,14 +206,18 @@ fn worldgen_container() -> Container {
     container
         .register(|_| myelin_worldgen::SimulationFactory(box || SimulationBuilder::new().build()))
         .register(|_| {
-            myelin_worldgen::TerrainFactory(box || -> Box<dyn ObjectBehavior> {
-                box Static::default()
-            })
+            myelin_worldgen::TerrainFactory(
+                box || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
+                    box Static::default()
+                },
+            )
         })
         .register(|_| {
-            myelin_worldgen::WaterFactory(box || -> Box<dyn ObjectBehavior> {
-                box Static::default()
-            })
+            myelin_worldgen::WaterFactory(
+                box || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
+                    box Static::default()
+                },
+            )
         })
         .register(|container| {
             let plant_factory = container.resolve::<myelin_worldgen::PlantFactory>();
@@ -237,9 +232,6 @@ fn worldgen_container() -> Container {
 
             let name_provider = container.resolve::<Box<dyn NameProvider>>();
 
-            let additional_object_description_serializer =
-                container.resolve::<Box<dyn AdditionalObjectDescriptionSerializer>>();
-
             box HardcodedGenerator::new(
                 simulation_factory,
                 plant_factory,
@@ -247,7 +239,6 @@ fn worldgen_container() -> Container {
                 terrain_factory,
                 water_factory,
                 name_provider,
-                additional_object_description_serializer,
             ) as Box<dyn WorldGenerator<'_>>
         });
     container
@@ -283,22 +274,25 @@ fn object_behavior_container() -> Container {
         })
         .register(|container| {
             let container = container.clone();
-            myelin_worldgen::PlantFactory(box move || -> Box<dyn ObjectBehavior> {
-                let random = container.resolve::<Box<dyn Random>>();
-                box StochasticSpreading::new(1.0 / 5_000.0, random)
-            })
+            myelin_worldgen::PlantFactory(
+                box move || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
+                    let random = container.resolve::<Box<dyn Random>>();
+                    box StochasticSpreading::new(1.0 / 5_000.0, random)
+                },
+            )
         })
         .register(|container| {
             let container = container.clone();
-            myelin_worldgen::OrganismFactory(box move || -> Box<dyn ObjectBehavior> {
-                let neural_network_development_orchestrator =
-                    container.resolve::<Box<dyn NeuralNetworkDevelopmentOrchestrator>>();
-                box OrganismBehavior::new(
-                    (Genome::default(), Genome::default()),
-                    neural_network_development_orchestrator,
-                    box AdditionalObjectDescriptionBincodeDeserializer::default(),
-                )
-            })
+            myelin_worldgen::OrganismFactory(
+                box move || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
+                    let neural_network_development_orchestrator =
+                        container.resolve::<Box<dyn NeuralNetworkDevelopmentOrchestrator>>();
+                    box OrganismBehavior::new(
+                        (Genome::default(), Genome::default()),
+                        neural_network_development_orchestrator,
+                    )
+                },
+            )
         });
 
     container

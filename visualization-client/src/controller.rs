@@ -1,10 +1,6 @@
 use crate::input_handler::Controller;
 use crate::presenter;
-use myelin_engine::object::ObjectDescription;
-use myelin_object_data::{
-    AdditionalObjectDescription, AdditionalObjectDescriptionDeserializer,
-    AdditionalObjectDescriptionSerializer,
-};
+use myelin_object_data::{AdditionalObjectDescription, ObjectDescription};
 use myelin_visualization_core::serialization::ViewModelDeserializer;
 use myelin_visualization_core::view_model_delta::{
     ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
@@ -20,8 +16,6 @@ pub(crate) trait Presenter: fmt::Debug {
 pub(crate) struct ControllerImpl {
     presenter: Box<dyn Presenter>,
     view_model_deserializer: Box<dyn ViewModelDeserializer>,
-    additional_object_description_serializer: Box<dyn AdditionalObjectDescriptionSerializer>,
-    additional_object_description_deserializer: Box<dyn AdditionalObjectDescriptionDeserializer>,
 }
 
 impl Controller for ControllerImpl {
@@ -30,10 +24,8 @@ impl Controller for ControllerImpl {
             .view_model_deserializer
             .deserialize_view_model_delta(message)?;
 
-        self.presenter.present_delta(translate_delta(
-            view_model_delta,
-            self.additional_object_description_deserializer.as_ref(),
-        ))?;
+        self.presenter
+            .present_delta(translate_delta(view_model_delta))?;
 
         Ok(())
     }
@@ -43,41 +35,26 @@ impl ControllerImpl {
     pub(crate) fn new(
         presenter: Box<dyn Presenter>,
         view_model_deserializer: Box<dyn ViewModelDeserializer>,
-        additional_object_description_serializer: Box<dyn AdditionalObjectDescriptionSerializer>,
-        additional_object_description_deserializer: Box<
-            dyn AdditionalObjectDescriptionDeserializer,
-        >,
     ) -> Self {
         Self {
             presenter,
             view_model_deserializer,
-            additional_object_description_serializer,
-            additional_object_description_deserializer,
         }
     }
 }
 
-fn translate_delta(
-    delta: ViewModelDelta,
-    additional_object_description_deserializer: &dyn AdditionalObjectDescriptionDeserializer,
-) -> presenter::ViewModelDelta {
+fn translate_delta(delta: ViewModelDelta) -> presenter::ViewModelDelta {
     delta
         .into_iter()
         .map(|(id, object_delta)| {
             let object_delta = match object_delta {
                 ObjectDelta::Deleted => presenter::ObjectDelta::Deleted,
-                ObjectDelta::Created(object_description) => {
-                    presenter::ObjectDelta::Created(translate_object_description(
-                        object_description,
-                        additional_object_description_deserializer,
-                    ))
-                }
-                ObjectDelta::Updated(object_description_delta) => {
-                    presenter::ObjectDelta::Updated(translate_object_description_delta(
-                        object_description_delta,
-                        additional_object_description_deserializer,
-                    ))
-                }
+                ObjectDelta::Created(object_description) => presenter::ObjectDelta::Created(
+                    translate_object_description(object_description),
+                ),
+                ObjectDelta::Updated(object_description_delta) => presenter::ObjectDelta::Updated(
+                    translate_object_description_delta(object_description_delta),
+                ),
             };
 
             (id, object_delta)
@@ -87,13 +64,8 @@ fn translate_delta(
 
 fn translate_object_description(
     object_description: ObjectDescription,
-    additional_object_description_deserializer: &dyn AdditionalObjectDescriptionDeserializer,
 ) -> presenter::ObjectDescription {
-    let additional_object_description = additional_object_description_deserializer
-        .deserialize(&object_description.associated_data)
-        .expect("Unable to deserialize associated object data");
-
-    let AdditionalObjectDescription { name, kind, height } = additional_object_description;
+    let AdditionalObjectDescription { name, kind, height } = object_description.associated_data;
 
     let ObjectDescription {
         shape,
@@ -118,18 +90,9 @@ fn translate_object_description(
 
 fn translate_object_description_delta(
     object_description_delta: ObjectDescriptionDelta,
-    additional_object_description_deserializer: &dyn AdditionalObjectDescriptionDeserializer,
 ) -> presenter::ObjectDescriptionDelta {
-    let additional_object_description: Option<AdditionalObjectDescription> =
-        object_description_delta
-            .associated_data
-            .map(|associated_data| {
-                additional_object_description_deserializer
-                    .deserialize(&associated_data)
-                    .expect("Unable to deserialize associated data")
-            });
-
-    let (name, kind) = additional_object_description
+    let (name, kind) = object_description_delta
+        .associated_data
         .map(|additional_object_description| {
             (
                 Some(additional_object_description.name),
@@ -160,12 +123,8 @@ fn translate_object_description_delta(
 mod tests {
     use super::*;
     use maplit::hashmap;
-    use mockiato::{partial_eq, partial_eq_owned};
     use myelin_engine::geometry::*;
-    use myelin_object_data::{
-        AdditionalObjectDescriptionDeserializerMock, AdditionalObjectDescriptionSerializerMock,
-        Kind,
-    };
+    use myelin_object_data::Kind;
     use myelin_visualization_core::view_model_delta::{ObjectDelta, ObjectDescriptionDelta};
     use std::cell::RefCell;
     use std::error::Error;
@@ -248,17 +207,6 @@ mod tests {
     }
 
     fn object_description_delta() -> ObjectDescriptionDelta {
-        let mut additional_object_description_serializer =
-            AdditionalObjectDescriptionSerializerMock::new();
-
-        additional_object_description_serializer
-            .expect_serialize(partial_eq_owned(AdditionalObjectDescription {
-                name: Some(String::from("Cat")),
-                kind: Kind::Organism,
-                height: 0.5,
-            }))
-            .returns(String::from("A very pretty looking cat").into_bytes());
-
         ObjectDescriptionDelta {
             shape: Some(
                 PolygonBuilder::default()
@@ -272,13 +220,11 @@ mod tests {
             location: Some(Point { x: 20.0, y: 40.0 }),
             rotation: Some(Radians::try_new(6.0).unwrap()),
             mobility: None,
-            associated_data: Some(additional_object_description_serializer.serialize(
-                &AdditionalObjectDescription {
-                    name: Some(String::from("Cat")),
-                    kind: Kind::Organism,
-                    height: 0.5,
-                },
-            )),
+            associated_data: Some(AdditionalObjectDescription {
+                name: Some(String::from("Cat")),
+                kind: Kind::Organism,
+                height: 0.5,
+            }),
         }
     }
 
@@ -312,35 +258,10 @@ mod tests {
             123 => ObjectDelta::Updated(object_description_delta())
         };
 
-        let associated_object_data_bytes = String::from("A very pretty looking cat").into_bytes();
-        let additional_object_description = AdditionalObjectDescription {
-            name: Some(String::from("Cat")),
-            kind: Kind::Organism,
-            height: 0.4,
-        };
-
-        let additional_object_description_serializer =
-            AdditionalObjectDescriptionSerializerMock::new();
-
-        let additional_object_data_deserializer: Box<dyn AdditionalObjectDescriptionDeserializer> = {
-            let mut deserializer = AdditionalObjectDescriptionDeserializerMock::new();
-
-            deserializer
-                .expect_deserialize(partial_eq(associated_object_data_bytes.clone()))
-                .returns(Ok(additional_object_description));
-
-            box deserializer
-        };
-
         let view_model_deserializer =
             ViewModelDeserializerMock::new(data.clone(), view_model_delta.clone());
         let presenter = PresenterMock::new(presenter_view_model_delta.clone());
-        let mut controller = ControllerImpl::new(
-            box presenter,
-            box view_model_deserializer,
-            box additional_object_description_serializer,
-            additional_object_data_deserializer,
-        );
+        let mut controller = ControllerImpl::new(box presenter, box view_model_deserializer);
 
         controller.on_message(&data).unwrap();
     }
