@@ -74,13 +74,16 @@ fn utility_container() -> Container {
     let mut container = Container::new();
 
     register_autoresolvable!(container, RandomImpl as Box<dyn Random>);
-    container
-        .register(|_| {
-            box (|function| {
-                thread::spawn(function);
-            }) as Box<ThreadSpawnFn>
-        })
-        .register(|_| box FixedIntervalSleeperImpl::default() as Box<dyn FixedIntervalSleeper>);
+    register_autoresolvable!(
+        container,
+        FixedIntervalSleeperImpl as Box<dyn FixedIntervalSleeper>
+    );
+
+    container.register(|_| {
+        box (|function| {
+            thread::spawn(function);
+        }) as Box<ThreadSpawnFn>
+    });
 
     container
 }
