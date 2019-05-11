@@ -88,22 +88,22 @@ fn utility_container() -> Container {
 fn server_container() -> Container {
     let mut container = Container::new();
 
-    container
-        .register(|_| box BincodeSerializer::default() as Box<dyn ViewModelSerializer>)
-        .register(|container| {
-            let expected_delta = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
+    register_autoresolvable!(container, BincodeSerializer as Box<dyn ViewModelSerializer>);
 
-            let mut world_generator = container.resolve::<Box<dyn WorldGenerator<'_>>>();
-            let connection_acceptor_factory_fn =
-                container.resolve::<Arc<ConnectionAcceptorFactoryFn>>();
-            let thread_spawn_fn = container.resolve::<Box<ThreadSpawnFn>>();
-            box ControllerImpl::new(
-                world_generator.generate(),
-                connection_acceptor_factory_fn,
-                thread_spawn_fn,
-                expected_delta,
-            ) as Box<dyn Controller>
-        });
+    container.register(|container| {
+        let expected_delta = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
+
+        let mut world_generator = container.resolve::<Box<dyn WorldGenerator<'_>>>();
+        let connection_acceptor_factory_fn =
+            container.resolve::<Arc<ConnectionAcceptorFactoryFn>>();
+        let thread_spawn_fn = container.resolve::<Box<ThreadSpawnFn>>();
+        box ControllerImpl::new(
+            world_generator.generate(),
+            connection_acceptor_factory_fn,
+            thread_spawn_fn,
+            expected_delta,
+        ) as Box<dyn Controller>
+    });
 
     container
 }
