@@ -1,5 +1,6 @@
 use super::{CorpusCallosumClusterGeneGenerator, CorpusCallosumConfiguration};
 use crate::genome::*;
+use myelin_associate_lists::associate_lists;
 use myelin_random::Random;
 use std::iter;
 
@@ -24,9 +25,13 @@ impl CorpusCallosumClusterGeneGenerator for CorpusCallosumClusterGeneGeneratorIm
             .random
             .random_usize_in_range(MIN_STEM_NEURONS, output_neuron_count);
         let neuron_count = input_neuron_count + output_neuron_count + stem_neuron_count;
-        let connections = self
-            .generate_input_neuron_connections(input_neuron_count)
-            .collect();
+        let connections =
+            self.generate_input_neuron_connections(input_neuron_count)
+                .chain(self.generate_input_to_stem_neuron_connections(
+                    input_neuron_count,
+                    stem_neuron_count,
+                ))
+                .collect();
         ClusterGene {
             neurons: vec![Neuron {}; neuron_count],
             connections,
@@ -52,6 +57,22 @@ impl CorpusCallosumClusterGeneGeneratorImpl {
                 iter::once(connection).chain(iter::once(connection_reverse))
             })
             .flatten()
+    }
+
+    fn generate_input_to_stem_neuron_connections<'a>(
+        &'a self,
+        input_neuron_count: usize,
+        stem_neuron_count: usize,
+    ) -> impl Iterator<Item = Connection> + 'a {
+        let input_neuron_indexes: Vec<_> = (0..input_neuron_count).collect();
+        let stem_neuron_indices: Vec<_> =
+            (input_neuron_count..(input_neuron_count + stem_neuron_count)).collect();
+
+        associate_lists(&input_neuron_indexes, &stem_neuron_indices)
+            .into_iter()
+            .map(move |(from_index, to_index)| {
+                self.generate_input_neuron_connection(from_index, to_index)
+            })
     }
 
     fn generate_input_neuron_connection(&self, from_index: usize, to_index: usize) -> Connection {
@@ -115,6 +136,7 @@ mod tests {
         const STEM_NEURONS: usize = 5;
         const NEURONS: usize = INPUT_NEURON_COUNT + OUTPUT_NEURON_COUNT + STEM_NEURONS;
         const INPUT_NEURON_CONNECTIONS: usize = INPUT_NEURON_COUNT * 2;
+        const INPUT_TO_STEM_CONNECTIONS: usize = INPUT_NEURON_COUNT;
 
         let random = {
             let mut random = RandomMock::new();
@@ -127,6 +149,10 @@ mod tests {
                     )
                     .returns(connection_weight(index));
             }
+            random
+                .expect_random_float_in_range(any(), any())
+                .times(INPUT_TO_STEM_CONNECTIONS as u64)
+                .returns(1.0);
             random
                 .expect_random_usize_in_range(
                     partial_eq(MIN_STEM_NEURONS),
@@ -241,33 +267,35 @@ mod tests {
             },
             Connection {
                 from: NeuronClusterLocalIndex(1),
-                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT),
-                weight: connection_weight(0),
+                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + 1),
+                weight: connection_weight(1),
             },
             Connection {
                 from: NeuronClusterLocalIndex(2),
                 to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + 1),
-                weight: connection_weight(0),
+                weight: connection_weight(2),
             },
             Connection {
                 from: NeuronClusterLocalIndex(3),
-                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + 1),
-                weight: connection_weight(0),
+                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + 2),
+                weight: connection_weight(3),
             },
             Connection {
                 from: NeuronClusterLocalIndex(4),
                 to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + 2),
-                weight: connection_weight(0),
+                weight: connection_weight(4),
             },
         ];
         let generated_cluster_gene = generator.generate_cluster_gene(&configuration);
         let max_stem_connections_index =
             INPUT_NEURON_CONNECTIONS + expected_input_to_stem_connections.len();
+        let generated_input_to_stem_connections = &generated_cluster_gene.connections
+            [INPUT_NEURON_CONNECTIONS..(max_stem_connections_index)];
+
         assert_eq!(expected_neurons, generated_cluster_gene.neurons);
         assert_eq!(
             expected_input_to_stem_connections,
-            &generated_cluster_gene.connections
-                [INPUT_NEURON_CONNECTIONS..(max_stem_connections_index)]
+            generated_input_to_stem_connections
         );
     }
 
