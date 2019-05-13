@@ -1,0 +1,9 @@
+[package]
+name = "myelin-associate-lists"
+description = ""
+version = "0.1.0"
+authors = [
+    "Ruben Schmidmeister <ruben@myelin.ch>",
+    "Jeremy Stucki <jeremy@myelin.ch>",
+]
+edition = "2018"

@@ -529,6 +529,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "myelin-associate-lists"
+version = "0.1.0"
+
+[[package]]
 name = "myelin-clone-box"
 version = "0.1.0"
 
