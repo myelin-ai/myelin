@@ -3,6 +3,7 @@ use crate::genome::Genome;
 use crate::neural_network_development_orchestrator_impl::GenomeDeriver;
 use itertools::Itertools;
 use myelin_random::Random;
+use wonderbox::autoresolvable;
 
 /// Implementation of chromosomal crossover
 #[derive(Debug, Clone)]
@@ -10,6 +11,7 @@ pub struct ChromosomalCrossoverGenomeDeriver {
     random: Box<dyn Random>,
 }
 
+#[autoresolvable]
 impl ChromosomalCrossoverGenomeDeriver {
     /// Creates a new instance of [`ChromosomalCrossoverGenomeDeriver`].
     pub fn new(random: Box<dyn Random>) -> Self {
