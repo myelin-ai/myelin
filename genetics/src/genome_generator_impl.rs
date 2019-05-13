@@ -32,7 +32,7 @@ pub trait CorpusCallosumClusterGeneGenerator: Debug {
 }
 
 /// Configuration for generating a new corpus callosum [`ClusterGene`].
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct CorpusCallosumConfiguration {
     /// The amount of input neurons
     pub input_neuron_count: NonZeroUsize,
