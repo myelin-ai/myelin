@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 
 /// Associates elements of two lists with each other.
 /// Each element has at least one connection with an element of the other list.
-/// 
+///
 /// # Panics
 /// If one or both of the given lists are empty.
 pub fn associate_lists<T>(first_list: &[T], second_list: &[T]) -> Vec<(T, T)>
