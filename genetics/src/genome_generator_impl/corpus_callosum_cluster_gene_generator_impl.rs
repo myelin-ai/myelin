@@ -198,6 +198,79 @@ mod tests {
         );
     }
 
+    #[test]
+    fn input_neurons_are_correctly_connected_with_stem_neurons() {
+        const INPUT_NEURON_COUNT: usize = 5;
+        const OUTPUT_NEURON_COUNT: usize = 2;
+        const STEM_NEURONS: usize = 3;
+        const NEURONS: usize = INPUT_NEURON_COUNT + OUTPUT_NEURON_COUNT + STEM_NEURONS;
+        const INPUT_NEURON_CONNECTIONS: usize = INPUT_NEURON_COUNT * 2;
+        const INPUT_TO_STEM_CONNECTIONS: usize = INPUT_NEURON_COUNT;
+
+        let random = {
+            let mut random = RandomMock::new();
+            random.expect_random_float_in_range_calls_in_order();
+            random
+                .expect_random_float_in_range(any(), any())
+                .times(INPUT_NEURON_CONNECTIONS as u64)
+                .returns(1.0);
+            for index in 0..INPUT_TO_STEM_CONNECTIONS {
+                random
+                    .expect_random_float_in_range(
+                        partial_eq(MIN_CONNECTION_WEIGHT),
+                        partial_eq(MAX_CONNECTION_WEIGHT),
+                    )
+                    .returns(connection_weight(index));
+            }
+            random
+                .expect_random_usize_in_range(
+                    partial_eq(MIN_STEM_NEURONS),
+                    partial_eq(OUTPUT_NEURON_COUNT),
+                )
+                .returns(STEM_NEURONS);
+            box random
+        };
+        let generator = CorpusCallosumClusterGeneGeneratorImpl::new(random);
+        let configuration = configuration(INPUT_NEURON_COUNT, OUTPUT_NEURON_COUNT);
+        let expected_neurons = vec![Neuron {}; NEURONS];
+        let expected_input_to_stem_connections = vec![
+            Connection {
+                from: NeuronClusterLocalIndex(0),
+                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT),
+                weight: connection_weight(0),
+            },
+            Connection {
+                from: NeuronClusterLocalIndex(1),
+                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT),
+                weight: connection_weight(0),
+            },
+            Connection {
+                from: NeuronClusterLocalIndex(2),
+                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + 1),
+                weight: connection_weight(0),
+            },
+            Connection {
+                from: NeuronClusterLocalIndex(3),
+                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + 1),
+                weight: connection_weight(0),
+            },
+            Connection {
+                from: NeuronClusterLocalIndex(4),
+                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + 2),
+                weight: connection_weight(0),
+            },
+        ];
+        let generated_cluster_gene = generator.generate_cluster_gene(&configuration);
+        let max_stem_connections_index =
+            INPUT_NEURON_CONNECTIONS + expected_input_to_stem_connections.len();
+        assert_eq!(expected_neurons, generated_cluster_gene.neurons);
+        assert_eq!(
+            expected_input_to_stem_connections,
+            &generated_cluster_gene.connections
+                [INPUT_NEURON_CONNECTIONS..(max_stem_connections_index)]
+        );
+    }
+
     fn connection_weight(index: usize) -> f64 {
         index as f64
     }
