@@ -4,6 +4,7 @@ use rand::rngs::ThreadRng;
 use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
 use std::cell::RefCell;
+use wonderbox::autoresolvable;
 
 /// Random number generator implementation that uses the `rand` crate
 #[derive(Debug, Clone)]
@@ -11,6 +12,7 @@ pub struct RandomImpl {
     rng: RefCell<ThreadRng>,
 }
 
+#[autoresolvable]
 impl RandomImpl {
     /// Constructs a new [`RandomImpl`] by seeding a new threaded rng source
     pub fn new() -> Self {

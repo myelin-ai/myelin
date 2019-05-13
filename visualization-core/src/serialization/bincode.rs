@@ -5,6 +5,7 @@ use crate::serialization::{ViewModelDeserializer, ViewModelSerializer};
 use crate::view_model_delta::ViewModelDelta;
 use std::error::Error;
 use std::marker::PhantomData;
+use wonderbox::autoresolvable;
 
 /// Provides methods for serialization using using
 /// [`bincode`], a compact binary encoding format.
@@ -22,6 +23,14 @@ use std::marker::PhantomData;
 /// [`bincode`]: https://github.com/TyOverby/bincode
 #[derive(Debug, Default)]
 pub struct BincodeSerializer(PhantomData<()>);
+
+#[autoresolvable]
+impl BincodeSerializer {
+    /// Returns a new [`BincodeSerializer`]
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
 
 impl ViewModelSerializer for BincodeSerializer {
     fn serialize_view_model_delta(
@@ -49,6 +58,14 @@ impl ViewModelSerializer for BincodeSerializer {
 /// [`bincode`]: https://github.com/TyOverby/bincode
 #[derive(Debug, Default)]
 pub struct BincodeDeserializer(PhantomData<()>);
+
+#[autoresolvable]
+impl BincodeDeserializer {
+    /// Returns a new [`BincodeDeserializer`]
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
 
 impl ViewModelDeserializer for BincodeDeserializer {
     fn deserialize_view_model_delta(&self, buf: &[u8]) -> Result<ViewModelDelta, Box<dyn Error>> {

@@ -17,6 +17,7 @@ myelin-random = { path = "../random" }
 myelin-clone-box = { path = "../clone-box" }
 nameof = "1.0"
 itertools = "0.8"
+wonderbox = "0.4"
 
 [dev-dependencies]
 mockiato = "0.5"
