@@ -48,7 +48,7 @@ pub enum MutationVariants {
         /// Specification of the new cluster.
         cluster: ClusterGene,
         /// Specification of the new hox gene that will place the new cluster.
-        new_hox: HoxGene,
+        hox: HoxGene,
     },
     /// Create a copy of an existing cluster and place it through a new hox gene.
     CopyCluster {
