@@ -57,8 +57,7 @@ pub enum MutationVariants {
         /// Specification of the new hox gene that will place the new cluster.
         new_hox: HoxGene,
     },
-    /// Modify a hox gene so that it places an independent copy of the cluster it previously placed,
-    /// allowing the new cluster to mutate independently from the initially used cluster.
+    /// Allow a cluster to mutate independently by turning it into a new cluster.
     DesyncCluster {
         /// Index of the hox gene that will be mutated.
         hox_index: usize,
