@@ -2,7 +2,7 @@
 
 /// The index of a [`Neuron`] in a [`ClusterGene`]
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-pub struct NeuronClusterLocalIndex(pub usize);
+pub struct ClusterNeuronIndex(pub usize);
 
 /// The index of a [`HoxGene`] in a [`Genome`]
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
@@ -11,6 +11,10 @@ pub struct HoxGeneIndex(pub usize);
 /// The index of a [`ClusterGene`] in a [`Genome`]
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct ClusterGeneIndex(pub usize);
+
+/// The index of a [`Connection`] in a [`ClusterGene`]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+pub struct ClusterConnectionIndex(pub usize);
 
 /// A neuron
 #[derive(Debug, Default, Clone, PartialEq)]
@@ -30,9 +34,9 @@ pub type Weight = f64;
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Connection {
     /// The index of the neuron that will be used for the start of the connection
-    pub from: NeuronClusterLocalIndex,
+    pub from: ClusterNeuronIndex,
     /// The index of the neuron that will be used for the end of the connection
-    pub to: NeuronClusterLocalIndex,
+    pub to: ClusterNeuronIndex,
     /// The weight of the connection
     pub weight: Weight,
 }
@@ -51,7 +55,7 @@ pub struct ClusterGene {
     /// A neuron in this cluster gene. When this cluster is placed onto another cluster,
     /// instead of creating a new neuron, the target neuron is used. The target neuron is defined
     /// in the [`HoxPlacement`] of the [`HoxGene`] that defines the placement of this cluster.
-    pub placement_neuron: NeuronClusterLocalIndex,
+    pub placement_neuron: ClusterNeuronIndex,
 
     /// Additional information about the cluster's responsibilities.
     pub specialization: ClusterGeneSpecialization,
@@ -70,10 +74,10 @@ pub enum ClusterGeneSpecialization {
     Initial,
 
     /// The neuron at the specified index receives external input
-    Input(NeuronClusterLocalIndex),
+    Input(ClusterNeuronIndex),
 
     /// The membrane potential of the neuron at the specified index serves as output for external behavior
-    Output(NeuronClusterLocalIndex),
+    Output(ClusterNeuronIndex),
 }
 
 impl Default for ClusterGeneSpecialization {
@@ -90,33 +94,18 @@ pub enum HoxPlacement {
         /// Index of a [`ClusterGene`] in the [`Genome`].
         cluster_gene: ClusterGeneIndex,
         /// Index of a neuron in an already placed cluster. Counterpart of the [`ClusterGene::placement_neuron`].
-        target_neuron: NeuronClusterLocalIndex,
+        target_neuron: ClusterNeuronIndex,
     },
     /// This hox gene's cluster will be placed once for each previously placed cluster of the given [`HoxGene`].
     HoxGene {
         /// Index of a [`HoxGene`] in the [`Genome`].
         hox_gene: HoxGeneIndex,
         /// Index of a neuron in an already placed cluster. Counterpart of the [`ClusterGene::placement_neuron`].
-        target_neuron: NeuronClusterLocalIndex,
+        target_neuron: ClusterNeuronIndex,
     },
     /// The cluster of this [`HoxGene`] will be placed without connecting to another one.
     /// This is usually only used for the first [`HoxGene`].
     Standalone,
-}
-
-/// Possibly matches a [`Connection`]. See [`HoxGene`]
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-pub struct ConnectionFilter {
-    /// Equivalent of [`Connection::from`]
-    pub from: NeuronClusterLocalIndex,
-    /// Equivalent of [`Connection::to`]
-    pub to: NeuronClusterLocalIndex,
-}
-
-impl From<Connection> for ConnectionFilter {
-    fn from(Connection { from, to, .. }: Connection) -> ConnectionFilter {
-        ConnectionFilter { from, to }
-    }
 }
 
 /// A gene defining the placement of neuron clusters.
@@ -127,7 +116,7 @@ pub struct HoxGene {
     /// Index of the cluster that will be instantiated and placed.
     pub cluster_index: ClusterGeneIndex,
     /// These connections, if existent, will not be enabled on the placed cluster.
-    pub disabled_connections: Vec<ConnectionFilter>,
+    pub disabled_connections: Vec<ClusterConnectionIndex>,
 }
 
 /// The set of all genes in an organism

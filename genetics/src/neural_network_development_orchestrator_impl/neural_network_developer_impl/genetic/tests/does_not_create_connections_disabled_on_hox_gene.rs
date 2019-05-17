@@ -1,5 +1,5 @@
 use super::*;
-use crate::genome::ConnectionFilter;
+use crate::genome::ClusterConnectionIndex;
 
 #[test]
 fn does_not_create_connections_disabled_on_hox_gene() {
@@ -55,10 +55,7 @@ impl GenomeStubBuilder {
         self.genome.hox_genes.push(HoxGene {
             placement_target: HoxPlacement::Standalone,
             cluster_index: ClusterGeneIndex(0),
-            disabled_connections: vec![ConnectionFilter {
-                from: NeuronClusterLocalIndex(0),
-                to: NeuronClusterLocalIndex(1),
-            }],
+            disabled_connections: vec![ClusterConnectionIndex(0)],
         });
         self
     }
@@ -67,16 +64,7 @@ impl GenomeStubBuilder {
         self.genome.hox_genes.push(HoxGene {
             placement_target: HoxPlacement::Standalone,
             cluster_index: ClusterGeneIndex(0),
-            disabled_connections: vec![
-                ConnectionFilter {
-                    from: NeuronClusterLocalIndex(100),
-                    to: NeuronClusterLocalIndex(50),
-                },
-                ConnectionFilter {
-                    from: NeuronClusterLocalIndex(0),
-                    to: NeuronClusterLocalIndex(1),
-                },
-            ],
+            disabled_connections: vec![ClusterConnectionIndex(10), ClusterConnectionIndex(0)],
         });
         self
     }

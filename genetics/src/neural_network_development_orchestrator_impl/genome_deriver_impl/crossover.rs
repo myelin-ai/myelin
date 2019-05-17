@@ -90,7 +90,7 @@ mod tests {
         ClusterGene {
             neurons: Vec::new(),
             connections: Vec::new(),
-            placement_neuron: NeuronClusterLocalIndex(placement_neuron),
+            placement_neuron: ClusterNeuronIndex(placement_neuron),
             specialization: ClusterGeneSpecialization::default(),
         }
     }

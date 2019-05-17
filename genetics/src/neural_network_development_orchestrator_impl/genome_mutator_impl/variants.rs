@@ -1,6 +1,4 @@
-use crate::genome::{
-    ClusterGene, ClusterGeneIndex, Connection, HoxGene, NeuronClusterLocalIndex, Weight,
-};
+use crate::genome::*;
 
 /// All possible mutations.
 #[derive(Debug, Clone, PartialEq)]
@@ -11,7 +9,7 @@ pub enum MutationVariants {
         /// Index of the cluster that will be mutated.
         cluster: ClusterGeneIndex,
         /// Index of the connection on the mutated cluster.
-        connection_index: usize,
+        connection_index: ClusterConnectionIndex,
     },
     /// Add a new connection between a pair of neurons on an existing cluster.
     AddConnection {
@@ -23,16 +21,16 @@ pub enum MutationVariants {
     /// Mark an existing connection as disabled.
     DisableConnection {
         /// Index of the hox gene that will be mutated.
-        hox_index: usize,
-        /// The newly created filter.
-        connection_index: usize,
+        hox_index: HoxGeneIndex,
+        /// The disabled connection.
+        connection_index: ClusterConnectionIndex,
     },
     /// Nudge the weight of an existing connection by a small delta value.
     NudgeWeight {
         /// Index of the cluster that will be mutated.
         cluster: ClusterGeneIndex,
         /// Index of the connection that will be mutated.
-        connection_index: usize,
+        connection_index: ClusterConnectionIndex,
         /// The small shift in weight that will be added to the specified connection.
         weight_delta: Weight,
     },
@@ -41,7 +39,7 @@ pub enum MutationVariants {
         /// Index of the cluster that will be mutated.
         cluster: ClusterGeneIndex,
         /// Index of the neuron that will be the new placement neuron.
-        new_placement_neuron: NeuronClusterLocalIndex,
+        new_placement_neuron: ClusterNeuronIndex,
     },
     /// Add a new cluster and place it through a new hox gene.
     AddNewCluster {
@@ -60,7 +58,7 @@ pub enum MutationVariants {
     /// Allow a cluster to mutate independently by turning it into a new cluster.
     DesyncCluster {
         /// Index of the hox gene that will be mutated.
-        hox_index: usize,
+        hox_index: HoxGeneIndex,
         /// Index of the cluster that will be copied.
         cluster: ClusterGeneIndex,
     },
@@ -71,7 +69,7 @@ pub enum MutationVariants {
         /// Index of the destination cluster.
         target_cluster: ClusterGeneIndex,
         /// The shared neuron's index in the target cluster.
-        target_neuron: NeuronClusterLocalIndex,
+        target_neuron: ClusterNeuronIndex,
         /// Specification of the new cluster.
         bridge_cluster: ClusterGene,
     },
@@ -83,13 +81,13 @@ pub enum MutationVariants {
     /// Change the target neuron of a hox gene
     ChangeTargetNeuron {
         /// Index of the hox gene that will be mutated.
-        hox_index: usize,
+        hox_index: HoxGeneIndex,
         /// Index of the neuron that will be the new target neuron.
-        new_target_neuron: NeuronClusterLocalIndex,
+        new_target_neuron: ClusterNeuronIndex,
     },
     /// Add a new hox gene to the end of the genome with the same configuration as an already existing one.
     DuplicateHox {
         /// Index of the hox gene that will be duplicated.
-        hox_index: usize,
+        hox_index: HoxGeneIndex,
     },
 }
