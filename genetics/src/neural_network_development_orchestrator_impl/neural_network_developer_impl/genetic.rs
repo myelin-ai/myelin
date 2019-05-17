@@ -125,7 +125,7 @@ fn resolve_hox_placement<'a>(
 
 enum ResolvedPlacement<'a> {
     Standalone,
-    OnPlacedClusters(Option<&'a Vec<PlacedCluster>>, NeuronClusterLocalIndex),
+    OnPlacedClusters(Option<&'a Vec<PlacedCluster>>, ClusterNeuronIndex),
 }
 
 type PlacedCluster = Vec<Handle>;
@@ -138,7 +138,7 @@ fn push_standalone_cluster_neurons(
         .neurons
         .iter()
         .enumerate()
-        .map(|(neuron_index, _)| NeuronClusterLocalIndex(neuron_index))
+        .map(|(neuron_index, _)| ClusterNeuronIndex(neuron_index))
         .map(|neuron_index| push_neuron(configurator, neuron_index, &cluster_gene.specialization))
         .collect()
 }
@@ -146,7 +146,7 @@ fn push_standalone_cluster_neurons(
 fn push_targeted_cluster_neurons(
     cluster_gene: &ClusterGene,
     placed_cluster: &[Handle],
-    target_neuron_index: NeuronClusterLocalIndex,
+    target_neuron_index: ClusterNeuronIndex,
     configurator: &mut dyn NeuralNetworkConfigurator,
 ) -> Vec<Handle> {
     let target_neuron_handle = placed_cluster
@@ -156,7 +156,7 @@ fn push_targeted_cluster_neurons(
         .neurons
         .iter()
         .enumerate()
-        .map(|(neuron_index, _)| NeuronClusterLocalIndex(neuron_index))
+        .map(|(neuron_index, _)| ClusterNeuronIndex(neuron_index))
         // This preserves the order of neurons
         .map(|neuron_index| {
             if neuron_index == cluster_gene.placement_neuron {
@@ -170,7 +170,7 @@ fn push_targeted_cluster_neurons(
 
 fn push_neuron(
     configurator: &mut dyn NeuralNetworkConfigurator,
-    neuron_index: NeuronClusterLocalIndex,
+    neuron_index: ClusterNeuronIndex,
     cluster_specialization: &ClusterGeneSpecialization,
 ) -> Handle {
     match cluster_specialization {

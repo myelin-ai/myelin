@@ -1,7 +1,7 @@
 use super::*;
 use crate::genome::{
-    ClusterGene, ClusterGeneIndex, ClusterGeneSpecialization, Connection as ConnectionDefinition,
-    HoxGene, HoxGeneIndex, HoxPlacement, Neuron, NeuronClusterLocalIndex,
+    ClusterGene, ClusterGeneIndex, ClusterGeneSpecialization, ClusterNeuronIndex,
+    Connection as ConnectionDefinition, HoxGene, HoxGeneIndex, HoxPlacement, Neuron,
 };
 use crate::neural_network_development_orchestrator_impl::NeuralNetworkConfiguratorMock;
 use mockiato::partial_eq;
@@ -44,7 +44,7 @@ impl GenomeStubBuilder {
         self.genome.cluster_genes.push(ClusterGene {
             neurons: vec![Neuron::new(); 4],
             connections: first_cluster_connections(),
-            placement_neuron: NeuronClusterLocalIndex(1),
+            placement_neuron: ClusterNeuronIndex(1),
             specialization,
         });
         self
@@ -61,7 +61,7 @@ impl GenomeStubBuilder {
         self.genome.cluster_genes.push(ClusterGene {
             neurons: vec![Neuron::new(); 3],
             connections: second_cluster_connections(),
-            placement_neuron: NeuronClusterLocalIndex(0),
+            placement_neuron: ClusterNeuronIndex(0),
             specialization,
         });
         self
@@ -74,7 +74,7 @@ impl GenomeStubBuilder {
         self.genome.cluster_genes.push(ClusterGene {
             neurons: vec![Neuron::new(); 4],
             connections: third_cluster_connections(),
-            placement_neuron: NeuronClusterLocalIndex(3),
+            placement_neuron: ClusterNeuronIndex(3),
             specialization,
         });
         self
@@ -92,7 +92,7 @@ impl GenomeStubBuilder {
     fn add_hox_gene_placing_second_cluster_on_first_cluster(&mut self) -> &mut Self {
         self.add_hox_gene_placing_cluster_on_cluster(ClusterOnClusterTestParameters {
             cluster_gene: ClusterGeneIndex(0),
-            target_neuron: NeuronClusterLocalIndex(2),
+            target_neuron: ClusterNeuronIndex(2),
             cluster_index: ClusterGeneIndex(1),
         });
         self
@@ -142,7 +142,7 @@ fn connection_definition_to_placed_connection(
         placement_neuron,
     } = connection_translation_parameters;
 
-    let translate_index_to_handle = move |index: NeuronClusterLocalIndex| {
+    let translate_index_to_handle = move |index: ClusterNeuronIndex| {
         let index = index.0;
         Handle(match placement_neuron {
             Some(PlacementNeuronTranslation {
@@ -232,36 +232,36 @@ fn config_stub() -> NeuralNetworkDevelopmentConfiguration {
 
 struct ClusterOnClusterTestParameters {
     cluster_gene: ClusterGeneIndex,
-    target_neuron: NeuronClusterLocalIndex,
+    target_neuron: ClusterNeuronIndex,
     cluster_index: ClusterGeneIndex,
 }
 
 struct ClusterOnHoxTestParameters {
     hox_gene: HoxGeneIndex,
-    target_neuron: NeuronClusterLocalIndex,
+    target_neuron: ClusterNeuronIndex,
     cluster_index: ClusterGeneIndex,
 }
 
 fn first_cluster_connections() -> Vec<ConnectionDefinition> {
     vec![
         ConnectionDefinition {
-            from: NeuronClusterLocalIndex(0),
-            to: NeuronClusterLocalIndex(1),
+            from: ClusterNeuronIndex(0),
+            to: ClusterNeuronIndex(1),
             weight: 0.5,
         },
         ConnectionDefinition {
-            from: NeuronClusterLocalIndex(0),
-            to: NeuronClusterLocalIndex(2),
+            from: ClusterNeuronIndex(0),
+            to: ClusterNeuronIndex(2),
             weight: 0.7,
         },
         ConnectionDefinition {
-            from: NeuronClusterLocalIndex(0),
-            to: NeuronClusterLocalIndex(3),
+            from: ClusterNeuronIndex(0),
+            to: ClusterNeuronIndex(3),
             weight: 0.2,
         },
         ConnectionDefinition {
-            from: NeuronClusterLocalIndex(3),
-            to: NeuronClusterLocalIndex(1),
+            from: ClusterNeuronIndex(3),
+            to: ClusterNeuronIndex(1),
             weight: 0.3,
         },
     ]
@@ -343,23 +343,23 @@ struct PlacementNeuronTranslation {
 fn second_cluster_connections() -> Vec<ConnectionDefinition> {
     vec![
         ConnectionDefinition {
-            from: NeuronClusterLocalIndex(0),
-            to: NeuronClusterLocalIndex(2),
+            from: ClusterNeuronIndex(0),
+            to: ClusterNeuronIndex(2),
             weight: 0.4,
         },
         ConnectionDefinition {
-            from: NeuronClusterLocalIndex(1),
-            to: NeuronClusterLocalIndex(2),
+            from: ClusterNeuronIndex(1),
+            to: ClusterNeuronIndex(2),
             weight: 0.6,
         },
         ConnectionDefinition {
-            from: NeuronClusterLocalIndex(2),
-            to: NeuronClusterLocalIndex(0),
+            from: ClusterNeuronIndex(2),
+            to: ClusterNeuronIndex(0),
             weight: 0.45,
         },
         ConnectionDefinition {
-            from: NeuronClusterLocalIndex(2),
-            to: NeuronClusterLocalIndex(1),
+            from: ClusterNeuronIndex(2),
+            to: ClusterNeuronIndex(1),
             weight: 0.82,
         },
     ]
@@ -368,28 +368,28 @@ fn second_cluster_connections() -> Vec<ConnectionDefinition> {
 fn third_cluster_connections() -> Vec<ConnectionDefinition> {
     vec![
         ConnectionDefinition {
-            from: NeuronClusterLocalIndex(0),
-            to: NeuronClusterLocalIndex(2),
+            from: ClusterNeuronIndex(0),
+            to: ClusterNeuronIndex(2),
             weight: 1.0,
         },
         ConnectionDefinition {
-            from: NeuronClusterLocalIndex(3),
-            to: NeuronClusterLocalIndex(2),
+            from: ClusterNeuronIndex(3),
+            to: ClusterNeuronIndex(2),
             weight: 0.2,
         },
         ConnectionDefinition {
-            from: NeuronClusterLocalIndex(0),
-            to: NeuronClusterLocalIndex(3),
+            from: ClusterNeuronIndex(0),
+            to: ClusterNeuronIndex(3),
             weight: 0.99,
         },
         ConnectionDefinition {
-            from: NeuronClusterLocalIndex(3),
-            to: NeuronClusterLocalIndex(1),
+            from: ClusterNeuronIndex(3),
+            to: ClusterNeuronIndex(1),
             weight: 0.1,
         },
         ConnectionDefinition {
-            from: NeuronClusterLocalIndex(1),
-            to: NeuronClusterLocalIndex(0),
+            from: ClusterNeuronIndex(1),
+            to: ClusterNeuronIndex(0),
             weight: 0.5,
         },
     ]
