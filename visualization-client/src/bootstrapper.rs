@@ -5,9 +5,6 @@ use crate::controller::ControllerImpl;
 use crate::input_handler::InputHandler;
 use crate::presenter::{CanvasPresenter, DeltaApplierImpl, GlobalPolygonTranslatorImpl};
 use crate::view::CanvasView;
-use myelin_object_data::{
-    AdditionalObjectDescriptionBincodeDeserializer, AdditionalObjectDescriptionBincodeSerializer,
-};
 use myelin_visualization_core::serialization::BincodeDeserializer;
 use std::panic::{set_hook, PanicInfo};
 use wasm_bindgen::prelude::*;
@@ -34,7 +31,5 @@ pub fn init(canvas: &HtmlCanvasElement) -> InputHandler {
             box GlobalPolygonTranslatorImpl::new(),
         ),
         box BincodeDeserializer::default(),
-        box AdditionalObjectDescriptionBincodeSerializer::default(),
-        box AdditionalObjectDescriptionBincodeDeserializer::default(),
     ))
 }

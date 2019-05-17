@@ -58,8 +58,9 @@ mod tests {
     use maplit::hashmap;
     use myelin_engine::geometry::*;
     use myelin_engine::object::*;
+    use myelin_object_data::{AdditionalObjectDescription, Kind};
 
-    const EXPECTED_JSON: &str = r#"{"12":{"Updated":{"shape":{"vertices":[{"x":-5.0,"y":-5.0},{"x":1.0,"y":1.0},{"x":2.0,"y":3.0},{"x":5.0,"y":6.0}]},"location":{"x":3.0,"y":4.0},"rotation":{"value":1.0},"mobility":{"Movable":{"x":2.0,"y":3.0}},"associated_data":[67,97,116]}}}"#;
+    const EXPECTED_JSON: &str = r#"{"12":{"Updated":{"shape":{"vertices":[{"x":-5.0,"y":-5.0},{"x":1.0,"y":1.0},{"x":2.0,"y":3.0},{"x":5.0,"y":6.0}]},"location":{"x":3.0,"y":4.0},"rotation":{"value":1.0},"mobility":{"Movable":{"x":2.0,"y":3.0}},"associated_data":{"name":"Cat","kind":"Organism","height":1.5}}}}"#;
 
     #[test]
     fn serializes_full_delta() {
@@ -78,7 +79,7 @@ mod tests {
             mobility: Some(Mobility::Movable(Vector { x: 2.0, y: 3.0 })),
             location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
-            associated_data: Some(String::from("Cat").into_bytes()),
+            associated_data: Some(associated_data()),
         };
 
         let view_model_delta = hashmap! { 12 => ObjectDelta::Updated(object_description_delta) };
@@ -131,7 +132,7 @@ mod tests {
             mobility: Some(Mobility::Movable(Vector { x: 2.0, y: 3.0 })),
             location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
-            associated_data: Some(String::from("Cat").into_bytes()),
+            associated_data: Some(associated_data()),
         };
 
         let expected = hashmap! { 12 => ObjectDelta::Updated(object_description_delta) };
@@ -165,5 +166,13 @@ mod tests {
         let deserialized = deserializer.deserialize_view_model_delta(&source).unwrap();
 
         assert_eq!(expected, deserialized);
+    }
+
+    fn associated_data() -> AdditionalObjectDescription {
+        AdditionalObjectDescription {
+            name: Some(String::from("Cat")),
+            height: 1.5,
+            kind: Kind::Organism,
+        }
     }
 }

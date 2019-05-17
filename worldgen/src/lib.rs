@@ -20,6 +20,7 @@
 pub use self::generator::*;
 pub use self::name_provider::*;
 use myelin_engine::prelude::*;
+use myelin_object_data::AdditionalObjectDescription;
 
 mod generator;
 mod name_provider;
@@ -32,5 +33,5 @@ pub trait WorldGenerator<'a> {
     ///
     /// [`World`]: ../myelin_engine/world/trait.World.html
     /// [`Objects`]: ../myelin_engine/object/struct.Body.html
-    fn generate(&mut self) -> Box<dyn Simulation + 'a>;
+    fn generate(&mut self) -> Box<dyn Simulation<AdditionalObjectDescription> + 'a>;
 }

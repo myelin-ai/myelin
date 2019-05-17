@@ -14,10 +14,10 @@ edition = "2018"
 crate-type = ["cdylib"]
 
 [dependencies]
-wasm-bindgen = "=0.2.40"
+wasm-bindgen = "=0.2.43"
 js-sys = "0.3.0"
 myelin-visualization-core = { path = "../visualization-core" }
-myelin-engine = "0.12"
+myelin-engine = "0.13"
 myelin-object-data = { path = "../object-data" }
 
 [dependencies.web-sys]
@@ -38,5 +38,4 @@ features = [
 [dev-dependencies]
 maplit = "1.0"
 nameof = "1.0"
-mockiato = "0.4"
-myelin-object-data = { path = "../object-data", features = ["use-mocks"] }
+mockiato = "0.5"

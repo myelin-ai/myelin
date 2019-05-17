@@ -128,6 +128,7 @@ mod tests {
     use mockiato::partial_eq;
     use mockiato::partial_eq_owned;
     use myelin_engine::prelude::*;
+    use myelin_object_data::{AdditionalObjectDescription, Kind};
     use myelin_visualization_core::view_model_delta::{
         ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
     };
@@ -331,6 +332,11 @@ mod tests {
                         .build()
                         .unwrap(),
                 )
+                .associated_data(AdditionalObjectDescription {
+                    name: None,
+                    kind: Kind::Plant,
+                    height: 1.0,
+                })
                 .location(50.0, 50.0)
                 .rotation(Radians::try_new(1.0).unwrap())
                 .mobility(Mobility::Movable(Vector { x: 3.0, y: -4.0 }))

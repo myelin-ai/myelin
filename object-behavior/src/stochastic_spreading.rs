@@ -1,6 +1,7 @@
 //! Types relating to a behavior that reproduces at random intervals
 
 use myelin_engine::prelude::*;
+use myelin_object_data::{AdditionalObjectDescription, Object, ObjectDescription};
 use myelin_random::Random;
 
 /// An [`ObjectBehavior`] that spreads itself in random intervals.
@@ -45,7 +46,10 @@ impl StochasticSpreading {
             .flip_coin_with_probability(self.spreading_probability)
     }
 
-    fn spread(&mut self, world_interactor: &dyn WorldInteractor) -> Option<Action> {
+    fn spread(
+        &mut self,
+        world_interactor: &dyn WorldInteractor<AdditionalObjectDescription>,
+    ) -> Option<Action<AdditionalObjectDescription>> {
         let own_object = world_interactor.own_object();
         let possible_spreading_locations =
             calculate_possible_spreading_locations(&own_object.description.shape);
@@ -119,7 +123,7 @@ fn calculate_possible_spreading_locations(polygon: &Polygon) -> [Point; 8] {
 fn can_spread_at_location(
     own_object: &Object<'_>,
     location: Point,
-    world_interactor: &dyn WorldInteractor,
+    world_interactor: &dyn WorldInteractor<AdditionalObjectDescription>,
 ) -> bool {
     let target_area = spreading_location_aabb(&own_object.description, location);
 
@@ -181,10 +185,13 @@ fn spreading_location_aabb(own_description: &ObjectDescription, spreading_locati
         .aabb()
 }
 
-impl ObjectBehavior for StochasticSpreading {
-    fn step(&mut self, world_interactor: &dyn WorldInteractor) -> Option<Action> {
+impl ObjectBehavior<AdditionalObjectDescription> for StochasticSpreading {
+    fn step(
+        &mut self,
+        world_interactor: Box<dyn WorldInteractor<AdditionalObjectDescription> + '_>,
+    ) -> Option<Action<AdditionalObjectDescription>> {
         if self.should_spread() {
-            self.spread(world_interactor)
+            self.spread(&*world_interactor)
         } else {
             None
         }
@@ -213,6 +220,7 @@ impl ObjectBehavior for StochasticSpreading {
 mod tests {
     use super::*;
     use mockiato::partial_eq;
+    use myelin_object_data::Kind;
     use myelin_random::RandomMock;
 
     const SPREADING_CHANGE: f64 = 1.0 / (60.0 * 30.0);
@@ -225,7 +233,7 @@ mod tests {
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
             .returns(false);
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
-        let action = object.step(&WorldInteractorMock::new());
+        let action = object.step(box WorldInteractorMock::new());
         assert!(action.is_none());
     }
 
@@ -257,7 +265,7 @@ mod tests {
             behavior: &object_behavior,
         });
 
-        let action = object.step(&world_interactor);
+        let action = object.step(box world_interactor);
         match action {
             Some(Action::Spawn(object_description, _)) => {
                 let expected_object_description = object_description_at_location(
@@ -364,7 +372,7 @@ mod tests {
             behavior: &object_behavior,
         });
 
-        let action = object.step(&world_interactor);
+        let action = object.step(box world_interactor);
         assert!(action.is_none());
     }
 
@@ -427,7 +435,7 @@ mod tests {
             behavior: &object_behavior,
         });
 
-        let action = object.step(&world_interactor);
+        let action = object.step(box world_interactor);
         match action {
             Some(Action::Spawn(object_description, _)) => {
                 let expected_object_description =
@@ -506,7 +514,7 @@ mod tests {
             behavior: &object_behavior,
         });
 
-        let action = object.step(&world_interactor);
+        let action = object.step(box world_interactor);
         match action {
             Some(Action::Spawn(object_description, _)) => {
                 let expected_object_description =
@@ -567,7 +575,7 @@ mod tests {
             behavior: &object_behavior,
         });
 
-        let action = object.step(&world_interactor);
+        let action = object.step(box world_interactor);
         match action {
             Some(Action::Spawn(object_description, _)) => {
                 let expected_object_description =
@@ -611,7 +619,7 @@ mod tests {
             behavior: &object_behavior,
         });
 
-        let first_action = first_object.step(&first_world_interactor);
+        let first_action = first_object.step(box first_world_interactor);
         match first_action {
             Some(Action::Spawn(object_description, _)) => {
                 let expected_object_description =
@@ -678,7 +686,7 @@ mod tests {
             behavior: &object_behavior,
         });
 
-        let second_action = second_object.step(&second_world_interactor);
+        let second_action = second_object.step(box second_world_interactor);
         match second_action {
             Some(Action::Spawn(object_description, _)) => {
                 // Expected order of operations for the second behavior:
@@ -695,7 +703,7 @@ mod tests {
 
     #[test]
     fn can_be_downcast_from_trait() {
-        let object_behavior: Box<dyn ObjectBehavior> =
+        let object_behavior: Box<dyn ObjectBehavior<AdditionalObjectDescription>> =
             box StochasticSpreading::new(SPREADING_CHANGE, box RandomMock::new());
         let object_behavior_as_any = object_behavior.as_any();
         let _downcast_behavior: &StochasticSpreading =
@@ -715,11 +723,16 @@ mod tests {
             )
             .location(x, y)
             .mobility(Mobility::Immovable)
+            .associated_data(AdditionalObjectDescription {
+                name: None,
+                kind: Kind::Plant,
+                height: 0.0,
+            })
             .build()
             .unwrap()
     }
 
-    fn mock_behavior() -> Box<dyn ObjectBehavior> {
+    fn mock_behavior() -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
         box ObjectBehaviorMock::new()
     }
 }

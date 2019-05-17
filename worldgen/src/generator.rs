@@ -1,7 +1,7 @@
 //! Implementations of various world generation algorithms
 
 mod hardcoded_generator;
-pub use self::hardcoded_generator::HardcodedGenerator;
+pub use self::hardcoded_generator::*;
 use myelin_object_data::Kind;
 
 #[cfg(test)]

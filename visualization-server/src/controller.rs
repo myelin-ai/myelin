@@ -1,4 +1,5 @@
 use myelin_engine::prelude::*;
+use myelin_object_data::{AdditionalObjectDescription, ObjectDescription};
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
 use nameof::name_of;
 use std::boxed::FnBox;
@@ -40,7 +41,7 @@ pub(crate) trait ConnectionAcceptor: Debug {
 }
 
 pub(crate) struct ControllerImpl<'a> {
-    simulation: Box<dyn Simulation + 'a>,
+    simulation: Box<dyn Simulation<AdditionalObjectDescription> + 'a>,
     connection_acceptor_factory_fn: Arc<ConnectionAcceptorFactoryFn>,
     current_snapshot: Arc<RwLock<Snapshot>>,
     thread_spawn_fn: Box<ThreadSpawnFn<'a>>,
@@ -66,7 +67,7 @@ impl<'a> Controller for ControllerImpl<'a> {
 
 impl<'a> ControllerImpl<'a> {
     pub(crate) fn new(
-        simulation: Box<dyn Simulation + 'a>,
+        simulation: Box<dyn Simulation<AdditionalObjectDescription> + 'a>,
         connection_acceptor_factory_fn: Arc<ConnectionAcceptorFactoryFn>,
         thread_spawn_fn: Box<ThreadSpawnFn<'a>>,
         expected_delta: Duration,
@@ -107,6 +108,7 @@ impl<'a> ControllerImpl<'a> {
 mod tests {
     use super::*;
     use maplit::hashmap;
+    use myelin_object_data::Kind;
     use std::collections::HashMap;
     use std::sync::Mutex;
 
@@ -252,11 +254,16 @@ mod tests {
                     .build()
                     .unwrap(),
             )
+            .associated_data(AdditionalObjectDescription {
+                name: None,
+                kind: Kind::Water,
+                height: 1.0,
+            })
             .build()
             .unwrap()
     }
 
-    fn mock_behavior<'a>() -> Box<dyn ObjectBehavior + 'a> {
+    fn mock_behavior<'a>() -> Box<dyn ObjectBehavior<AdditionalObjectDescription> + 'a> {
         box ObjectBehaviorMock::new()
     }
 }

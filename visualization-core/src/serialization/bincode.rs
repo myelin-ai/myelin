@@ -5,6 +5,7 @@ use crate::serialization::{ViewModelDeserializer, ViewModelSerializer};
 use crate::view_model_delta::ViewModelDelta;
 use std::error::Error;
 use std::marker::PhantomData;
+use wonderbox::autoresolvable;
 
 /// Provides methods for serialization using using
 /// [`bincode`], a compact binary encoding format.
@@ -22,6 +23,14 @@ use std::marker::PhantomData;
 /// [`bincode`]: https://github.com/TyOverby/bincode
 #[derive(Debug, Default)]
 pub struct BincodeSerializer(PhantomData<()>);
+
+#[autoresolvable]
+impl BincodeSerializer {
+    /// Returns a new [`BincodeSerializer`]
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
 
 impl ViewModelSerializer for BincodeSerializer {
     fn serialize_view_model_delta(
@@ -50,6 +59,14 @@ impl ViewModelSerializer for BincodeSerializer {
 #[derive(Debug, Default)]
 pub struct BincodeDeserializer(PhantomData<()>);
 
+#[autoresolvable]
+impl BincodeDeserializer {
+    /// Returns a new [`BincodeDeserializer`]
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
 impl ViewModelDeserializer for BincodeDeserializer {
     fn deserialize_view_model_delta(&self, buf: &[u8]) -> Result<ViewModelDelta, Box<dyn Error>> {
         Ok(bincode::deserialize(buf)?)
@@ -63,11 +80,10 @@ mod tests {
     use maplit::hashmap;
     use myelin_engine::geometry::*;
     use myelin_engine::object::*;
+    use myelin_object_data::{AdditionalObjectDescription, Kind};
 
     #[test]
     fn serializes_full_delta() {
-        let associated_data = String::from("Cat").into_bytes();
-
         let object_description_delta = ObjectDescriptionDelta {
             shape: Some(
                 PolygonBuilder::default()
@@ -81,7 +97,7 @@ mod tests {
             mobility: Some(Mobility::Movable(Vector { x: 2.0, y: 3.0 })),
             location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
-            associated_data: Some(associated_data),
+            associated_data: Some(associated_data()),
         };
 
         let view_model_delta = hashmap! { 12 => ObjectDelta::Updated(object_description_delta) };
@@ -125,7 +141,7 @@ mod tests {
             mobility: Some(Mobility::Movable(Vector { x: 2.0, y: 3.0 })),
             location: Some(Point { x: 3.0, y: 4.0 }),
             rotation: Some(Radians::try_new(1.0).unwrap()),
-            associated_data: Some(String::from("Cat").into_bytes()),
+            associated_data: Some(associated_data()),
         };
 
         let expected = hashmap! { 12 => ObjectDelta::Updated(object_description_delta) };
@@ -154,5 +170,13 @@ mod tests {
             .unwrap();
 
         assert_eq!(expected, deserialized);
+    }
+
+    fn associated_data() -> AdditionalObjectDescription {
+        AdditionalObjectDescription {
+            name: Some(String::from("Cat")),
+            height: 1.5,
+            kind: Kind::Organism,
+        }
     }
 }
