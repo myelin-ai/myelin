@@ -66,7 +66,7 @@ pub enum MutationVariants {
         /// Index of the cluster that will be copied.
         cluster: ClusterGeneIndex,
     },
-    /// Add a new cluster in-between two clusters that share a neuron.
+    /// Add a new cluster in between two clusters that share a neuron.
     Bridge {
         /// Index of the origin cluster.
         source_cluster: ClusterGeneIndex,
