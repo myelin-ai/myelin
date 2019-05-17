@@ -118,7 +118,7 @@ const PLACEMENT_NEURON: NeuronClusterLocalIndex = NeuronClusterLocalIndex('✌' 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockiato::{partial_eq};
+    use mockiato::partial_eq;
     use myelin_random::RandomMock;
     use std::num::NonZeroUsize;
 
@@ -129,102 +129,31 @@ mod tests {
         const OUTPUT_NEURON_COUNT: usize = 2;
 
         let expected_input_connections = vec![
-            Connection {
-                from: NeuronClusterLocalIndex(0),
-                to: NeuronClusterLocalIndex(1),
-                weight: connection_weight(0),
-            },
-            Connection {
-                from: NeuronClusterLocalIndex(1),
-                to: NeuronClusterLocalIndex(0),
-                weight: connection_weight(1),
-            },
-            Connection {
-                from: NeuronClusterLocalIndex(1),
-                to: NeuronClusterLocalIndex(2),
-                weight: connection_weight(2),
-            },
-            Connection {
-                from: NeuronClusterLocalIndex(2),
-                to: NeuronClusterLocalIndex(1),
-                weight: connection_weight(3),
-            },
-            Connection {
-                from: NeuronClusterLocalIndex(2),
-                to: NeuronClusterLocalIndex(3),
-                weight: connection_weight(4),
-            },
-            Connection {
-                from: NeuronClusterLocalIndex(3),
-                to: NeuronClusterLocalIndex(2),
-                weight: connection_weight(5),
-            },
-            Connection {
-                from: NeuronClusterLocalIndex(3),
-                to: NeuronClusterLocalIndex(4),
-                weight: connection_weight(6),
-            },
-            Connection {
-                from: NeuronClusterLocalIndex(4),
-                to: NeuronClusterLocalIndex(3),
-                weight: connection_weight(7),
-            },
-            Connection {
-                from: NeuronClusterLocalIndex(4),
-                to: NeuronClusterLocalIndex(0),
-                weight: connection_weight(8),
-            },
-            Connection {
-                from: NeuronClusterLocalIndex(0),
-                to: NeuronClusterLocalIndex(4),
-                weight: connection_weight(9),
-            },
+            (0, 1),
+            (1, 0),
+            (1, 2),
+            (2, 1),
+            (2, 3),
+            (3, 2),
+            (3, 4),
+            (4, 3),
+            (4, 0),
+            (0, 4),
         ];
 
         let expected_input_to_stem_connections = vec![
-            Connection {
-                from: NeuronClusterLocalIndex(0),
-                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT),
-                weight: connection_weight(10),
-            },
-            Connection {
-                from: NeuronClusterLocalIndex(1),
-                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + 1),
-                weight: connection_weight(11),
-            },
-            Connection {
-                from: NeuronClusterLocalIndex(2),
-                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + 1),
-                weight: connection_weight(12),
-            },
-            Connection {
-                from: NeuronClusterLocalIndex(3),
-                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + 2),
-                weight: connection_weight(13),
-            },
-            Connection {
-                from: NeuronClusterLocalIndex(4),
-                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + 2),
-                weight: connection_weight(14),
-            },
+            (0, INPUT_NEURON_COUNT),
+            (1, INPUT_NEURON_COUNT + 1),
+            (2, INPUT_NEURON_COUNT + 1),
+            (3, INPUT_NEURON_COUNT + 2),
+            (4, INPUT_NEURON_COUNT + 2),
         ];
 
+        const FIRST_OUTPUT_NEURON_INDEX: usize = INPUT_NEURON_COUNT + STEM_NEURON_COUNT;
         let expected_stem_to_output_connections = vec![
-            Connection {
-                from: NeuronClusterLocalIndex(INPUT_NEURON_COUNT),
-                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + STEM_NEURON_COUNT),
-                weight: connection_weight(15),
-            },
-            Connection {
-                from: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + 1),
-                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + STEM_NEURON_COUNT + 1),
-                weight: connection_weight(16),
-            },
-            Connection {
-                from: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + 2),
-                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + STEM_NEURON_COUNT + 1),
-                weight: connection_weight(17),
-            },
+            (INPUT_NEURON_COUNT, FIRST_OUTPUT_NEURON_INDEX),
+            (INPUT_NEURON_COUNT + 1, FIRST_OUTPUT_NEURON_INDEX + 1),
+            (INPUT_NEURON_COUNT + 2, FIRST_OUTPUT_NEURON_INDEX + 1),
         ];
 
         test_connections_and_neurons_are_generated_correctly(ConnectionsTestConfiguration {
@@ -235,6 +164,12 @@ mod tests {
                 .into_iter()
                 .chain(expected_input_to_stem_connections)
                 .chain(expected_stem_to_output_connections)
+                .enumerate()
+                .map(|(index, (from, to))| Connection {
+                    from: NeuronClusterLocalIndex(from),
+                    to: NeuronClusterLocalIndex(to),
+                    weight: connection_weight(index),
+                })
                 .collect(),
         })
     }
