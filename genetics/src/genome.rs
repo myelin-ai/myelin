@@ -8,9 +8,13 @@ pub struct NeuronClusterLocalIndex(pub usize);
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct HoxGeneIndex(pub usize);
 
-/// The index of a [`ClusterGene`] in a [`Genome`]
+/// The index of a [`ClusterGene`] in a [`ClusterGene`]
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct ClusterGeneIndex(pub usize);
+
+/// The index of a [`Connection`] in a [`ClusterGene`]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+pub struct ClusterConnectionIndex(pub usize);
 
 /// A neuron
 #[derive(Debug, Default, Clone, PartialEq)]
@@ -104,21 +108,6 @@ pub enum HoxPlacement {
     Standalone,
 }
 
-/// Possibly matches a [`Connection`]. See [`HoxGene`]
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-pub struct ConnectionFilter {
-    /// Equivalent of [`Connection::from`]
-    pub from: NeuronClusterLocalIndex,
-    /// Equivalent of [`Connection::to`]
-    pub to: NeuronClusterLocalIndex,
-}
-
-impl From<Connection> for ConnectionFilter {
-    fn from(Connection { from, to, .. }: Connection) -> ConnectionFilter {
-        ConnectionFilter { from, to }
-    }
-}
-
 /// A gene defining the placement of neuron clusters.
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct HoxGene {
@@ -127,7 +116,7 @@ pub struct HoxGene {
     /// Index of the cluster that will be instantiated and placed.
     pub cluster_index: ClusterGeneIndex,
     /// These connections, if existent, will not be enabled on the placed cluster.
-    pub disabled_connections: Vec<ConnectionFilter>,
+    pub disabled_connections: Vec<ClusterConnectionIndex>,
 }
 
 /// The set of all genes in an organism

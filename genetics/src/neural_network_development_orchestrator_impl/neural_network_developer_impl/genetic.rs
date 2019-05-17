@@ -221,8 +221,14 @@ fn push_cluster_connections(
     cluster_gene
         .connections
         .iter()
-        .filter_map(|connection| {
-            filter_map_enabled_connection(connection, neuron_handles, hox_gene)
+        .enumerate()
+        .filter_map(|(index, connection)| {
+            filter_map_enabled_connection(
+                ClusterConnectionIndex(index),
+                connection,
+                neuron_handles,
+                hox_gene,
+            )
         })
         .for_each(|connection| {
             configurator.add_connection(connection).unwrap();
@@ -230,15 +236,12 @@ fn push_cluster_connections(
 }
 
 fn filter_map_enabled_connection(
+    index: ClusterConnectionIndex,
     connection: &genome::Connection,
     neuron_handles: &[Handle],
     hox_gene: &HoxGene,
 ) -> Option<Connection> {
-    let connection_filter = ConnectionFilter {
-        from: connection.from,
-        to: connection.to,
-    };
-    if !hox_gene.disabled_connections.contains(&connection_filter) {
+    if !hox_gene.disabled_connections.contains(&index) {
         let from = *neuron_handles.get(connection.from.0)?;
         let to = *neuron_handles.get(connection.to.0)?;
         let weight = connection.weight;
