@@ -21,7 +21,7 @@ pub enum MutationVariants {
     /// Mark an existing connection as disabled.
     DisableConnection {
         /// Index of the hox gene that will be mutated.
-        hox_index: usize,
+        hox_index: HoxGeneIndex,
         /// The disabled connection.
         connection_index: ClusterConnectionIndex,
     },
@@ -58,7 +58,7 @@ pub enum MutationVariants {
     /// Allow a cluster to mutate independently by turning it into a new cluster.
     DesyncCluster {
         /// Index of the hox gene that will be mutated.
-        hox_index: usize,
+        hox_index: HoxGeneIndex,
         /// Index of the cluster that will be copied.
         cluster: ClusterGeneIndex,
     },
@@ -81,13 +81,13 @@ pub enum MutationVariants {
     /// Change the target neuron of a hox gene
     ChangeTargetNeuron {
         /// Index of the hox gene that will be mutated.
-        hox_index: usize,
+        hox_index: HoxGeneIndex,
         /// Index of the neuron that will be the new target neuron.
         new_target_neuron: ClusterNeuronIndex,
     },
     /// Add a new hox gene to the end of the genome with the same configuration as an already existing one.
     DuplicateHox {
         /// Index of the hox gene that will be duplicated.
-        hox_index: usize,
+        hox_index: HoxGeneIndex,
     },
 }
