@@ -48,6 +48,7 @@ pub struct GenomeGeneratorImpl {
 }
 
 impl GenomeGeneratorImpl {
+    /// Creates a new [`GenomeGeneratorImpl`].
     pub fn new(
         io_cluster_gene_generator: Box<dyn IoClusterGeneGenerator>,
         corpus_callosum_cluster_gene_generator: Box<dyn CorpusCallosumClusterGeneGenerator>,
