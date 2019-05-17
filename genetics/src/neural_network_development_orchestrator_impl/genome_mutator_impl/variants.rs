@@ -1,6 +1,4 @@
-use crate::genome::{
-    ClusterGene, ClusterGeneIndex, ClusterNeuronIndex, Connection, HoxGene, Weight,
-};
+use crate::genome::*;
 
 /// All possible mutations.
 #[derive(Debug, Clone, PartialEq)]
@@ -11,7 +9,7 @@ pub enum MutationVariants {
         /// Index of the cluster that will be mutated.
         cluster: ClusterGeneIndex,
         /// Index of the connection on the mutated cluster.
-        connection_index: usize,
+        connection_index: ClusterConnectionIndex,
     },
     /// Add a new connection between a pair of neurons on an existing cluster.
     AddConnection {
@@ -24,15 +22,15 @@ pub enum MutationVariants {
     DisableConnection {
         /// Index of the hox gene that will be mutated.
         hox_index: usize,
-        /// The newly created filter.
-        connection_index: usize,
+        /// The disabled connection.
+        connection_index: ClusterConnectionIndex,
     },
     /// Nudge the weight of an existing connection by a small delta value.
     NudgeWeight {
         /// Index of the cluster that will be mutated.
         cluster: ClusterGeneIndex,
         /// Index of the connection that will be mutated.
-        connection_index: usize,
+        connection_index: ClusterConnectionIndex,
         /// The small shift in weight that will be added to the specified connection.
         weight_delta: Weight,
     },
