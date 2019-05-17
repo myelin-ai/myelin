@@ -1,5 +1,6 @@
 use crate::genome::{
-    ClusterGeneIndex, Connection, HoxGene, HoxPlacement, NeuronClusterLocalIndex, Weight,
+    ClusterGene, ClusterGeneIndex, Connection, ConnectionFilter, HoxGene, NeuronClusterLocalIndex,
+    Weight,
 };
 
 /// All possible mutations.
