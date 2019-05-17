@@ -31,6 +31,11 @@ impl CorpusCallosumClusterGeneGenerator for CorpusCallosumClusterGeneGeneratorIm
                     input_neuron_count,
                     stem_neuron_count,
                 ))
+                .chain(self.generate_stem_to_output_neuron_connections(
+                    input_neuron_count,
+                    stem_neuron_count,
+                    output_neuron_count,
+                ))
                 .collect();
         ClusterGene {
             neurons: vec![Neuron {}; neuron_count],
@@ -50,9 +55,8 @@ impl CorpusCallosumClusterGeneGeneratorImpl {
             .zip((0..input_neuron_count).cycle().skip(1))
             .take(input_neuron_count)
             .map(move |(from_index, to_index)| {
-                let connection = self.generate_input_neuron_connection(from_index, to_index);
-                let connection_reverse =
-                    self.generate_input_neuron_connection(to_index, from_index);
+                let connection = self.generate_connection(from_index, to_index);
+                let connection_reverse = self.generate_connection(to_index, from_index);
 
                 iter::once(connection).chain(iter::once(connection_reverse))
             })
@@ -70,12 +74,28 @@ impl CorpusCallosumClusterGeneGeneratorImpl {
 
         associate_lists(&input_neuron_indexes, &stem_neuron_indices)
             .into_iter()
-            .map(move |(from_index, to_index)| {
-                self.generate_input_neuron_connection(from_index, to_index)
-            })
+            .map(move |(from_index, to_index)| self.generate_connection(from_index, to_index))
     }
 
-    fn generate_input_neuron_connection(&self, from_index: usize, to_index: usize) -> Connection {
+    fn generate_stem_to_output_neuron_connections<'a>(
+        &'a self,
+        input_neuron_count: usize,
+        stem_neuron_count: usize,
+        output_neuron_count: usize,
+    ) -> impl Iterator<Item = Connection> + 'a {
+        let output_neuron_start_index = input_neuron_count + stem_neuron_count;
+        let output_neuron_indices: Vec<_> = (output_neuron_start_index
+            ..(output_neuron_start_index + output_neuron_count))
+            .collect();
+        let stem_neuron_indices: Vec<_> =
+            (input_neuron_count..(input_neuron_count + stem_neuron_count)).collect();
+
+        associate_lists(&stem_neuron_indices, &output_neuron_indices)
+            .into_iter()
+            .map(move |(from_index, to_index)| self.generate_connection(from_index, to_index))
+    }
+
+    fn generate_connection(&self, from_index: usize, to_index: usize) -> Connection {
         let weight = self
             .random
             .random_float_in_range(MIN_CONNECTION_WEIGHT, MAX_CONNECTION_WEIGHT);
@@ -137,6 +157,7 @@ mod tests {
         const NEURONS: usize = INPUT_NEURON_COUNT + OUTPUT_NEURON_COUNT + STEM_NEURONS;
         const INPUT_NEURON_CONNECTIONS: usize = INPUT_NEURON_COUNT * 2;
         const INPUT_TO_STEM_CONNECTIONS: usize = INPUT_NEURON_COUNT;
+        const STEM_TO_OUTPUT_CONNECTIONS: usize = STEM_NEURONS;
 
         let random = {
             let mut random = RandomMock::new();
@@ -149,6 +170,10 @@ mod tests {
                     )
                     .returns(connection_weight(index));
             }
+            random
+                .expect_random_float_in_range(any(), any())
+                .times(STEM_TO_OUTPUT_CONNECTIONS as u64)
+                .returns(1.0);
             random
                 .expect_random_float_in_range(any(), any())
                 .times(INPUT_TO_STEM_CONNECTIONS as u64)
@@ -232,6 +257,7 @@ mod tests {
         const NEURONS: usize = INPUT_NEURON_COUNT + OUTPUT_NEURON_COUNT + STEM_NEURONS;
         const INPUT_NEURON_CONNECTIONS: usize = INPUT_NEURON_COUNT * 2;
         const INPUT_TO_STEM_CONNECTIONS: usize = INPUT_NEURON_COUNT;
+        const STEM_TO_OUTPUT_CONNECTIONS: usize = STEM_NEURONS;
 
         let random = {
             let mut random = RandomMock::new();
@@ -248,6 +274,10 @@ mod tests {
                     )
                     .returns(connection_weight(index));
             }
+            random
+                .expect_random_float_in_range(any(), any())
+                .times(STEM_TO_OUTPUT_CONNECTIONS as u64)
+                .returns(1.0);
             random
                 .expect_random_usize_in_range(
                     partial_eq(MIN_STEM_NEURONS),
@@ -291,6 +321,73 @@ mod tests {
             INPUT_NEURON_CONNECTIONS + expected_input_to_stem_connections.len();
         let generated_input_to_stem_connections = &generated_cluster_gene.connections
             [INPUT_NEURON_CONNECTIONS..(max_stem_connections_index)];
+
+        assert_eq!(expected_neurons, generated_cluster_gene.neurons);
+        assert_eq!(
+            expected_input_to_stem_connections,
+            generated_input_to_stem_connections
+        );
+    }
+
+    #[test]
+    fn stem_neurons_are_connected_to_output_neurons() {
+        const INPUT_NEURON_COUNT: usize = 5;
+        const OUTPUT_NEURON_COUNT: usize = 2;
+        const STEM_NEURON_COUNT: usize = 3;
+        const NEURONS: usize = INPUT_NEURON_COUNT + OUTPUT_NEURON_COUNT + STEM_NEURON_COUNT;
+        const INPUT_NEURON_CONNECTIONS: usize = INPUT_NEURON_COUNT * 2;
+        const INPUT_TO_STEM_CONNECTIONS: usize = INPUT_NEURON_COUNT;
+        const STEM_TO_OUTPUT_CONNECTIONS: usize = STEM_NEURON_COUNT;
+
+        let random = {
+            let mut random = RandomMock::new();
+            random.expect_random_float_in_range_calls_in_order();
+            random
+                .expect_random_float_in_range(any(), any())
+                .times((INPUT_NEURON_CONNECTIONS + INPUT_TO_STEM_CONNECTIONS) as u64)
+                .returns(1.0);
+            for index in 0..STEM_TO_OUTPUT_CONNECTIONS {
+                random
+                    .expect_random_float_in_range(
+                        partial_eq(MIN_CONNECTION_WEIGHT),
+                        partial_eq(MAX_CONNECTION_WEIGHT),
+                    )
+                    .returns(connection_weight(index));
+            }
+            random
+                .expect_random_usize_in_range(
+                    partial_eq(MIN_STEM_NEURONS),
+                    partial_eq(OUTPUT_NEURON_COUNT),
+                )
+                .returns(STEM_NEURON_COUNT);
+            box random
+        };
+        let generator = CorpusCallosumClusterGeneGeneratorImpl::new(random);
+        let configuration = configuration(INPUT_NEURON_COUNT, OUTPUT_NEURON_COUNT);
+        let expected_neurons = vec![Neuron {}; NEURONS];
+        let expected_input_to_stem_connections = vec![
+            Connection {
+                from: NeuronClusterLocalIndex(INPUT_NEURON_COUNT),
+                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + STEM_NEURON_COUNT),
+                weight: connection_weight(0),
+            },
+            Connection {
+                from: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + 1),
+                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + STEM_NEURON_COUNT + 1),
+                weight: connection_weight(1),
+            },
+            Connection {
+                from: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + 2),
+                to: NeuronClusterLocalIndex(INPUT_NEURON_COUNT + STEM_NEURON_COUNT + 1),
+                weight: connection_weight(2),
+            },
+        ];
+        let generated_cluster_gene = generator.generate_cluster_gene(&configuration);
+        let min_stem_neuron_index = INPUT_NEURON_CONNECTIONS + INPUT_TO_STEM_CONNECTIONS;
+        let max_stem_connections_index =
+            min_stem_neuron_index + expected_input_to_stem_connections.len();
+        let generated_input_to_stem_connections =
+            &generated_cluster_gene.connections[min_stem_neuron_index..max_stem_connections_index];
 
         assert_eq!(expected_neurons, generated_cluster_gene.neurons);
         assert_eq!(
