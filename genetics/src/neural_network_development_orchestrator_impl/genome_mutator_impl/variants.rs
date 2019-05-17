@@ -87,7 +87,7 @@ pub enum MutationVariants {
         /// Index of the neuron that will be the new target neuron.
         new_target_neuron: NeuronClusterLocalIndex,
     },
-    /// Add a new hox gene with the same configuration as an already existing one.
+    /// Add a new hox gene to the end of the genome with the same configuration as an already existing one.
     DuplicateHox {
         /// Index of the hox gene that will be duplicated.
         hox_index: usize,
