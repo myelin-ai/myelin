@@ -44,9 +44,9 @@ pub enum MutationVariants {
         new_placement_neuron: NeuronClusterLocalIndex,
     },
     /// Add a new cluster and place it through a new hox gene.
-    AddCluster {
+    AddNewCluster {
         /// Specification of the new cluster.
-        new_cluster: ClusterGene,
+        cluster: ClusterGene,
         /// Specification of the new hox gene that will place the new cluster.
         new_hox: HoxGene,
     },
