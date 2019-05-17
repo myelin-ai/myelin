@@ -38,11 +38,11 @@ mod tests {
     fn create_genome() -> Genome {
         Genome {
             cluster_genes: vec![ClusterGene {
-                placement_neuron: NeuronClusterLocalIndex(0),
+                placement_neuron: ClusterNeuronIndex(0),
                 neurons: vec![Neuron::new(); 2],
                 connections: vec![Connection {
-                    from: NeuronClusterLocalIndex(0),
-                    to: NeuronClusterLocalIndex(1),
+                    from: ClusterNeuronIndex(0),
+                    to: ClusterNeuronIndex(1),
                     weight: 1.0,
                 }],
                 specialization: ClusterGeneSpecialization::default(),

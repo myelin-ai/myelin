@@ -16,11 +16,11 @@ impl GenomeStubBuilder {
         self.genome.cluster_genes.push(ClusterGene {
             neurons: vec![Neuron::new(); 2],
             connections: vec![ConnectionDefinition {
-                from: NeuronClusterLocalIndex(0),
-                to: NeuronClusterLocalIndex(1),
+                from: ClusterNeuronIndex(0),
+                to: ClusterNeuronIndex(1),
                 weight: 0.5,
             }],
-            placement_neuron: NeuronClusterLocalIndex(1),
+            placement_neuron: ClusterNeuronIndex(1),
             specialization: ClusterGeneSpecialization::default(),
         });
         self

@@ -109,26 +109,26 @@ impl GenomeStubBuilder {
 
     fn add_second_cluster_marked_as_input_cluster(&mut self) -> &mut Self {
         self.add_second_cluster_with_specialization(ClusterGeneSpecialization::Input(
-            NeuronClusterLocalIndex(2),
+            ClusterNeuronIndex(2),
         ))
     }
 
     fn add_second_cluster_marked_as_output_cluster(&mut self) -> &mut Self {
         self.add_second_cluster_with_specialization(ClusterGeneSpecialization::Output(
-            NeuronClusterLocalIndex(2),
+            ClusterNeuronIndex(2),
         ))
     }
 
     fn add_third_cluster_marked_as_output_cluster(&mut self) -> &mut Self {
         self.add_third_cluster_with_specialization(ClusterGeneSpecialization::Output(
-            NeuronClusterLocalIndex(2),
+            ClusterNeuronIndex(2),
         ))
     }
 
     fn add_hox_gene_placing_third_cluster_on_first_cluster(&mut self) -> &mut Self {
         self.add_hox_gene_placing_cluster_on_cluster(ClusterOnClusterTestParameters {
             cluster_gene: ClusterGeneIndex(0),
-            target_neuron: NeuronClusterLocalIndex(1),
+            target_neuron: ClusterNeuronIndex(1),
             cluster_index: ClusterGeneIndex(2),
         });
         self
