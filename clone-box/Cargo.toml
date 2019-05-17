@@ -9,3 +9,4 @@ authors = [
     "Jeremy Stucki <jeremy@myelin.ch>",
 ]
 edition = "2018"
+publish = false
