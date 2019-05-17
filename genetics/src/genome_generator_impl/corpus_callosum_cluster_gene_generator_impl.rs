@@ -182,18 +182,17 @@ mod tests {
     }
 
     fn test_connections_and_neurons_are_generated_correctly(
-        configuration: ConnectionsTestConfiguration,
+        ConnectionsTestConfiguration {
+            input_neuron_count,
+            output_neuron_count,
+            stem_neuron_count,
+            expected_connections,
+        }: ConnectionsTestConfiguration,
     ) {
-        let neuron_count = configuration.input_neuron_count
-            + configuration.stem_neuron_count
-            + configuration.output_neuron_count;
-        let input_neuron_connection_count = configuration.input_neuron_count * 2;
-        let input_to_stem_neuron_connection_count = configuration
-            .input_neuron_count
-            .max(configuration.stem_neuron_count);
-        let stem_to_output_neuron_connection_count = configuration
-            .output_neuron_count
-            .max(configuration.stem_neuron_count);
+        let neuron_count = input_neuron_count + stem_neuron_count + output_neuron_count;
+        let input_neuron_connection_count = input_neuron_count * 2;
+        let input_to_stem_neuron_connection_count = input_neuron_count.max(stem_neuron_count);
+        let stem_to_output_neuron_connection_count = output_neuron_count.max(stem_neuron_count);
         let connection_count = input_neuron_connection_count
             + input_to_stem_neuron_connection_count
             + stem_to_output_neuron_connection_count;
@@ -214,25 +213,20 @@ mod tests {
             random
                 .expect_random_usize_in_range(
                     partial_eq(MIN_STEM_NEURONS),
-                    partial_eq(configuration.output_neuron_count),
+                    partial_eq(output_neuron_count),
                 )
-                .returns(configuration.stem_neuron_count);
+                .returns(stem_neuron_count);
             box random
         };
         let generator = CorpusCallosumClusterGeneGeneratorImpl::new(random);
-        let corpus_callossum_configuration = corpus_callossum_configuration(
-            configuration.input_neuron_count,
-            configuration.output_neuron_count,
-        );
+        let corpus_callossum_configuration =
+            corpus_callossum_configuration(input_neuron_count, output_neuron_count);
         let expected_neurons = vec![Neuron {}; neuron_count];
         let generated_cluster_gene =
             generator.generate_cluster_gene(&corpus_callossum_configuration);
 
         assert_eq!(expected_neurons, generated_cluster_gene.neurons);
-        assert_eq!(
-            configuration.expected_connections,
-            generated_cluster_gene.connections
-        );
+        assert_eq!(expected_connections, generated_cluster_gene.connections);
     }
 
     fn connection_weight(index: usize) -> f64 {
