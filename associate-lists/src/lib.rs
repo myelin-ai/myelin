@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 
 /// Associates elements of two lists with each other.
-/// Each element has at least one connection with an element of the other list.
+/// Elements of the shorter list are copied and distributed evenly to match the larger list. 
 ///
 /// # Panics
 /// If one or both of the given lists are empty.
