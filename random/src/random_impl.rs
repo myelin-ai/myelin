@@ -30,7 +30,7 @@ impl Default for RandomImpl {
 }
 
 macro_rules! generate_random_in_range_implementations {
-    ($($type:ident),+) => {
+    ($($type:ty),+) => {
         $(
             paste::item! {
                 fn [<$type _in_range>](&self, min: $type, max: $type) -> $type {
