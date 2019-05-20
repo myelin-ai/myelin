@@ -33,7 +33,7 @@ macro_rules! generate_random_in_range_implementations {
     ($($type:ident),+) => {
         $(
             paste::item! {
-                fn [<random_ $type _in_range>](&self, min: $type, max: $type) -> $type {
+                fn [<$type _in_range>](&self, min: $type, max: $type) -> $type {
                     self.rng.borrow_mut().gen_range(min, max)
                 }
             }
