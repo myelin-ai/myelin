@@ -1,4 +1,4 @@
-use super::{CorpusCallosumClusterGeneGenerator, CorpusCallosumConfiguration};
+use super::{CorpusCallosum, CorpusCallosumClusterGeneGenerator, CorpusCallosumConfiguration};
 use crate::genome::*;
 use myelin_associate_lists::associate_lists;
 use myelin_random::Random;
@@ -18,7 +18,7 @@ impl CorpusCallosumClusterGeneGeneratorImpl {
 }
 
 impl CorpusCallosumClusterGeneGenerator for CorpusCallosumClusterGeneGeneratorImpl {
-    fn generate_cluster_gene(&self, configuration: &CorpusCallosumConfiguration) -> ClusterGene {
+    fn generate(&self, configuration: &CorpusCallosumConfiguration) -> CorpusCallosum {
         let output_neuron_count = configuration.output_neuron_count.get();
         let input_neuron_count = configuration.input_neuron_count.get();
         // Using the output neuron count is mostly an arbitrary choice.
@@ -39,13 +39,29 @@ impl CorpusCallosumClusterGeneGenerator for CorpusCallosumClusterGeneGeneratorIm
                     output_neuron_count,
                 ))
                 .collect();
-        ClusterGene {
+        let cluster_gene = ClusterGene {
             neurons: vec![Neuron {}; neuron_count],
             connections,
             specialization: CLUSTER_GENE_SPECIALIZATION,
             placement_neuron: PLACEMENT_NEURON,
+        };
+        let first_output_neuron_index = input_neuron_count + stem_neuron_count;
+        let input_cluster_neurons = neuron_indices_in_range(0, input_neuron_count);
+        let output_cluster_neurons = neuron_indices_in_range(
+            first_output_neuron_index,
+            first_output_neuron_index + output_neuron_count,
+        );
+
+        CorpusCallosum {
+            cluster_gene,
+            input_cluster_neurons,
+            output_cluster_neurons,
         }
     }
+}
+
+fn neuron_indices_in_range(start: usize, end: usize) -> Vec<ClusterNeuronIndex> {
+    (start..end).map(ClusterNeuronIndex).collect()
 }
 
 impl CorpusCallosumClusterGeneGeneratorImpl {
@@ -128,7 +144,6 @@ mod tests {
     fn generates_correct_neurons_and_connections() {
         const INPUT_NEURON_COUNT: usize = 5;
         const STEM_NEURON_COUNT: usize = 3;
-        const OUTPUT_NEURON_COUNT: usize = 2;
 
         let expected_input_connections = vec![
             (0, 1),
@@ -159,9 +174,15 @@ mod tests {
         ];
 
         test_connections_and_neurons_are_generated_correctly(ConnectionsTestConfiguration {
-            input_neuron_count: INPUT_NEURON_COUNT,
+            input_cluster_neurons: vec![0usize, 1, 2, 3, 4]
+                .into_iter()
+                .map(ClusterNeuronIndex)
+                .collect(),
+            output_cluster_neurons: vec![8usize, 9]
+                .into_iter()
+                .map(ClusterNeuronIndex)
+                .collect(),
             stem_neuron_count: STEM_NEURON_COUNT,
-            output_neuron_count: OUTPUT_NEURON_COUNT,
             expected_connections: expected_input_connections
                 .into_iter()
                 .chain(expected_input_to_stem_connections)
@@ -177,20 +198,22 @@ mod tests {
     }
 
     struct ConnectionsTestConfiguration {
-        input_neuron_count: usize,
+        input_cluster_neurons: Vec<ClusterNeuronIndex>,
+        output_cluster_neurons: Vec<ClusterNeuronIndex>,
         stem_neuron_count: usize,
-        output_neuron_count: usize,
         expected_connections: Vec<Connection>,
     }
 
     fn test_connections_and_neurons_are_generated_correctly(
         ConnectionsTestConfiguration {
-            input_neuron_count,
-            output_neuron_count,
+            input_cluster_neurons,
+            output_cluster_neurons,
             stem_neuron_count,
             expected_connections,
         }: ConnectionsTestConfiguration,
     ) {
+        let input_neuron_count = input_cluster_neurons.len();
+        let output_neuron_count = output_cluster_neurons.len();
         let neuron_count = input_neuron_count + stem_neuron_count + output_neuron_count;
         let input_neuron_connection_count = input_neuron_count * 2;
         let input_to_stem_neuron_connection_count = input_neuron_count.max(stem_neuron_count);
@@ -224,11 +247,22 @@ mod tests {
         let corpus_callossum_configuration =
             corpus_callossum_configuration(input_neuron_count, output_neuron_count);
         let expected_neurons = vec![Neuron {}; neuron_count];
-        let generated_cluster_gene =
-            generator.generate_cluster_gene(&corpus_callossum_configuration);
+        let corpus_callosum = generator.generate(&corpus_callossum_configuration);
+        let expected_corpus_callosum = CorpusCallosum {
+            cluster_gene: ClusterGene {
+                neurons: expected_neurons,
+                connections: expected_connections,
+                specialization: CLUSTER_GENE_SPECIALIZATION,
+                placement_neuron: PLACEMENT_NEURON,
+            },
+            input_cluster_neurons,
+            output_cluster_neurons,
+        };
 
-        assert_eq!(expected_neurons, generated_cluster_gene.neurons);
-        assert_eq!(expected_connections, generated_cluster_gene.connections);
+        dbg!(&corpus_callosum);
+        dbg!(&expected_corpus_callosum);
+
+        assert_eq!(expected_corpus_callosum, corpus_callosum);
     }
 
     fn connection_weight(index: usize) -> f64 {

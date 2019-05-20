@@ -29,17 +29,30 @@ pub trait IoClusterGeneGenerator: Debug {
 /// [Corpus callosum]: https://en.wikipedia.org/wiki/Corpus_callosum
 #[cfg_attr(any(test, feature = "use-mocks"), mockable)]
 pub trait CorpusCallosumClusterGeneGenerator: Debug {
-    /// Generates a new corpus callosum [`ClusterGene`]
-    fn generate_cluster_gene(&self, configuration: &CorpusCallosumConfiguration) -> ClusterGene;
+    /// Generates a new corpus callosum [`ClusterGene`].
+    fn generate(&self, configuration: &CorpusCallosumConfiguration) -> CorpusCallosum;
 }
 
 /// Configuration for generating a new corpus callosum [`ClusterGene`].
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct CorpusCallosumConfiguration {
-    /// The amount of input neurons
+    /// The amount of input neurons.
     pub input_neuron_count: NonZeroUsize,
-    /// The amount of output neurons
+    /// The amount of output neurons.
     pub output_neuron_count: NonZeroUsize,
+}
+
+/// A generated [Corpus callosum].
+///
+/// [Corpus callosum]: https://en.wikipedia.org/wiki/Corpus_callosum
+#[derive(Debug, Clone, PartialEq)]
+pub struct CorpusCallosum {
+    /// The generated cluster gene.
+    pub cluster_gene: ClusterGene,
+    /// Indices of the neurons in [`CorpusCallosum::cluster_gene`] that connect with input clusters.
+    pub input_cluster_neurons: Vec<ClusterNeuronIndex>,
+    /// Indices of the neurons in [`CorpusCallosum::cluster_gene`] that connect with output clusters.
+    pub output_cluster_neurons: Vec<ClusterNeuronIndex>,
 }
 
 /// Default implementation of [`GenomeGenerator`].
@@ -208,7 +221,7 @@ mod tests {
             CorpusCallosumClusterGeneGeneratorMock::new();
 
         corpus_callosum_cluster_gene_generator
-            .expect_generate_cluster_gene(partial_eq_owned(configuration))
+            .expect_generate(partial_eq_owned(configuration))
             .returns(cluster_gene_stub());
 
         box corpus_callosum_cluster_gene_generator
