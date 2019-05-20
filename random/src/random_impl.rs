@@ -5,6 +5,7 @@ use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
 use std::cell::RefCell;
 use wonderbox::autoresolvable;
+use paste;
 
 /// Random number generator implementation that uses the `rand` crate
 #[derive(Debug, Clone)]
@@ -28,6 +29,18 @@ impl Default for RandomImpl {
     }
 }
 
+macro_rules! generate_random_in_range_implementations {
+    ($($type:ident),+) => {
+        $(
+            paste::item! {
+                fn [<random_ $type _in_range>](&self, min: $type, max: $type) -> $type {
+                    self.rng.borrow_mut().gen_range(min, max)
+                }
+            }
+        )+
+    };
+}
+
 impl Random for RandomImpl {
     fn flip_coin(&self) -> bool {
         self.rng.borrow_mut().gen()
@@ -44,13 +57,7 @@ impl Random for RandomImpl {
         self.rng.borrow_mut().gen_bool(probability)
     }
 
-    fn random_i32_in_range(&self, min: i32, max: i32) -> i32 {
-        self.rng.borrow_mut().gen_range(min, max)
-    }
-
-    fn random_f64_in_range(&self, min: f64, max: f64) -> f64 {
-        self.rng.borrow_mut().gen_range(min, max)
-    }
+    generate_random_in_range_implementations!(i32, f64);
 }
 
 impl<T> Shuffler<T> for RandomImpl {
