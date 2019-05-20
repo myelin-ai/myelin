@@ -1,11 +1,11 @@
 use super::Random;
 use super::Shuffler;
+use paste;
 use rand::rngs::ThreadRng;
 use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
 use std::cell::RefCell;
 use wonderbox::autoresolvable;
-use paste;
 
 /// Random number generator implementation that uses the `rand` crate
 #[derive(Debug, Clone)]

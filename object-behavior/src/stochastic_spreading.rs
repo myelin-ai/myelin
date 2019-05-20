@@ -54,10 +54,9 @@ impl StochasticSpreading {
         let possible_spreading_locations =
             calculate_possible_spreading_locations(&own_object.description.shape);
 
-        let first_try_index = self
-            .random
-            .i32_in_range(0, possible_spreading_locations.len() as i32)
-            as usize;
+        let first_try_index =
+            self.random
+                .i32_in_range(0, possible_spreading_locations.len() as i32) as usize;
 
         // Take an iterator over the possible locations, starting at a random index
         possible_spreading_locations
