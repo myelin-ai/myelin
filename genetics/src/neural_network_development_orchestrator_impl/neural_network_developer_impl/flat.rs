@@ -46,7 +46,7 @@ impl NeuralNetworkDeveloper for FlatNeuralNetworkDeveloper<'_> {
                     .add_connection(Connection {
                         from: input_neuron,
                         to: output_neuron,
-                        weight: self.random.random_float_in_range(0.0, 1.0),
+                        weight: self.random.random_f64_in_range(0.0, 1.0),
                     })
                     .expect("Internal error: Stored neuron handle was invalid");
             }
@@ -97,11 +97,11 @@ mod tests {
 
         let random = {
             let mut random = RandomMock::new();
-            random.expect_random_float_in_range_calls_in_order();
+            random.expect_random_f64_in_range_calls_in_order();
 
             for i in 0..connection_count {
                 random
-                    .expect_random_float_in_range(partial_eq(0.0), partial_eq(1.0))
+                    .expect_random_f64_in_range(partial_eq(0.0), partial_eq(1.0))
                     .returns(connection_weight(i));
             }
             box random

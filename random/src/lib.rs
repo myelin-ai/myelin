@@ -39,7 +39,7 @@ pub trait Random: Debug + RandomClone {
     fn random_i32_in_range(&self, min: i32, max: i32) -> i32;
 
     /// Returns a random floating point number in the specified range [min; max)
-    fn random_float_in_range(&self, min: f64, max: f64) -> f64;
+    fn random_f64_in_range(&self, min: f64, max: f64) -> f64;
 }
 
 clone_box!(Random, RandomClone);
