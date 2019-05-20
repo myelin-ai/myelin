@@ -96,6 +96,7 @@ mod tests {
         output_neuron_count: usize,
         input_cluster_gene_selections: Vec<DetailedClusterGeneSelection>,
         output_cluster_gene_selections: Vec<DetailedClusterGeneSelection>,
+        expected_genome: Genome,
     }
 
     #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -123,6 +124,10 @@ mod tests {
                     DetailedClusterGeneSelection::Existing(1),
                 ],
                 output_cluster_gene_selections: vec![DetailedClusterGeneSelection::Existing(0)],
+                expected_genome: Genome {
+                    hox_genes: vec![],
+                    cluster_genes: vec![cluster_gene_stub(); 6],
+                }
             }
         }
     }
@@ -133,6 +138,7 @@ mod tests {
             output_neuron_count,
             input_cluster_gene_selections,
             output_cluster_gene_selections,
+            expected_genome,
         }: GenerateGenomeTestConfiguration,
     ) {
         let corpus_callosum_configuration = CorpusCallosumConfiguration {
@@ -158,7 +164,12 @@ mod tests {
         );
 
         let config = genome_generator_configuration(input_neuron_count, output_neuron_count);
-        let _genome = genome_generator.generate_genome(&config);
+        let genome = genome_generator.generate_genome(&config);
+
+        assert_eq!(
+            expected_genome,
+            genome,
+        )
     }
 
     fn mock_corpus_callosum_cluster_gene_generator(
