@@ -36,7 +36,7 @@ pub trait Random: Debug + RandomClone {
     fn flip_coin_with_probability(&self, probability: f64) -> bool;
 
     /// Returns a random element from the specified range [min; max)
-    fn random_number_in_range(&self, min: i32, max: i32) -> i32;
+    fn random_i32_in_range(&self, min: i32, max: i32) -> i32;
 
     /// Returns a random floating point number in the specified range [min; max)
     fn random_float_in_range(&self, min: f64, max: f64) -> f64;
