@@ -4,10 +4,12 @@ pub use self::corpus_callosum_cluster_gene_generator_impl::*;
 pub use self::io_cluster_gene_generator_impl::*;
 use crate::genome::*;
 use crate::{GenomeGenerator, GenomeGeneratorConfiguration};
+use matches::matches;
 #[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
 use myelin_random::Random;
 use std::fmt::Debug;
+use std::iter;
 use std::num::NonZeroUsize;
 use wonderbox::autoresolvable;
 
@@ -82,8 +84,63 @@ impl GenomeGeneratorImpl {
 }
 
 impl GenomeGenerator for GenomeGeneratorImpl {
-    fn generate_genome(&self, _configuration: &GenomeGeneratorConfiguration) -> Genome {
-        unimplemented!();
+    fn generate_genome(&self, configuration: &GenomeGeneratorConfiguration) -> Genome {
+        let input_cluster_selections = iter::once(ClusterGeneSelection::New)
+            .chain(
+                (0..(configuration.input_neuron_count.get().saturating_sub(1)))
+                    .map(|_| self.select_cluster_gene()),
+            )
+            .scan(0, |current_new_index, selection| {
+                Some(match selection {
+                    ClusterGeneSelection::Existing => EnumeratedClusterGeneSelection::Existing,
+                    ClusterGeneSelection::New => {
+                        let index = *current_new_index;
+                        *current_new_index += 1;
+                        EnumeratedClusterGeneSelection::New(index)
+                    }
+                })
+            });
+
+        let input_clusters: Vec<_> = input_cluster_selections
+            .clone()
+            .filter(|selection| selection.is_new())
+            .map(|_| self.io_cluster_gene_generator.generate_input_cluster_gene())
+            .collect();
+
+        let input_hox_genes = input_cluster_selections
+            .enumerate()
+            .map(|(index, selection)| {
+                let cluster_index = match selection {
+                    EnumeratedClusterGeneSelection::Existing => {
+                        self.random.random_usize_in_range(0, input_clusters.len())
+                    }
+                    EnumeratedClusterGeneSelection::New(index) => index,
+                };
+
+                HoxGene {
+                    cluster_index: ClusterGeneIndex(cluster_index),
+                    disabled_connections: Vec::new(),
+                    placement_target: HoxPlacement::HoxGene {
+                        hox_gene: PLACEMENT_TARGET_HOX_GENE,
+                        target_neuron: ClusterNeuronIndex(index),
+                    },
+                }
+            });
+
+        unimplemented!()
+    }
+}
+
+impl GenomeGeneratorImpl {
+    fn select_cluster_gene(&self) -> ClusterGeneSelection {
+        if self
+            .random
+            .flip_coin_with_probability(PROBABILITY_FOR_NEW_CLUSTER_GENE)
+        {
+            ClusterGeneSelection::New
+        } else {
+            ClusterGeneSelection::Existing
+        }
     }
 }
 
@@ -93,4 +150,17 @@ enum ClusterGeneSelection {
     New,
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+enum EnumeratedClusterGeneSelection {
+    Existing,
+    New(usize),
+}
+
+impl EnumeratedClusterGeneSelection {
+    fn is_new(self) -> bool {
+        matches!(self, EnumeratedClusterGeneSelection::New(_))
+    }
+}
+
 const PROBABILITY_FOR_NEW_CLUSTER_GENE: f64 = 3.0 / 4.0;
+const PLACEMENT_TARGET_HOX_GENE: HoxGeneIndex = HoxGeneIndex(0);
