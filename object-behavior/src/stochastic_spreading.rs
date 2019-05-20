@@ -54,10 +54,9 @@ impl StochasticSpreading {
         let possible_spreading_locations =
             calculate_possible_spreading_locations(&own_object.description.shape);
 
-        let first_try_index = self
-            .random
-            .random_number_in_range(0, possible_spreading_locations.len() as i32)
-            as usize;
+        let first_try_index =
+            self.random
+                .i32_in_range(0, possible_spreading_locations.len() as i32) as usize;
 
         // Take an iterator over the possible locations, starting at a random index
         possible_spreading_locations
@@ -245,7 +244,7 @@ mod tests {
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
             .returns(true);
         random
-            .expect_random_number_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(partial_eq(0), partial_eq(8))
             .returns(0);
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
         let mut world_interactor = WorldInteractorMock::new();
@@ -287,7 +286,7 @@ mod tests {
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
             .returns(true);
         random
-            .expect_random_number_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(partial_eq(0), partial_eq(8))
             .returns(0);
 
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
@@ -385,7 +384,7 @@ mod tests {
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
             .returns(true);
         random
-            .expect_random_number_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(partial_eq(0), partial_eq(8))
             .returns(0);
 
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
@@ -455,7 +454,7 @@ mod tests {
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
             .returns(true);
         random
-            .expect_random_number_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(partial_eq(0), partial_eq(8))
             .returns(1);
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
 
@@ -534,7 +533,7 @@ mod tests {
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
             .returns(true);
         random
-            .expect_random_number_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(partial_eq(0), partial_eq(8))
             .returns(1);
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
 
@@ -596,7 +595,7 @@ mod tests {
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
             .returns(true);
         first_random
-            .expect_random_number_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(partial_eq(0), partial_eq(8))
             .returns(3);
         let mut first_object = StochasticSpreading::new(SPREADING_CHANGE, box first_random);
         let first_description = object_description_at_location(50.0, 50.0);
@@ -636,7 +635,7 @@ mod tests {
             .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
             .returns(true);
         second_random
-            .expect_random_number_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(partial_eq(0), partial_eq(8))
             .returns(7);
         let mut second_object = StochasticSpreading::new(SPREADING_CHANGE, box second_random);
 

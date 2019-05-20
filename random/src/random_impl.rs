@@ -1,5 +1,6 @@
 use super::Random;
 use super::Shuffler;
+use paste;
 use rand::rngs::ThreadRng;
 use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
@@ -28,6 +29,18 @@ impl Default for RandomImpl {
     }
 }
 
+macro_rules! generate_random_in_range_implementations {
+    ($($type:ty),+) => {
+        $(
+            paste::item! {
+                fn [<$type _in_range>](&self, min: $type, max: $type) -> $type {
+                    self.rng.borrow_mut().gen_range(min, max)
+                }
+            }
+        )+
+    };
+}
+
 impl Random for RandomImpl {
     fn flip_coin(&self) -> bool {
         self.rng.borrow_mut().gen()
@@ -44,17 +57,7 @@ impl Random for RandomImpl {
         self.rng.borrow_mut().gen_bool(probability)
     }
 
-    fn random_number_in_range(&self, min: i32, max: i32) -> i32 {
-        self.rng.borrow_mut().gen_range(min, max)
-    }
-
-    fn random_float_in_range(&self, min: f64, max: f64) -> f64 {
-        self.rng.borrow_mut().gen_range(min, max)
-    }
-
-    fn random_usize_in_range(&self, min: usize, max: usize) -> usize {
-        self.rng.borrow_mut().gen_range(min, max)
-    }
+    generate_random_in_range_implementations!(i32, f64, usize);
 }
 
 impl<T> Shuffler<T> for RandomImpl {
@@ -106,7 +109,7 @@ mod tests {
     #[test]
     fn panics_when_min_is_higher_than_max() {
         let random = RandomImpl::default();
-        random.random_number_in_range(1, 0);
+        random.i32_in_range(1, 0);
     }
 
     #[should_panic]
@@ -114,7 +117,7 @@ mod tests {
     fn panics_when_min_is_max() {
         let random = RandomImpl::default();
         const ONLY_BOUND: i32 = 1;
-        random.random_number_in_range(ONLY_BOUND, ONLY_BOUND);
+        random.i32_in_range(ONLY_BOUND, ONLY_BOUND);
     }
 
     #[test]
@@ -123,7 +126,7 @@ mod tests {
         const MIN: i32 = -1;
         const MAX: i32 = 3;
 
-        let number = random.random_number_in_range(MIN, MAX);
+        let number = random.i32_in_range(MIN, MAX);
         assert!(number >= MIN && number < MAX);
     }
 
@@ -133,7 +136,7 @@ mod tests {
         const MIN: i32 = 1;
         const MAX: i32 = 2;
 
-        let number = random.random_number_in_range(MIN, MAX);
+        let number = random.i32_in_range(MIN, MAX);
         assert_eq!(1, number);
     }
 
@@ -141,7 +144,7 @@ mod tests {
     #[test]
     fn panics_when_float_min_is_higher_than_max() {
         let random = RandomImpl::default();
-        random.random_float_in_range(1.0, 0.0);
+        random.f64_in_range(1.0, 0.0);
     }
 
     #[should_panic]
@@ -149,7 +152,7 @@ mod tests {
     fn panics_when_float_min_is_max() {
         let random = RandomImpl::default();
         const ONLY_BOUND: f64 = 1.0;
-        random.random_float_in_range(ONLY_BOUND, ONLY_BOUND);
+        random.f64_in_range(ONLY_BOUND, ONLY_BOUND);
     }
 
     #[test]
@@ -158,7 +161,7 @@ mod tests {
         const MIN: f64 = -1.0;
         const MAX: f64 = 3.0;
 
-        let number = random.random_float_in_range(MIN, MAX);
+        let number = random.f64_in_range(MIN, MAX);
         assert!(number >= MIN && number < MAX);
     }
 

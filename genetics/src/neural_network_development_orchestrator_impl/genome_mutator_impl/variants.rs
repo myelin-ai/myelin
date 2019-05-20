@@ -78,7 +78,7 @@ pub enum MutationVariants {
         /// Specification of the new hox gene.
         new_hox: HoxGene,
     },
-    /// Change the target neuron of a hox gene
+    /// Change the target neuron of a hox gene.
     ChangeTargetNeuron {
         /// Index of the hox gene that will be mutated.
         hox_index: HoxGeneIndex,
