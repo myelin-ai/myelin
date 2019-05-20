@@ -83,7 +83,7 @@ const PROBABILITY_FOR_NEW_CLUSTER_GENE: f64 = 3.0 / 4.0;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockiato::partial_eq;
+    use mockiato::{partial_eq, partial_eq_owned};
     use myelin_random::RandomMock;
 
     #[test]
@@ -136,8 +136,12 @@ mod tests {
         }: GenerateGenomeTestConfiguration,
     ) {
         let config = genome_generator_configuration(input_neuron_count, output_neuron_count);
-        let mut corpus_callosum_cluster_gene_generator =
-            CorpusCallosumClusterGeneGeneratorMock::new();
+        let corpus_callosum_configuration = CorpusCallosumConfiguration {
+            input_neuron_count: NonZeroUsize::new(input_neuron_count).unwrap(),
+            output_neuron_count: NonZeroUsize::new(input_neuron_count).unwrap(),
+        };
+        let corpus_callosum_cluster_gene_generator =
+            mock_corpus_callosum_cluster_gene_generator(corpus_callosum_configuration);
         let mut random = RandomMock::new();
         register_cluster_gene_selection_expectations(&mut random, &input_cluster_gene_selections);
         register_cluster_gene_selection_expectations(&mut random, &output_cluster_gene_selections);
@@ -149,10 +153,23 @@ mod tests {
 
         let genome_generator = GenomeGeneratorImpl::new(
             io_cluster_gene_generator,
-            box corpus_callosum_cluster_gene_generator,
+            corpus_callosum_cluster_gene_generator,
             box random,
         );
         let _genome = genome_generator.generate_genome(&config);
+    }
+
+    fn mock_corpus_callosum_cluster_gene_generator(
+        configuration: CorpusCallosumConfiguration,
+    ) -> Box<dyn CorpusCallosumClusterGeneGenerator> {
+        let mut corpus_callosum_cluster_gene_generator =
+            CorpusCallosumClusterGeneGeneratorMock::new();
+
+        corpus_callosum_cluster_gene_generator
+            .expect_generate_cluster_gene(partial_eq_owned(configuration))
+            .returns(cluster_gene_stub());
+
+        box corpus_callosum_cluster_gene_generator
     }
 
     fn mock_io_cluster_gene_generator(
