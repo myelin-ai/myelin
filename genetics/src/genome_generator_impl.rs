@@ -8,6 +8,7 @@ use crate::{GenomeGenerator, GenomeGeneratorConfiguration};
 use mockiato::mockable;
 use std::fmt::Debug;
 use std::num::NonZeroUsize;
+use myelin_random::Random;
 
 mod corpus_callosum_cluster_gene_generator_impl;
 mod io_cluster_gene_generator_impl;
@@ -45,6 +46,7 @@ pub struct CorpusCallosumConfiguration {
 pub struct GenomeGeneratorImpl {
     io_cluster_gene_generator: Box<dyn IoClusterGeneGenerator>,
     corpus_callosum_cluster_gene_generator: Box<dyn CorpusCallosumClusterGeneGenerator>,
+    random: Box<dyn Random>,
 }
 
 impl GenomeGeneratorImpl {
@@ -52,10 +54,12 @@ impl GenomeGeneratorImpl {
     pub fn new(
         io_cluster_gene_generator: Box<dyn IoClusterGeneGenerator>,
         corpus_callosum_cluster_gene_generator: Box<dyn CorpusCallosumClusterGeneGenerator>,
+        random: Box<dyn Random>,
     ) -> Self {
         GenomeGeneratorImpl {
             io_cluster_gene_generator,
             corpus_callosum_cluster_gene_generator,
+            random,
         }
     }
 }
@@ -69,6 +73,7 @@ impl GenomeGenerator for GenomeGeneratorImpl {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use myelin_random::RandomMock;
 
     #[test]
     fn generates_correct_genome() {
@@ -92,9 +97,11 @@ mod tests {
         let config = genome_generator_configuration(input_neuron_count, output_neuron_count);
         let mut io_cluster_gene_generator = IoClusterGeneGeneratorMock::new();
         let mut corpus_callosum_cluster_gene_generator = CorpusCallosumClusterGeneGeneratorMock::new();
+        let mut random = RandomMock::new();
         let genome_generator = GenomeGeneratorImpl::new(
             box io_cluster_gene_generator,
             box corpus_callosum_cluster_gene_generator,
+            box random,
         );
         let _genome = genome_generator.generate_genome(&config);
     }
