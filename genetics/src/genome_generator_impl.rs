@@ -105,8 +105,8 @@ mod tests {
     }
 
     struct GenerateGenomeTestConfiguration {
-        input_neuron_count: usize,
-        output_neuron_count: usize,
+        input_cluster_neurons: Vec<ClusterNeuronIndex>,
+        output_cluster_neurons: Vec<ClusterNeuronIndex>,
         input_cluster_gene_selections: Vec<DetailedClusterGeneSelection>,
         output_cluster_gene_selections: Vec<DetailedClusterGeneSelection>,
         expected_genome: Genome,
@@ -132,8 +132,8 @@ mod tests {
             let mut create_input_hox_gene = create_io_hox_gene_fn(ClusterNeuronIndex(0));
 
             Self {
-                input_neuron_count: 3,
-                output_neuron_count: 2,
+                input_cluster_neurons: neuron_indices_in_range(0, 3),
+                output_cluster_neurons: neuron_indices_in_range(5, 7),
                 input_cluster_gene_selections: vec![
                     DetailedClusterGeneSelection::New,
                     DetailedClusterGeneSelection::Existing(1),
@@ -154,6 +154,10 @@ mod tests {
                 },
             }
         }
+    }
+
+    fn neuron_indices_in_range(start: usize, end: usize) -> Vec<ClusterNeuronIndex> {
+        (start..end).map(ClusterNeuronIndex).collect()
     }
 
     fn create_io_hox_gene_fn(
@@ -179,19 +183,24 @@ mod tests {
 
     fn test_genome_is_generated_correctly(
         GenerateGenomeTestConfiguration {
-            input_neuron_count,
-            output_neuron_count,
+            input_cluster_neurons,
+            output_cluster_neurons,
             input_cluster_gene_selections,
             output_cluster_gene_selections,
             expected_genome,
         }: GenerateGenomeTestConfiguration,
     ) {
+        let input_neuron_count = input_cluster_neurons.len();
+        let output_neuron_count = output_cluster_neurons.len();
         let corpus_callosum_configuration = CorpusCallosumConfiguration {
             input_neuron_count: NonZeroUsize::new(input_neuron_count).unwrap(),
             output_neuron_count: NonZeroUsize::new(input_neuron_count).unwrap(),
         };
-        let corpus_callosum_cluster_gene_generator =
-            mock_corpus_callosum_cluster_gene_generator(corpus_callosum_configuration);
+        let corpus_callosum_cluster_gene_generator = mock_corpus_callosum_cluster_gene_generator(
+            corpus_callosum_configuration,
+            input_cluster_neurons,
+            output_cluster_neurons,
+        );
 
         let mut random = RandomMock::new();
         register_cluster_gene_selection_expectations(&mut random, &input_cluster_gene_selections);
@@ -216,13 +225,18 @@ mod tests {
 
     fn mock_corpus_callosum_cluster_gene_generator(
         configuration: CorpusCallosumConfiguration,
+        input_cluster_neurons: Vec<ClusterNeuronIndex>,
+        output_cluster_neurons: Vec<ClusterNeuronIndex>,
     ) -> Box<dyn CorpusCallosumClusterGeneGenerator> {
         let mut corpus_callosum_cluster_gene_generator =
             CorpusCallosumClusterGeneGeneratorMock::new();
 
         corpus_callosum_cluster_gene_generator
             .expect_generate(partial_eq_owned(configuration))
-            .returns(cluster_gene_stub());
+            .returns(corpus_callosum_stub(
+                input_cluster_neurons,
+                output_cluster_neurons,
+            ));
 
         box corpus_callosum_cluster_gene_generator
     }
@@ -272,6 +286,17 @@ mod tests {
                     )
                     .returns(cluster_gene_index);
             }
+        }
+    }
+
+    fn corpus_callosum_stub(
+        input_cluster_neurons: Vec<ClusterNeuronIndex>,
+        output_cluster_neurons: Vec<ClusterNeuronIndex>,
+    ) -> CorpusCallosum {
+        CorpusCallosum {
+            cluster_gene: cluster_gene_stub(),
+            input_cluster_neurons,
+            output_cluster_neurons,
         }
     }
 
