@@ -9,6 +9,7 @@ use mockiato::mockable;
 use std::fmt::Debug;
 use std::num::NonZeroUsize;
 use myelin_random::Random;
+use wonderbox::autoresolvable;
 
 mod corpus_callosum_cluster_gene_generator_impl;
 mod io_cluster_gene_generator_impl;
@@ -49,6 +50,7 @@ pub struct GenomeGeneratorImpl {
     random: Box<dyn Random>,
 }
 
+#[autoresolvable]
 impl GenomeGeneratorImpl {
     /// Creates a new [`GenomeGeneratorImpl`].
     pub fn new(
