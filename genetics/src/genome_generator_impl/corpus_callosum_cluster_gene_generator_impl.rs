@@ -100,8 +100,8 @@ impl CorpusCallosumClusterGeneGeneratorImpl {
             .random
             .random_float_in_range(MIN_CONNECTION_WEIGHT, MAX_CONNECTION_WEIGHT);
         Connection {
-            from: NeuronClusterLocalIndex(from_index),
-            to: NeuronClusterLocalIndex(to_index),
+            from: ClusterNeuronIndex(from_index),
+            to: ClusterNeuronIndex(to_index),
             weight,
         }
     }
@@ -113,7 +113,7 @@ const MIN_CONNECTION_WEIGHT: f64 = 0.000_000_1;
 const MAX_CONNECTION_WEIGHT: f64 = 1.0;
 const CLUSTER_GENE_SPECIALIZATION: ClusterGeneSpecialization = ClusterGeneSpecialization::Initial;
 /// Not relevant since the initial cluster is placed standalone
-const PLACEMENT_NEURON: NeuronClusterLocalIndex = NeuronClusterLocalIndex('✌' as usize);
+const PLACEMENT_NEURON: ClusterNeuronIndex = ClusterNeuronIndex('✌' as usize);
 
 #[cfg(test)]
 mod tests {
@@ -166,8 +166,8 @@ mod tests {
                 .chain(expected_stem_to_output_connections)
                 .enumerate()
                 .map(|(index, (from, to))| Connection {
-                    from: NeuronClusterLocalIndex(from),
-                    to: NeuronClusterLocalIndex(to),
+                    from: ClusterNeuronIndex(from),
+                    to: ClusterNeuronIndex(to),
                     weight: connection_weight(index),
                 })
                 .collect(),

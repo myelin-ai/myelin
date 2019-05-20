@@ -66,16 +66,16 @@ impl IoClusterGeneGeneratorImpl {
             .random
             .random_float_in_range(MIN_CONNECTION_WEIGHT, MAX_CONNECTION_WEIGHT);
         Connection {
-            from: NeuronClusterLocalIndex(from_index),
-            to: NeuronClusterLocalIndex(to_index),
+            from: ClusterNeuronIndex(from_index),
+            to: ClusterNeuronIndex(to_index),
             weight,
         }
     }
 }
 
 const MIN_NEURONS_PER_CLUSTER: usize = 2;
-const PLACEMENT_NEURON: NeuronClusterLocalIndex = NeuronClusterLocalIndex(0);
-const IO_NEURON: NeuronClusterLocalIndex = NeuronClusterLocalIndex(1);
+const PLACEMENT_NEURON: ClusterNeuronIndex = ClusterNeuronIndex(0);
+const IO_NEURON: ClusterNeuronIndex = ClusterNeuronIndex(1);
 /// Chosen arbitrarily
 const MAX_NEURONS_PER_CLUSTER: usize = 12;
 /// Chosen arbitrarily
@@ -122,43 +122,43 @@ mod tests {
             specialization: ClusterGeneSpecialization::Output(IO_NEURON),
             connections: vec![
                 Connection {
-                    from: NeuronClusterLocalIndex(0),
-                    to: NeuronClusterLocalIndex(1),
+                    from: ClusterNeuronIndex(0),
+                    to: ClusterNeuronIndex(1),
                     weight: connection_weight(0),
                 },
                 Connection {
-                    from: NeuronClusterLocalIndex(1),
-                    to: NeuronClusterLocalIndex(0),
+                    from: ClusterNeuronIndex(1),
+                    to: ClusterNeuronIndex(0),
                     weight: connection_weight(1),
                 },
                 Connection {
-                    from: NeuronClusterLocalIndex(1),
-                    to: NeuronClusterLocalIndex(2),
+                    from: ClusterNeuronIndex(1),
+                    to: ClusterNeuronIndex(2),
                     weight: connection_weight(2),
                 },
                 Connection {
-                    from: NeuronClusterLocalIndex(2),
-                    to: NeuronClusterLocalIndex(1),
+                    from: ClusterNeuronIndex(2),
+                    to: ClusterNeuronIndex(1),
                     weight: connection_weight(3),
                 },
                 Connection {
-                    from: NeuronClusterLocalIndex(2),
-                    to: NeuronClusterLocalIndex(3),
+                    from: ClusterNeuronIndex(2),
+                    to: ClusterNeuronIndex(3),
                     weight: connection_weight(4),
                 },
                 Connection {
-                    from: NeuronClusterLocalIndex(3),
-                    to: NeuronClusterLocalIndex(2),
+                    from: ClusterNeuronIndex(3),
+                    to: ClusterNeuronIndex(2),
                     weight: connection_weight(5),
                 },
                 Connection {
-                    from: NeuronClusterLocalIndex(3),
-                    to: NeuronClusterLocalIndex(4),
+                    from: ClusterNeuronIndex(3),
+                    to: ClusterNeuronIndex(4),
                     weight: connection_weight(6),
                 },
                 Connection {
-                    from: NeuronClusterLocalIndex(4),
-                    to: NeuronClusterLocalIndex(3),
+                    from: ClusterNeuronIndex(4),
+                    to: ClusterNeuronIndex(3),
                     weight: connection_weight(7),
                 },
             ],
