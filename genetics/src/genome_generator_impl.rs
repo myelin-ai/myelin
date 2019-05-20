@@ -116,6 +116,8 @@ mod tests {
 
     impl Default for GenerateGenomeTestConfiguration {
         fn default() -> Self {
+            let mut create_input_hox_gene = create_io_hox_gene_fn(ClusterNeuronIndex(0));
+
             Self {
                 input_neuron_count: 3,
                 output_neuron_count: 2,
@@ -125,9 +127,39 @@ mod tests {
                 ],
                 output_cluster_gene_selections: vec![DetailedClusterGeneSelection::Existing(0)],
                 expected_genome: Genome {
-                    hox_genes: vec![],
+                    hox_genes: vec![
+                        HoxGene {
+                            placement_target: HoxPlacement::Standalone,
+                            cluster_index: ClusterGeneIndex(0),
+                            disabled_connections: Vec::new(),
+                        },
+                        create_input_hox_gene(ClusterGeneIndex(1)),
+                        create_input_hox_gene(ClusterGeneIndex(2)),
+                        create_input_hox_gene(ClusterGeneIndex(2)),
+                    ],
                     cluster_genes: vec![cluster_gene_stub(); 6],
-                }
+                },
+            }
+        }
+    }
+
+    fn create_io_hox_gene_fn(
+        target_neuron_offset: ClusterNeuronIndex,
+    ) -> impl FnMut(ClusterGeneIndex) -> HoxGene {
+        let mut target_neuron_counter = 0;
+
+        move |cluster_index| {
+            let target_neuron = ClusterNeuronIndex(target_neuron_offset.0 + target_neuron_counter);
+
+            target_neuron_counter += 1;
+
+            HoxGene {
+                cluster_index,
+                disabled_connections: Vec::new(),
+                placement_target: HoxPlacement::HoxGene {
+                    hox_gene: HoxGeneIndex(0),
+                    target_neuron,
+                },
             }
         }
     }
@@ -166,10 +198,7 @@ mod tests {
         let config = genome_generator_configuration(input_neuron_count, output_neuron_count);
         let genome = genome_generator.generate_genome(&config);
 
-        assert_eq!(
-            expected_genome,
-            genome,
-        )
+        assert_eq!(expected_genome, genome,)
     }
 
     fn mock_corpus_callosum_cluster_gene_generator(
