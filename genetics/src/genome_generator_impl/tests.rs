@@ -33,6 +33,19 @@ impl From<DetailedClusterGeneSelection> for ClusterGeneSelection {
 impl Default for GenerateGenomeTestConfiguration {
     fn default() -> Self {
         let mut create_input_hox_gene = create_io_hox_gene_fn(ClusterNeuronIndex(0));
+        let expected_genome = Genome {
+            hox_genes: vec![
+                HoxGene {
+                    placement_target: HoxPlacement::Standalone,
+                    cluster_index: ClusterGeneIndex(0),
+                    disabled_connections: Vec::new(),
+                },
+                create_input_hox_gene(ClusterGeneIndex(1)),
+                create_input_hox_gene(ClusterGeneIndex(2)),
+                create_input_hox_gene(ClusterGeneIndex(2)),
+            ],
+            cluster_genes: vec![cluster_gene_stub(); 6],
+        };
 
         Self {
             input_cluster_neurons: neuron_indices_in_range(0, 3),
@@ -42,19 +55,7 @@ impl Default for GenerateGenomeTestConfiguration {
                 DetailedClusterGeneSelection::Existing(1),
             ],
             output_cluster_gene_selections: vec![DetailedClusterGeneSelection::Existing(0)],
-            expected_genome: Genome {
-                hox_genes: vec![
-                    HoxGene {
-                        placement_target: HoxPlacement::Standalone,
-                        cluster_index: ClusterGeneIndex(0),
-                        disabled_connections: Vec::new(),
-                    },
-                    create_input_hox_gene(ClusterGeneIndex(1)),
-                    create_input_hox_gene(ClusterGeneIndex(2)),
-                    create_input_hox_gene(ClusterGeneIndex(2)),
-                ],
-                cluster_genes: vec![cluster_gene_stub(); 6],
-            },
+            expected_genome,
         }
     }
 }
