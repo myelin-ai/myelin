@@ -135,13 +135,13 @@ mod tests {
             output_cluster_gene_selections,
         }: GenerateGenomeTestConfiguration,
     ) {
-        let config = genome_generator_configuration(input_neuron_count, output_neuron_count);
         let corpus_callosum_configuration = CorpusCallosumConfiguration {
             input_neuron_count: NonZeroUsize::new(input_neuron_count).unwrap(),
             output_neuron_count: NonZeroUsize::new(input_neuron_count).unwrap(),
         };
         let corpus_callosum_cluster_gene_generator =
             mock_corpus_callosum_cluster_gene_generator(corpus_callosum_configuration);
+
         let mut random = RandomMock::new();
         register_cluster_gene_selection_expectations(&mut random, &input_cluster_gene_selections);
         register_cluster_gene_selection_expectations(&mut random, &output_cluster_gene_selections);
@@ -156,6 +156,8 @@ mod tests {
             corpus_callosum_cluster_gene_generator,
             box random,
         );
+
+        let config = genome_generator_configuration(input_neuron_count, output_neuron_count);
         let _genome = genome_generator.generate_genome(&config);
     }
 
