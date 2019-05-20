@@ -94,7 +94,8 @@ mod tests {
     struct GenerateGenomeTestConfiguration {
         input_neuron_count: usize,
         output_neuron_count: usize,
-        cluster_gene_selections: Vec<DetailedClusterGeneSelection>,
+        input_cluster_gene_selections: Vec<DetailedClusterGeneSelection>,
+        output_cluster_gene_selections: Vec<DetailedClusterGeneSelection>,
     }
 
     #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -117,12 +118,11 @@ mod tests {
             Self {
                 input_neuron_count: 3,
                 output_neuron_count: 2,
-                cluster_gene_selections: vec![
-                    DetailedClusterGeneSelection::Existing(0),
+                input_cluster_gene_selections: vec![
                     DetailedClusterGeneSelection::New,
-                    DetailedClusterGeneSelection::New,
-                    DetailedClusterGeneSelection::Existing(2),
+                    DetailedClusterGeneSelection::Existing(1),
                 ],
+                output_cluster_gene_selections: vec![DetailedClusterGeneSelection::Existing(0)],
             }
         }
     }
@@ -131,22 +131,50 @@ mod tests {
         GenerateGenomeTestConfiguration {
             input_neuron_count,
             output_neuron_count,
-            cluster_gene_selections,
+            input_cluster_gene_selections,
+            output_cluster_gene_selections,
         }: GenerateGenomeTestConfiguration,
     ) {
         let config = genome_generator_configuration(input_neuron_count, output_neuron_count);
-        let mut io_cluster_gene_generator = IoClusterGeneGeneratorMock::new();
         let mut corpus_callosum_cluster_gene_generator =
             CorpusCallosumClusterGeneGeneratorMock::new();
         let mut random = RandomMock::new();
-        register_cluster_gene_selection_expectations(&mut random, &cluster_gene_selections);
+        register_cluster_gene_selection_expectations(&mut random, &input_cluster_gene_selections);
+        register_cluster_gene_selection_expectations(&mut random, &output_cluster_gene_selections);
+
+        let io_cluster_gene_generator = mock_io_cluster_gene_generator(
+            &input_cluster_gene_selections,
+            &output_cluster_gene_selections,
+        );
 
         let genome_generator = GenomeGeneratorImpl::new(
-            box io_cluster_gene_generator,
+            io_cluster_gene_generator,
             box corpus_callosum_cluster_gene_generator,
             box random,
         );
         let _genome = genome_generator.generate_genome(&config);
+    }
+
+    fn mock_io_cluster_gene_generator(
+        input_cluster_gene_selections: &[DetailedClusterGeneSelection],
+        output_cluster_gene_selections: &[DetailedClusterGeneSelection],
+    ) -> Box<dyn IoClusterGeneGenerator> {
+        let mut io_cluster_gene_generator = IoClusterGeneGeneratorMock::new();
+
+        let input_cluster_gene_count = count_generated_cluster_genes(input_cluster_gene_selections);
+        io_cluster_gene_generator
+            .expect_generate_input_cluster_gene()
+            .times(input_cluster_gene_count as u64)
+            .returns(cluster_gene_stub());
+
+        let output_cluster_gene_count =
+            count_generated_cluster_genes(output_cluster_gene_selections);
+        io_cluster_gene_generator
+            .expect_generate_output_cluster_gene()
+            .times(output_cluster_gene_count as u64)
+            .returns(cluster_gene_stub());
+
+        box io_cluster_gene_generator
     }
 
     fn register_cluster_gene_selection_expectations(
@@ -156,12 +184,7 @@ mod tests {
         random.expect_flip_coin_with_probability_calls_in_order();
         random.expect_random_usize_in_range_calls_in_order();
 
-        const ALWAYS_GENERATED_CLUSTER_GENES: usize = 1;
-        let new_cluster_genes = cluster_gene_selections
-            .iter()
-            .filter(|&&selection| selection == DetailedClusterGeneSelection::New)
-            .count();
-        let cluster_gene_count = ALWAYS_GENERATED_CLUSTER_GENES + new_cluster_genes;
+        let generated_cluster_gene_count = count_generated_cluster_genes(cluster_gene_selections);
 
         for &selection in cluster_gene_selections {
             let coin_toss_result = selection == DetailedClusterGeneSelection::New;
@@ -171,10 +194,33 @@ mod tests {
 
             if let DetailedClusterGeneSelection::Existing(cluster_gene_index) = selection {
                 random
-                    .expect_random_usize_in_range(partial_eq(0), partial_eq(cluster_gene_count))
+                    .expect_random_usize_in_range(
+                        partial_eq(0),
+                        partial_eq(generated_cluster_gene_count),
+                    )
                     .returns(cluster_gene_index);
             }
         }
+    }
+
+    fn cluster_gene_stub() -> ClusterGene {
+        ClusterGene {
+            neurons: Vec::new(),
+            connections: Vec::new(),
+            placement_neuron: ClusterNeuronIndex(0),
+            specialization: ClusterGeneSpecialization::None,
+        }
+    }
+
+    fn count_generated_cluster_genes(
+        cluster_gene_selections: &[DetailedClusterGeneSelection],
+    ) -> usize {
+        const ALWAYS_GENERATED_CLUSTER_GENES: usize = 1;
+        let new_cluster_genes = cluster_gene_selections
+            .iter()
+            .filter(|&&selection| selection == DetailedClusterGeneSelection::New)
+            .count();
+        ALWAYS_GENERATED_CLUSTER_GENES + new_cluster_genes
     }
 
     fn genome_generator_configuration(
