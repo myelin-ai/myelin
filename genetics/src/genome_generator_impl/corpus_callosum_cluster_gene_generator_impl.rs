@@ -259,9 +259,6 @@ mod tests {
             output_cluster_neurons,
         };
 
-        dbg!(&corpus_callosum);
-        dbg!(&expected_corpus_callosum);
-
         assert_eq!(expected_corpus_callosum, corpus_callosum);
     }
 
