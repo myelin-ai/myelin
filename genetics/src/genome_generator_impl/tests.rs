@@ -182,10 +182,7 @@ fn register_cluster_gene_selection_expectations(
 
         if let DetailedClusterGeneSelection::Existing(cluster_gene_index) = selection {
             random
-                .expect_usize_in_range(
-                    partial_eq(0),
-                    partial_eq(generated_cluster_gene_count),
-                )
+                .expect_usize_in_range(partial_eq(0), partial_eq(generated_cluster_gene_count))
                 .returns(cluster_gene_index);
         }
     }
