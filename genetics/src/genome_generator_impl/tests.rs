@@ -170,7 +170,7 @@ fn register_cluster_gene_selection_expectations(
     cluster_gene_selections: &[DetailedClusterGeneSelection],
 ) {
     random.expect_flip_coin_with_probability_calls_in_order();
-    random.expect_random_usize_in_range_calls_in_order();
+    random.expect_usize_in_range_calls_in_order();
 
     let generated_cluster_gene_count = count_generated_cluster_genes(cluster_gene_selections);
 
@@ -182,7 +182,7 @@ fn register_cluster_gene_selection_expectations(
 
         if let DetailedClusterGeneSelection::Existing(cluster_gene_index) = selection {
             random
-                .expect_random_usize_in_range(
+                .expect_usize_in_range(
                     partial_eq(0),
                     partial_eq(generated_cluster_gene_count),
                 )

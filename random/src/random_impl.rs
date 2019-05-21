@@ -169,7 +169,7 @@ mod tests {
     #[test]
     fn panics_when_usize_min_is_higher_than_max() {
         let random = RandomImpl::default();
-        random.random_usize_in_range(1, 0);
+        random.usize_in_range(1, 0);
     }
 
     #[should_panic]
@@ -177,7 +177,7 @@ mod tests {
     fn panics_when_usize_min_is_max() {
         let random = RandomImpl::default();
         const ONLY_BOUND: usize = 1;
-        random.random_usize_in_range(ONLY_BOUND, ONLY_BOUND);
+        random.usize_in_range(ONLY_BOUND, ONLY_BOUND);
     }
 
     #[test]
@@ -186,7 +186,7 @@ mod tests {
         const MIN: usize = 1;
         const MAX: usize = 3;
 
-        let number = random.random_usize_in_range(MIN, MAX);
+        let number = random.usize_in_range(MIN, MAX);
         assert!(number >= MIN && number < MAX);
     }
 

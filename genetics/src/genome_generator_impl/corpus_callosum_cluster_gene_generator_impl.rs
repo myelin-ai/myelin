@@ -25,7 +25,7 @@ impl CorpusCallosumClusterGeneGenerator for CorpusCallosumClusterGeneGeneratorIm
         // However `output_neuron_count` is usually smaller than `input_neuron_count` which speaks in its favour.
         let stem_neuron_count = self
             .random
-            .random_usize_in_range(MIN_STEM_NEURONS, output_neuron_count + 1);
+            .usize_in_range(MIN_STEM_NEURONS, output_neuron_count + 1);
         let neuron_count = input_neuron_count + output_neuron_count + stem_neuron_count;
         let connections =
             self.generate_input_neuron_connections(input_neuron_count)
@@ -116,7 +116,7 @@ impl CorpusCallosumClusterGeneGeneratorImpl {
     fn generate_connection(&self, from_index: usize, to_index: usize) -> Connection {
         let weight = self
             .random
-            .random_float_in_range(MIN_CONNECTION_WEIGHT, MAX_CONNECTION_WEIGHT);
+            .f64_in_range(MIN_CONNECTION_WEIGHT, MAX_CONNECTION_WEIGHT);
         Connection {
             from: ClusterNeuronIndex(from_index),
             to: ClusterNeuronIndex(to_index),
@@ -224,11 +224,11 @@ mod tests {
 
         let random = {
             let mut random = RandomMock::new();
-            random.expect_random_float_in_range_calls_in_order();
+            random.expect_f64_in_range_calls_in_order();
 
             for index in 0..connection_count {
                 random
-                    .expect_random_float_in_range(
+                    .expect_f64_in_range(
                         partial_eq(MIN_CONNECTION_WEIGHT),
                         partial_eq(MAX_CONNECTION_WEIGHT),
                     )
@@ -236,7 +236,7 @@ mod tests {
             }
 
             random
-                .expect_random_usize_in_range(
+                .expect_usize_in_range(
                     partial_eq(MIN_STEM_NEURONS),
                     partial_eq(output_neuron_count + 1),
                 )

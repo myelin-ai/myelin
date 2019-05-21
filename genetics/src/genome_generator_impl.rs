@@ -112,7 +112,7 @@ impl GenomeGenerator for GenomeGeneratorImpl {
             .map(|(index, selection)| {
                 let cluster_index = match selection {
                     EnumeratedClusterGeneSelection::Existing => {
-                        self.random.random_usize_in_range(0, input_clusters.len())
+                        self.random.usize_in_range(0, input_clusters.len())
                     }
                     EnumeratedClusterGeneSelection::New(index) => index,
                 };

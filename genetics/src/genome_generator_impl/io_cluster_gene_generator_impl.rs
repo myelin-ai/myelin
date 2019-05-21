@@ -30,7 +30,7 @@ impl IoClusterGeneGeneratorImpl {
     fn generate_cluster_gene(&self, specialization: ClusterGeneSpecialization) -> ClusterGene {
         let neuron_count = self
             .random
-            .random_usize_in_range(MIN_NEURONS_PER_CLUSTER, MAX_NEURONS_PER_CLUSTER);
+            .usize_in_range(MIN_NEURONS_PER_CLUSTER, MAX_NEURONS_PER_CLUSTER);
         let neurons = vec![Neuron {}; neuron_count];
         let connections = self.create_connections(neuron_count).collect();
         ClusterGene {
@@ -64,7 +64,7 @@ impl IoClusterGeneGeneratorImpl {
     fn create_connection(&self, from_index: usize, to_index: usize) -> Connection {
         let weight = self
             .random
-            .random_float_in_range(MIN_CONNECTION_WEIGHT, MAX_CONNECTION_WEIGHT);
+            .f64_in_range(MIN_CONNECTION_WEIGHT, MAX_CONNECTION_WEIGHT);
         Connection {
             from: ClusterNeuronIndex(from_index),
             to: ClusterNeuronIndex(to_index),
@@ -96,16 +96,16 @@ mod tests {
         let random: Box<dyn Random> = {
             let mut random = RandomMock::new();
             random
-                .expect_random_usize_in_range(
+                .expect_usize_in_range(
                     partial_eq(MIN_NEURONS_PER_CLUSTER),
                     partial_eq(MAX_NEURONS_PER_CLUSTER),
                 )
                 .returns(NEURON_COUNT);
 
-            random.expect_random_float_in_range_calls_in_order();
+            random.expect_f64_in_range_calls_in_order();
             for index in 0..CONNECTION_COUNT {
                 random
-                    .expect_random_float_in_range(
+                    .expect_f64_in_range(
                         partial_eq(MIN_CONNECTION_WEIGHT),
                         partial_eq(MAX_CONNECTION_WEIGHT),
                     )

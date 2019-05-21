@@ -39,7 +39,7 @@ pub trait Random: Debug + RandomClone {
     fn i32_in_range(&self, min: i32, max: i32) -> i32;
 
     /// Returns a random [`usize`] in the specified range [min; max)
-    fn random_usize_in_range(&self, min: usize, max: usize) -> usize;
+    fn usize_in_range(&self, min: usize, max: usize) -> usize;
 
     /// Returns a random floating point number in the specified range [min; max)
     fn f64_in_range(&self, min: f64, max: f64) -> f64;
