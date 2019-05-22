@@ -239,11 +239,11 @@ mod tests {
         assert_eq!(mutated_genome, developed_neural_network.genome);
     }
 
-    fn create_genome_with_single_hox_gene(cluster_index: usize) -> Genome {
+    fn create_genome_with_single_hox_gene(cluster_gene: usize) -> Genome {
         Genome {
             hox_genes: vec![HoxGene {
                 placement_target: HoxPlacement::Standalone,
-                cluster_index: ClusterGeneIndex(cluster_index),
+                cluster_gene: ClusterGeneIndex(cluster_gene),
                 disabled_connections: Vec::new(),
             }],
             ..Genome::default()

@@ -202,7 +202,7 @@ impl PlacedClusterCache {
         placed_cluster: Vec<Handle>,
     ) {
         self.cluster_gene_to_placed_clusters
-            .entry(hox_gene.cluster_index)
+            .entry(hox_gene.cluster_gene)
             .or_default()
             .push(placed_cluster.clone());
         self.hox_gene_to_placed_clusters
@@ -256,7 +256,7 @@ fn map_hox_genes_to_cluster_genes(
     cluster_genes: &[ClusterGene],
 ) -> impl Iterator<Item = (HoxGene, &ClusterGene)> {
     hox_genes.into_iter().filter_map(move |hox_gene| {
-        let cluster_gene = cluster_genes.get(hox_gene.cluster_index.0)?;
+        let cluster_gene = cluster_genes.get(hox_gene.cluster_gene.0)?;
         Some((hox_gene, cluster_gene))
     })
 }

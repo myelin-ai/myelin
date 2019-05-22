@@ -26,9 +26,9 @@ fn places_two_hox_genes_placing_first_cluster_gene_on_cluster_of_initial_hox() {
 impl GenomeStubBuilder {
     fn add_hox_gene_placing_clusters_on_clusters_of_first_cluster_gene(&mut self) -> &mut Self {
         self.add_hox_gene_placing_cluster_on_cluster(ClusterOnClusterTestParameters {
-            cluster_gene: ClusterGeneIndex(0),
+            target_cluster_gene: ClusterGeneIndex(0),
             target_neuron: ClusterNeuronIndex(3),
-            cluster_index: ClusterGeneIndex(0),
+            cluster_gene: ClusterGeneIndex(0),
         });
         self
     }

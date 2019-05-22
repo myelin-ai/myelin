@@ -78,10 +78,10 @@ mod tests {
     use mockiato::any;
     use myelin_random::RandomMock;
 
-    fn hox_gene(cluster_index: usize) -> HoxGene {
+    fn hox_gene(cluster_gene: usize) -> HoxGene {
         HoxGene {
             placement_target: HoxPlacement::Standalone,
-            cluster_index: ClusterGeneIndex(cluster_index),
+            cluster_gene: ClusterGeneIndex(cluster_gene),
             disabled_connections: Vec::new(),
         }
     }

@@ -127,9 +127,9 @@ impl GenomeStubBuilder {
 
     fn add_hox_gene_placing_third_cluster_on_first_cluster(&mut self) -> &mut Self {
         self.add_hox_gene_placing_cluster_on_cluster(ClusterOnClusterTestParameters {
-            cluster_gene: ClusterGeneIndex(0),
+            target_cluster_gene: ClusterGeneIndex(0),
             target_neuron: ClusterNeuronIndex(1),
-            cluster_index: ClusterGeneIndex(2),
+            cluster_gene: ClusterGeneIndex(2),
         });
         self
     }
