@@ -83,7 +83,7 @@ impl GenomeStubBuilder {
     fn add_initial_hox_gene(&mut self) -> &mut Self {
         self.genome.hox_genes.push(HoxGene {
             placement_target: HoxPlacement::Standalone,
-            cluster_index: ClusterGeneIndex(0),
+            cluster_gene: ClusterGeneIndex(0),
             disabled_connections: vec![],
         });
         self
@@ -91,9 +91,9 @@ impl GenomeStubBuilder {
 
     fn add_hox_gene_placing_second_cluster_on_first_cluster(&mut self) -> &mut Self {
         self.add_hox_gene_placing_cluster_on_cluster(ClusterOnClusterTestParameters {
-            cluster_gene: ClusterGeneIndex(0),
+            target_cluster_gene: ClusterGeneIndex(0),
             target_neuron: ClusterNeuronIndex(2),
-            cluster_index: ClusterGeneIndex(1),
+            cluster_gene: ClusterGeneIndex(1),
         });
         self
     }
@@ -104,10 +104,10 @@ impl GenomeStubBuilder {
     ) -> &mut Self {
         self.genome.hox_genes.push(HoxGene {
             placement_target: HoxPlacement::ClusterGene {
-                cluster_gene: parameters.cluster_gene,
+                cluster_gene: parameters.target_cluster_gene,
                 target_neuron: parameters.target_neuron,
             },
-            cluster_index: parameters.cluster_index,
+            cluster_gene: parameters.cluster_gene,
             disabled_connections: Vec::new(),
         });
         self
@@ -122,7 +122,7 @@ impl GenomeStubBuilder {
                 hox_gene: parameters.hox_gene,
                 target_neuron: parameters.target_neuron,
             },
-            cluster_index: parameters.cluster_index,
+            cluster_gene: parameters.cluster_gene,
             disabled_connections: Vec::new(),
         });
         self
@@ -231,15 +231,15 @@ fn config_stub() -> NeuralNetworkDevelopmentConfiguration {
 }
 
 struct ClusterOnClusterTestParameters {
-    cluster_gene: ClusterGeneIndex,
+    target_cluster_gene: ClusterGeneIndex,
     target_neuron: ClusterNeuronIndex,
-    cluster_index: ClusterGeneIndex,
+    cluster_gene: ClusterGeneIndex,
 }
 
 struct ClusterOnHoxTestParameters {
     hox_gene: HoxGeneIndex,
     target_neuron: ClusterNeuronIndex,
-    cluster_index: ClusterGeneIndex,
+    cluster_gene: ClusterGeneIndex,
 }
 
 fn first_cluster_connections() -> Vec<ConnectionDefinition> {

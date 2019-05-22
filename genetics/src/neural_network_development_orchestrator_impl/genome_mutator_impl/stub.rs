@@ -49,7 +49,7 @@ mod tests {
             }],
             hox_genes: vec![HoxGene {
                 placement_target: HoxPlacement::Standalone,
-                cluster_index: ClusterGeneIndex(1),
+                cluster_gene: ClusterGeneIndex(1),
                 disabled_connections: Vec::new(),
             }],
         }
