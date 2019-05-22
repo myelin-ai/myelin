@@ -37,7 +37,7 @@ impl Default for GenerateGenomeTestConfiguration {
             hox_genes: vec![
                 HoxGene {
                     placement_target: HoxPlacement::Standalone,
-                    cluster_index: ClusterGeneIndex(0),
+                    cluster_gene: ClusterGeneIndex(0),
                     disabled_connections: Vec::new(),
                 },
                 create_input_hox_gene(ClusterGeneIndex(1)),
@@ -69,13 +69,13 @@ fn create_io_hox_gene_fn(
 ) -> impl FnMut(ClusterGeneIndex) -> HoxGene {
     let mut target_neuron_counter = 0;
 
-    move |cluster_index| {
+    move |cluster_gene| {
         let target_neuron = ClusterNeuronIndex(target_neuron_offset.0 + target_neuron_counter);
 
         target_neuron_counter += 1;
 
         HoxGene {
-            cluster_index,
+            cluster_gene,
             disabled_connections: Vec::new(),
             placement_target: HoxPlacement::HoxGene {
                 hox_gene: HoxGeneIndex(0),

@@ -136,7 +136,7 @@ impl GenomeGeneratorImpl {
                 let cluster_gene_index =
                     self.pick_cluster_gene_from_selection(cluster_genes.len(), selection);
                 HoxGene {
-                    cluster_index: ClusterGeneIndex(cluster_gene_index),
+                    cluster_gene: ClusterGeneIndex(cluster_gene_index),
                     disabled_connections: Vec::new(),
                     placement_target: HoxPlacement::HoxGene {
                         hox_gene: PLACEMENT_TARGET_HOX_GENE,
