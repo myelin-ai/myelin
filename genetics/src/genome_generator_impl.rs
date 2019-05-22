@@ -84,16 +84,23 @@ impl GenomeGeneratorImpl {
 }
 
 impl GenomeGenerator for GenomeGeneratorImpl {
-    fn generate_genome(&self, configuration: &GenomeGeneratorConfiguration) -> Genome {
-        let corpus_callosum =
-            self.corpus_callosum_cluster_gene_generator
-                .generate(&CorpusCallosumConfiguration {
-                    input_neuron_count: configuration.input_neuron_count,
-                    output_neuron_count: configuration.output_neuron_count,
-                });
+    fn generate_genome(
+        &self,
+        &GenomeGeneratorConfiguration {
+            input_neuron_count,
+            output_neuron_count,
+        }: &GenomeGeneratorConfiguration,
+    ) -> Genome {
+        let corpus_callosum_config = CorpusCallosumConfiguration {
+            input_neuron_count,
+            output_neuron_count,
+        };
+        let corpus_callosum = self
+            .corpus_callosum_cluster_gene_generator
+            .generate(&corpus_callosum_config);
 
         let input_hox_genes_config = IoHoxGeneGenerationConfiguration {
-            neuron_count: configuration.input_neuron_count,
+            neuron_count: input_neuron_count,
             cluster_gene_offset: ClusterGeneIndex(0),
             corpus_callosum_cluster_neurons: corpus_callosum.input_cluster_neurons,
         };
@@ -103,7 +110,7 @@ impl GenomeGenerator for GenomeGeneratorImpl {
             });
 
         let output_hox_genes_config = IoHoxGeneGenerationConfiguration {
-            neuron_count: configuration.output_neuron_count,
+            neuron_count: output_neuron_count,
             cluster_gene_offset: ClusterGeneIndex(input_cluster_genes.len()),
             corpus_callosum_cluster_neurons: corpus_callosum.output_cluster_neurons,
         };
