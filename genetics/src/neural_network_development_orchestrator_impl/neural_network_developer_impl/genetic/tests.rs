@@ -100,14 +100,18 @@ impl GenomeStubBuilder {
 
     fn add_hox_gene_placing_cluster_on_cluster(
         &mut self,
-        parameters: ClusterOnClusterTestParameters,
+        ClusterOnClusterTestParameters {
+            target_cluster_gene,
+            target_neuron,
+            cluster_gene,
+        }: ClusterOnClusterTestParameters,
     ) -> &mut Self {
         self.genome.hox_genes.push(HoxGene {
             placement_target: HoxPlacement::ClusterGene {
-                cluster_gene: parameters.target_cluster_gene,
-                target_neuron: parameters.target_neuron,
+                cluster_gene: target_cluster_gene,
+                target_neuron,
             },
-            cluster_gene: parameters.cluster_gene,
+            cluster_gene,
             disabled_connections: Vec::new(),
         });
         self
