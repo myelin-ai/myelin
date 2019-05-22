@@ -54,7 +54,7 @@ impl GenomeStubBuilder {
     fn add_initial_hox_gene_with_disabled_connection(&mut self) -> &mut Self {
         self.genome.hox_genes.push(HoxGene {
             placement_target: HoxPlacement::Standalone,
-            cluster_index: ClusterGeneIndex(0),
+            cluster_gene: ClusterGeneIndex(0),
             disabled_connections: vec![ClusterConnectionIndex(0)],
         });
         self
@@ -63,7 +63,7 @@ impl GenomeStubBuilder {
     fn add_initial_hox_gene_with_valid_and_invalid_disabled_connection(&mut self) -> &mut Self {
         self.genome.hox_genes.push(HoxGene {
             placement_target: HoxPlacement::Standalone,
-            cluster_index: ClusterGeneIndex(0),
+            cluster_gene: ClusterGeneIndex(0),
             disabled_connections: vec![ClusterConnectionIndex(10), ClusterConnectionIndex(0)],
         });
         self

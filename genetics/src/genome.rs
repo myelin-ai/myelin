@@ -114,7 +114,7 @@ pub struct HoxGene {
     /// The target(s) that the hox places its cluster(s) on
     pub placement_target: HoxPlacement,
     /// Index of the cluster that will be instantiated and placed.
-    pub cluster_index: ClusterGeneIndex,
+    pub cluster_gene: ClusterGeneIndex,
     /// These connections, if existent, will not be enabled on the placed cluster.
     pub disabled_connections: Vec<ClusterConnectionIndex>,
 }

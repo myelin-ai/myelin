@@ -25,7 +25,7 @@ impl GenomeStubBuilder {
         self.add_hox_gene_placing_cluster_on_hox(ClusterOnHoxTestParameters {
             hox_gene: HoxGeneIndex(0),
             target_neuron: ClusterNeuronIndex(3),
-            cluster_index: ClusterGeneIndex(0),
+            cluster_gene: ClusterGeneIndex(0),
         });
         self
     }

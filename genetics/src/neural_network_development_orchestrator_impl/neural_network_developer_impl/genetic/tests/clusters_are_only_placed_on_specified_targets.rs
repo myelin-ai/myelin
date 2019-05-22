@@ -62,7 +62,7 @@ impl GenomeStubBuilder {
         self.add_hox_gene_placing_cluster_on_hox(ClusterOnHoxTestParameters {
             hox_gene: HoxGeneIndex(0),
             target_neuron: ClusterNeuronIndex(3),
-            cluster_index: ClusterGeneIndex(0),
+            cluster_gene: ClusterGeneIndex(0),
         });
         self
     }
@@ -71,7 +71,7 @@ impl GenomeStubBuilder {
         self.add_hox_gene_placing_cluster_on_hox(ClusterOnHoxTestParameters {
             hox_gene: HoxGeneIndex(0),
             target_neuron: ClusterNeuronIndex(2),
-            cluster_index: ClusterGeneIndex(1),
+            cluster_gene: ClusterGeneIndex(1),
         });
         self
     }
@@ -80,7 +80,7 @@ impl GenomeStubBuilder {
         self.add_hox_gene_placing_cluster_on_hox(ClusterOnHoxTestParameters {
             hox_gene: HoxGeneIndex(3),
             target_neuron: ClusterNeuronIndex(1),
-            cluster_index: ClusterGeneIndex(0),
+            cluster_gene: ClusterGeneIndex(0),
         });
         self
     }
