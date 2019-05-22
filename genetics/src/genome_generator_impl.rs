@@ -97,10 +97,13 @@ impl GenomeGenerator for GenomeGeneratorImpl {
                 self.io_cluster_gene_generator.generate_input_cluster_gene()
             });
 
-        let (output_hox_genes, output_cluster_genes) = self
-            .generate_io_hox_genes_with_clusters(configuration.input_neuron_count.get(), || {
-                self.io_cluster_gene_generator.generate_output_cluster_gene()
-            });
+        let (output_hox_genes, output_cluster_genes) = self.generate_io_hox_genes_with_clusters(
+            configuration.input_neuron_count.get(),
+            || {
+                self.io_cluster_gene_generator
+                    .generate_output_cluster_gene()
+            },
+        );
 
         unimplemented!();
     }
@@ -115,14 +118,10 @@ impl GenomeGeneratorImpl {
         let input_cluster_selections = iter::once(ClusterGeneSelection::New)
             .chain((0..(neuron_count.saturating_sub(1))).map(|_| self.select_cluster_gene()))
             .scan(0, |current_new_index, selection| {
-                Some(match selection {
-                    ClusterGeneSelection::Existing => EnumeratedClusterGeneSelection::Existing,
-                    ClusterGeneSelection::New => {
-                        let index = *current_new_index;
-                        *current_new_index += 1;
-                        EnumeratedClusterGeneSelection::New(index)
-                    }
-                })
+                Some(enumerate_cluster_gene_selection(
+                    current_new_index,
+                    selection,
+                ))
             });
 
         let cluster_genes: Vec<_> = input_cluster_selections
@@ -134,15 +133,10 @@ impl GenomeGeneratorImpl {
         let hox_genes = input_cluster_selections
             .enumerate()
             .map(|(index, selection)| {
-                let cluster_index = match selection {
-                    EnumeratedClusterGeneSelection::Existing => {
-                        self.random.usize_in_range(0, cluster_genes.len())
-                    }
-                    EnumeratedClusterGeneSelection::New(index) => index,
-                };
-
+                let cluster_gene_index =
+                    self.pick_cluster_gene_from_selection(cluster_genes.len(), selection);
                 HoxGene {
-                    cluster_index: ClusterGeneIndex(cluster_index),
+                    cluster_index: ClusterGeneIndex(cluster_gene_index),
                     disabled_connections: Vec::new(),
                     placement_target: HoxPlacement::HoxGene {
                         hox_gene: PLACEMENT_TARGET_HOX_GENE,
@@ -155,6 +149,19 @@ impl GenomeGeneratorImpl {
         (hox_genes, cluster_genes)
     }
 
+    fn pick_cluster_gene_from_selection(
+        &self,
+        cluster_gene_count: usize,
+        selection: EnumeratedClusterGeneSelection,
+    ) -> usize {
+        match selection {
+            EnumeratedClusterGeneSelection::Existing => {
+                self.random.usize_in_range(0, cluster_gene_count)
+            }
+            EnumeratedClusterGeneSelection::New(index) => index,
+        }
+    }
+
     fn select_cluster_gene(&self) -> ClusterGeneSelection {
         if self
             .random
@@ -163,6 +170,20 @@ impl GenomeGeneratorImpl {
             ClusterGeneSelection::New
         } else {
             ClusterGeneSelection::Existing
+        }
+    }
+}
+
+fn enumerate_cluster_gene_selection(
+    current_new_index: &mut usize,
+    selection: ClusterGeneSelection,
+) -> EnumeratedClusterGeneSelection {
+    match selection {
+        ClusterGeneSelection::Existing => EnumeratedClusterGeneSelection::Existing,
+        ClusterGeneSelection::New => {
+            let index = *current_new_index;
+            *current_new_index += 1;
+            EnumeratedClusterGeneSelection::New(index)
         }
     }
 }
