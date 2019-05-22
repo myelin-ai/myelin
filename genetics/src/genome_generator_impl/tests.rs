@@ -98,7 +98,7 @@ fn test_genome_is_generated_correctly(
     let output_neuron_count = output_cluster_neurons.len();
     let corpus_callosum_configuration = CorpusCallosumConfiguration {
         input_neuron_count: NonZeroUsize::new(input_neuron_count).unwrap(),
-        output_neuron_count: NonZeroUsize::new(input_neuron_count).unwrap(),
+        output_neuron_count: NonZeroUsize::new(output_neuron_count).unwrap(),
     };
     let corpus_callosum_cluster_gene_generator = mock_corpus_callosum_cluster_gene_generator(
         corpus_callosum_configuration,
