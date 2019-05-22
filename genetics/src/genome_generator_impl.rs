@@ -92,31 +92,55 @@ impl GenomeGenerator for GenomeGeneratorImpl {
                     output_neuron_count: configuration.output_neuron_count,
                 });
 
+        let input_hox_genes_config = IoHoxGeneGenerationConfiguration {
+            neuron_count: configuration.input_neuron_count,
+            cluster_gene_offset: ClusterGeneIndex(0),
+            corpus_callosum_cluster_neurons: corpus_callosum.input_cluster_neurons,
+        };
         let (input_hox_genes, input_cluster_genes) = self
-            .generate_io_hox_genes_with_clusters(configuration.input_neuron_count.get(), || {
+            .generate_io_hox_genes_with_clusters(input_hox_genes_config, || {
                 self.io_cluster_gene_generator.generate_input_cluster_gene()
             });
 
-        let (output_hox_genes, output_cluster_genes) = self.generate_io_hox_genes_with_clusters(
-            configuration.input_neuron_count.get(),
-            || {
+        let output_hox_genes_config = IoHoxGeneGenerationConfiguration {
+            neuron_count: configuration.output_neuron_count,
+            cluster_gene_offset: ClusterGeneIndex(input_cluster_genes.len()),
+            corpus_callosum_cluster_neurons: corpus_callosum.output_cluster_neurons,
+        };
+        let (output_hox_genes, output_cluster_genes) =
+            self.generate_io_hox_genes_with_clusters(output_hox_genes_config, || {
                 self.io_cluster_gene_generator
                     .generate_output_cluster_gene()
-            },
-        );
+            });
 
         unimplemented!();
     }
 }
 
+struct IoHoxGeneGenerationConfiguration {
+    neuron_count: NonZeroUsize,
+    cluster_gene_offset: ClusterGeneIndex,
+    corpus_callosum_cluster_neurons: Vec<ClusterNeuronIndex>,
+}
+
 impl GenomeGeneratorImpl {
     fn generate_io_hox_genes_with_clusters(
         &self,
-        neuron_count: usize,
+        IoHoxGeneGenerationConfiguration {
+            neuron_count,
+            cluster_gene_offset,
+            corpus_callosum_cluster_neurons,
+        }: IoHoxGeneGenerationConfiguration,
         generate_cluster_gene_fn: impl Fn() -> ClusterGene,
     ) -> (Vec<HoxGene>, Vec<ClusterGene>) {
+        let neuron_count = neuron_count.get();
+
         let input_cluster_selections = iter::once(ClusterGeneSelection::New)
-            .chain((0..(neuron_count.saturating_sub(1))).map(|_| self.select_cluster_gene()))
+            .chain(
+                (0..neuron_count)
+                    .skip(1)
+                    .map(|_| self.select_cluster_gene()),
+            )
             .scan(0, |current_new_index, selection| {
                 Some(enumerate_cluster_gene_selection(
                     current_new_index,
