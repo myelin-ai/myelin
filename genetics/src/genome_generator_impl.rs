@@ -120,7 +120,18 @@ impl GenomeGenerator for GenomeGeneratorImpl {
                     .generate_output_cluster_gene()
             });
 
-        unimplemented!();
+        let hox_genes = input_hox_genes
+            .into_iter()
+            .chain(output_hox_genes)
+            .collect();
+        let cluster_genes = input_cluster_genes
+            .into_iter()
+            .chain(output_cluster_genes)
+            .collect();
+        Genome {
+            hox_genes,
+            cluster_genes,
+        }
     }
 }
 
