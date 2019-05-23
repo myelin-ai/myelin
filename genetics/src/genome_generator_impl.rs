@@ -161,21 +161,14 @@ impl GenomeGeneratorImpl {
         generate_cluster_gene_fn: impl Fn() -> ClusterGene,
     ) -> (Vec<HoxGene>, Vec<ClusterGene>) {
         let neuron_count = configuration.neuron_count.get();
-        let cluster_gene_selections: Vec<_> = self
+        let selections: Vec<_> = self
             .generate_cluster_gene_selections(neuron_count)
             .collect();
         let cluster_genes: Vec<_> = self
-            .generate_cluster_genes_from_selections(
-                &cluster_gene_selections,
-                generate_cluster_gene_fn,
-            )
+            .generate_cluster_genes_from_selections(&selections, generate_cluster_gene_fn)
             .collect();
         let hox_genes: Vec<_> = self
-            .generate_hox_genes_from_selections(
-                &cluster_gene_selections,
-                &cluster_genes,
-                &configuration,
-            )
+            .generate_hox_genes_from_selections(&selections, &cluster_genes, &configuration)
             .collect();
         (hox_genes, cluster_genes)
     }
