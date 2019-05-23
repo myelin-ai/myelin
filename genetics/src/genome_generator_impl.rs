@@ -157,39 +157,69 @@ struct IoHoxGeneGenerationConfiguration {
 impl GenomeGeneratorImpl {
     fn generate_io_hox_genes_with_clusters(
         &self,
-        IoHoxGeneGenerationConfiguration {
-            neuron_count,
-            cluster_gene_offset,
-            corpus_callosum_cluster_neurons,
-        }: IoHoxGeneGenerationConfiguration,
+        configuration: IoHoxGeneGenerationConfiguration,
         generate_cluster_gene_fn: impl Fn() -> ClusterGene,
     ) -> (Vec<HoxGene>, Vec<ClusterGene>) {
-        let neuron_count = neuron_count.get();
-
-        let input_cluster_selections: Vec<_> = iter::once(ClusterGeneSelection::New)
-            .chain(
-                (0..neuron_count)
-                    .skip(1)
-                    .map(|_| self.select_cluster_gene()),
+        let neuron_count = configuration.neuron_count.get();
+        let cluster_gene_selections: Vec<_> = self
+            .generate_cluster_gene_selections(neuron_count)
+            .collect();
+        let cluster_genes: Vec<_> = self
+            .generate_clusters_from_selections(&cluster_gene_selections, generate_cluster_gene_fn)
+            .collect();
+        let hox_genes: Vec<_> = self
+            .generate_hox_genes_from_selections(
+                &cluster_gene_selections,
+                &cluster_genes,
+                &configuration,
             )
+            .collect();
+        (hox_genes, cluster_genes)
+    }
+
+    fn generate_cluster_gene_selections<'a>(
+        &'a self,
+        neuron_count: usize,
+    ) -> impl Iterator<Item = EnumeratedClusterGeneSelection> + 'a {
+        const FIRST_CLUSTER_GENE_SELECTION: ClusterGeneSelection = ClusterGeneSelection::New;
+        let variable_cluster_gene_selections = (0..neuron_count)
+            .skip(1)
+            .map(move |_| self.select_cluster_gene());
+        iter::once(FIRST_CLUSTER_GENE_SELECTION)
+            .chain(variable_cluster_gene_selections)
             .scan(0, |current_new_index, selection| {
                 Some(enumerate_cluster_gene_selection(
                     current_new_index,
                     selection,
                 ))
             })
-            .collect();
+    }
 
-        let cluster_genes: Vec<_> = input_cluster_selections
+    fn generate_clusters_from_selections<'a>(
+        &'a self,
+        selections: &'a [EnumeratedClusterGeneSelection],
+        generate_cluster_gene_fn: impl Fn() -> ClusterGene + 'a,
+    ) -> impl Iterator<Item = ClusterGene> + 'a {
+        selections
             .iter()
             .filter(|selection| selection.is_new())
-            .map(|_| generate_cluster_gene_fn())
-            .collect();
+            .map(move |_| generate_cluster_gene_fn())
+    }
 
-        let hox_genes = input_cluster_selections
-            .into_iter()
+    fn generate_hox_genes_from_selections<'a>(
+        &'a self,
+        selections: &'a [EnumeratedClusterGeneSelection],
+        cluster_genes: &'a [ClusterGene],
+        IoHoxGeneGenerationConfiguration {
+            cluster_gene_offset,
+            corpus_callosum_cluster_neurons,
+            ..
+        }: &'a IoHoxGeneGenerationConfiguration,
+    ) -> impl Iterator<Item = HoxGene> + 'a {
+        selections
+            .iter()
             .enumerate()
-            .map(|(index, selection)| {
+            .map(move |(index, &selection)| {
                 let relative_cluster_gene_index =
                     self.pick_cluster_gene_from_selection(cluster_genes.len(), selection);
                 let cluster_gene =
@@ -206,9 +236,6 @@ impl GenomeGeneratorImpl {
                     },
                 }
             })
-            .collect();
-
-        (hox_genes, cluster_genes)
     }
 
     fn pick_cluster_gene_from_selection(
