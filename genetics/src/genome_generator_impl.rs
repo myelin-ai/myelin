@@ -165,7 +165,10 @@ impl GenomeGeneratorImpl {
             .generate_cluster_gene_selections(neuron_count)
             .collect();
         let cluster_genes: Vec<_> = self
-            .generate_clusters_from_selections(&cluster_gene_selections, generate_cluster_gene_fn)
+            .generate_cluster_genes_from_selections(
+                &cluster_gene_selections,
+                generate_cluster_gene_fn,
+            )
             .collect();
         let hox_genes: Vec<_> = self
             .generate_hox_genes_from_selections(
@@ -195,7 +198,7 @@ impl GenomeGeneratorImpl {
             })
     }
 
-    fn generate_clusters_from_selections<'a>(
+    fn generate_cluster_genes_from_selections<'a>(
         &'a self,
         selections: &'a [EnumeratedClusterGeneSelection],
         generate_cluster_gene_fn: impl Fn() -> ClusterGene + 'a,
