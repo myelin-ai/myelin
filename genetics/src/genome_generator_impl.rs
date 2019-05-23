@@ -111,11 +111,11 @@ impl GenomeGenerator for GenomeGeneratorImpl {
                 self.io_cluster_gene_generator.generate_input_cluster_gene()
             });
 
+        let output_cluster_gene_offset =
+            ClusterGeneIndex(IO_CLUSTER_GENE_OFFSET.0 + input_cluster_genes.len());
         let output_hox_genes_config = IoHoxGeneGenerationConfiguration {
             neuron_count: output_neuron_count,
-            cluster_gene_offset: ClusterGeneIndex(
-                IO_CLUSTER_GENE_OFFSET.0 + input_cluster_genes.len(),
-            ),
+            cluster_gene_offset: output_cluster_gene_offset,
             corpus_callosum_cluster_neurons: corpus_callosum.output_cluster_neurons,
         };
         let (output_hox_genes, output_cluster_genes) =
