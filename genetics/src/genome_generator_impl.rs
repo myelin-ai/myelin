@@ -99,9 +99,11 @@ impl GenomeGenerator for GenomeGeneratorImpl {
             .corpus_callosum_cluster_gene_generator
             .generate(&corpus_callosum_config);
 
+        const IO_CLUSTER_GENE_OFFSET: ClusterGeneIndex = ClusterGeneIndex(1);
+
         let input_hox_genes_config = IoHoxGeneGenerationConfiguration {
             neuron_count: input_neuron_count,
-            cluster_gene_offset: ClusterGeneIndex(0),
+            cluster_gene_offset: IO_CLUSTER_GENE_OFFSET,
             corpus_callosum_cluster_neurons: corpus_callosum.input_cluster_neurons,
         };
         let (input_hox_genes, input_cluster_genes) = self
@@ -111,7 +113,9 @@ impl GenomeGenerator for GenomeGeneratorImpl {
 
         let output_hox_genes_config = IoHoxGeneGenerationConfiguration {
             neuron_count: output_neuron_count,
-            cluster_gene_offset: ClusterGeneIndex(input_cluster_genes.len()),
+            cluster_gene_offset: ClusterGeneIndex(
+                IO_CLUSTER_GENE_OFFSET.0 + input_cluster_genes.len(),
+            ),
             corpus_callosum_cluster_neurons: corpus_callosum.output_cluster_neurons,
         };
         let (output_hox_genes, output_cluster_genes) =
@@ -120,18 +124,27 @@ impl GenomeGenerator for GenomeGeneratorImpl {
                     .generate_output_cluster_gene()
             });
 
-        let hox_genes = input_hox_genes
-            .into_iter()
+        let hox_genes = iter::once(corpus_callosum_hox_gene())
+            .chain(input_hox_genes)
             .chain(output_hox_genes)
             .collect();
-        let cluster_genes = input_cluster_genes
-            .into_iter()
+        let cluster_genes = iter::once(corpus_callosum.cluster_gene)
+            .chain(input_cluster_genes)
             .chain(output_cluster_genes)
             .collect();
         Genome {
             hox_genes,
             cluster_genes,
         }
+    }
+}
+
+fn corpus_callosum_hox_gene() -> HoxGene {
+    const CORPUS_CALLOSUM_CLUSTER_GENE: ClusterGeneIndex = ClusterGeneIndex(0);
+    HoxGene {
+        placement_target: HoxPlacement::Standalone,
+        cluster_gene: CORPUS_CALLOSUM_CLUSTER_GENE,
+        disabled_connections: Vec::new(),
     }
 }
 
@@ -177,14 +190,19 @@ impl GenomeGeneratorImpl {
             .into_iter()
             .enumerate()
             .map(|(index, selection)| {
-                let cluster_gene_index =
+                let relative_cluster_gene_index =
                     self.pick_cluster_gene_from_selection(cluster_genes.len(), selection);
+                let cluster_gene =
+                    ClusterGeneIndex(cluster_gene_offset.0 + relative_cluster_gene_index);
+                let target_neuron = *corpus_callosum_cluster_neurons
+                    .get(index)
+                    .expect("Corpus callosum does not contain enough neurons");
                 HoxGene {
-                    cluster_gene: ClusterGeneIndex(cluster_gene_index),
+                    cluster_gene,
                     disabled_connections: Vec::new(),
                     placement_target: HoxPlacement::HoxGene {
                         hox_gene: PLACEMENT_TARGET_HOX_GENE,
-                        target_neuron: ClusterNeuronIndex(index),
+                        target_neuron,
                     },
                 }
             })

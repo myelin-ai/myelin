@@ -1,6 +1,7 @@
 use super::*;
 use mockiato::{partial_eq, partial_eq_owned};
 use myelin_random::RandomMock;
+use pretty_assertions::assert_eq;
 
 #[test]
 fn generates_correct_genome() {
@@ -33,6 +34,7 @@ impl From<DetailedClusterGeneSelection> for ClusterGeneSelection {
 impl Default for GenerateGenomeTestConfiguration {
     fn default() -> Self {
         let mut create_input_hox_gene = create_io_hox_gene_fn(ClusterNeuronIndex(0));
+        let mut create_output_hox_gene = create_io_hox_gene_fn(ClusterNeuronIndex(5));
         let expected_genome = Genome {
             hox_genes: vec![
                 HoxGene {
@@ -43,8 +45,10 @@ impl Default for GenerateGenomeTestConfiguration {
                 create_input_hox_gene(ClusterGeneIndex(1)),
                 create_input_hox_gene(ClusterGeneIndex(2)),
                 create_input_hox_gene(ClusterGeneIndex(2)),
+                create_output_hox_gene(ClusterGeneIndex(3)),
+                create_output_hox_gene(ClusterGeneIndex(3)),
             ],
-            cluster_genes: vec![cluster_gene_stub(); 6],
+            cluster_genes: vec![cluster_gene_stub(); 4],
         };
 
         Self {
