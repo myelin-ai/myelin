@@ -16,7 +16,7 @@ struct GenerateGenomeTestConfiguration {
     expected_genome: Genome,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 enum DetailedClusterGeneSelection {
     Existing(usize),
     New,
