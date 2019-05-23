@@ -153,7 +153,7 @@ impl GenomeGeneratorImpl {
     ) -> (Vec<HoxGene>, Vec<ClusterGene>) {
         let neuron_count = neuron_count.get();
 
-        let input_cluster_selections = iter::once(ClusterGeneSelection::New)
+        let input_cluster_selections: Vec<_> = iter::once(ClusterGeneSelection::New)
             .chain(
                 (0..neuron_count)
                     .skip(1)
@@ -164,15 +164,17 @@ impl GenomeGeneratorImpl {
                     current_new_index,
                     selection,
                 ))
-            });
+            })
+            .collect();
 
         let cluster_genes: Vec<_> = input_cluster_selections
-            .clone()
+            .iter()
             .filter(|selection| selection.is_new())
             .map(|_| generate_cluster_gene_fn())
             .collect();
 
         let hox_genes = input_cluster_selections
+            .into_iter()
             .enumerate()
             .map(|(index, selection)| {
                 let cluster_gene_index =

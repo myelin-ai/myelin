@@ -124,7 +124,7 @@ fn test_genome_is_generated_correctly(
     let config = genome_generator_configuration(input_neuron_count, output_neuron_count);
     let genome = genome_generator.generate_genome(&config);
 
-    assert_eq!(expected_genome, genome,)
+    assert_eq!(expected_genome, genome);
 }
 
 fn mock_corpus_callosum_cluster_gene_generator(
