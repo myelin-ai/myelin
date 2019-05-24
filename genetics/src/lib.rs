@@ -117,7 +117,7 @@ pub struct GenomeGeneratorConfiguration {
     pub output_neuron_count: NonZeroUsize,
 }
 
-/// A factory for producing a new genome
+/// A factory for producing a new genome.
 #[cfg_attr(any(test, feature = "use-mocks"), mockable)]
 pub trait GenomeGenerator {
     /// Generates a new genome from scratch according to the given configuration.
