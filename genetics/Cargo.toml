@@ -24,7 +24,7 @@ matches = "0.1"
 
 [dev-dependencies]
 mockiato = "0.5"
-pretty_assertions = "0.6.1"
+pretty_assertions = "0.6"
 
 [features]
 use-mocks = ["mockiato"]
