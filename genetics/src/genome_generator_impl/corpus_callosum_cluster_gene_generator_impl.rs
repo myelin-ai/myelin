@@ -4,7 +4,7 @@ use myelin_associate_lists::associate_lists;
 use myelin_random::Random;
 use std::iter;
 
-/// Default implementation of [`IoClusterGeneGenerator`]
+/// Default implementation of [`IoClusterGeneGenerator`].
 #[derive(Debug)]
 pub struct CorpusCallosumClusterGeneGeneratorImpl {
     random: Box<dyn Random>,
