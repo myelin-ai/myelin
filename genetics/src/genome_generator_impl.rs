@@ -18,7 +18,7 @@ mod io_cluster_gene_generator_impl;
 #[cfg(test)]
 mod tests;
 
-/// Generates new input and output clusters
+/// Generates new input and output clusters.
 #[cfg_attr(any(test, feature = "use-mocks"), mockable)]
 pub trait IoClusterGeneGenerator: Debug {
     /// Generates a new [`ClusterGene`] with the specialization [`ClusterGeneSpecialization::Input`].
