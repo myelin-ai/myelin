@@ -33,7 +33,7 @@ pub trait IoClusterGeneGenerator: Debug {
 /// [Corpus callosum]: https://en.wikipedia.org/wiki/Corpus_callosum
 #[cfg_attr(any(test, feature = "use-mocks"), mockable)]
 pub trait CorpusCallosumClusterGeneGenerator: Debug {
-    /// Generates a new corpus callosum [`ClusterGene`].
+    /// Generates a new [`CorpusCallosum`].
     fn generate(&self, configuration: &CorpusCallosumConfiguration) -> CorpusCallosum;
 }
 
