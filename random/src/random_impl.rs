@@ -57,7 +57,7 @@ impl Random for RandomImpl {
         self.rng.borrow_mut().gen_bool(probability)
     }
 
-    generate_random_in_range_implementations!(i32, f64);
+    generate_random_in_range_implementations!(i32, f64, usize);
 }
 
 impl<T> Shuffler<T> for RandomImpl {
@@ -162,6 +162,31 @@ mod tests {
         const MAX: f64 = 3.0;
 
         let number = random.f64_in_range(MIN, MAX);
+        assert!(number >= MIN && number < MAX);
+    }
+
+    #[should_panic]
+    #[test]
+    fn panics_when_usize_min_is_higher_than_max() {
+        let random = RandomImpl::default();
+        random.usize_in_range(1, 0);
+    }
+
+    #[should_panic]
+    #[test]
+    fn panics_when_usize_min_is_max() {
+        let random = RandomImpl::default();
+        const ONLY_BOUND: usize = 1;
+        random.usize_in_range(ONLY_BOUND, ONLY_BOUND);
+    }
+
+    #[test]
+    fn returned_usize_is_in_range() {
+        let random = RandomImpl::default();
+        const MIN: usize = 1;
+        const MAX: usize = 3;
+
+        let number = random.usize_in_range(MIN, MAX);
         assert!(number >= MIN && number < MAX);
     }
 

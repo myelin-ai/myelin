@@ -24,6 +24,7 @@ use std::fmt::Debug;
 use std::num::NonZeroUsize;
 
 pub mod genome;
+pub mod genome_generator_impl;
 pub mod neural_network_development_orchestrator_impl;
 
 mod constant;
@@ -106,3 +107,19 @@ clone_box!(
     NeuralNetworkDevelopmentOrchestrator,
     NeuralNetworkDevelopmentOrchestratorClone
 );
+
+/// Configuration for [`GenomeGenerator::generate_genome`].
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct GenomeGeneratorConfiguration {
+    /// The number of neurons that shall receive inputs.
+    pub input_neuron_count: NonZeroUsize,
+    /// The number of neurons that shall emit outputs.
+    pub output_neuron_count: NonZeroUsize,
+}
+
+/// A factory for producing a new genome.
+#[cfg_attr(any(test, feature = "use-mocks"), mockable)]
+pub trait GenomeGenerator {
+    /// Generates a new genome from scratch according to the given configuration.
+    fn generate_genome(&self, configuration: &GenomeGeneratorConfiguration) -> Genome;
+}
