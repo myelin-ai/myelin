@@ -201,9 +201,8 @@ impl GenomeGeneratorImpl {
         neuron_count: usize,
     ) -> impl Iterator<Item = EnumeratedClusterGeneSelection> + 'a {
         const FIRST_CLUSTER_GENE_SELECTION: ClusterGeneSelection = ClusterGeneSelection::New;
-        let variable_cluster_gene_selections = (0..neuron_count)
-            .skip(1)
-            .map(move |_| self.select_cluster_gene());
+        let variable_cluster_gene_selections =
+            (1..neuron_count).map(move |_| self.select_cluster_gene());
         iter::once(FIRST_CLUSTER_GENE_SELECTION)
             .chain(variable_cluster_gene_selections)
             .scan(0, |current_new_index, selection| {
