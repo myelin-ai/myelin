@@ -19,8 +19,8 @@ impl CorpusCallosumClusterGeneGeneratorImpl {
 
 impl CorpusCallosumClusterGeneGenerator for CorpusCallosumClusterGeneGeneratorImpl {
     fn generate(&self, configuration: &CorpusCallosumConfiguration) -> CorpusCallosum {
-        let output_neuron_count = configuration.output_neuron_count.get();
         let input_neuron_count = configuration.input_neuron_count.get();
+        let output_neuron_count = configuration.output_neuron_count.get();
         // Using the output neuron count is mostly an arbitrary choice.
         // However `output_neuron_count` is usually smaller than `input_neuron_count` which speaks in its favour.
         let stem_neuron_count = self
