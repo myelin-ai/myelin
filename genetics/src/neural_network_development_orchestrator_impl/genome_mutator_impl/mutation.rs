@@ -2,7 +2,7 @@ use crate::genome::*;
 
 /// All possible mutations.
 #[derive(Debug, Clone, PartialEq)]
-pub enum MutationVariants {
+pub enum Mutation {
     /// Add a neuron to an existing cluster. The neuron will be placed on an existing connection.  
     /// A → B becomes A → C → B, where A and B are existing neurons and C is the newly placed neuron.
     AddNeuron {
