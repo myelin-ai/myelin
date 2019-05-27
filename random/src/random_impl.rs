@@ -9,7 +9,7 @@ use rand_hc::Hc128Rng;
 use std::rc::Rc;
 use std::fmt::Debug;
 
-pub type Seed = <Hc128Rng as SeedableRng>::Seed;
+pub type Seed = [u8; 32];
 
 /// Random number generator implementation that uses the `rand` crate
 #[derive(Debug, Clone)]
