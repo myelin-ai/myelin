@@ -4,7 +4,6 @@ use paste;
 use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng, SeedableRng, RngCore};
 use std::cell::RefCell;
-use wonderbox::autoresolvable;
 use rand_hc::Hc128Rng;
 use std::rc::Rc;
 use std::fmt::Debug;
