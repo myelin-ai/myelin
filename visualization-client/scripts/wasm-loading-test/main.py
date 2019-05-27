@@ -29,7 +29,7 @@ class _CancellationToken:
     def __init__(self, event: Event):
         self._event = event
 
-    def is_canceled(self) -> bool:
+    def is_cancelled(self) -> bool:
         return self._event.is_set()
 
 
@@ -61,7 +61,7 @@ def _start_websocket_server(cancellation_token: _CancellationToken):
 def _start_process(command: List[str], cancellation_token: _CancellationToken, *args, **kwargs):
     with subprocess.Popen(command, *args, **kwargs) as process:
         while True:
-            if cancellation_token.is_canceled():
+            if cancellation_token.is_cancelled():
                 process.send_signal(signal.SIGTERM)
                 process.wait()
                 break
