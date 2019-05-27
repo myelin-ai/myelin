@@ -130,30 +130,32 @@ mod tests {
     #[should_panic]
     #[test]
     fn panics_on_negative_probability() {
-        test_panics_on_negative_probability_with_seed(random());
+        test_panics_on_negative_probability(random());
     }
 
     #[should_panic]
     #[test]
     fn panics_on_negative_probability_with_seed() {
-        test_panics_on_negative_probability_with_seed(seeded_random());
+        test_panics_on_negative_probability(seeded_random());
     }
 
-    fn test_panics_on_negative_probability_with_seed(random: RandomImpl) {
+    fn test_panics_on_negative_probability(random: RandomImpl) {
         random.flip_coin_with_probability(-1.0);
     }
 
     #[should_panic]
     #[test]
     fn panics_too_high_probability() {
-        let random = RandomImpl::new();
-        random.flip_coin_with_probability(1.1);
+        test_panics_too_high_probability(random());
     }
     
     #[should_panic]
     #[test]
     fn panics_too_high_probability_with_seed() {
-        let random = RandomImpl::new();
+        test_panics_too_high_probability(seeded_random());
+    }
+
+    fn test_panics_too_high_probability(random: RandomImpl) {
         random.flip_coin_with_probability(1.1);
     }
 
@@ -182,7 +184,7 @@ mod tests {
     #[should_panic]
     #[test]
     fn panics_when_min_is_max_with_seed() {
-        test_panics_when_min_is_max(random());
+        test_panics_when_min_is_max(seeded_random());
     }
 
     fn test_panics_when_min_is_max(random: RandomImpl) {
