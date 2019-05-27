@@ -9,6 +9,10 @@ import time
 import sys
 from tempfile import mkstemp
 import json
+from concurrent.futures import wait, FIRST_COMPLETED, ThreadPoolExecutor
+from threading import Event
+import signal
+from typing import List, Tuple
 
 HTTP_PORT = 8081
 SERVER_CRATE = 'myelin-visualization-server'
@@ -21,18 +25,50 @@ CARGO_ROOT = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', '..'))
 
 
-def _start_http_server():
+class _CancellationToken:
+    def __init__(self, event: Event):
+        self._event = event
+
+    def is_canceled(self) -> bool:
+        return self._event.is_set()
+
+
+class _CancellationTokenSource:
+    def __init__(self, event: Event):
+        self._event = event
+
+    def cancel(self):
+        return self._event.set()
+
+
+def _create_cancellation_token() -> Tuple[_CancellationTokenSource, _CancellationToken]:
+    event = Event()
+    return (_CancellationTokenSource(event), _CancellationToken(event))
+
+
+def _start_http_server(cancellation_token: _CancellationToken):
     http_server_bin = os.path.abspath(os.path.join(
         os.path.dirname(__file__), 'http_server.py'))
+    _start_process([http_server_bin, str(HTTP_PORT)],
+                   cancellation_token, cwd=WEB_DIR)
 
-    return subprocess.Popen([http_server_bin, str(HTTP_PORT)], cwd=WEB_DIR)
+
+def _start_websocket_server(cancellation_token: _CancellationToken):
+    _start_process(['cargo', 'run', '-p', SERVER_CRATE],
+                   cancellation_token, cwd=CARGO_ROOT)
 
 
-def _start_websocket_server():
-    # Ensures that `cargo run` doesn't take too long, especially on Jenkins when
-    # `cargo run` might wait for a lock file
-    subprocess.call(['cargo', 'build', '-p', SERVER_CRATE], cwd=CARGO_ROOT)
-    return subprocess.Popen(['cargo', 'run', '-p', SERVER_CRATE], cwd=CARGO_ROOT)
+def _start_process(command: List[str], cancellation_token: _CancellationToken, *args, **kwargs):
+    with subprocess.Popen(command, *args, **kwargs) as process:
+        while True:
+            if cancellation_token.is_canceled():
+                process.send_signal(signal.SIGTERM)
+                process.wait()
+                break
+            returncode = process.poll()
+            if returncode:
+                raise subprocess.CalledProcessError(command, returncode)
+            time.sleep(0.1)
 
 
 def _start_webdriver():
@@ -96,18 +132,22 @@ def _poll_visualization_server():
         try:
             connection = create_connection(('localhost', _WEBSOCKET_PORT))
             break
-        except ConnectionRefusedError as e:
+        except ConnectionRefusedError:
             time.sleep(0.1)
         finally:
             if connection is not None:
                 connection.close()
 
 
-httpd = _start_http_server()
-websocket = _start_websocket_server()
+with ThreadPoolExecutor(max_workers=3) as pool:
+    cancellation_token_source, cancellation_token = _create_cancellation_token()
 
-try:
-    _start_webdriver()
-finally:
-    os.kill(httpd.pid, signal.SIGTERM)
-    os.kill(websocket.pid, signal.SIGTERM)
+    futures = [
+        pool.submit(_start_http_server, cancellation_token),
+        pool.submit(_start_websocket_server, cancellation_token),
+        pool.submit(_start_webdriver),
+    ]
+
+    done, _ = wait(futures, return_when=FIRST_COMPLETED)
+    cancellation_token_source.cancel()
+    [future.result() for future in done]

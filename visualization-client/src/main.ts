@@ -17,11 +17,17 @@ Promise.all([
         } catch (e) {
             console.error(e)
             websocket.removeEventListener('message', onMessage)
+            websocket.removeEventListener('close', onClose)
             websocket.close()
         }
     }
 
+    const onClose = (event: CloseEvent) => {
+        console.error('Websocket closed')
+    }
+
     websocket.addEventListener('message', onMessage)
+    websocket.addEventListener('close', onClose)
     // Temporary solution: the server waits for any message before
     // it starts sending deltas, so that the client doesn't miss any of them
     websocket.send(new ArrayBuffer(0))
