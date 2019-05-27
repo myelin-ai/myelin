@@ -381,6 +381,29 @@ mod tests {
         assert!(shuffled_vector.is_empty());
     }
 
+    #[test]
+    fn coin_tosses_are_the_same_when_seeded_with_the_same_seed() {
+        let first_random = seeded_random();
+        let second_random = seeded_random();
+
+        for _ in 0..100 {
+            assert_eq!(first_random.flip_coin(), second_random.flip_coin());
+        }
+    }
+
+    #[test]
+    fn coin_tosses_stay_the_same_when_seeded() {
+        const EXPECTED_COIN_TOSSES: &[bool] = &[
+            true, false, false, false, false, true, false, true, true, false, false, true, true,
+            true, false, true, true, true, false, true, false, true, false, false, true, false,
+            false, true, true, false, true, false,
+        ];
+        let random = seeded_random();
+        for &expected_coin_toss in EXPECTED_COIN_TOSSES {
+            assert_eq!(expected_coin_toss, random.flip_coin());
+        }
+    }
+
     fn random() -> RandomImpl {
         RandomImpl::default()
     }
