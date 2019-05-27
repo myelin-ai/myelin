@@ -1,7 +1,7 @@
 //! Trait and implementations for mutating [`Genome`]s.
 
-use crate::genome::Genome;
 pub use self::mutation::*;
+use crate::genome::Genome;
 
 mod mutation;
 
