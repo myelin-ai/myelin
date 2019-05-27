@@ -12,11 +12,13 @@ use nameof::{name_of, name_of_type};
 use std::fmt::{self, Debug};
 use std::rc::Rc;
 use wonderbox::autoresolvable;
+pub use self::stub_genome_mutator::*;
 
 mod genome_deriver_impl;
 mod genome_mutator_impl;
 mod neural_network_configurator;
 mod neural_network_developer_impl;
+mod stub_genome_mutator;
 
 /// Trait for deriving a new [`Genome`] from two parent [`Genome`]s.
 #[cfg_attr(test, mockable)]
