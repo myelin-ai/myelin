@@ -18,9 +18,13 @@ def start(release=False, open=False, build=True):
     if build:
         _build_visualization_client(release)
 
-    pool = ThreadPoolExecutor(max_workers=2)
-    pool.submit(_serve_visualization_client)
-    pool.submit(_start_visualization_server, release)
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [
+            executor.submit(_serve_visualization_client),
+            executor.submit(_start_visualization_server, release)
+        ]
+
+        [future.result() for future in as_completed(futures)]
 
     if open:
         _poll_visualization_server()
