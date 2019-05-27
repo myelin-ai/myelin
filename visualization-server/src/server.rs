@@ -73,7 +73,8 @@ fn create_composition_root(addr: SocketAddr) -> Container {
 fn utility_container() -> Container {
     let mut container = Container::new();
 
-    register_autoresolvable!(container, RandomImpl as Box<dyn Random>);
+    container.register(|_| box RandomImpl::new() as Box<dyn Random>);
+
     register_autoresolvable!(
         container,
         FixedIntervalSleeperImpl as Box<dyn FixedIntervalSleeper>
