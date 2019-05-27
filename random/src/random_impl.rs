@@ -2,11 +2,11 @@ use super::Random;
 use super::Shuffler;
 use paste;
 use rand::seq::SliceRandom;
-use rand::{thread_rng, Rng, SeedableRng, RngCore};
-use std::cell::RefCell;
+use rand::{thread_rng, Rng, RngCore, SeedableRng};
 use rand_hc::Hc128Rng;
-use std::rc::Rc;
+use std::cell::RefCell;
 use std::fmt::Debug;
+use std::rc::Rc;
 
 /// Seed type when using `RandomImpl::with_seed`
 pub type Seed = [u8; 32];
@@ -148,7 +148,7 @@ mod tests {
     fn panics_too_high_probability() {
         test_panics_too_high_probability(random());
     }
-    
+
     #[should_panic]
     #[test]
     fn panics_too_high_probability_with_seed() {
