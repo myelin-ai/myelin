@@ -1,6 +1,8 @@
 //! Random value generation
 
-#![feature(box_syntax, specialization)]
+#![feature(box_syntax)]
+#![feature(specialization)]
+#![feature(trait_alias)]
 #![warn(missing_docs, clippy::dbg_macro, clippy::unimplemented)]
 #![deny(
     rust_2018_idioms,
