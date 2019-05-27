@@ -4,6 +4,7 @@ pub use self::genome_deriver_impl::*;
 pub use self::genome_mutator_impl::*;
 pub use self::neural_network_configurator::NeuralNetworkConfiguratorImpl;
 pub use self::neural_network_developer_impl::*;
+pub use self::stub_genome_mutator::*;
 use crate::*;
 #[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
@@ -12,7 +13,6 @@ use nameof::{name_of, name_of_type};
 use std::fmt::{self, Debug};
 use std::rc::Rc;
 use wonderbox::autoresolvable;
-pub use self::stub_genome_mutator::*;
 
 mod genome_deriver_impl;
 mod genome_mutator_impl;
