@@ -9,6 +9,7 @@ use rand_hc::Hc128Rng;
 use std::rc::Rc;
 use std::fmt::Debug;
 
+/// Seed type when using `RandomImpl::with_seed`
 pub type Seed = [u8; 32];
 
 /// Random number generator implementation that uses the `rand` crate
@@ -27,6 +28,7 @@ impl RandomImpl {
         }
     }
 
+    /// Constructs a new [`RandomImpl`] with the given [`Seed`].
     pub fn with_seed(seed: Seed) -> Self {
         unimplemented!()
     }
