@@ -1,25 +1,34 @@
 use super::Random;
 use super::Shuffler;
 use paste;
-use rand::rngs::ThreadRng;
 use rand::seq::SliceRandom;
-use rand::{thread_rng, Rng};
+use rand::{thread_rng, Rng, SeedableRng, RngCore};
 use std::cell::RefCell;
 use wonderbox::autoresolvable;
+use rand_hc::Hc128Rng;
+use std::rc::Rc;
+use std::fmt::Debug;
+
+pub type Seed = <Hc128Rng as SeedableRng>::Seed;
 
 /// Random number generator implementation that uses the `rand` crate
 #[derive(Debug, Clone)]
 pub struct RandomImpl {
-    rng: RefCell<ThreadRng>,
+    rng: Rc<RefCell<dyn DebugRngCore>>,
 }
 
-#[autoresolvable]
+trait DebugRngCore = RngCore + Debug;
+
 impl RandomImpl {
     /// Constructs a new [`RandomImpl`] by seeding a new threaded rng source
     pub fn new() -> Self {
         Self {
-            rng: RefCell::new(thread_rng()),
+            rng: Rc::new(RefCell::new(thread_rng())),
         }
+    }
+
+    pub fn with_seed(seed: Seed) -> Self {
+        unimplemented!()
     }
 }
 
