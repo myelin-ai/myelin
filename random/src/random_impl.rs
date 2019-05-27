@@ -30,7 +30,9 @@ impl RandomImpl {
 
     /// Constructs a new [`RandomImpl`] with the given [`Seed`].
     pub fn with_seed(seed: Seed) -> Self {
-        unimplemented!()
+        Self {
+            rng: Rc::new(RefCell::new(Hc128Rng::from_seed(seed))),
+        }
     }
 }
 
