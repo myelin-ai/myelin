@@ -1,6 +1,7 @@
 use super::super::Mutation;
 use super::*;
 
+mod add_connection;
 mod add_neuron;
 
 struct MutationApplicationTestParameters<F> {
@@ -30,6 +31,15 @@ fn empty_genome() -> Genome {
     Genome {
         hox_genes: Vec::new(),
         cluster_genes: Vec::new(),
+    }
+}
+
+fn emtpy_cluster_gene() -> ClusterGene {
+    ClusterGene {
+        placement_neuron: ClusterNeuronIndex(0),
+        specialization: ClusterGeneSpecialization::None,
+        neurons: Vec::new(),
+        connections: Vec::new(),
     }
 }
 
