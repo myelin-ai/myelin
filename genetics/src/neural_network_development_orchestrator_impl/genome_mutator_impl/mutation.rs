@@ -43,14 +43,14 @@ pub enum Mutation {
         /// Index of the neuron that will be the new placement neuron.
         new_placement_neuron: ClusterNeuronIndex,
     },
-    /// Add a new [`ClusterGene`] and place it through a new [`HoxGene`].
+    /// Add a new [`ClusterGene`] and place it using a new [`HoxGene`].
     AddNewCluster {
         /// Specification of the new [`ClusterGene`].
         cluster_gene: ClusterGene,
         /// Specification of the new [`HoxGene`] that will place the new [`ClusterGene`].
         hox_gene: HoxGene,
     },
-    /// Create a copy of an existing [`ClusterGene`] and place it through a new [`HoxGene`].
+    /// Create a copy of an existing [`ClusterGene`] and place it using a new [`HoxGene`].
     CopyCluster {
         /// Index of the [`ClusterGene`] that will be copied.
         source_cluster_gene: ClusterGeneIndex,
