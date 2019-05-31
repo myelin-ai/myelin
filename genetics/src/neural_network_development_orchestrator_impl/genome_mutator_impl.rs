@@ -3,6 +3,7 @@
 pub use self::mutation::*;
 use crate::genome::Genome;
 pub use self::mutation_applier_impl::*;
+use std::error::Error;
 
 mod mutation;
 mod mutation_applier_impl;
@@ -16,5 +17,5 @@ pub trait MutationGenerator {
 /// Applies mutations to a [`Genome`].
 pub trait MutationApplier {
     /// Applies the given [`Mutation`] to a [`Genome`].
-    fn apply_mutation(&self, genome: &mut Genome, mutation: Mutation);
+    fn apply_mutation(&self, genome: &mut Genome, mutation: Mutation) -> Result<(), Box<dyn Error>>;
 }
