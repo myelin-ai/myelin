@@ -38,7 +38,7 @@ fn adds_new_connection() {
 fn cluster_gene() -> ClusterGene {
     ClusterGene {
         neurons: vec![Neuron {}; 2],
-        ..emtpy_cluster_gene()
+        ..empty_cluster_gene()
     }
 }
 

@@ -34,7 +34,7 @@ fn empty_genome() -> Genome {
     }
 }
 
-fn emtpy_cluster_gene() -> ClusterGene {
+fn empty_cluster_gene() -> ClusterGene {
     ClusterGene {
         placement_neuron: ClusterNeuronIndex(0),
         specialization: ClusterGeneSpecialization::None,
@@ -47,29 +47,5 @@ impl Genome {
     fn add_cluster_gene(mut self, cluster_gene: ClusterGene) -> Self {
         self.cluster_genes.push(cluster_gene);
         self
-    }
-
-    fn add_first_cluster_gene(self) -> Self {
-        self.add_cluster_gene(first_cluster_gene())
-    }
-}
-
-fn first_cluster_gene() -> ClusterGene {
-    ClusterGene {
-        neurons: vec![Neuron {}; 2],
-        placement_neuron: ClusterNeuronIndex(0),
-        specialization: ClusterGeneSpecialization::None,
-        connections: vec![
-            Connection {
-                from: ClusterNeuronIndex(0),
-                to: ClusterNeuronIndex(1),
-                weight: 1.0,
-            },
-            Connection {
-                from: ClusterNeuronIndex(1),
-                to: ClusterNeuronIndex(0),
-                weight: 1.0,
-            },
-        ],
     }
 }
