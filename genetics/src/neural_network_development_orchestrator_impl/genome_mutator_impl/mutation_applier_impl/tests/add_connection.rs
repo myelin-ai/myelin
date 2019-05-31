@@ -4,7 +4,7 @@ use super::*;
 fn errors_when_cluster_gene_does_not_exist() {
     let genome = empty_genome();
     let mutation = Mutation::AddConnection {
-        cluster: ClusterGeneIndex(0),
+        cluster_gene: ClusterGeneIndex(0),
         connection: connection(),
     };
     test_mutation_application(MutationApplicationTestParameters {
@@ -19,7 +19,7 @@ fn errors_when_cluster_gene_does_not_exist() {
 fn adds_new_connection() {
     let genome = empty_genome().add_cluster_gene(cluster_gene());
     let mutation = Mutation::AddConnection {
-        cluster: ClusterGeneIndex(0),
+        cluster_gene: ClusterGeneIndex(0),
         connection: connection(),
     };
     let expected_cluster_gene = ClusterGene {
