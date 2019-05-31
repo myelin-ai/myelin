@@ -1,16 +1,19 @@
 use super::{Mutation, MutationApplier};
 use crate::genome::*;
 use std::error::Error;
+use std::marker::PhantomData;
 
 #[cfg(test)]
 mod tests;
 
-#[derive(Debug)]
-pub struct MutationApplierImpl {}
+/// Default implementation of [`MutationApplier`].
+#[derive(Debug, Default)]
+pub struct MutationApplierImpl(PhantomData<()>);
 
 impl MutationApplierImpl {
-    pub fn new() -> MutationApplierImpl {
-        MutationApplierImpl {}
+    /// Creates a new [`MutationApplierImpl`]
+    pub fn new() -> Self {
+        Self(PhantomData)
     }
 }
 
