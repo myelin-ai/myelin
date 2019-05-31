@@ -10,6 +10,8 @@ pub enum Mutation {
         cluster: ClusterGeneIndex,
         /// Index of the connection on the mutated cluster.
         connection_index: ClusterConnectionIndex,
+        /// Weight for the newly placed connection. (C → B)
+        new_connection_weight: Weight,
     },
     /// Add a new connection between a pair of neurons on an existing cluster.
     AddConnection {
