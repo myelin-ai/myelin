@@ -1,6 +1,8 @@
 use super::super::Mutation;
 use super::*;
 
+mod add_neuron;
+
 struct MutationApplicationTestParameters<F> {
     genome: Genome,
     expected_genome: Genome,
