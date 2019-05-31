@@ -28,10 +28,7 @@ fn test_mutation_application<F>(
 }
 
 fn empty_genome() -> Genome {
-    Genome {
-        hox_genes: Vec::new(),
-        cluster_genes: Vec::new(),
-    }
+    Genome::default()
 }
 
 fn empty_cluster_gene() -> ClusterGene {
@@ -43,9 +40,22 @@ fn empty_cluster_gene() -> ClusterGene {
     }
 }
 
+fn standalone_hox_gene(cluster_gene: ClusterGeneIndex) -> HoxGene {
+    HoxGene {
+        cluster_gene,
+        placement_target: HoxPlacement::Standalone,
+        disabled_connections: Vec::new(),
+    }
+}
+
 impl Genome {
     fn add_cluster_gene(mut self, cluster_gene: ClusterGene) -> Self {
         self.cluster_genes.push(cluster_gene);
+        self
+    }
+
+    fn add_hox_gene(mut self, hox_gene: HoxGene) -> Self {
+        self.hox_genes.push(hox_gene);
         self
     }
 }
