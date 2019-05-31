@@ -3,6 +3,7 @@ use super::*;
 
 mod add_connection;
 mod add_neuron;
+mod disable_connection;
 
 struct MutationApplicationTestParameters<F> {
     genome: Genome,

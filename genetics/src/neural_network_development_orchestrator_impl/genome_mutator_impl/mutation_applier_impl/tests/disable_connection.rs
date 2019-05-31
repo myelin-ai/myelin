@@ -9,11 +9,11 @@ fn errors_when_hox_gene_does_not_exists() {
         hox_gene: HoxGeneIndex(0),
         connection: ClusterConnectionIndex(0),
     };
-    test_mutatation_application(MutationApplicationTestParameters {
+    test_mutation_application(MutationApplicationTestParameters {
         expected_genome: genome.clone(),
         genome,
         mutation,
-        test_result_fn: Result::is_err,
+        result_test_fn: Result::is_err,
     })
 }
 
@@ -21,21 +21,18 @@ fn errors_when_hox_gene_does_not_exists() {
 fn adds_connection_to_disabled_connections() {
     let genome = empty_genome().add_hox_gene(hox_gene());
 
-    let expected_hox_gene = HoxGene {
-        disable_connection: vec![CONNECTION],
-        ..hox_gene()
-    };
+    let expected_hox_gene = hox_gene_with_disabled_connection();
     let expected_genome = empty_genome().add_hox_gene(expected_hox_gene);
 
     let mutation = Mutation::DisableConnection {
         hox_gene: HoxGeneIndex(0),
         connection: CONNECTION,
     };
-    test_mutatation_application(MutationApplicationTestParameters {
+    test_mutation_application(MutationApplicationTestParameters {
         expected_genome,
         genome,
         mutation,
-        test_result_fn: Result::is_ok,
+        result_test_fn: Result::is_ok,
     })
 }
 
@@ -47,11 +44,11 @@ fn does_not_disable_the_connection_if_already_disabled() {
         hox_gene: HoxGeneIndex(0),
         connection: CONNECTION,
     };
-    test_mutatation_application(MutationApplicationTestParameters {
+    test_mutation_application(MutationApplicationTestParameters {
         expected_genome: genome.clone(),
         genome,
         mutation,
-        test_result_fn: Result::is_ok,
+        result_test_fn: Result::is_ok,
     })
 }
 
@@ -61,7 +58,7 @@ fn hox_gene() -> HoxGene {
 
 fn hox_gene_with_disabled_connection() -> HoxGene {
     HoxGene {
-        disable_connections: vec![CONNECTION],
+        disabled_connections: vec![CONNECTION],
         ..hox_gene()
     }
 }
