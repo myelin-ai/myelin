@@ -2,6 +2,9 @@ use super::{Mutation, MutationApplier};
 use crate::genome::*;
 use std::error::Error;
 
+#[cfg(test)]
+mod tests;
+
 #[derive(Debug)]
 pub struct MutationApplierImpl {}
 
