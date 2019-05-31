@@ -8,11 +8,17 @@ mod tests;
 #[derive(Debug)]
 pub struct MutationApplierImpl {}
 
+impl MutationApplierImpl {
+    pub fn new() -> MutationApplierImpl {
+        MutationApplierImpl {}
+    }
+}
+
 impl MutationApplier for MutationApplierImpl {
     fn apply_mutation(
         &self,
-        genome: &mut Genome,
-        mutation: Mutation,
+        _genome: &mut Genome,
+        _mutation: Mutation,
     ) -> Result<(), Box<dyn Error>> {
         unimplemented!()
     }
