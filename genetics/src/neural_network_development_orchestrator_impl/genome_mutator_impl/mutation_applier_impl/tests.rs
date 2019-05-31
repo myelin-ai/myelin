@@ -4,6 +4,7 @@ use super::*;
 mod add_connection;
 mod add_neuron;
 mod disable_connection;
+mod nudge_weight;
 
 struct MutationApplicationTestParameters<F> {
     genome: Genome,
