@@ -1,11 +1,14 @@
 use super::*;
 
+const NEW_CONNECTION_WEIGHT: f64 = 0.125;
+
 #[test]
 fn errors_when_cluster_gene_does_not_exist() {
     let genome = empty_genome().add_first_cluster_gene();
     let mutation = Mutation::AddNeuron {
         cluster: ClusterGeneIndex(1),
         connection_index: ClusterConnectionIndex(0),
+        new_connection_weight: NEW_CONNECTION_WEIGHT,
     };
     test_mutation_application(MutationApplicationTestParameters {
         expected_genome: genome.clone(),
@@ -21,6 +24,7 @@ fn errors_when_connection_does_not_exist() {
     let mutation = Mutation::AddNeuron {
         cluster: ClusterGeneIndex(0),
         connection_index: ClusterConnectionIndex(2),
+        new_connection_weight: NEW_CONNECTION_WEIGHT,
     };
     test_mutation_application(MutationApplicationTestParameters {
         expected_genome: genome.clone(),
@@ -32,13 +36,12 @@ fn errors_when_connection_does_not_exist() {
 
 #[test]
 fn creates_new_neuron_and_new_connection() {
-    const NEW_CONNECTION_WEIGHT: f64 = 0.125;
-
     let genome = empty_genome().add_first_cluster_gene();
 
     let mutation = Mutation::AddNeuron {
         cluster: ClusterGeneIndex(0),
         connection_index: ClusterConnectionIndex(0),
+        new_connection_weight: NEW_CONNECTION_WEIGHT,
     };
 
     let first_cluster_gene = first_cluster_gene();
