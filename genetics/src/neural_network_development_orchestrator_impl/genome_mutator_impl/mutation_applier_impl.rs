@@ -11,7 +11,7 @@ mod tests;
 pub struct MutationApplierImpl(PhantomData<()>);
 
 impl MutationApplierImpl {
-    /// Creates a new [`MutationApplierImpl`]
+    /// Creates a new [`MutationApplierImpl`].
     pub fn new() -> Self {
         Self(PhantomData)
     }
