@@ -1,7 +1,7 @@
 use super::*;
 
 #[test]
-fn change_target_neuron_fails_if_hox_gene_does_not_exist() {
+fn errors_if_hox_gene_does_not_exist() {
     let mutation = Mutation::ChangeTargetNeuron {
         hox_gene: HoxGeneIndex(2),
         new_target_neuron: ClusterNeuronIndex(1),
@@ -24,7 +24,7 @@ fn change_target_neuron_fails_if_hox_gene_does_not_exist() {
 }
 
 #[test]
-fn change_target_neuron_fails_if_hox_gene_has_standalone_placement() {
+fn errors_if_hox_gene_has_standalone_placement() {
     let mutation = Mutation::ChangeTargetNeuron {
         hox_gene: HoxGeneIndex(1),
         new_target_neuron: ClusterNeuronIndex(1),

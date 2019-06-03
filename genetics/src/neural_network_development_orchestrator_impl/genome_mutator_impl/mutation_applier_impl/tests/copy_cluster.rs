@@ -1,7 +1,7 @@
 use super::*;
 
 #[test]
-fn errors_when_source_cluster_gene_does_not_exist() {
+fn errors_if_source_cluster_gene_does_not_exist() {
     let genome = empty_genome().add_cluster_gene(empty_cluster_gene());
     let expected_genome = genome.clone();
 

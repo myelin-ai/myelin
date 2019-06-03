@@ -1,7 +1,7 @@
 use super::*;
 
 #[test]
-fn errors_when_hox_gene_does_not_exist() {
+fn errors_if_hox_gene_does_not_exist() {
     let genome = empty_genome()
         .add_cluster_gene(cluster_gene())
         .add_hox_gene(hox_gene());
@@ -15,7 +15,7 @@ fn errors_when_hox_gene_does_not_exist() {
 }
 
 #[test]
-fn errors_when_cluster_gene_referenced_by_hox_gene_does_not_exist() {
+fn errors_if_cluster_gene_referenced_by_hox_gene_does_not_exist() {
     let genome = empty_genome().add_hox_gene(hox_gene());
     let mutation = mutation();
     test_errors(genome, mutation);

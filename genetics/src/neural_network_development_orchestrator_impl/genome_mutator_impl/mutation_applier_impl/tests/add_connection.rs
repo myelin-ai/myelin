@@ -1,7 +1,7 @@
 use super::*;
 
 #[test]
-fn errors_when_cluster_gene_does_not_exist() {
+fn errors_if_cluster_gene_does_not_exist() {
     let genome = empty_genome();
     let mutation = mutation();
     test_mutation_application(MutationApplicationTestParameters {

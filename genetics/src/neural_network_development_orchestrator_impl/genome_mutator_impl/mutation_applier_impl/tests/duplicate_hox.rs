@@ -1,7 +1,7 @@
 use super::*;
 
 #[test]
-fn duplicate_hox_fails_if_hox_gene_does_not_exist() {
+fn errors_if_hox_gene_does_not_exist() {
     let mutation = Mutation::DuplicateHox {
         hox_gene: HoxGeneIndex(2),
     };

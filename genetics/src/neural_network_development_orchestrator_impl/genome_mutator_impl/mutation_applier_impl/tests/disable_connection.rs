@@ -3,7 +3,7 @@ use super::*;
 const CONNECTION: ClusterConnectionIndex = ClusterConnectionIndex(6);
 
 #[test]
-fn errors_when_hox_gene_does_not_exists() {
+fn errors_if_hox_gene_does_not_exists() {
     let genome = empty_genome();
     let mutation = Mutation::DisableConnection {
         hox_gene: HoxGeneIndex(0),

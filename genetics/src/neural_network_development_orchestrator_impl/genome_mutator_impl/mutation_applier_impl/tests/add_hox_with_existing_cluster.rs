@@ -1,7 +1,7 @@
 use super::*;
 
 #[test]
-fn add_hox_with_existing_cluster_fails_if_cluster_does_not_exist() {
+fn errors_if_cluster_does_not_exist() {
     let mutation = Mutation::AddHoxWithExistingCluster {
         new_hox_gene: standalone_hox_gene(ClusterGeneIndex(2)),
     };
@@ -52,3 +52,4 @@ fn add_hox_with_existing_cluster() {
         result_test_fn: Result::is_ok,
     });
 }
+AF
