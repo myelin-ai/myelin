@@ -1,7 +1,7 @@
 use super::*;
 
 #[test]
-fn errors_if_cluster_does_not_exist() {
+fn errors_if_cluster_gene_does_not_exist() {
     let genome = Genome {
         hox_genes: vec![
             standalone_hox_gene(ClusterGeneIndex(0)),
@@ -23,7 +23,7 @@ fn errors_if_cluster_does_not_exist() {
 }
 
 #[test]
-fn add_hox_with_existing_cluster() {
+fn add_hox_with_existing_cluster_gene() {
     let genome = Genome {
         hox_genes: vec![
             standalone_hox_gene(ClusterGeneIndex(0)),
