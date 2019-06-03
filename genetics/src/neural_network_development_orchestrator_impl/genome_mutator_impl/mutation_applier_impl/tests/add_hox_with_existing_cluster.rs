@@ -1,6 +1,7 @@
 use super::*;
 
 #[test]
+<<<<<<< HEAD
 fn errors_if_cluster_gene_does_not_exist() {
     let genome = Genome {
         hox_genes: vec![
@@ -10,6 +11,14 @@ fn errors_if_cluster_gene_does_not_exist() {
         cluster_genes: vec![empty_cluster_gene(); 2],
     };
     let expected_genome = genome.clone();
+=======
+fn errors_if_cluster_does_not_exist() {
+    let mutation = Mutation::AddHoxWithExistingCluster {
+        new_hox_gene: standalone_hox_gene(ClusterGeneIndex(2)),
+    };
+
+    let genome = genome();
+>>>>>>> Reduce code duplication
 
     let mutation = Mutation::AddHoxWithExistingCluster {
         new_hox_gene: standalone_hox_gene(ClusterGeneIndex(2)),
@@ -24,13 +33,11 @@ fn errors_if_cluster_gene_does_not_exist() {
 
 #[test]
 fn add_hox_with_existing_cluster_gene() {
-    let genome = Genome {
-        hox_genes: vec![
-            standalone_hox_gene(ClusterGeneIndex(0)),
-            standalone_hox_gene(ClusterGeneIndex(1)),
-        ],
-        cluster_genes: vec![empty_cluster_gene(); 2],
+    let mutation = Mutation::AddHoxWithExistingCluster {
+        new_hox_gene: standalone_hox_gene(ClusterGeneIndex(1)),
     };
+
+    let genome = genome();
 
     let expected_genome = Genome {
         hox_genes: vec![
@@ -50,4 +57,14 @@ fn add_hox_with_existing_cluster_gene() {
         mutation,
         result_test_fn: Result::is_ok,
     });
+}
+
+fn genome() -> Genome {
+    Genome {
+        hox_genes: vec![
+            standalone_hox_gene(ClusterGeneIndex(0)),
+            standalone_hox_gene(ClusterGeneIndex(1)),
+        ],
+        cluster_genes: vec![empty_cluster_gene(); 2],
+    }
 }
