@@ -65,12 +65,8 @@ pub enum Mutation {
     },
     /// Add a new [`ClusterGene`] in between two clusters that share a neuron.
     Bridge {
-        /// Index of the origin [`ClusterGene`].
-        source_cluster_gene: ClusterGeneIndex,
-        /// Index of the destination [`ClusterGene`].
-        target_cluster_gene: ClusterGeneIndex,
-        /// The shared neuron's index in the target [`ClusterGene`].
-        target_neuron: ClusterNeuronIndex,
+        /// Index of the [`HoxGene`] that will be mutated in order to be attached to the newly created bridge.
+        target_hox_gene: HoxGeneIndex,
         /// Specification of the new [`ClusterGene`].
         bridge_cluster_gene: ClusterGene,
     },
