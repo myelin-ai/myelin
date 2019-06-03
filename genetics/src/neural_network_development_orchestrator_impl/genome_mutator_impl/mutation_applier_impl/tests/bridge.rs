@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn adds_bridge() {
-    let shared_neuron = ClusterNeuronIndex(1);
+    let target_neuron_on_standalone = ClusterNeuronIndex(1);
     let genome = empty_genome()
         .add_cluster_gene(cluster_gene())
         .add_cluster_gene(cluster_gene())
@@ -10,17 +10,17 @@ fn adds_bridge() {
         .add_hox_gene(hox_placed_on_hox_gene(
             ClusterGeneIndex(1),
             HoxGeneIndex(0),
-            shared_neuron,
+            target_neuron_on_standalone,
         ));
 
     let bridge_cluster = cluster_gene();
 
-    let new_target_neuron: ClusterNeuronIndex(1);
+    let new_target_neuron = ClusterNeuronIndex(1);
 
     let bridge_hox = HoxGene {
         placement_target: HoxPlacement::HoxGene {
             hox_gene: HoxGeneIndex(0),
-            target_neuron: shared_neuron,
+            target_neuron: target_neuron_on_standalone,
         },
         cluster_gene: ClusterGeneIndex(2),
         disabled_connections: Vec::new(),
