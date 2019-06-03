@@ -5,7 +5,7 @@ const POSITIVE_WEIGHT_DELTA: f64 = 0.5;
 const NEGATIVE_WEIGHT_DELTA: f64 = -0.5;
 
 #[test]
-fn errors_when_cluster_gene_does_not_exists() {
+fn errors_when_cluster_gene_does_not_exist() {
     let genome = empty_genome();
 
     let mutation = mutation(POSITIVE_WEIGHT_DELTA);

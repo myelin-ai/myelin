@@ -6,6 +6,7 @@ mod add_neuron;
 mod add_new_cluster;
 mod change_placement_neuron;
 mod disable_connection;
+mod duplicate_hox;
 mod nudge_weight;
 
 struct MutationApplicationTestParameters<F> {
