@@ -8,6 +8,7 @@ mod add_new_cluster;
 mod change_placement_neuron;
 mod change_target_neuron;
 mod copy_cluster;
+mod desync_cluster;
 mod disable_connection;
 mod duplicate_hox;
 mod nudge_weight;

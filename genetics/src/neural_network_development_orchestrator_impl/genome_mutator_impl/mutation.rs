@@ -60,9 +60,8 @@ pub enum Mutation {
     /// Allow a [`ClusterGene`] to mutate independently by turning it into a new [`ClusterGene`].
     DesyncCluster {
         /// Index of the [`HoxGene`] that will be mutated.
+        /// The [`ClusterGene`] referenced by the [`HoxGene::cluster_gene`] will be copied.
         hox_gene: HoxGeneIndex,
-        /// Index of the [`ClusterGene`] that will be copied.
-        cluster_gene: ClusterGeneIndex,
     },
     /// Add a new [`ClusterGene`] in between two clusters that share a neuron.
     Bridge {
