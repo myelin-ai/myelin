@@ -33,7 +33,7 @@ fn test_mutation_application<F>(
     let mutation_applier = MutationApplierImpl::new();
     let result = mutation_applier.apply_mutation(&mut genome, mutation);
     assert!(result_test_fn(&result));
-    assert_eq!(genome, expected_genome);
+    assert_eq!(expected_genome, genome);
 }
 
 fn empty_genome() -> Genome {
