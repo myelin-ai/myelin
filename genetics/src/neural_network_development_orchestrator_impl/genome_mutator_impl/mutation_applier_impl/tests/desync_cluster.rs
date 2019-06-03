@@ -18,7 +18,7 @@ fn errors_when_hox_gene_does_not_exist() {
 fn errors_when_cluster_gene_referenced_by_hox_gene_does_not_exist() {
     let genome = empty_genome().add_hox_gene(hox_gene());
     let mutation = mutation();
-    test_errors(genome, mutation());
+    test_errors(genome, mutation);
 }
 
 fn test_errors(genome: Genome, mutation: Mutation) {
