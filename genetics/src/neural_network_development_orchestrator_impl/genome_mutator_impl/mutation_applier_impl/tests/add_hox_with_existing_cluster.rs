@@ -52,4 +52,3 @@ fn add_hox_with_existing_cluster() {
         result_test_fn: Result::is_ok,
     });
 }
-AF
