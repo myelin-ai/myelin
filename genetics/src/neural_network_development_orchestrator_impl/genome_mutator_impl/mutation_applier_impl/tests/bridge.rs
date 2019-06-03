@@ -48,6 +48,11 @@ fn adds_single_bridge() {
 }
 
 #[test]
+fn adds_bridge_to_neuron_with_multiple_attached_clusters() {
+    unimplemented!()
+}
+
+#[test]
 fn adds_multiple_bridges() {
     let initial_target_neuron_on_mutation_target = ClusterNeuronIndex(2);
 
