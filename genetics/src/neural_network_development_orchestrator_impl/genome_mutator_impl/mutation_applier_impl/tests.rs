@@ -5,6 +5,7 @@ mod add_connection;
 mod add_hox_with_existing_cluster;
 mod add_neuron;
 mod add_new_cluster;
+mod bridge;
 mod change_placement_neuron;
 mod change_target_neuron;
 mod copy_cluster;
@@ -53,6 +54,20 @@ fn standalone_hox_gene(cluster_gene: ClusterGeneIndex) -> HoxGene {
     HoxGene {
         cluster_gene,
         placement_target: HoxPlacement::Standalone,
+        disabled_connections: Vec::new(),
+    }
+}
+
+fn hox_placed_on_hox_gene(
+    cluster_gene: ClusterGeneIndex,
+    target_neuron: ClusterNeuronIndex,
+) -> HoxGene {
+    HoxGene {
+        cluster_gene,
+        placement_target: HoxPlacement::HoxGene {
+            hox_gene: HoxGeneIndex(0),
+            target_neuron,
+        },
         disabled_connections: Vec::new(),
     }
 }
