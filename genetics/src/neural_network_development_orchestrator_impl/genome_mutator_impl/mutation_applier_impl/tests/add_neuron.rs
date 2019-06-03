@@ -5,13 +5,14 @@ const NEW_CONNECTION_WEIGHT: f64 = 0.125;
 #[test]
 fn errors_if_cluster_gene_does_not_exist() {
     let genome = empty_genome().add_cluster_gene(cluster_gene());
+    let expected_genome = genome.clone();
     let mutation = Mutation::AddNeuron {
         cluster_gene: ClusterGeneIndex(1),
         connection: ClusterConnectionIndex(0),
         new_connection_weight: NEW_CONNECTION_WEIGHT,
     };
     test_mutation_application(MutationApplicationTestParameters {
-        expected_genome: genome.clone(),
+        expected_genome,
         genome,
         mutation,
         result_test_fn: Result::is_err,
@@ -21,13 +22,14 @@ fn errors_if_cluster_gene_does_not_exist() {
 #[test]
 fn errors_if_connection_does_not_exist() {
     let genome = empty_genome().add_cluster_gene(cluster_gene());
+    let expected_genome = genome.clone();
     let mutation = Mutation::AddNeuron {
         cluster_gene: ClusterGeneIndex(0),
         connection: ClusterConnectionIndex(2),
         new_connection_weight: NEW_CONNECTION_WEIGHT,
     };
     test_mutation_application(MutationApplicationTestParameters {
-        expected_genome: genome.clone(),
+        expected_genome,
         genome,
         mutation,
         result_test_fn: Result::is_err,

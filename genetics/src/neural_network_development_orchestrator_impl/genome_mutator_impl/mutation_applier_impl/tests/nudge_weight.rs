@@ -7,10 +7,11 @@ const NEGATIVE_WEIGHT_DELTA: f64 = -0.5;
 #[test]
 fn errors_if_cluster_gene_does_not_exist() {
     let genome = empty_genome();
+    let expected_genome = genome.clone();
 
     let mutation = mutation(POSITIVE_WEIGHT_DELTA);
     test_mutation_application(MutationApplicationTestParameters {
-        expected_genome: genome.clone(),
+        expected_genome,
         genome,
         mutation,
         result_test_fn: Result::is_err,
@@ -20,10 +21,11 @@ fn errors_if_cluster_gene_does_not_exist() {
 #[test]
 fn errors_if_connection_does_not_exist() {
     let genome = empty_genome().add_cluster_gene(empty_cluster_gene());
+    let expected_genome = genome.clone();
 
     let mutation = mutation(POSITIVE_WEIGHT_DELTA);
     test_mutation_application(MutationApplicationTestParameters {
-        expected_genome: genome.clone(),
+        expected_genome,
         genome,
         mutation,
         result_test_fn: Result::is_err,

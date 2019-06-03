@@ -2,11 +2,6 @@ use super::*;
 
 #[test]
 fn errors_if_hox_gene_does_not_exist() {
-    let mutation = Mutation::ChangeTargetNeuron {
-        hox_gene: HoxGeneIndex(2),
-        new_target_neuron: ClusterNeuronIndex(1),
-    };
-
     let genome = Genome {
         hox_genes: vec![
             standalone_hox_gene(ClusterGeneIndex(0)),
@@ -14,9 +9,14 @@ fn errors_if_hox_gene_does_not_exist() {
         ],
         cluster_genes: vec![empty_cluster_gene(); 3],
     };
+    let expected_genome = genome.clone();
 
+    let mutation = Mutation::ChangeTargetNeuron {
+        hox_gene: HoxGeneIndex(2),
+        new_target_neuron: ClusterNeuronIndex(1),
+    };
     test_mutation_application(MutationApplicationTestParameters {
-        expected_genome: genome.clone(),
+        expected_genome,
         genome,
         mutation,
         result_test_fn: Result::is_err,
@@ -25,11 +25,6 @@ fn errors_if_hox_gene_does_not_exist() {
 
 #[test]
 fn errors_if_hox_gene_has_standalone_placement() {
-    let mutation = Mutation::ChangeTargetNeuron {
-        hox_gene: HoxGeneIndex(1),
-        new_target_neuron: ClusterNeuronIndex(1),
-    };
-
     let genome = Genome {
         hox_genes: vec![
             standalone_hox_gene(ClusterGeneIndex(0)),
@@ -38,9 +33,14 @@ fn errors_if_hox_gene_has_standalone_placement() {
         ],
         cluster_genes: vec![empty_cluster_gene(); 3],
     };
+    let expected_genome = genome.clone();
 
+    let mutation = Mutation::ChangeTargetNeuron {
+        hox_gene: HoxGeneIndex(1),
+        new_target_neuron: ClusterNeuronIndex(1),
+    };
     test_mutation_application(MutationApplicationTestParameters {
-        expected_genome: genome.clone(),
+        expected_genome,
         genome,
         mutation,
         result_test_fn: Result::is_err,
@@ -49,11 +49,6 @@ fn errors_if_hox_gene_has_standalone_placement() {
 
 #[test]
 fn change_target_neuron() {
-    let mutation = Mutation::ChangeTargetNeuron {
-        hox_gene: HoxGeneIndex(1),
-        new_target_neuron: ClusterNeuronIndex(2),
-    };
-
     let genome = Genome {
         hox_genes: vec![
             standalone_hox_gene(ClusterGeneIndex(0)),
@@ -72,6 +67,10 @@ fn change_target_neuron() {
         cluster_genes: vec![empty_cluster_gene(); 3],
     };
 
+    let mutation = Mutation::ChangeTargetNeuron {
+        hox_gene: HoxGeneIndex(1),
+        new_target_neuron: ClusterNeuronIndex(2),
+    };
     test_mutation_application(MutationApplicationTestParameters {
         expected_genome,
         genome,

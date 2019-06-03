@@ -2,10 +2,6 @@ use super::*;
 
 #[test]
 fn errors_if_hox_gene_does_not_exist() {
-    let mutation = Mutation::DuplicateHox {
-        hox_gene: HoxGeneIndex(2),
-    };
-
     let genome = Genome {
         hox_genes: vec![
             standalone_hox_gene(ClusterGeneIndex(0)),
@@ -13,9 +9,13 @@ fn errors_if_hox_gene_does_not_exist() {
         ],
         cluster_genes: vec![empty_cluster_gene(); 2],
     };
+    let expected_genome = genome.clone();
 
+    let mutation = Mutation::DuplicateHox {
+        hox_gene: HoxGeneIndex(2),
+    };
     test_mutation_application(MutationApplicationTestParameters {
-        expected_genome: genome.clone(),
+        expected_genome,
         genome,
         mutation,
         result_test_fn: Result::is_err,

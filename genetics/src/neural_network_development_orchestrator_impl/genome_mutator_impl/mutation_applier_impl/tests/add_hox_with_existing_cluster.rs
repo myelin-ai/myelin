@@ -2,10 +2,6 @@ use super::*;
 
 #[test]
 fn errors_if_cluster_does_not_exist() {
-    let mutation = Mutation::AddHoxWithExistingCluster {
-        new_hox_gene: standalone_hox_gene(ClusterGeneIndex(2)),
-    };
-
     let genome = Genome {
         hox_genes: vec![
             standalone_hox_gene(ClusterGeneIndex(0)),
@@ -13,9 +9,13 @@ fn errors_if_cluster_does_not_exist() {
         ],
         cluster_genes: vec![empty_cluster_gene(); 2],
     };
+    let expected_genome = genome.clone();
 
+    let mutation = Mutation::AddHoxWithExistingCluster {
+        new_hox_gene: standalone_hox_gene(ClusterGeneIndex(2)),
+    };
     test_mutation_application(MutationApplicationTestParameters {
-        expected_genome: genome.clone(),
+        expected_genome,
         genome,
         mutation,
         result_test_fn: Result::is_err,
@@ -24,10 +24,6 @@ fn errors_if_cluster_does_not_exist() {
 
 #[test]
 fn add_hox_with_existing_cluster() {
-    let mutation = Mutation::AddHoxWithExistingCluster {
-        new_hox_gene: standalone_hox_gene(ClusterGeneIndex(1)),
-    };
-
     let genome = Genome {
         hox_genes: vec![
             standalone_hox_gene(ClusterGeneIndex(0)),
@@ -45,6 +41,9 @@ fn add_hox_with_existing_cluster() {
         cluster_genes: vec![empty_cluster_gene(); 2],
     };
 
+    let mutation = Mutation::AddHoxWithExistingCluster {
+        new_hox_gene: standalone_hox_gene(ClusterGeneIndex(1)),
+    };
     test_mutation_application(MutationApplicationTestParameters {
         expected_genome,
         genome,
