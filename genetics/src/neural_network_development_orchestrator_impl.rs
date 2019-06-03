@@ -161,7 +161,7 @@ impl NeuralNetworkDevelopmentOrchestrator for NeuralNetworkDevelopmentOrchestrat
 impl NeuralNetworkDevelopmentOrchestratorImpl {
     fn create_genome(&self, configuration: &NeuralNetworkDevelopmentConfiguration) -> Genome {
         match &configuration.genome_origin {
-            GenomeOrigin::Genesis(_) => unimplemented!(),
+            GenomeOrigin::Genesis(genome) => genome.clone(),
             GenomeOrigin::Parents(genome_one, genome_two) => {
                 let parent_genomes = (genome_one.clone(), genome_two.clone());
                 let genome = self
@@ -248,6 +248,58 @@ mod tests {
             orchestrator.develop_neural_network(&development_configuration);
 
         assert_eq!(mutated_genome, developed_neural_network.genome);
+    }
+
+    #[test]
+    fn orchestrates_neural_network_development_with_genesis_genome_origin() {
+        let source_genome = create_genome_with_single_hox_gene(1);
+
+        let development_configuration = NeuralNetworkDevelopmentConfiguration {
+            genome_origin: GenomeOrigin::Genesis(source_genome.clone()),
+            input_neuron_count: NonZeroUsize::new(1).unwrap(),
+            output_neuron_count: NonZeroUsize::new(1).unwrap(),
+        };
+
+        let neural_network_factory: Rc<NeuralNetworkFactory> = Rc::new(|| {
+            let neural_network = NeuralNetworkMock::new();
+            box neural_network
+        });
+
+        let neural_network_configurator_factory: Rc<NeuralNetworkConfiguratorFactory> =
+            Rc::new(|_, _, _| {
+                let neural_network_configurator = NeuralNetworkConfiguratorMock::new();
+                box neural_network_configurator
+            });
+
+        let neural_network_builder_factory: Rc<NeuralNetworkDeveloperFactory> = {
+            let development_configuration = development_configuration.clone();
+            let source_genome = source_genome.clone();
+
+            Rc::new(move |configuration, genome| {
+                assert_eq!(development_configuration, *configuration);
+                assert_eq!(&source_genome, genome);
+
+                let mut neural_network_developer = NeuralNetworkDeveloperMock::new();
+                neural_network_developer.expect_develop_neural_network(any());
+                box neural_network_developer
+            })
+        };
+
+        let genome_deriver = GenomeDeriverMock::new();
+        let genome_mutator = GenomeMutatorMock::new();
+
+        let orchestrator = NeuralNetworkDevelopmentOrchestratorImpl::new(
+            neural_network_factory,
+            neural_network_builder_factory,
+            neural_network_configurator_factory,
+            box genome_deriver,
+            box genome_mutator,
+        );
+
+        let developed_neural_network =
+            orchestrator.develop_neural_network(&development_configuration);
+
+        assert_eq!(source_genome, developed_neural_network.genome);
     }
 
     fn create_genome_with_single_hox_gene(cluster_gene: usize) -> Genome {
