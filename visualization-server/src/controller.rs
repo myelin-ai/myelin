@@ -2,7 +2,6 @@ use myelin_engine::prelude::*;
 use myelin_object_data::{AdditionalObjectDescription, ObjectDescription};
 use myelin_visualization_core::view_model_delta::ViewModelDelta;
 use nameof::name_of;
-use std::boxed::FnBox;
 use std::collections::HashMap;
 use std::fmt::{self, Debug};
 use std::net::SocketAddr;
@@ -18,7 +17,7 @@ pub(crate) type Snapshot = HashMap<Id, ObjectDescription>;
 pub(crate) type ConnectionAcceptorFactoryFn =
     dyn Fn(Arc<CurrentSnapshotFn>) -> Box<dyn ConnectionAcceptor> + Send + Sync;
 pub(crate) type CurrentSnapshotFn = dyn Fn() -> Snapshot + Send + Sync;
-pub(crate) type ThreadSpawnFn<'a> = dyn Fn(Box<dyn FnBox() + Send>) + Send + Sync + 'a;
+pub(crate) type ThreadSpawnFn<'a> = dyn Fn(Box<dyn FnOnce() + Send>) + Send + Sync + 'a;
 
 pub(crate) trait Controller: Debug {
     fn run(&mut self);

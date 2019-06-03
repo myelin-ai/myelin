@@ -1,6 +1,5 @@
 use crate::controller::{ConnectionAcceptor, CurrentSnapshotFn};
 use nameof::name_of;
-use std::boxed::FnBox;
 use std::fmt::{self, Debug};
 use std::io;
 use std::net::{SocketAddr, TcpStream};
@@ -14,7 +13,7 @@ pub(crate) trait Client: Debug {
 }
 pub(crate) type ClientFactoryFn =
     dyn Fn(WsClient<TcpStream>, Arc<CurrentSnapshotFn>) -> Box<dyn Client> + Send + Sync;
-pub(crate) type ThreadSpawnFn = dyn Fn(Box<dyn FnBox() + Send>) + Send + Sync;
+pub(crate) type ThreadSpawnFn = dyn Fn(Box<dyn FnOnce() + Send>) + Send + Sync;
 
 pub(crate) struct WebsocketConnectionAcceptor {
     websocket_server: Server<NoTlsAcceptor>,
