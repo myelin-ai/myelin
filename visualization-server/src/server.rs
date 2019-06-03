@@ -19,7 +19,7 @@ use myelin_genetics::{
         NeuralNetworkDeveloperFactory, NeuralNetworkDevelopmentOrchestratorImpl,
         OutputNeuronHandles,
     },
-    NeuralNetworkDevelopmentConfiguration, NeuralNetworkDevelopmentOrchestrator,
+    GenomeOrigin, NeuralNetworkDevelopmentConfiguration, NeuralNetworkDevelopmentOrchestrator,
 };
 use myelin_neural_network::{spiking_neural_network::DefaultSpikingNeuralNetwork, NeuralNetwork};
 use myelin_object_behavior::{
@@ -292,7 +292,7 @@ fn object_behavior_container() -> Container {
                     let neural_network_development_orchestrator =
                         container.resolve::<Box<dyn NeuralNetworkDevelopmentOrchestrator>>();
                     box OrganismBehavior::new(
-                        (Genome::default(), Genome::default()),
+                        GenomeOrigin::default(),
                         neural_network_development_orchestrator,
                     )
                 },

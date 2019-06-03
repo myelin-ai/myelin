@@ -2,9 +2,8 @@
 
 use itertools::Itertools;
 use myelin_engine::prelude::*;
-use myelin_genetics::genome::Genome;
 use myelin_genetics::{
-    DevelopedNeuralNetwork, NeuralNetworkDevelopmentConfiguration,
+    DevelopedNeuralNetwork, GenomeOrigin, NeuralNetworkDevelopmentConfiguration,
     NeuralNetworkDevelopmentOrchestrator,
 };
 use myelin_neural_network::{Handle, Milliseconds, NeuralNetwork};
@@ -73,11 +72,11 @@ impl OrganismBehavior {
     /// [`Genome`]: ../myelin-genetics/struct.Genome.html
     /// [`NeuralNetwork`]: ../myelin-neural-network/trait.NeuralNetwork.html
     pub fn new(
-        parent_genomes: (Genome, Genome),
+        genome_origin: GenomeOrigin,
         neural_network_developer: Box<dyn NeuralNetworkDevelopmentOrchestrator>,
     ) -> Self {
         let configuration = NeuralNetworkDevelopmentConfiguration {
-            parent_genomes,
+            genome_origin,
             input_neuron_count: input_neuron_count(),
             output_neuron_count: output_neuron_count(),
         };
@@ -497,6 +496,7 @@ fn get_combined_potential(
 mod tests {
     use super::*;
     use mockiato::partial_eq;
+    use myelin_genetics::genome::Genome;
     use myelin_neural_network::NeuralNetworkMock;
     use myelin_object_data::AdditionalObjectDescription;
     use myelin_object_data::Kind;

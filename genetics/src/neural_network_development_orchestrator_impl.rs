@@ -160,10 +160,16 @@ impl NeuralNetworkDevelopmentOrchestrator for NeuralNetworkDevelopmentOrchestrat
 
 impl NeuralNetworkDevelopmentOrchestratorImpl {
     fn create_genome(&self, configuration: &NeuralNetworkDevelopmentConfiguration) -> Genome {
-        let genome = self
-            .genome_deriver
-            .derive_genome_from_parents(configuration.parent_genomes.clone());
-        self.genome_mutator.mutate_genome(genome)
+        match &configuration.genome_origin {
+            GenomeOrigin::Genesis(_) => unimplemented!(),
+            GenomeOrigin::Parents(genome_one, genome_two) => {
+                let parent_genomes = (genome_one.clone(), genome_two.clone());
+                let genome = self
+                    .genome_deriver
+                    .derive_genome_from_parents(parent_genomes);
+                self.genome_mutator.mutate_genome(genome)
+            }
+        }
     }
 }
 
@@ -185,7 +191,10 @@ mod tests {
         let mutated_genome = create_genome_with_single_hox_gene(4);
 
         let development_configuration = NeuralNetworkDevelopmentConfiguration {
-            parent_genomes: (parent_genome_one.clone(), parent_genome_two.clone()),
+            genome_origin: GenomeOrigin::Parents(
+                parent_genome_one.clone(),
+                parent_genome_two.clone(),
+            ),
             input_neuron_count: NonZeroUsize::new(1).unwrap(),
             output_neuron_count: NonZeroUsize::new(1).unwrap(),
         };
