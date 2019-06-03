@@ -60,12 +60,13 @@ fn standalone_hox_gene(cluster_gene: ClusterGeneIndex) -> HoxGene {
 
 fn hox_placed_on_hox_gene(
     cluster_gene: ClusterGeneIndex,
+    hox_gene: HoxGeneIndex,
     target_neuron: ClusterNeuronIndex,
 ) -> HoxGene {
     HoxGene {
         cluster_gene,
         placement_target: HoxPlacement::HoxGene {
-            hox_gene: HoxGeneIndex(0),
+            hox_gene,
             target_neuron,
         },
         disabled_connections: Vec::new(),
