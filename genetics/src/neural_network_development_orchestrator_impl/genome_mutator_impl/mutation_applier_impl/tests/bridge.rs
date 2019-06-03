@@ -1,7 +1,7 @@
 use super::*;
 
 #[test]
-fn adds_bridge() {
+fn adds_single_bridge() {
     let target_neuron_on_standalone = ClusterNeuronIndex(1);
     let genome = empty_genome()
         .add_cluster_gene(cluster_gene())
