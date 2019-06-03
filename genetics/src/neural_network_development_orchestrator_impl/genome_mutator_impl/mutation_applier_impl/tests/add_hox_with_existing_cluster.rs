@@ -45,7 +45,7 @@ fn add_hox_with_existing_cluster_gene() {
             standalone_hox_gene(ClusterGeneIndex(1)),
             standalone_hox_gene(ClusterGeneIndex(1)),
         ],
-        cluster_genes: vec![empty_cluster_gene(); 2],
+        cluster_genes: genome.cluster_genes.clone(),
     };
 
     let mutation = Mutation::AddHoxWithExistingCluster {
