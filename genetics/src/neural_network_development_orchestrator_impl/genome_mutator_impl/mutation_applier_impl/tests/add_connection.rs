@@ -3,9 +3,10 @@ use super::*;
 #[test]
 fn errors_if_cluster_gene_does_not_exist() {
     let genome = empty_genome();
+    let expected_genome = genome.clone();
     let mutation = mutation();
     test_mutation_application(MutationApplicationTestParameters {
-        expected_genome: genome.clone(),
+        expected_genome,
         genome,
         mutation,
         result_test_fn: Result::is_err,
