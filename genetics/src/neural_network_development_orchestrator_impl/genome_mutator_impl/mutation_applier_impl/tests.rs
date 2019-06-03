@@ -2,6 +2,7 @@ use super::super::Mutation;
 use super::*;
 
 mod add_connection;
+mod add_hox_with_existing_cluster;
 mod add_neuron;
 mod add_new_cluster;
 mod change_placement_neuron;
