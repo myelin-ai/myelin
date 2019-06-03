@@ -17,7 +17,9 @@ pub struct RandomImpl {
     rng: Rc<RefCell<dyn DebugRngCore>>,
 }
 
-trait DebugRngCore = RngCore + Debug;
+trait DebugRngCore: RngCore + Debug {}
+
+impl<T> DebugRngCore for T where T: RngCore + Debug {}
 
 impl RandomImpl {
     /// Constructs a new [`RandomImpl`] by seeding a new threaded rng source
