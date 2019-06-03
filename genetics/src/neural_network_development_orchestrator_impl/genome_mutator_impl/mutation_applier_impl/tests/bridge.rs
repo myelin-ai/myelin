@@ -2,8 +2,7 @@ use super::*;
 
 #[test]
 fn adds_single_bridge() {
-    let target_neuron_on_standalone = ClusterNeuronIndex(1);
-
+    let initial_target_neuron_on_mutation_target = ClusterNeuronIndex(2);
     let base_genome = empty_genome()
         .add_cluster_gene(cluster_gene())
         .add_cluster_gene(cluster_gene())
@@ -12,17 +11,15 @@ fn adds_single_bridge() {
     let genome = base_genome.clone().add_hox_gene(hox_placed_on_hox_gene(
         ClusterGeneIndex(1),
         HoxGeneIndex(0),
-        target_neuron_on_standalone,
+        initial_target_neuron_on_mutation_target,
     ));
 
     let bridge_cluster = cluster_gene();
 
-    let new_target_neuron = ClusterNeuronIndex(1);
-
     let bridge_hox = HoxGene {
         placement_target: HoxPlacement::HoxGene {
             hox_gene: HoxGeneIndex(0),
-            target_neuron: target_neuron_on_standalone,
+            target_neuron: initial_target_neuron_on_mutation_target,
         },
         cluster_gene: ClusterGeneIndex(2),
         disabled_connections: Vec::new(),
@@ -33,7 +30,7 @@ fn adds_single_bridge() {
         .add_hox_gene(hox_placed_on_hox_gene(
             ClusterGeneIndex(1),
             HoxGeneIndex(2),
-            new_target_neuron,
+            new_target_neuron(),
         ))
         .add_hox_gene(bridge_hox);
 
@@ -50,9 +47,67 @@ fn adds_single_bridge() {
     });
 }
 
+#[test]
+fn adds_multiple_bridges() {
+    let initial_target_neuron_on_mutation_target = ClusterNeuronIndex(2);
+
+    let base_genome = empty_genome()
+        .add_cluster_gene(cluster_gene())
+        .add_cluster_gene(cluster_gene())
+        .add_hox_gene(standalone_hox_gene(ClusterGeneIndex(0)))
+        .add_hox_gene(hox_placed_on_hox_gene(
+            ClusterGeneIndex(0),
+            HoxGeneIndex(0),
+            // Irrelevant for test
+            ClusterNeuronIndex(1),
+        ));
+
+    let genome = base_genome.clone().add_hox_gene(hox_placed_on_cluster_gene(
+        ClusterGeneIndex(1),
+        ClusterGeneIndex(0),
+        initial_target_neuron_on_mutation_target,
+    ));
+
+    let bridge_cluster = cluster_gene();
+
+    let bridge_hox = HoxGene {
+        placement_target: HoxPlacement::ClusterGene {
+            cluster_gene: ClusterGeneIndex(0),
+            target_neuron: initial_target_neuron_on_mutation_target,
+        },
+        cluster_gene: ClusterGeneIndex(2),
+        disabled_connections: Vec::new(),
+    };
+
+    let expected_genome = base_genome
+        .add_cluster_gene(bridge_cluster.clone())
+        .add_hox_gene(hox_placed_on_cluster_gene(
+            ClusterGeneIndex(1),
+            ClusterGeneIndex(2),
+            new_target_neuron(),
+        ))
+        .add_hox_gene(bridge_hox);
+
+    let mutation = Mutation::Bridge {
+        target_hox_gene: HoxGeneIndex(2),
+        bridge_cluster_gene: bridge_cluster,
+    };
+
+    test_mutation_application(MutationApplicationTestParameters {
+        genome,
+        expected_genome,
+        mutation,
+        result_test_fn: Result::is_ok,
+    });
+}
+
 fn cluster_gene() -> ClusterGene {
     ClusterGene {
         neurons: vec![Neuron {}; 3],
         ..empty_cluster_gene()
     }
+}
+
+fn new_target_neuron() -> ClusterNeuronIndex {
+    ClusterNeuronIndex(1)
 }

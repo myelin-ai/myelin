@@ -73,6 +73,21 @@ fn hox_placed_on_hox_gene(
     }
 }
 
+fn hox_placed_on_cluster_gene(
+    placement_cluster: ClusterGeneIndex,
+    placement_target: ClusterGeneIndex,
+    target_neuron: ClusterNeuronIndex,
+) -> HoxGene {
+    HoxGene {
+        cluster_gene: placement_cluster,
+        placement_target: HoxPlacement::ClusterGene {
+            cluster_gene: placement_target,
+            target_neuron,
+        },
+        disabled_connections: Vec::new(),
+    }
+}
+
 impl Genome {
     fn add_cluster_gene(mut self, cluster_gene: ClusterGene) -> Self {
         self.cluster_genes.push(cluster_gene);
