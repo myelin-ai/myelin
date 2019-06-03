@@ -3,15 +3,17 @@ use super::*;
 #[test]
 fn adds_single_bridge() {
     let target_neuron_on_standalone = ClusterNeuronIndex(1);
-    let genome = empty_genome()
+
+    let base_genome = empty_genome()
         .add_cluster_gene(cluster_gene())
         .add_cluster_gene(cluster_gene())
-        .add_hox_gene(standalone_hox_gene(ClusterGeneIndex(0)))
-        .add_hox_gene(hox_placed_on_hox_gene(
-            ClusterGeneIndex(1),
-            HoxGeneIndex(0),
-            target_neuron_on_standalone,
-        ));
+        .add_hox_gene(standalone_hox_gene(ClusterGeneIndex(0)));
+
+    let genome = base_genome.clone().add_hox_gene(hox_placed_on_hox_gene(
+        ClusterGeneIndex(1),
+        HoxGeneIndex(0),
+        target_neuron_on_standalone,
+    ));
 
     let bridge_cluster = cluster_gene();
 
@@ -26,11 +28,8 @@ fn adds_single_bridge() {
         disabled_connections: Vec::new(),
     };
 
-    let expected_genome = empty_genome()
-        .add_cluster_gene(cluster_gene())
-        .add_cluster_gene(cluster_gene())
+    let expected_genome = base_genome
         .add_cluster_gene(bridge_cluster.clone())
-        .add_hox_gene(standalone_hox_gene(ClusterGeneIndex(0)))
         .add_hox_gene(hox_placed_on_hox_gene(
             ClusterGeneIndex(1),
             HoxGeneIndex(2),
