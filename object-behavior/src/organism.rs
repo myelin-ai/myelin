@@ -3,8 +3,8 @@
 use itertools::Itertools;
 use myelin_engine::prelude::*;
 use myelin_genetics::{
-    DevelopedNeuralNetwork, GenomeOrigin, NeuralNetworkDevelopmentConfiguration,
-    NeuralNetworkDevelopmentOrchestrator,
+    DevelopedNeuralNetwork, GenomeGenerator, GenomeGeneratorConfiguration, GenomeOrigin,
+    NeuralNetworkDevelopmentConfiguration, NeuralNetworkDevelopmentOrchestrator,
 };
 use myelin_neural_network::{Handle, Milliseconds, NeuralNetwork};
 use myelin_object_data::{AdditionalObjectDescription, Object, ObjectDescription};
@@ -87,6 +87,18 @@ impl OrganismBehavior {
                 .develop_neural_network(&configuration),
             neural_network_developer,
         }
+    }
+
+    pub fn from_genome_generator(
+        genome_generator: Box<dyn GenomeGenerator>,
+        neural_network_developer: Box<dyn NeuralNetworkDevelopmentOrchestrator>,
+    ) -> Self {
+        let configuration = GenomeGeneratorConfiguration {
+            input_neuron_count: input_neuron_count(),
+            output_neuron_count: output_neuron_count(),
+        };
+        let genome = genome_generator.generate_genome(&configuration);
+        Self::new(GenomeOrigin::Genesis(genome), neural_network_developer)
     }
 }
 
