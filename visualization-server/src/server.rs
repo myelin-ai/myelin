@@ -313,10 +313,7 @@ fn create_organism_factory(container: &Container) -> myelin_worldgen::OrganismFa
     let container = container.clone();
     myelin_worldgen::OrganismFactory(
         box move || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
-            box OrganismBehavior::from_genome_generator(
-                container.resolve(),
-                container.resolve(),
-            )
+            box OrganismBehavior::from_genome_generator(container.resolve(), container.resolve())
         },
     )
 }
