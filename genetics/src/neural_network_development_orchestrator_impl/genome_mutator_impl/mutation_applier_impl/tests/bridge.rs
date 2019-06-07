@@ -114,6 +114,33 @@ fn adds_multiple_bridges() {
         result_test_fn: Result::is_ok,
     });
 }
+
+#[test]
+fn errors_if_target_does_not_exist() {
+    let base_genome = genome();
+
+    let genome = base_genome
+        .clone()
+        .add_hox_gene(hox_placed_on_hox_on_shared_neuron())
+        .add_hox_gene(hox_placed_on_hox_on_shared_neuron());
+
+    let bridge_cluster = cluster_gene();
+
+    let expected_genome = genome.clone();
+
+    let mutation = Mutation::Bridge {
+        target_hox_gene: HoxGeneIndex(8),
+        bridge_cluster_gene: bridge_cluster,
+    };
+
+    test_mutation_application(MutationApplicationTestParameters {
+        genome,
+        expected_genome,
+        mutation,
+        result_test_fn: Result::is_err,
+    });
+}
+
 fn initial_target_neuron_on_mutation_target() -> ClusterNeuronIndex {
     ClusterNeuronIndex(2)
 }
