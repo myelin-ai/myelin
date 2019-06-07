@@ -12,14 +12,18 @@ use crate::presenter::DeltaPresenter;
 use myelin_engine::{prelude::*, simulation::SimulationBuilder};
 use myelin_genetics::{
     genome::Genome,
+    genome_generator_impl::{
+        CorpusCallosumClusterGeneGenerator, CorpusCallosumClusterGeneGeneratorImpl,
+        GenomeGeneratorImpl, IoClusterGeneGenerator, IoClusterGeneGeneratorImpl,
+    },
     neural_network_development_orchestrator_impl::{
-        ChromosomalCrossoverGenomeDeriver, FlatNeuralNetworkDeveloper, GenomeDeriver,
+        ChromosomalCrossoverGenomeDeriver, GeneticNeuralNetworkDeveloper, GenomeDeriver,
         GenomeMutator, GenomeMutatorStub, InputNeuronHandles, NeuralNetworkConfigurator,
         NeuralNetworkConfiguratorFactory, NeuralNetworkConfiguratorImpl, NeuralNetworkDeveloper,
         NeuralNetworkDeveloperFactory, NeuralNetworkDevelopmentOrchestratorImpl,
         OutputNeuronHandles,
     },
-    NeuralNetworkDevelopmentConfiguration, NeuralNetworkDevelopmentOrchestrator,
+    GenomeGenerator, NeuralNetworkDevelopmentConfiguration, NeuralNetworkDevelopmentOrchestrator,
 };
 use myelin_neural_network::{spiking_neural_network::DefaultSpikingNeuralNetwork, NeuralNetwork};
 use myelin_object_behavior::{
@@ -64,6 +68,7 @@ fn create_composition_root(addr: SocketAddr) -> Container {
         .extend(server_container())
         .extend(client_container())
         .extend(neural_network_container())
+        .extend(genetics_container())
         .extend(worldgen_container())
         .extend(object_behavior_container());
 
@@ -157,6 +162,29 @@ fn client_container() -> Container {
     container
 }
 
+fn genetics_container() -> Container {
+    let mut container = Container::new();
+
+    container
+        .register(|container| {
+            box IoClusterGeneGeneratorImpl::new(container.resolve())
+                as Box<dyn IoClusterGeneGenerator>
+        })
+        .register(|container| {
+            box CorpusCallosumClusterGeneGeneratorImpl::new(container.resolve())
+                as Box<dyn CorpusCallosumClusterGeneGenerator>
+        })
+        .register(|container| {
+            box GenomeGeneratorImpl::new(
+                container.resolve(),
+                container.resolve(),
+                container.resolve(),
+            ) as Box<dyn GenomeGenerator>
+        });
+
+    container
+}
+
 fn neural_network_container() -> Container {
     let mut container = Container::new();
     container
@@ -164,22 +192,19 @@ fn neural_network_container() -> Container {
             Rc::new(|| box DefaultSpikingNeuralNetwork::new() as Box<dyn NeuralNetwork>)
                 as Rc<dyn Fn() -> Box<dyn NeuralNetwork>>
         })
-        .register(|container| {
-            fn neural_network_developer_factory_factory(
-                container: &Container,
-            ) -> impl for<'b> Fn(
+        .register(|_| {
+            fn neural_network_developer_factory_factory() -> impl for<'b> Fn(
                 &'b NeuralNetworkDevelopmentConfiguration,
                 &'b Genome,
-            ) -> Box<dyn NeuralNetworkDeveloper + 'b> {
-                let container = container.clone();
-                move |configuration, _| {
-                    let random = container.resolve::<Box<dyn Random>>();
-                    box FlatNeuralNetworkDeveloper::new(configuration, random)
+            ) -> Box<
+                dyn NeuralNetworkDeveloper + 'b,
+            > {
+                move |configuration, genome| {
+                    box GeneticNeuralNetworkDeveloper::new(configuration.clone(), genome.clone())
                         as Box<dyn NeuralNetworkDeveloper>
                 }
             }
-            Rc::new(neural_network_developer_factory_factory(container))
-                as Rc<NeuralNetworkDeveloperFactory>
+            Rc::new(neural_network_developer_factory_factory()) as Rc<NeuralNetworkDeveloperFactory>
         })
         .register(|_| {
             fn neural_network_configurator_factory<'a>(
@@ -247,6 +272,9 @@ fn object_behavior_container() -> Container {
     let mut container = Container::new();
 
     container
+        .register(create_name_provider)
+        .register(create_plant_factory)
+        .register(create_organism_factory)
         .register(|_| box ShuffledNameProviderFactory::new() as Box<dyn NameProviderFactory>)
         .register(|c| {
             box ChromosomalCrossoverGenomeDeriver::new(c.resolve()) as Box<dyn GenomeDeriver>
@@ -260,38 +288,34 @@ fn object_behavior_container() -> Container {
                 c.resolve(),
                 c.resolve(),
             ) as Box<dyn NeuralNetworkDevelopmentOrchestrator>
-        })
-        .register(|container| {
-            let name_provider_factory = container.resolve::<Box<dyn NameProviderFactory>>();
-            let mut name_provider_builder = NameProviderBuilder::new(name_provider_factory);
-            let organism_names = load_names_from_file(Path::new("./object-names/organisms.txt"));
-            name_provider_builder.add_names(&organism_names, Kind::Organism);
-            name_provider_builder.build()
-        })
-        .register(|container| {
-            let container = container.clone();
-            myelin_worldgen::PlantFactory(
-                box move || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
-                    let random = container.resolve::<Box<dyn Random>>();
-                    box StochasticSpreading::new(1.0 / 5_000.0, random)
-                },
-            )
-        })
-        .register(|container| {
-            let container = container.clone();
-            myelin_worldgen::OrganismFactory(
-                box move || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
-                    let neural_network_development_orchestrator =
-                        container.resolve::<Box<dyn NeuralNetworkDevelopmentOrchestrator>>();
-                    box OrganismBehavior::new(
-                        (Genome::default(), Genome::default()),
-                        neural_network_development_orchestrator,
-                    )
-                },
-            )
         });
 
     container
+}
+
+fn create_name_provider(container: &Container) -> Box<dyn NameProvider> {
+    let mut name_provider_builder = NameProviderBuilder::new(container.resolve());
+    let organism_names = load_names_from_file(Path::new("./object-names/organisms.txt"));
+    name_provider_builder.add_names(&organism_names, Kind::Organism);
+    name_provider_builder.build()
+}
+
+fn create_plant_factory(container: &Container) -> myelin_worldgen::PlantFactory {
+    let container = container.clone();
+    myelin_worldgen::PlantFactory(
+        box move || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
+            box StochasticSpreading::new(1.0 / 5_000.0, container.resolve())
+        },
+    )
+}
+
+fn create_organism_factory(container: &Container) -> myelin_worldgen::OrganismFactory {
+    let container = container.clone();
+    myelin_worldgen::OrganismFactory(
+        box move || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
+            box OrganismBehavior::from_genome_generator(container.resolve(), container.resolve())
+        },
+    )
 }
 
 fn load_names_from_file(path: &Path) -> Vec<String> {
