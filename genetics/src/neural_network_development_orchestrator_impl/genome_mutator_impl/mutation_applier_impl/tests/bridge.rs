@@ -36,12 +36,10 @@ fn adds_single_bridge() {
 fn adds_bridge_to_neuron_with_multiple_attached_clusters() {
     let base_genome = genome();
 
-    let hox_placed_on_hox_on_shared_neuron = hox_placed_on_hox_on_shared_neuron();
-
     let genome = base_genome
         .clone()
-        .add_hox_gene(hox_placed_on_hox_on_shared_neuron)
-        .add_hox_gene(hox_placed_on_hox_on_shared_neuron);
+        .add_hox_gene(hox_placed_on_hox_on_shared_neuron())
+        .add_hox_gene(hox_placed_on_hox_on_shared_neuron());
 
     let bridge_cluster = cluster_gene();
 
