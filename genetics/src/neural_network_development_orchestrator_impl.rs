@@ -12,7 +12,6 @@ use myelin_neural_network::NeuralNetwork;
 use nameof::{name_of, name_of_type};
 use std::fmt::{self, Debug};
 use std::rc::Rc;
-use wonderbox::autoresolvable;
 
 mod genome_deriver_impl;
 mod genome_mutator_impl;
@@ -98,7 +97,6 @@ pub struct NeuralNetworkDevelopmentOrchestratorImpl {
     genome_mutator: Box<dyn GenomeMutator>,
 }
 
-#[autoresolvable]
 impl NeuralNetworkDevelopmentOrchestratorImpl {
     /// Constructs a new [`NeuralNetworkDevelopmentOrchestratorImpl`]
     pub fn new(

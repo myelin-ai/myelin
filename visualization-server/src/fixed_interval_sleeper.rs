@@ -2,7 +2,6 @@ use std::error::Error;
 use std::fmt::{self, Display};
 use std::thread::sleep;
 use std::time::{Duration, Instant};
-use wonderbox::autoresolvable;
 
 #[cfg(test)]
 use mockiato::mockable;
@@ -54,7 +53,6 @@ pub(crate) struct FixedIntervalSleeperImpl {
     instant_that_the_work_was_started: Option<Instant>,
 }
 
-#[autoresolvable]
 impl FixedIntervalSleeperImpl {
     pub(crate) fn new() -> Self {
         Self::default()

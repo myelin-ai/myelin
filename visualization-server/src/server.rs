@@ -44,7 +44,7 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use uuid::Uuid;
-use wonderbox::{register_autoresolvable, Container};
+use wonderbox::Container;
 
 /// Starts the simulation and a websocket server, that broadcasts
 /// `ViewModel`s on each step to all clients.
@@ -78,18 +78,14 @@ fn create_composition_root(addr: SocketAddr) -> Container {
 fn utility_container() -> Container {
     let mut container = Container::new();
 
-    container.register(|_| box RandomImpl::new() as Box<dyn Random>);
-
-    register_autoresolvable!(
-        container,
-        FixedIntervalSleeperImpl as Box<dyn FixedIntervalSleeper>
-    );
-
-    container.register(|_| {
-        box (|function| {
-            thread::spawn(function);
-        }) as Box<ThreadSpawnFn>
-    });
+    container
+        .register(|_| box RandomImpl::new() as Box<dyn Random>)
+        .register(|_| box FixedIntervalSleeperImpl::new() as Box<dyn FixedIntervalSleeper>)
+        .register(|_| {
+            box (|function| {
+                thread::spawn(function);
+            }) as Box<ThreadSpawnFn>
+        });
 
     container
 }
@@ -97,22 +93,22 @@ fn utility_container() -> Container {
 fn server_container() -> Container {
     let mut container = Container::new();
 
-    register_autoresolvable!(container, BincodeSerializer as Box<dyn ViewModelSerializer>);
+    container
+        .register(|_| box BincodeSerializer::new() as Box<dyn ViewModelSerializer>)
+        .register(|container| {
+            let expected_delta = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
 
-    container.register(|container| {
-        let expected_delta = Duration::from_secs_f64(SIMULATED_TIMESTEP_IN_SI_UNITS);
-
-        let mut world_generator = container.resolve::<Box<dyn WorldGenerator<'_>>>();
-        let connection_acceptor_factory_fn =
-            container.resolve::<Arc<ConnectionAcceptorFactoryFn>>();
-        let thread_spawn_fn = container.resolve::<Box<ThreadSpawnFn>>();
-        box ControllerImpl::new(
-            world_generator.generate(),
-            connection_acceptor_factory_fn,
-            thread_spawn_fn,
-            expected_delta,
-        ) as Box<dyn Controller>
-    });
+            let mut world_generator = container.resolve::<Box<dyn WorldGenerator<'_>>>();
+            let connection_acceptor_factory_fn =
+                container.resolve::<Arc<ConnectionAcceptorFactoryFn>>();
+            let thread_spawn_fn = container.resolve::<Box<ThreadSpawnFn>>();
+            box ControllerImpl::new(
+                world_generator.generate(),
+                connection_acceptor_factory_fn,
+                thread_spawn_fn,
+                expected_delta,
+            ) as Box<dyn Controller>
+        });
 
     container
 }
@@ -120,9 +116,8 @@ fn server_container() -> Container {
 fn client_container() -> Container {
     let mut container = Container::new();
 
-    register_autoresolvable!(container, DeltaPresenter as Box<dyn Presenter>);
-
     container
+        .register(|_| box DeltaPresenter::new() as Box<dyn Presenter>)
         .register(|container| {
             let container = container.clone();
             Arc::new(move |websocket_client, current_snapshot_fn| {
@@ -286,27 +281,24 @@ fn worldgen_container() -> Container {
 fn object_behavior_container() -> Container {
     let mut container = Container::new();
 
-    register_autoresolvable!(
-        container,
-        ShuffledNameProviderFactory as Box<dyn NameProviderFactory>
-    );
-
-    register_autoresolvable!(
-        container,
-        ChromosomalCrossoverGenomeDeriver as Box<dyn GenomeDeriver>
-    );
-
-    register_autoresolvable!(container, GenomeMutatorStub as Box<dyn GenomeMutator>);
-
-    register_autoresolvable!(
-        container,
-        NeuralNetworkDevelopmentOrchestratorImpl as Box<dyn NeuralNetworkDevelopmentOrchestrator>
-    );
-
     container
         .register(create_name_provider)
         .register(create_plant_factory)
-        .register(create_organism_factory);
+        .register(create_organism_factory)
+        .register(|_| box ShuffledNameProviderFactory::new() as Box<dyn NameProviderFactory>)
+        .register(|c| {
+            box ChromosomalCrossoverGenomeDeriver::new(c.resolve()) as Box<dyn GenomeDeriver>
+        })
+        .register(|_| box GenomeMutatorStub::new() as Box<dyn GenomeMutator>)
+        .register(|c| {
+            box NeuralNetworkDevelopmentOrchestratorImpl::new(
+                c.resolve(),
+                c.resolve(),
+                c.resolve(),
+                c.resolve(),
+                c.resolve(),
+            ) as Box<dyn NeuralNetworkDevelopmentOrchestrator>
+        });
 
     container
 }
