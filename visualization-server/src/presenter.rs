@@ -5,12 +5,10 @@ use myelin_visualization_core::view_model_delta::{
     ObjectDelta, ObjectDescriptionDelta, ViewModelDelta,
 };
 use std::collections::HashMap;
-use wonderbox::autoresolvable;
 
 #[derive(Debug, Default)]
 pub(crate) struct DeltaPresenter;
 
-#[autoresolvable]
 impl DeltaPresenter {
     /// Constructs a new [`DeltaPresenter`]
     pub fn new() -> Self {
