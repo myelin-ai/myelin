@@ -5,7 +5,6 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::collections::HashMap;
 use std::fmt::{self, Debug};
-use wonderbox::autoresolvable;
 
 /// A [`NameProvider`] that uses names only once
 #[derive(Debug)]
@@ -39,7 +38,6 @@ where
 #[derive(Debug, Default)]
 pub struct ShuffledNameProviderFactory;
 
-#[autoresolvable]
 impl ShuffledNameProviderFactory {
     /// Creates a new [`ShuffledNameProviderFactory`]
     pub fn new() -> Self {
