@@ -175,8 +175,7 @@ fn genetics_container() -> Container {
         let random = container.resolve::<Box<dyn Random>>();
         let corpus_callosum_cluster_gene_generator =
             CorpusCallosumClusterGeneGeneratorImpl::new(random);
-        box corpus_callosum_cluster_gene_generator
-            as Box<dyn CorpusCallosumClusterGeneGenerator>
+        box corpus_callosum_cluster_gene_generator as Box<dyn CorpusCallosumClusterGeneGenerator>
     });
 
     container.register(|container| {
