@@ -304,38 +304,44 @@ fn object_behavior_container() -> Container {
     );
 
     container
-        .register(|container| {
-            let name_provider_factory = container.resolve::<Box<dyn NameProviderFactory>>();
-            let mut name_provider_builder = NameProviderBuilder::new(name_provider_factory);
-            let organism_names = load_names_from_file(Path::new("./object-names/organisms.txt"));
-            name_provider_builder.add_names(&organism_names, Kind::Organism);
-            name_provider_builder.build()
-        })
-        .register(|container| {
-            let container = container.clone();
-            myelin_worldgen::PlantFactory(
-                box move || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
-                    let random = container.resolve::<Box<dyn Random>>();
-                    box StochasticSpreading::new(1.0 / 5_000.0, random)
-                },
-            )
-        })
-        .register(|container| {
-            let container = container.clone();
-            myelin_worldgen::OrganismFactory(
-                box move || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
-                    let neural_network_development_orchestrator =
-                        container.resolve::<Box<dyn NeuralNetworkDevelopmentOrchestrator>>();
-                    let genome_generator = container.resolve::<Box<dyn GenomeGenerator>>();
-                    box OrganismBehavior::from_genome_generator(
-                        genome_generator,
-                        neural_network_development_orchestrator,
-                    )
-                },
-            )
-        });
+        .register(create_name_provider)
+        .register(create_plant_factory)
+        .register(create_organism_factory);
 
     container
+}
+
+fn create_name_provider(container: &Container) -> Box<dyn NameProvider> {
+    let name_provider_factory = container.resolve::<Box<dyn NameProviderFactory>>();
+    let mut name_provider_builder = NameProviderBuilder::new(name_provider_factory);
+    let organism_names = load_names_from_file(Path::new("./object-names/organisms.txt"));
+    name_provider_builder.add_names(&organism_names, Kind::Organism);
+    name_provider_builder.build()
+}
+
+fn create_plant_factory(container: &Container) -> myelin_worldgen::PlantFactory {
+    let container = container.clone();
+    myelin_worldgen::PlantFactory(
+        box move || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
+            let random = container.resolve::<Box<dyn Random>>();
+            box StochasticSpreading::new(1.0 / 5_000.0, random)
+        },
+    )
+}
+
+fn create_organism_factory(container: &Container) -> myelin_worldgen::OrganismFactory {
+    let container = container.clone();
+    myelin_worldgen::OrganismFactory(
+        box move || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
+            let neural_network_development_orchestrator =
+                container.resolve::<Box<dyn NeuralNetworkDevelopmentOrchestrator>>();
+            let genome_generator = container.resolve::<Box<dyn GenomeGenerator>>();
+            box OrganismBehavior::from_genome_generator(
+                genome_generator,
+                neural_network_development_orchestrator,
+            )
+        },
+    )
 }
 
 fn load_names_from_file(path: &Path) -> Vec<String> {
