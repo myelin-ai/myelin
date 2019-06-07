@@ -10,16 +10,20 @@ use crate::controller::{
 use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperImpl};
 use crate::presenter::DeltaPresenter;
 use myelin_engine::{prelude::*, simulation::SimulationBuilder};
+use myelin_genetics::neural_network_development_orchestrator_impl::GeneticNeuralNetworkDeveloper;
 use myelin_genetics::{
     genome::Genome,
-    neural_network_development_orchestrator_impl::{
-        ChromosomalCrossoverGenomeDeriver, FlatNeuralNetworkDeveloper, GenomeDeriver,
-        GenomeMutator, GenomeMutatorStub, InputNeuronHandles, NeuralNetworkConfigurator,
-        NeuralNetworkConfiguratorFactory, NeuralNetworkConfiguratorImpl, NeuralNetworkDeveloper,
-        NeuralNetworkDeveloperFactory, NeuralNetworkDevelopmentOrchestratorImpl,
-        OutputNeuronHandles,
+    genome_generator_impl::{
+        CorpusCallosumClusterGeneGenerator, CorpusCallosumClusterGeneGeneratorImpl,
+        GenomeGeneratorImpl, IoClusterGeneGenerator, IoClusterGeneGeneratorImpl,
     },
-    GenomeOrigin, NeuralNetworkDevelopmentConfiguration, NeuralNetworkDevelopmentOrchestrator,
+    neural_network_development_orchestrator_impl::{
+        ChromosomalCrossoverGenomeDeriver, GenomeDeriver, GenomeMutator, GenomeMutatorStub,
+        InputNeuronHandles, NeuralNetworkConfigurator, NeuralNetworkConfiguratorFactory,
+        NeuralNetworkConfiguratorImpl, NeuralNetworkDeveloper, NeuralNetworkDeveloperFactory,
+        NeuralNetworkDevelopmentOrchestratorImpl, OutputNeuronHandles,
+    },
+    GenomeGenerator, NeuralNetworkDevelopmentConfiguration, NeuralNetworkDevelopmentOrchestrator,
 };
 use myelin_neural_network::{spiking_neural_network::DefaultSpikingNeuralNetwork, NeuralNetwork};
 use myelin_object_behavior::{
@@ -64,6 +68,7 @@ fn create_composition_root(addr: SocketAddr) -> Container {
         .extend(server_container())
         .extend(client_container())
         .extend(neural_network_container())
+        .extend(genetics_container())
         .extend(worldgen_container())
         .extend(object_behavior_container());
 
@@ -162,6 +167,39 @@ fn client_container() -> Container {
     container
 }
 
+fn genetics_container() -> Container {
+    let mut container = Container::new();
+
+    container.register(|container| {
+        let random = container.resolve::<Box<dyn Random>>();
+        let io_cluster_gene_generator = IoClusterGeneGeneratorImpl::new(random);
+        Box::new(io_cluster_gene_generator) as Box<dyn IoClusterGeneGenerator>
+    });
+
+    container.register(|container| {
+        let random = container.resolve::<Box<dyn Random>>();
+        let corpus_callosum_cluster_gene_generator =
+            CorpusCallosumClusterGeneGeneratorImpl::new(random);
+        Box::new(corpus_callosum_cluster_gene_generator)
+            as Box<dyn CorpusCallosumClusterGeneGenerator>
+    });
+
+    container.register(|container| {
+        let random = container.resolve::<Box<dyn Random>>();
+        let io_cluster_gene_generator = container.resolve::<Box<dyn IoClusterGeneGenerator>>();
+        let corpus_callosum_cluster_gene_generator =
+            container.resolve::<Box<dyn CorpusCallosumClusterGeneGenerator>>();
+        let genome_generator = GenomeGeneratorImpl::new(
+            io_cluster_gene_generator,
+            corpus_callosum_cluster_gene_generator,
+            random,
+        );
+        Box::new(genome_generator) as Box<dyn GenomeGenerator>
+    });
+
+    container
+}
+
 fn neural_network_container() -> Container {
     let mut container = Container::new();
     container
@@ -169,22 +207,19 @@ fn neural_network_container() -> Container {
             Rc::new(|| box DefaultSpikingNeuralNetwork::new() as Box<dyn NeuralNetwork>)
                 as Rc<dyn Fn() -> Box<dyn NeuralNetwork>>
         })
-        .register(|container| {
-            fn neural_network_developer_factory_factory(
-                container: &Container,
-            ) -> impl for<'b> Fn(
+        .register(|_| {
+            fn neural_network_developer_factory_factory() -> impl for<'b> Fn(
                 &'b NeuralNetworkDevelopmentConfiguration,
                 &'b Genome,
-            ) -> Box<dyn NeuralNetworkDeveloper + 'b> {
-                let container = container.clone();
-                move |configuration, _| {
-                    let random = container.resolve::<Box<dyn Random>>();
-                    box FlatNeuralNetworkDeveloper::new(configuration, random)
+            ) -> Box<
+                dyn NeuralNetworkDeveloper + 'b,
+            > {
+                move |configuration, genome| {
+                    box GeneticNeuralNetworkDeveloper::new(configuration.clone(), genome.clone())
                         as Box<dyn NeuralNetworkDeveloper>
                 }
             }
-            Rc::new(neural_network_developer_factory_factory(container))
-                as Rc<NeuralNetworkDeveloperFactory>
+            Rc::new(neural_network_developer_factory_factory()) as Rc<NeuralNetworkDeveloperFactory>
         })
         .register(|_| {
             fn neural_network_configurator_factory<'a>(
@@ -291,8 +326,9 @@ fn object_behavior_container() -> Container {
                 box move || -> Box<dyn ObjectBehavior<AdditionalObjectDescription>> {
                     let neural_network_development_orchestrator =
                         container.resolve::<Box<dyn NeuralNetworkDevelopmentOrchestrator>>();
-                    box OrganismBehavior::new(
-                        GenomeOrigin::default(),
+                    let genome_generator = container.resolve::<Box<dyn GenomeGenerator>>();
+                    box OrganismBehavior::from_genome_generator(
+                        genome_generator,
                         neural_network_development_orchestrator,
                     )
                 },
