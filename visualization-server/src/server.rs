@@ -173,14 +173,14 @@ fn genetics_container() -> Container {
     container.register(|container| {
         let random = container.resolve::<Box<dyn Random>>();
         let io_cluster_gene_generator = IoClusterGeneGeneratorImpl::new(random);
-        Box::new(io_cluster_gene_generator) as Box<dyn IoClusterGeneGenerator>
+        box io_cluster_gene_generator as Box<dyn IoClusterGeneGenerator>
     });
 
     container.register(|container| {
         let random = container.resolve::<Box<dyn Random>>();
         let corpus_callosum_cluster_gene_generator =
             CorpusCallosumClusterGeneGeneratorImpl::new(random);
-        Box::new(corpus_callosum_cluster_gene_generator)
+        box corpus_callosum_cluster_gene_generator
             as Box<dyn CorpusCallosumClusterGeneGenerator>
     });
 
@@ -194,7 +194,7 @@ fn genetics_container() -> Container {
             corpus_callosum_cluster_gene_generator,
             random,
         );
-        Box::new(genome_generator) as Box<dyn GenomeGenerator>
+        box genome_generator as Box<dyn GenomeGenerator>
     });
 
     container
