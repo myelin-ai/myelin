@@ -579,7 +579,7 @@ dependencies = [
  "myelin-random 0.1.0",
  "nameof 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "pretty_assertions 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "wonderbox 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wonderbox 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -636,7 +636,7 @@ dependencies = [
  "paste 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand_hc 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "wonderbox 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wonderbox 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -665,7 +665,7 @@ dependencies = [
  "myelin-object-data 0.1.0",
  "serde 1.0.91 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.39 (registry+https://github.com/rust-lang/crates.io-index)",
- "wonderbox 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wonderbox 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -690,7 +690,7 @@ dependencies = [
  "simple_logger 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "uuid 0.7.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "websocket 0.22.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "wonderbox 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wonderbox 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -703,7 +703,7 @@ dependencies = [
  "myelin-object-data 0.1.0",
  "nameof 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "wonderbox 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wonderbox 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1723,21 +1723,8 @@ dependencies = [
 
 [[package]]
 name = "wonderbox"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "wonderbox-codegen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "wonderbox-codegen"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)",
- "quote 0.6.12 (registry+https://github.com/rust-lang/crates.io-index)",
- "syn 0.15.34 (registry+https://github.com/rust-lang/crates.io-index)",
-]
 
 [[package]]
 name = "ws2_32-sys"
@@ -1939,6 +1926,5 @@ dependencies = [
 "checksum winapi-x86_64-pc-windows-gnu 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 "checksum wincolor 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "561ed901ae465d6185fa7864d63fbd5720d0ef718366c9a4dc83cf6170d7e9ba"
 "checksum winconsole 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3ef84b96d10db72dd980056666d7f1e7663ce93d82fa33b63e71c966f4cf5032"
-"checksum wonderbox 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "682760d396b3359305453d54f2c6cb818a1a12eb40b771cd67de3ed180d30590"
-"checksum wonderbox-codegen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "408c3a29b4eeed1062fcc9fd882ef092b4a1f888d7a86f8f343be69f142c456b"
+"checksum wonderbox 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e05e296499a63659ca8644125c570de85d9a01eb667dc2f88366b47da500f643"
 "checksum ws2_32-sys 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "d59cefebd0c892fa2dd6de581e937301d8552cb44489cdff035c6187cb63fa5e"
