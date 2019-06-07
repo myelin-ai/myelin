@@ -89,6 +89,12 @@ impl OrganismBehavior {
         }
     }
 
+    /// Create a new `OrganismBehavior` with a newly developed [`Genome`] using a [`GenomeGenerator`].
+    /// The [`NeuralNetworkDeveloper`] is used to create this organism's [`NeuralNetwork`]
+    /// and its eventual offspring.
+    ///
+    /// [`Genome`]: ../myelin-genetics/struct.Genome.html
+    /// [`NeuralNetwork`]: ../myelin-neural-network/trait.NeuralNetwork.html
     pub fn from_genome_generator(
         genome_generator: Box<dyn GenomeGenerator>,
         neural_network_developer: Box<dyn NeuralNetworkDevelopmentOrchestrator>,
@@ -507,14 +513,54 @@ fn get_combined_potential(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockiato::partial_eq;
+    use mockiato::{any, partial_eq};
     use myelin_genetics::genome::Genome;
+    use myelin_genetics::{GenomeGeneratorMock, NeuralNetworkDevelopmentOrchestratorMock};
     use myelin_neural_network::NeuralNetworkMock;
     use myelin_object_data::AdditionalObjectDescription;
     use myelin_object_data::Kind;
     use nearly_eq::assert_nearly_eq;
     use std::f64::consts::PI;
     use std::iter;
+
+    #[test]
+    fn can_be_constructed_with_genome_generator() {
+        let expected_genome = Genome::default();
+        let expected_developed_neural_network = DevelopedNeuralNetwork {
+            neural_network: box NeuralNetworkMock::new(),
+            genome: expected_genome.clone(),
+            input_neuron_handles: Vec::new(),
+            output_neuron_handles: Vec::new(),
+        };
+
+        let mut genome_generator = GenomeGeneratorMock::new();
+        genome_generator
+            .expect_generate_genome(any())
+            .returns(expected_genome.clone());
+
+        let mut neural_network_developer = NeuralNetworkDevelopmentOrchestratorMock::new();
+        neural_network_developer
+            .expect_develop_neural_network(any())
+            .returns(expected_developed_neural_network.clone());
+
+        let organism_behaviour = OrganismBehavior::from_genome_generator(
+            box genome_generator,
+            box neural_network_developer,
+        );
+        let developed_neural_network = &organism_behaviour.developed_neural_network;
+        assert_eq!(
+            expected_developed_neural_network.genome,
+            developed_neural_network.genome
+        );
+        assert_eq!(
+            expected_developed_neural_network.input_neuron_handles,
+            developed_neural_network.input_neuron_handles
+        );
+        assert_eq!(
+            expected_developed_neural_network.output_neuron_handles,
+            developed_neural_network.output_neuron_handles
+        );
+    }
 
     #[test]
     fn axial_acceleration_handle_returns_correct_handle_for_minus_one() {
