@@ -117,10 +117,7 @@ fn adds_multiple_bridges() {
 
 #[test]
 fn errors_if_target_does_not_exist() {
-    let base_genome = genome();
-
-    let genome = base_genome
-        .clone()
+    let genome = genome()
         .add_hox_gene(hox_placed_on_hox_on_shared_neuron())
         .add_hox_gene(hox_placed_on_hox_on_shared_neuron());
 
