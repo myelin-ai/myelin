@@ -16,7 +16,6 @@ myelin-engine = "0.13"
 myelin-object-data = { path = "../object-data" }
 nameof = "1.0"
 rand = "0.6"
-wonderbox = "0.4"
 
 [dev-dependencies]
 myelin-object-behavior = { path = "../object-behavior" }
