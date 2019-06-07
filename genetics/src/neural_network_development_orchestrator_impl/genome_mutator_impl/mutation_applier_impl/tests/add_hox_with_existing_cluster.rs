@@ -7,6 +7,7 @@ fn errors_if_cluster_gene_does_not_exist() {
     };
 
     let genome = genome();
+    let expected_genome = genome.clone();
 
     let mutation = Mutation::AddHoxWithExistingCluster {
         new_hox_gene: standalone_hox_gene(ClusterGeneIndex(2)),
