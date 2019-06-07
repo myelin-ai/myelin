@@ -2,10 +2,6 @@ use super::*;
 
 #[test]
 fn errors_if_cluster_gene_does_not_exist() {
-    let mutation = Mutation::AddHoxWithExistingCluster {
-        new_hox_gene: standalone_hox_gene(ClusterGeneIndex(2)),
-    };
-
     let genome = genome();
     let expected_genome = genome.clone();
 
@@ -22,10 +18,6 @@ fn errors_if_cluster_gene_does_not_exist() {
 
 #[test]
 fn add_hox_with_existing_cluster_gene() {
-    let mutation = Mutation::AddHoxWithExistingCluster {
-        new_hox_gene: standalone_hox_gene(ClusterGeneIndex(1)),
-    };
-
     let genome = genome();
 
     let expected_genome = Genome {
