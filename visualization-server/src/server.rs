@@ -10,7 +10,6 @@ use crate::controller::{
 use crate::fixed_interval_sleeper::{FixedIntervalSleeper, FixedIntervalSleeperImpl};
 use crate::presenter::DeltaPresenter;
 use myelin_engine::{prelude::*, simulation::SimulationBuilder};
-use myelin_genetics::neural_network_development_orchestrator_impl::GeneticNeuralNetworkDeveloper;
 use myelin_genetics::{
     genome::Genome,
     genome_generator_impl::{
@@ -18,10 +17,11 @@ use myelin_genetics::{
         GenomeGeneratorImpl, IoClusterGeneGenerator, IoClusterGeneGeneratorImpl,
     },
     neural_network_development_orchestrator_impl::{
-        ChromosomalCrossoverGenomeDeriver, GenomeDeriver, GenomeMutator, GenomeMutatorStub,
-        InputNeuronHandles, NeuralNetworkConfigurator, NeuralNetworkConfiguratorFactory,
-        NeuralNetworkConfiguratorImpl, NeuralNetworkDeveloper, NeuralNetworkDeveloperFactory,
-        NeuralNetworkDevelopmentOrchestratorImpl, OutputNeuronHandles,
+        ChromosomalCrossoverGenomeDeriver, GeneticNeuralNetworkDeveloper, GenomeDeriver,
+        GenomeMutator, GenomeMutatorStub, InputNeuronHandles, NeuralNetworkConfigurator,
+        NeuralNetworkConfiguratorFactory, NeuralNetworkConfiguratorImpl, NeuralNetworkDeveloper,
+        NeuralNetworkDeveloperFactory, NeuralNetworkDevelopmentOrchestratorImpl,
+        OutputNeuronHandles,
     },
     GenomeGenerator, NeuralNetworkDevelopmentConfiguration, NeuralNetworkDevelopmentOrchestrator,
 };
