@@ -165,31 +165,22 @@ fn client_container() -> Container {
 fn genetics_container() -> Container {
     let mut container = Container::new();
 
-    container.register(|container| {
-        let random = container.resolve::<Box<dyn Random>>();
-        let io_cluster_gene_generator = IoClusterGeneGeneratorImpl::new(random);
-        box io_cluster_gene_generator as Box<dyn IoClusterGeneGenerator>
-    });
-
-    container.register(|container| {
-        let random = container.resolve::<Box<dyn Random>>();
-        let corpus_callosum_cluster_gene_generator =
-            CorpusCallosumClusterGeneGeneratorImpl::new(random);
-        box corpus_callosum_cluster_gene_generator as Box<dyn CorpusCallosumClusterGeneGenerator>
-    });
-
-    container.register(|container| {
-        let random = container.resolve::<Box<dyn Random>>();
-        let io_cluster_gene_generator = container.resolve::<Box<dyn IoClusterGeneGenerator>>();
-        let corpus_callosum_cluster_gene_generator =
-            container.resolve::<Box<dyn CorpusCallosumClusterGeneGenerator>>();
-        let genome_generator = GenomeGeneratorImpl::new(
-            io_cluster_gene_generator,
-            corpus_callosum_cluster_gene_generator,
-            random,
-        );
-        box genome_generator as Box<dyn GenomeGenerator>
-    });
+    container
+        .register(|container| {
+            box IoClusterGeneGeneratorImpl::new(container.resolve())
+                as Box<dyn IoClusterGeneGenerator>
+        })
+        .register(|container| {
+            box CorpusCallosumClusterGeneGeneratorImpl::new(container.resolve())
+                as Box<dyn CorpusCallosumClusterGeneGenerator>
+        })
+        .register(|container| {
+            box GenomeGeneratorImpl::new(
+                container.resolve(),
+                container.resolve(),
+                container.resolve(),
+            ) as Box<dyn GenomeGenerator>
+        });
 
     container
 }
