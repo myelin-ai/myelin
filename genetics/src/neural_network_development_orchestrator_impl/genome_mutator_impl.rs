@@ -17,6 +17,9 @@ pub trait MutationGenerator {
 /// Applies mutations to a [`Genome`].
 pub trait MutationApplier {
     /// Applies the given [`Mutation`] to a [`Genome`].
+    ///
+    /// # Errors
+    /// Returns an `Err` when part of the target specification of the [`Mutation`] does not exist in the [`Genome`].
     fn apply_mutation(&self, genome: &mut Genome, mutation: Mutation)
         -> Result<(), Box<dyn Error>>;
 }
