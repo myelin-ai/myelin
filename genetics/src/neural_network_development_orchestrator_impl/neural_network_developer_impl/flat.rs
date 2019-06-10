@@ -114,7 +114,7 @@ mod tests {
 
     fn configuration() -> NeuralNetworkDevelopmentConfiguration {
         NeuralNetworkDevelopmentConfiguration {
-            parent_genomes: (Genome::default(), Genome::default()),
+            genome_origin: GenomeOrigin::default(),
             input_neuron_count: NonZeroUsize::new(3).unwrap(),
             output_neuron_count: NonZeroUsize::new(5).unwrap(),
         }

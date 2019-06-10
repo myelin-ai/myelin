@@ -4,6 +4,7 @@ use crate::genome::{
     Connection as ConnectionDefinition, HoxGene, HoxGeneIndex, HoxPlacement, Neuron,
 };
 use crate::neural_network_development_orchestrator_impl::NeuralNetworkConfiguratorMock;
+use crate::GenomeOrigin;
 use mockiato::partial_eq;
 use myelin_neural_network::Connection;
 use myelin_neural_network::Handle;
@@ -228,7 +229,7 @@ fn expect_push_different_kinds_of_neurons(
 
 fn config_stub() -> NeuralNetworkDevelopmentConfiguration {
     NeuralNetworkDevelopmentConfiguration {
-        parent_genomes: (Genome::default(), Genome::default()),
+        genome_origin: GenomeOrigin::default(),
         input_neuron_count: NonZeroUsize::new(1).unwrap(),
         output_neuron_count: NonZeroUsize::new(1).unwrap(),
     }

@@ -2,7 +2,7 @@
 
 #![feature(specialization)]
 #![feature(box_syntax)]
-#![warn(missing_docs, clippy::dbg_macro)]
+#![warn(missing_docs, clippy::dbg_macro, clippy::unimplemented)]
 #![deny(
     rust_2018_idioms,
     future_incompatible,
@@ -29,17 +29,32 @@ pub mod neural_network_development_orchestrator_impl;
 
 mod constant;
 
+/// Origin of a [`Genome`].
+#[derive(Debug, Clone, PartialEq)]
+pub enum GenomeOrigin {
+    /// A single genome for organisms created at the start of the simulation.
+    Genesis(Genome),
+    /// The genomes that will be combined to form a new genome for this neural network.
+    Parents(Genome, Genome),
+}
+
+impl Default for GenomeOrigin {
+    fn default() -> Self {
+        GenomeOrigin::Genesis(Genome::default())
+    }
+}
+
 /// Information needed by a [`NeuralNetworkDeveloper`] to build a [`DevelopedNeuralNetwork`]
 ///
 /// [`NeuralNetworkDeveloper`]: ./trait.NeuralNetworkDeveloper.html
 /// [`DevelopedNeuralNetwork`]: ./struct.DevelopedNeuralNetwork.html
 #[derive(Debug, Clone, PartialEq)]
 pub struct NeuralNetworkDevelopmentConfiguration {
-    /// The genomes that will be combined to form a new genome for this neural network.
+    /// The genome(s) that will be used to generate a neural network.
     /// Will result in [`DevelopedNeuralNetwork.genome`].
     ///
     /// [`DevelopedNeuralNetwork.genome`]: ./struct.DevelopedNeuralNetwork.html#structfield.genome
-    pub parent_genomes: (Genome, Genome),
+    pub genome_origin: GenomeOrigin,
 
     /// The number of neurons that shall receive inputs.
     /// Will result in [`DevelopedNeuralNetwork.input_neuron_handles`].

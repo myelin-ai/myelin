@@ -28,6 +28,7 @@ itertools = "0.8"
 [dev-dependencies]
 mockiato = "0.5"
 nearly_eq = "0.2"
+myelin-genetics = { path = "../genetics", features = ["use-mocks"] }
 
 [dev-dependencies.myelin-engine]
 version = "0.13"
