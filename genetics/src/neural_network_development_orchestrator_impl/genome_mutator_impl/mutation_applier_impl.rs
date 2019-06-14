@@ -66,10 +66,7 @@ impl MutationApplierImpl {
         hox_gene_index: HoxGeneIndex,
         connection_index: ClusterConnectionIndex,
     ) -> Result<(), Box<dyn Error>> {
-        let gene = genome
-            .hox_genes
-            .get_mut(hox_gene_index.0)
-            .ok_or(MutationApplierResult::IndexOutOfBounds)?;
+        let gene = get_hox_gene_mut(genome, hox_gene_index)?;
 
         if !gene
             .disabled_connections
@@ -87,14 +84,24 @@ impl MutationApplierImpl {
         genome: &mut Genome,
         hox_gene_index: HoxGeneIndex,
     ) -> Result<(), Box<dyn Error>> {
-        let gene = genome
-            .hox_genes
-            .get(hox_gene_index.0)
-            .ok_or(MutationApplierResult::IndexOutOfBounds)?
-            .clone();
+        let gene = get_hox_gene(genome, hox_gene_index)?.clone();
 
         genome.hox_genes.push(gene);
 
         Ok(())
     }
+}
+
+fn get_hox_gene(genome: &Genome, index: HoxGeneIndex) -> Result<&Gene, Box<dyn Error>> {
+    genome
+        .hox_genes
+        .get(hox_gene_index.0)
+        .ok_or(MutationApplierResult::IndexOutOfBounds)
+}
+
+fn get_hox_gene_mut(genome: &mut Genome, index: HoxGeneIndex) -> Result<&mut Gene, Box<dyn Error>> {
+    genome
+        .hox_genes
+        .get_mut(hox_gene_index.0)
+        .ok_or(MutationApplierResult::IndexOutOfBounds)
 }
