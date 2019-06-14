@@ -1,6 +1,7 @@
 use super::{Mutation, MutationApplier};
 use crate::genome::*;
 use std::error::Error;
+use std::fmt;
 use std::marker::PhantomData;
 
 #[cfg(test)]
@@ -20,7 +21,7 @@ impl MutationApplierImpl {
 impl MutationApplier for MutationApplierImpl {
     fn apply_mutation(
         &self,
-        _genome: &mut Genome,
+        genome: &mut Genome,
         mutation: Mutation,
     ) -> Result<(), Box<dyn Error>> {
         match mutation {
@@ -35,7 +36,40 @@ impl MutationApplier for MutationApplierImpl {
             Mutation::Bridge { .. } => unimplemented!(),
             Mutation::AddHoxWithExistingCluster { .. } => unimplemented!(),
             Mutation::ChangeTargetNeuron { .. } => unimplemented!(),
-            Mutation::DuplicateHox { .. } => unimplemented!(),
+            Mutation::DuplicateHox { hox_gene } => self.duplicate_hox(genome, hox_gene),
         }
+    }
+}
+
+#[derive(Debug)]
+enum MutationApplierResult {
+    IndexOutOfBounds,
+}
+
+impl Error for MutationApplierResult {}
+
+impl fmt::Display for MutationApplierResult {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            MutationApplierResult::IndexOutOfBounds => write!(f, "The given index does not exist"),
+        }
+    }
+}
+
+impl MutationApplierImpl {
+    fn duplicate_hox(
+        &self,
+        genome: &mut Genome,
+        hox_gene_index: HoxGeneIndex,
+    ) -> Result<(), Box<dyn Error>> {
+        let gene = genome
+            .hox_genes
+            .get(hox_gene_index.0)
+            .ok_or(MutationApplierResult::IndexOutOfBounds)?
+            .clone();
+
+        genome.hox_genes.push(gene);
+
+        Ok(())
     }
 }
