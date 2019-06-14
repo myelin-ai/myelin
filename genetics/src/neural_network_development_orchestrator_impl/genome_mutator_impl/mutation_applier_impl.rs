@@ -27,7 +27,10 @@ impl MutationApplier for MutationApplierImpl {
         match mutation {
             Mutation::AddNeuron { .. } => unimplemented!(),
             Mutation::AddConnection { .. } => unimplemented!(),
-            Mutation::DisableConnection { .. } => unimplemented!(),
+            Mutation::DisableConnection {
+                hox_gene,
+                connection,
+            } => self.disable_connection(genome, hox_gene, connection),
             Mutation::NudgeWeight { .. } => unimplemented!(),
             Mutation::ChangePlacementNeuron { .. } => unimplemented!(),
             Mutation::AddNewCluster { .. } => unimplemented!(),
@@ -57,6 +60,28 @@ impl fmt::Display for MutationApplierResult {
 }
 
 impl MutationApplierImpl {
+    fn disable_connection(
+        &self,
+        genome: &mut Genome,
+        hox_gene_index: HoxGeneIndex,
+        connection_index: ClusterConnectionIndex,
+    ) -> Result<(), Box<dyn Error>> {
+        let gene = genome
+            .hox_genes
+            .get_mut(hox_gene_index.0)
+            .ok_or(MutationApplierResult::IndexOutOfBounds)?;
+
+        if !gene
+            .disabled_connections
+            .iter()
+            .any(|disabled_connection| *disabled_connection == connection_index)
+        {
+            gene.disabled_connections.push(connection_index);
+        }
+
+        Ok(())
+    }
+
     fn duplicate_hox(
         &self,
         genome: &mut Genome,
