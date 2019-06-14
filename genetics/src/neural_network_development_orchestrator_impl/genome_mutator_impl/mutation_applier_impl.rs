@@ -21,8 +21,21 @@ impl MutationApplier for MutationApplierImpl {
     fn apply_mutation(
         &self,
         _genome: &mut Genome,
-        _mutation: Mutation,
+        mutation: Mutation,
     ) -> Result<(), Box<dyn Error>> {
-        unimplemented!()
+        match mutation {
+            Mutation::AddNeuron { .. } => unimplemented!(),
+            Mutation::AddConnection { .. } => unimplemented!(),
+            Mutation::DisableConnection { .. } => unimplemented!(),
+            Mutation::NudgeWeight { .. } => unimplemented!(),
+            Mutation::ChangePlacementNeuron { .. } => unimplemented!(),
+            Mutation::AddNewCluster { .. } => unimplemented!(),
+            Mutation::CopyCluster { .. } => unimplemented!(),
+            Mutation::DesyncCluster { .. } => unimplemented!(),
+            Mutation::Bridge { .. } => unimplemented!(),
+            Mutation::AddHoxWithExistingCluster { .. } => unimplemented!(),
+            Mutation::ChangeTargetNeuron { .. } => unimplemented!(),
+            Mutation::DuplicateHox { .. } => unimplemented!(),
+        }
     }
 }
