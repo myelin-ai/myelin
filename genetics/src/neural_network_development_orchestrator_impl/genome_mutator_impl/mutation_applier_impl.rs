@@ -38,23 +38,28 @@ impl MutationApplier for MutationApplierImpl {
             Mutation::DesyncCluster { .. } => unimplemented!(),
             Mutation::Bridge { .. } => unimplemented!(),
             Mutation::AddHoxWithExistingCluster { .. } => unimplemented!(),
-            Mutation::ChangeTargetNeuron { .. } => unimplemented!(),
+            Mutation::ChangeTargetNeuron {
+                hox_gene,
+                new_target_neuron,
+            } => self.change_target_neuron(genome, hox_gene, new_target_neuron),
             Mutation::DuplicateHox { hox_gene } => self.duplicate_hox(genome, hox_gene),
         }
     }
 }
 
 #[derive(Debug)]
-enum MutationApplierResult {
+enum MutationApplierError {
     IndexOutOfBounds,
+    InvalidTarget,
 }
 
-impl Error for MutationApplierResult {}
+impl Error for MutationApplierError {}
 
-impl fmt::Display for MutationApplierResult {
+impl fmt::Display for MutationApplierError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            MutationApplierResult::IndexOutOfBounds => write!(f, "The given index does not exist"),
+            MutationApplierError::IndexOutOfBounds => write!(f, "The given index does not exist"),
+            MutationApplierError::InvalidTarget => write!(f, "The given target is invalid"),
         }
     }
 }
@@ -90,18 +95,44 @@ impl MutationApplierImpl {
 
         Ok(())
     }
+
+    fn change_target_neuron(
+        &self,
+        genome: &mut Genome,
+        hox_gene_index: HoxGeneIndex,
+        new_target_neuron_index: ClusterNeuronIndex,
+    ) -> Result<(), Box<dyn Error>> {
+        let gene = get_hox_gene_mut(genome, hox_gene_index)?;
+
+        gene.placement_target = match gene.placement_target {
+            HoxPlacement::ClusterGene { cluster_gene, .. } => HoxPlacement::ClusterGene {
+                cluster_gene,
+                target_neuron: new_target_neuron_index,
+            },
+            HoxPlacement::HoxGene { hox_gene, .. } => HoxPlacement::HoxGene {
+                hox_gene,
+                target_neuron: new_target_neuron_index,
+            },
+            HoxPlacement::Standalone => Err(MutationApplierError::InvalidTarget)?,
+        };
+
+        Ok(())
+    }
 }
 
-fn get_hox_gene(genome: &Genome, index: HoxGeneIndex) -> Result<&Gene, Box<dyn Error>> {
+fn get_hox_gene(genome: &Genome, index: HoxGeneIndex) -> Result<&HoxGene, Box<dyn Error>> {
     genome
         .hox_genes
-        .get(hox_gene_index.0)
-        .ok_or(MutationApplierResult::IndexOutOfBounds)
+        .get(index.0)
+        .ok_or_else(|| box MutationApplierError::IndexOutOfBounds as Box<dyn Error>)
 }
 
-fn get_hox_gene_mut(genome: &mut Genome, index: HoxGeneIndex) -> Result<&mut Gene, Box<dyn Error>> {
+fn get_hox_gene_mut(
+    genome: &mut Genome,
+    index: HoxGeneIndex,
+) -> Result<&mut HoxGene, Box<dyn Error>> {
     genome
         .hox_genes
-        .get_mut(hox_gene_index.0)
-        .ok_or(MutationApplierResult::IndexOutOfBounds)
+        .get_mut(index.0)
+        .ok_or_else(|| box MutationApplierError::IndexOutOfBounds as Box<dyn Error>)
 }
