@@ -12,7 +12,7 @@ edition = "2018"
 publish = false
 
 [dependencies]
-myelin-engine = "0.13"
+myelin-engine = "0.14"
 myelin-worldgen = { path = "../worldgen" }
 myelin-object-behavior = { path = "../object-behavior" }
 myelin-visualization-core = { path = "../visualization-core" }
@@ -33,8 +33,8 @@ wonderbox = "0.5"
 
 [dev-dependencies]
 maplit = "1.0"
-mockiato = "0.5"
+mockiato = "0.8"
 
 [dev-dependencies.myelin-engine]
-version = "0.13"
+version = "0.14"
 features = ["use-mocks"]

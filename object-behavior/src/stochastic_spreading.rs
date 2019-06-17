@@ -218,7 +218,6 @@ impl ObjectBehavior<AdditionalObjectDescription> for StochasticSpreading {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockiato::partial_eq;
     use myelin_object_data::Kind;
     use myelin_random::RandomMock;
 
@@ -229,7 +228,7 @@ mod tests {
     fn does_nothing_when_chance_is_not_hit() {
         let mut random = RandomMock::new();
         random
-            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .expect_flip_coin_with_probability(|arg| arg.partial_eq(SPREADING_CHANGE))
             .returns(false);
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
         let action = object.step(box WorldInteractorMock::new());
@@ -241,22 +240,22 @@ mod tests {
         let object_behavior = ObjectBehaviorMock::new();
         let mut random = RandomMock::new();
         random
-            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .expect_flip_coin_with_probability(|arg| arg.partial_eq(SPREADING_CHANGE))
             .returns(true);
         random
-            .expect_i32_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(|arg| arg.partial_eq(0), |arg| arg.partial_eq(8))
             .returns(0);
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
         let mut world_interactor = WorldInteractorMock::new();
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((34.0, 34.0), (44.0, 44.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((34.0, 34.0), (44.0, 44.0)).unwrap())
+            })
             .returns(Vec::new());
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((23.0, 23.0), (55.0, 55.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((23.0, 23.0), (55.0, 55.0)).unwrap())
+            })
             .returns(Vec::new());
         world_interactor.expect_own_object().returns(Object {
             id: 0,
@@ -283,10 +282,10 @@ mod tests {
         let object_behavior = ObjectBehaviorMock::new();
 
         random
-            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .expect_flip_coin_with_probability(|arg| arg.partial_eq(SPREADING_CHANGE))
             .returns(true);
         random
-            .expect_i32_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(|arg| arg.partial_eq(0), |arg| arg.partial_eq(8))
             .returns(0);
 
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
@@ -294,72 +293,72 @@ mod tests {
         let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((34.0, 34.0), (44.0, 44.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((34.0, 34.0), (44.0, 44.0)).unwrap())
+            })
             .returns(vec![Object {
                 id: 0,
                 description: object_description_at_location(39.0, 39.0),
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((45.0, 34.0), (55.0, 44.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((45.0, 34.0), (55.0, 44.0)).unwrap())
+            })
             .returns(vec![Object {
                 id: 1,
                 description: object_description_at_location(50.0, 39.0),
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap())
+            })
             .returns(vec![Object {
                 id: 2,
                 description: object_description_at_location(60.0, 39.0),
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap())
+            })
             .returns(vec![Object {
                 id: 3,
                 description: object_description_at_location(61.0, 50.0),
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((56.0, 56.0), (66.0, 66.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((56.0, 56.0), (66.0, 66.0)).unwrap())
+            })
             .returns(vec![Object {
                 id: 4,
                 description: object_description_at_location(61.0, 61.0),
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((45.0, 56.0), (55.0, 66.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((45.0, 56.0), (55.0, 66.0)).unwrap())
+            })
             .returns(vec![Object {
                 id: 5,
                 description: object_description_at_location(50.0, 61.0),
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((34.0, 56.0), (44.0, 66.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((34.0, 56.0), (44.0, 66.0)).unwrap())
+            })
             .returns(vec![Object {
                 id: 6,
                 description: object_description_at_location(39.0, 61.0),
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((34.0, 45.0), (44.0, 55.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((34.0, 45.0), (44.0, 55.0)).unwrap())
+            })
             .returns(vec![Object {
                 id: 7,
                 description: object_description_at_location(39.0, 50.0),
@@ -381,10 +380,10 @@ mod tests {
         let object_behavior = ObjectBehaviorMock::new();
 
         random
-            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .expect_flip_coin_with_probability(|arg| arg.partial_eq(SPREADING_CHANGE))
             .returns(true);
         random
-            .expect_i32_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(|arg| arg.partial_eq(0), |arg| arg.partial_eq(8))
             .returns(0);
 
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
@@ -392,41 +391,41 @@ mod tests {
         let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((34.0, 34.0), (44.0, 44.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((34.0, 34.0), (44.0, 44.0)).unwrap())
+            })
             .returns(vec![Object {
                 id: 0,
                 description: object_description_at_location(39.0, 39.0),
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((45.0, 34.0), (55.0, 44.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((45.0, 34.0), (55.0, 44.0)).unwrap())
+            })
             .returns(vec![Object {
                 id: 1,
                 description: object_description_at_location(50.0, 39.0),
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap())
+            })
             .returns(vec![Object {
                 id: 2,
                 description: object_description_at_location(60.0, 39.0),
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap())
+            })
             .returns(Vec::new());
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap())
+            })
             .returns(Vec::new());
         world_interactor.expect_own_object().returns(Object {
             id: 0,
@@ -451,61 +450,61 @@ mod tests {
         let object_behavior = ObjectBehaviorMock::new();
 
         random
-            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .expect_flip_coin_with_probability(|arg| arg.partial_eq(SPREADING_CHANGE))
             .returns(true);
         random
-            .expect_i32_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(|arg| arg.partial_eq(0), |arg| arg.partial_eq(8))
             .returns(1);
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
 
         let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((45.0, 34.0), (55.0, 44.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((45.0, 34.0), (55.0, 44.0)).unwrap())
+            })
             .returns(vec![Object {
                 id: 1,
                 description: object_description_at_location(50.0, 39.0),
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap())
+            })
             .returns(vec![Object {
                 id: 2,
                 description: object_description_at_location(60.0, 39.0),
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap())
+            })
             .returns(vec![Object {
                 id: 3,
                 description: object_description_at_location(61.0, 50.0),
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((56.0, 56.0), (66.0, 66.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((56.0, 56.0), (66.0, 66.0)).unwrap())
+            })
             .returns(vec![Object {
                 id: 4,
                 description: object_description_at_location(61.0, 61.0),
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((45.0, 56.0), (55.0, 66.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((45.0, 56.0), (55.0, 66.0)).unwrap())
+            })
             .returns(Vec::new());
 
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((34.0, 45.0), (66.0, 77.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((34.0, 45.0), (66.0, 77.0)).unwrap())
+            })
             .returns(Vec::new());
         world_interactor.expect_own_object().returns(Object {
             id: 0,
@@ -530,43 +529,43 @@ mod tests {
         let object_behavior = ObjectBehaviorMock::new();
 
         random
-            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .expect_flip_coin_with_probability(|arg| arg.partial_eq(SPREADING_CHANGE))
             .returns(true);
         random
-            .expect_i32_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(|arg| arg.partial_eq(0), |arg| arg.partial_eq(8))
             .returns(1);
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
 
         let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((45.0, 34.0), (55.0, 44.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((45.0, 34.0), (55.0, 44.0)).unwrap())
+            })
             .returns(vec![Object {
                 id: 1,
                 description: object_description_at_location(50.0, 39.0),
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap())
+            })
             .returns(vec![Object {
                 id: 2,
                 description: object_description_at_location(60.0, 39.0),
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap())
+            })
             .returns(Vec::new());
 
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap())
+            })
             .returns(Vec::new());
         world_interactor.expect_own_object().returns(Object {
             id: 0,
@@ -592,25 +591,25 @@ mod tests {
 
         let mut first_random = RandomMock::new();
         first_random
-            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .expect_flip_coin_with_probability(|arg| arg.partial_eq(SPREADING_CHANGE))
             .returns(true);
         first_random
-            .expect_i32_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(|arg| arg.partial_eq(0), |arg| arg.partial_eq(8))
             .returns(3);
         let mut first_object = StochasticSpreading::new(SPREADING_CHANGE, box first_random);
         let first_description = object_description_at_location(50.0, 50.0);
 
         let mut first_world_interactor = WorldInteractorMock::new();
         first_world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap())
+            })
             .returns(Vec::new());
 
         first_world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap())
+            })
             .returns(Vec::new());
         first_world_interactor.expect_own_object().returns(Object {
             id: 1,
@@ -632,19 +631,19 @@ mod tests {
 
         let mut second_random = RandomMock::new();
         second_random
-            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .expect_flip_coin_with_probability(|arg| arg.partial_eq(SPREADING_CHANGE))
             .returns(true);
         second_random
-            .expect_i32_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(|arg| arg.partial_eq(0), |arg| arg.partial_eq(8))
             .returns(7);
         let mut second_object = StochasticSpreading::new(SPREADING_CHANGE, box second_random);
 
         let mut second_world_interactor = WorldInteractorMock::new();
 
         second_world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap())
+            })
             .returns(vec![Object {
                 id: 1,
                 description: object_description_at_location(
@@ -654,14 +653,14 @@ mod tests {
                 behavior: mock_behavior.as_ref(),
             }]);
         second_world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap())
+            })
             .returns(Vec::new());
         second_world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((67.0, 34.0), (77.0, 44.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((67.0, 34.0), (77.0, 44.0)).unwrap())
+            })
             .returns(Vec::new());
 
         let other_spreaders = vec![Object {
@@ -670,14 +669,14 @@ mod tests {
             behavior: &first_object,
         }];
         second_world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((56.0, 23.0), (88.0, 55.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((56.0, 23.0), (88.0, 55.0)).unwrap())
+            })
             .returns(other_spreaders.clone());
         second_world_interactor
-            .expect_find_objects_in_area(partial_eq(
-                Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
-            ))
+            .expect_find_objects_in_area(|arg| {
+                arg.partial_eq(Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap())
+            })
             .returns(other_spreaders);
         second_world_interactor.expect_own_object().returns(Object {
             id: 2,
