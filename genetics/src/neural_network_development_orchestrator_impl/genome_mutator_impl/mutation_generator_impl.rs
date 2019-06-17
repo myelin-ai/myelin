@@ -34,6 +34,7 @@ const DESYNC_PROBABILITY: f64 = 2.0 / 1_000.0;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::genome::{ClusterGene, ClusterNeuronIndex, Connection, Neuron};
     use myelin_random::RandomMock;
 
     #[test]
@@ -50,5 +51,37 @@ mod tests {
             .times(..)
             .returns(false);
         random
+    }
+
+    fn genome() -> Genome {
+        Genome {
+            cluster_genes: vec![interconnected_cluster_gene(); 2],
+            hox_genes: vec![],
+        }
+    }
+
+    fn interconnected_cluster_gene() -> ClusterGene {
+        ClusterGene {
+            neurons: vec![Neuron {}; 4],
+            connections: vec![
+                Connection {
+                    from: ClusterNeuronIndex(0),
+                    to: ClusterNeuronIndex(1),
+                    weight: 1.0,
+                },
+                Connection {
+                    from: ClusterNeuronIndex(1),
+                    to: ClusterNeuronIndex(2),
+                    weight: 1.0,
+                },
+                Connection {
+                    from: ClusterNeuronIndex(2),
+                    to: ClusterNeuronIndex(3),
+                    weight: 1.0,
+                },
+            ],
+            placement_neuron: ClusterNeuronIndex(0),
+            specialization: Default::default(),
+        }
     }
 }
