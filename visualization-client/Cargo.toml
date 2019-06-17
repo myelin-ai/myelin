@@ -18,7 +18,7 @@ crate-type = ["cdylib"]
 wasm-bindgen = "=0.2.43"
 js-sys = "0.3.0"
 myelin-visualization-core = { path = "../visualization-core" }
-myelin-engine = "0.13"
+myelin-engine = "0.14"
 myelin-object-data = { path = "../object-data" }
 
 [dependencies.web-sys]

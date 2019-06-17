@@ -12,7 +12,7 @@ edition = "2018"
 publish = false
 
 [dependencies]
-myelin-engine = "0.13"
+myelin-engine = "0.14"
 myelin-object-data = { path = "../object-data" }
 nameof = "1.0"
 rand = "0.6"
@@ -22,5 +22,5 @@ myelin-object-behavior = { path = "../object-behavior" }
 mockiato = "0.5"
 
 [dev-dependencies.myelin-engine]
-version = "0.13"
+version = "0.14"
 features = ["use-mocks"]

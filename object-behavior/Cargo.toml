@@ -15,7 +15,7 @@ publish = false
 
 [dependencies]
 mockiato = { version = "0.5", optional = true }
-myelin-engine = "0.13"
+myelin-engine = "0.14"
 myelin-neural-network = { path = "../neural-network" }
 myelin-genetics = { path = "../genetics" }
 myelin-random = { path = "../random" }
@@ -31,7 +31,7 @@ nearly_eq = "0.2"
 myelin-genetics = { path = "../genetics", features = ["use-mocks"] }
 
 [dev-dependencies.myelin-engine]
-version = "0.13"
+version = "0.14"
 features = ["use-mocks"]
 
 [dev-dependencies.myelin-neural-network]

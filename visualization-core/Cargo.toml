@@ -12,7 +12,7 @@ edition = "2018"
 publish = false
 
 [dependencies]
-myelin-engine = "0.13"
+myelin-engine = "0.14"
 myelin-object-data = { path = "../object-data" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", optional = true }
