@@ -62,7 +62,8 @@ impl MutationApplier for MutationApplierImpl {
                 new_hox_gene,
             } => self.copy_cluster(genome, source_cluster_gene, new_hox_gene),
 
-            Mutation::DesyncCluster { .. } => unimplemented!(),
+            Mutation::DesyncCluster { hox_gene } => self.desync_cluster(genome, hox_gene),
+
             Mutation::Bridge { .. } => unimplemented!(),
             Mutation::AddHoxWithExistingCluster { .. } => unimplemented!(),
 
@@ -117,7 +118,7 @@ impl MutationApplierImpl {
             weight: new_connection_weight,
         });
 
-        let existing_connection = get_connection_mut(cluster_gene, connection_index)?;
+        let existing_connection = get_connection_mut(cluster_gene, connection_index).unwrap();
         existing_connection.to = new_neuron_index;
 
         Ok(())
@@ -205,6 +206,25 @@ impl MutationApplierImpl {
 
         genome.cluster_genes.push(new_cluster_gene);
         genome.hox_genes.push(hox_gene);
+
+        Ok(())
+    }
+
+    fn desync_cluster(
+        &self,
+        genome: &mut Genome,
+        hox_gene_index: HoxGeneIndex,
+    ) -> Result<(), Box<dyn Error>> {
+        let hox_gene = get_hox_gene(genome, hox_gene_index)?;
+        let cluster_gene_index = hox_gene.cluster_gene;
+
+        let new_cluster_gene = get_cluster_gene(genome, cluster_gene_index)?.clone();
+
+        let new_cluster_gene_index = ClusterGeneIndex(genome.cluster_genes.len());
+        genome.cluster_genes.push(new_cluster_gene);
+
+        let hox_gene = get_hox_gene_mut(genome, hox_gene_index).unwrap();
+        hox_gene.cluster_gene = new_cluster_gene_index;
 
         Ok(())
     }
