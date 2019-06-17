@@ -112,7 +112,7 @@ impl MutationApplierImpl {
 
         let existing_connection = get_connection(cluster_gene, connection_index)?;
 
-        let to_neuron = existing_connection.to.clone();
+        let to_neuron = existing_connection.to;
 
         let new_neuron_index = ClusterNeuronIndex(cluster_gene.neurons.len());
         let new_neuron = Neuron::new();
