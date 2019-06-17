@@ -8,6 +8,7 @@ use crate::GenomeOrigin;
 use myelin_neural_network::Connection;
 use myelin_neural_network::Handle;
 use std::cmp::Ordering;
+use std::collections::HashSet;
 use std::num::NonZeroUsize;
 
 mod clusters_are_only_placed_on_specified_targets;
@@ -84,7 +85,7 @@ impl GenomeStubBuilder {
         self.genome.hox_genes.push(HoxGene {
             placement_target: HoxPlacement::Standalone,
             cluster_gene: ClusterGeneIndex(0),
-            disabled_connections: vec![],
+            disabled_connections: HashSet::new(),
         });
         self
     }
@@ -112,7 +113,7 @@ impl GenomeStubBuilder {
                 target_neuron,
             },
             cluster_gene,
-            disabled_connections: Vec::new(),
+            disabled_connections: HashSet::new(),
         });
         self
     }
@@ -127,7 +128,7 @@ impl GenomeStubBuilder {
                 target_neuron: parameters.target_neuron,
             },
             cluster_gene: parameters.cluster_gene,
-            disabled_connections: Vec::new(),
+            disabled_connections: HashSet::new(),
         });
         self
     }

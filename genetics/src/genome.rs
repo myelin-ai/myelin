@@ -1,5 +1,7 @@
 //! Contains types for the full [`Genome`]
 
+use std::collections::HashSet;
+
 /// The index of a [`Neuron`] in a [`ClusterGene`]
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct ClusterNeuronIndex(pub usize);
@@ -116,7 +118,7 @@ pub struct HoxGene {
     /// Index of the cluster that will be instantiated and placed.
     pub cluster_gene: ClusterGeneIndex,
     /// These connections, if existent, will not be enabled on the placed cluster.
-    pub disabled_connections: Vec<ClusterConnectionIndex>,
+    pub disabled_connections: HashSet<ClusterConnectionIndex>,
 }
 
 /// The set of all genes in an organism

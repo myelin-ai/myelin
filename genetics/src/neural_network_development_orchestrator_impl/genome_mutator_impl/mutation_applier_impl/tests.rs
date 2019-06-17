@@ -54,7 +54,7 @@ fn standalone_hox_gene(cluster_gene: ClusterGeneIndex) -> HoxGene {
     HoxGene {
         cluster_gene,
         placement_target: HoxPlacement::Standalone,
-        disabled_connections: Vec::new(),
+        disabled_connections: HashSet::new(),
     }
 }
 
@@ -69,7 +69,7 @@ fn hox_placed_on_hox_gene(
             hox_gene,
             target_neuron,
         },
-        disabled_connections: Vec::new(),
+        disabled_connections: HashSet::new(),
     }
 }
 
@@ -84,7 +84,7 @@ fn hox_placed_on_cluster_gene(
             cluster_gene: placement_target,
             target_neuron,
         },
-        disabled_connections: Vec::new(),
+        disabled_connections: HashSet::new(),
     }
 }
 
