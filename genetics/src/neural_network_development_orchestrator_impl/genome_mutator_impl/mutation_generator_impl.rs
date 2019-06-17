@@ -8,12 +8,29 @@ pub struct MutationGeneratorImpl {
 
 impl MutationGeneratorImpl {
     fn new(random: Box<dyn Random>) -> Self {
-        random
+        Self { random }
     }
 }
 
 impl MutationGenerator for MutationGeneratorImpl {
     fn generate_mutation(&self, genome: &Genome) -> Mutation {
         unimplemented!()
+    }
+}
+
+const ADD_NEURON_PROBABILITY: f64 = 3.0 / 100.0;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use myelin_random::RandomMock;
+
+    #[test]
+    fn picks_mutation() {}
+
+    fn mock_random() -> Box<dyn Random> {
+        let mut random = box RandomMock::new();
+        // random.expect_flip_coin_with_probability(ADD_NEURON_PROBABILITY);
+        random
     }
 }
