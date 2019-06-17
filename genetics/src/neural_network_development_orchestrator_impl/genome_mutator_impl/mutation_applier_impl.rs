@@ -52,7 +52,11 @@ impl MutationApplier for MutationApplierImpl {
                 new_placement_neuron,
             } => self.change_placement_neuron(genome, cluster_gene, new_placement_neuron),
 
-            Mutation::AddNewCluster { .. } => unimplemented!(),
+            Mutation::AddNewCluster {
+                cluster_gene,
+                hox_gene,
+            } => self.add_new_cluster(genome, cluster_gene, hox_gene),
+
             Mutation::CopyCluster { .. } => unimplemented!(),
             Mutation::DesyncCluster { .. } => unimplemented!(),
             Mutation::Bridge { .. } => unimplemented!(),
@@ -171,6 +175,18 @@ impl MutationApplierImpl {
         let cluster_gene = get_cluster_gene_mut(genome, cluster_gene_index)?;
 
         cluster_gene.placement_neuron = new_placement_neuron_index;
+
+        Ok(())
+    }
+
+    fn add_new_cluster(
+        &self,
+        genome: &mut Genome,
+        cluster_gene: ClusterGene,
+        hox_gene: HoxGene,
+    ) -> Result<(), Box<dyn Error>> {
+        genome.cluster_genes.push(cluster_gene);
+        genome.hox_genes.push(hox_gene);
 
         Ok(())
     }
