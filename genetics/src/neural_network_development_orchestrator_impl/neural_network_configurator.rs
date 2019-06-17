@@ -51,7 +51,6 @@ impl NeuralNetworkConfigurator for NeuralNetworkConfiguratorImpl<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockiato::partial_eq;
     use myelin_neural_network::{NeuralNetwork, NeuralNetworkMock};
 
     #[test]
@@ -110,7 +109,7 @@ mod tests {
         let mut network: Box<dyn NeuralNetwork> = {
             let mut network = NeuralNetworkMock::new();
             network
-                .expect_add_connection(partial_eq(connection.clone()))
+                .expect_add_connection(|arg| arg.partial_eq(connection.clone()))
                 .returns(Ok(()));
             box network
         };
@@ -143,7 +142,7 @@ mod tests {
         let mut network: Box<dyn NeuralNetwork> = {
             let mut network = NeuralNetworkMock::new();
             network
-                .expect_add_connection(partial_eq(connection.clone()))
+                .expect_add_connection(|arg| arg.partial_eq(connection.clone()))
                 .returns(Err(()));
             box network
         };

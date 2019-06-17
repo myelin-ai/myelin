@@ -58,7 +58,6 @@ impl NeuralNetworkDeveloper for FlatNeuralNetworkDeveloper<'_> {
 mod tests {
     use super::*;
     use crate::neural_network_development_orchestrator_impl::NeuralNetworkConfiguratorMock;
-    use mockiato::partial_eq;
     use myelin_random::RandomMock;
 
     #[test]
@@ -85,11 +84,13 @@ mod tests {
             configurator.expect_add_connection_calls_in_order();
             for i in 0..connection_count {
                 configurator
-                    .expect_add_connection(partial_eq(Connection {
-                        from: Handle(1),
-                        to: Handle(2),
-                        weight: connection_weight(i),
-                    }))
+                    .expect_add_connection(|arg| {
+                        arg.partial_eq(Connection {
+                            from: Handle(1),
+                            to: Handle(2),
+                            weight: connection_weight(i),
+                        })
+                    })
                     .returns(Ok(()));
             }
             box configurator
@@ -101,7 +102,7 @@ mod tests {
 
             for i in 0..connection_count {
                 random
-                    .expect_f64_in_range(partial_eq(0.0), partial_eq(1.0))
+                    .expect_f64_in_range(|arg| arg.partial_eq(0.0), |arg| arg.partial_eq(1.0))
                     .returns(connection_weight(i));
             }
             box random

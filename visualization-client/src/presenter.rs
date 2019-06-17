@@ -204,7 +204,6 @@ mod tests {
     use crate::presenter::global_polygon_translator::GlobalPolygonTranslatorMock;
     use crate::view_model;
     use maplit::hashmap;
-    use mockiato::{partial_eq, partial_eq_owned, unordered_vec_eq};
     use nameof::name_of;
     use std::cell::RefCell;
     use std::collections::VecDeque;
@@ -310,7 +309,7 @@ mod tests {
     #[test]
     fn maps_to_empty_view_model() {
         let mut view_mock = ViewMock::new();
-        view_mock.expect_draw_objects(unordered_vec_eq(vec![]));
+        view_mock.expect_draw_objects(|arg| arg.unordered_vec_eq(vec![]));
         view_mock.expect_flush();
         let global_polygon_translator = GlobalPolygonTranslatorMock::new();
         let delta_applier_mock = DeltaApplierMock::new(
@@ -371,24 +370,24 @@ mod tests {
         };
 
         let mut view_mock = ViewMock::new();
-        view_mock.expect_draw_objects(unordered_vec_eq(expected_view_model_1));
-        view_mock.expect_draw_objects(unordered_vec_eq(expected_view_model_2));
+        view_mock.expect_draw_objects(|arg| arg.unordered_vec_eq(expected_view_model_1));
+        view_mock.expect_draw_objects(|arg| arg.unordered_vec_eq(expected_view_model_2));
         view_mock.expect_flush().times(2);
 
         let mut global_polygon_translator = GlobalPolygonTranslatorMock::new();
         global_polygon_translator
             .expect_to_global_polygon(
-                partial_eq_owned(object_description_1.shape.clone()),
-                partial_eq(object_description_1.location),
-                partial_eq(object_description_1.rotation),
+                |arg| arg.partial_eq_owned(object_description_1.shape.clone()),
+                |arg| arg.partial_eq(object_description_1.location),
+                |arg| arg.partial_eq(object_description_1.rotation),
             )
             .returns(view_model_polygon_1.clone())
             .times(2);
         global_polygon_translator
             .expect_to_global_polygon(
-                partial_eq_owned(object_description_2.shape.clone()),
-                partial_eq(object_description_2.location),
-                partial_eq(object_description_2.rotation),
+                |arg| arg.partial_eq_owned(object_description_2.shape.clone()),
+                |arg| arg.partial_eq(object_description_2.location),
+                |arg| arg.partial_eq(object_description_2.rotation),
             )
             .returns(view_model_polygon_2.clone());
 

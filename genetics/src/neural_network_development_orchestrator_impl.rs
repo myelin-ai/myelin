@@ -178,7 +178,6 @@ mod tests {
     use crate::neural_network_development_orchestrator_impl::{
         GenomeDeriverMock, GenomeMutatorMock,
     };
-    use mockiato::{any, partial_eq};
     use myelin_neural_network::NeuralNetworkMock;
 
     #[test]
@@ -215,13 +214,15 @@ mod tests {
 
         let mut genome_deriver = GenomeDeriverMock::new();
         genome_deriver
-            .expect_derive_genome_from_parents(partial_eq((parent_genome_one, parent_genome_two)))
+            .expect_derive_genome_from_parents(|arg| {
+                arg.partial_eq((parent_genome_one, parent_genome_two))
+            })
             .times(1)
             .returns(merged_genome.clone());
 
         let mut genome_mutator = GenomeMutatorMock::new();
         genome_mutator
-            .expect_mutate_genome(partial_eq(merged_genome))
+            .expect_mutate_genome(|arg| arg.partial_eq(merged_genome))
             .times(1)
             .returns(mutated_genome.clone());
 
@@ -292,7 +293,7 @@ mod tests {
             assert_eq!(&expected_genome, genome);
 
             let mut neural_network_developer = NeuralNetworkDeveloperMock::new();
-            neural_network_developer.expect_develop_neural_network(any());
+            neural_network_developer.expect_develop_neural_network(|arg| arg.any());
             box neural_network_developer
         })
     }

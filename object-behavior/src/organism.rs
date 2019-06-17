@@ -513,7 +513,6 @@ fn get_combined_potential(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockiato::{any, partial_eq};
     use myelin_genetics::genome::Genome;
     use myelin_genetics::{GenomeGeneratorMock, NeuralNetworkDevelopmentOrchestratorMock};
     use myelin_neural_network::NeuralNetworkMock;
@@ -535,12 +534,12 @@ mod tests {
 
         let mut genome_generator = GenomeGeneratorMock::new();
         genome_generator
-            .expect_generate_genome(any())
+            .expect_generate_genome(|arg| arg.any())
             .returns(expected_genome.clone());
 
         let mut neural_network_developer = NeuralNetworkDevelopmentOrchestratorMock::new();
         neural_network_developer
-            .expect_develop_neural_network(any())
+            .expect_develop_neural_network(|arg| arg.any())
             .returns(expected_developed_neural_network.clone());
 
         let organism_behaviour = OrganismBehavior::from_genome_generator(
@@ -775,32 +774,34 @@ mod tests {
 
         let mut network = NeuralNetworkMock::new();
         network
-            .expect_normalized_potential_of_neuron(partial_eq(
-                mapping.output.axial_acceleration.forward,
-            ))
+            .expect_normalized_potential_of_neuron(|arg| {
+                arg.partial_eq(mapping.output.axial_acceleration.forward)
+            })
             .returns(Ok(Some(0.5)));
         network
-            .expect_normalized_potential_of_neuron(partial_eq(
-                mapping.output.axial_acceleration.backward,
-            ))
+            .expect_normalized_potential_of_neuron(|arg| {
+                arg.partial_eq(mapping.output.axial_acceleration.backward)
+            })
             .returns(Ok(Some(0.0)));
         network
-            .expect_normalized_potential_of_neuron(partial_eq(
-                mapping.output.lateral_acceleration.left,
-            ))
+            .expect_normalized_potential_of_neuron(|arg| {
+                arg.partial_eq(mapping.output.lateral_acceleration.left)
+            })
             .returns(Ok(Some(0.2)));
         network
-            .expect_normalized_potential_of_neuron(partial_eq(
-                mapping.output.lateral_acceleration.right,
-            ))
+            .expect_normalized_potential_of_neuron(|arg| {
+                arg.partial_eq(mapping.output.lateral_acceleration.right)
+            })
             .returns(Ok(Some(0.0)));
         network
-            .expect_normalized_potential_of_neuron(partial_eq(
-                mapping.output.torque.counterclockwise,
-            ))
+            .expect_normalized_potential_of_neuron(|arg| {
+                arg.partial_eq(mapping.output.torque.counterclockwise)
+            })
             .returns(Ok(Some(0.0)));
         network
-            .expect_normalized_potential_of_neuron(partial_eq(mapping.output.torque.clockwise))
+            .expect_normalized_potential_of_neuron(|arg| {
+                arg.partial_eq(mapping.output.torque.clockwise)
+            })
             .returns(Ok(Some(0.4)));
 
         let object_description = object_description().build().unwrap();
@@ -936,7 +937,10 @@ mod tests {
 
         let mut connect_ray_to_expectation = |ray, expectation| {
             world_interactor
-                .expect_find_objects_in_ray(partial_eq(own_description.location), partial_eq(ray))
+                .expect_find_objects_in_ray(
+                    |arg| arg.partial_eq(own_description.location),
+                    |arg| arg.partial_eq(ray),
+                )
                 .returns(expectation);
         };
 
