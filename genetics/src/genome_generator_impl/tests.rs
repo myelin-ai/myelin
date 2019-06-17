@@ -39,7 +39,7 @@ impl Default for GenerateGenomeTestConfiguration {
                 HoxGene {
                     placement_target: HoxPlacement::Standalone,
                     cluster_gene: ClusterGeneIndex(0),
-                    disabled_connections: Vec::new(),
+                    disabled_connections: HashSet::new(),
                 },
                 create_input_hox_gene(ClusterGeneIndex(1)),
                 create_input_hox_gene(ClusterGeneIndex(2)),
@@ -79,7 +79,7 @@ fn create_io_hox_gene_fn(
 
         HoxGene {
             cluster_gene,
-            disabled_connections: Vec::new(),
+            disabled_connections: HashSet::new(),
             placement_target: HoxPlacement::HoxGene {
                 hox_gene: HoxGeneIndex(0),
                 target_neuron,

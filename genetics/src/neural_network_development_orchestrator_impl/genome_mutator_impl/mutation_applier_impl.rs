@@ -1,5 +1,6 @@
 use super::{Mutation, MutationApplier};
 use crate::genome::*;
+use std::collections::HashSet;
 use std::error::Error;
 use std::fmt;
 use std::marker::PhantomData;
@@ -147,14 +148,7 @@ impl Genome {
         connection_index: ClusterConnectionIndex,
     ) -> Result<(), Box<dyn Error>> {
         let gene = self.get_hox_gene_mut(hox_gene_index)?;
-
-        if gene
-            .disabled_connections
-            .iter()
-            .all(|disabled_connection| *disabled_connection != connection_index)
-        {
-            gene.disabled_connections.push(connection_index);
-        }
+        gene.disabled_connections.insert(connection_index);
 
         Ok(())
     }
@@ -239,7 +233,7 @@ impl Genome {
         let bridge_hox_gene = HoxGene {
             placement_target: existing_hox_gene.placement_target.clone(),
             cluster_gene: bridge_cluster_gene_index,
-            disabled_connections: vec![],
+            disabled_connections: HashSet::new(),
         };
 
         let bridge_hox_gene_index = HoxGeneIndex(self.hox_genes.len());
