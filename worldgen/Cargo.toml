@@ -19,7 +19,7 @@ rand = "0.6"
 
 [dev-dependencies]
 myelin-object-behavior = { path = "../object-behavior" }
-mockiato = "0.5"
+mockiato = "0.8"
 
 [dev-dependencies.myelin-engine]
 version = "0.14"
