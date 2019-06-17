@@ -30,7 +30,10 @@ impl MutationApplier for MutationApplierImpl {
                 connection,
                 new_connection_weight,
             } => self.add_neuron(genome, cluster_gene, connection, new_connection_weight),
-            Mutation::AddConnection { .. } => unimplemented!(),
+            Mutation::AddConnection {
+                cluster_gene,
+                connection,
+            } => self.add_connection(genome, cluster_gene, connection),
             Mutation::DisableConnection {
                 hox_gene,
                 connection,
@@ -94,6 +97,19 @@ impl MutationApplierImpl {
 
         let existing_connection = get_connection_mut(cluster_gene, connection_index)?;
         existing_connection.to = new_neuron_index;
+
+        Ok(())
+    }
+
+    fn add_connection(
+        &self,
+        genome: &mut Genome,
+        cluster_gene_index: ClusterGeneIndex,
+        connection: Connection,
+    ) -> Result<(), Box<dyn Error>> {
+        let cluster_gene = get_cluster_gene_mut(genome, cluster_gene_index)?;
+
+        cluster_gene.connections.push(connection);
 
         Ok(())
     }
