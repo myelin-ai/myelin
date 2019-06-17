@@ -52,7 +52,7 @@ fn change_target_neuron() {
     let genome = Genome {
         hox_genes: vec![
             standalone_hox_gene(ClusterGeneIndex(0)),
-            (|| {
+            {
                 let mut gene = standalone_hox_gene(ClusterGeneIndex(1));
 
                 gene.placement_target = HoxPlacement::ClusterGene {
@@ -61,7 +61,7 @@ fn change_target_neuron() {
                 };
 
                 gene
-            })(),
+            },
             standalone_hox_gene(ClusterGeneIndex(2)),
         ],
         cluster_genes: vec![empty_cluster_gene(); 3],
@@ -70,7 +70,7 @@ fn change_target_neuron() {
     let expected_genome = Genome {
         hox_genes: vec![
             standalone_hox_gene(ClusterGeneIndex(0)),
-            (|| {
+            {
                 let mut gene = standalone_hox_gene(ClusterGeneIndex(1));
 
                 gene.placement_target = HoxPlacement::ClusterGene {
@@ -79,7 +79,7 @@ fn change_target_neuron() {
                 };
 
                 gene
-            })(),
+            },
             standalone_hox_gene(ClusterGeneIndex(2)),
         ],
         cluster_genes: vec![empty_cluster_gene(); 3],
