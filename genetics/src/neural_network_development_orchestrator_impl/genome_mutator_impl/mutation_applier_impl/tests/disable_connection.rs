@@ -1,4 +1,5 @@
 use super::*;
+use maplit::hashset;
 
 const CONNECTION: ClusterConnectionIndex = ClusterConnectionIndex(6);
 
@@ -60,11 +61,7 @@ fn hox_gene() -> HoxGene {
 
 fn hox_gene_with_disabled_connection() -> HoxGene {
     HoxGene {
-        disabled_connections: {
-            let mut set = HashSet::new();
-            set.insert(CONNECTION);
-            set
-        },
+        disabled_connections: hashset! {CONNECTION},
         ..hox_gene()
     }
 }

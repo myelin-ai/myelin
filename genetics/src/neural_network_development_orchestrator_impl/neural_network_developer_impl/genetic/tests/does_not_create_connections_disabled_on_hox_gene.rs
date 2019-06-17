@@ -1,6 +1,6 @@
 use super::*;
 use crate::genome::ClusterConnectionIndex;
-use std::collections::HashSet;
+use maplit::hashset;
 
 #[test]
 fn does_not_create_connections_disabled_on_hox_gene() {
@@ -56,11 +56,7 @@ impl GenomeStubBuilder {
         self.genome.hox_genes.push(HoxGene {
             placement_target: HoxPlacement::Standalone,
             cluster_gene: ClusterGeneIndex(0),
-            disabled_connections: {
-                let mut set = HashSet::new();
-                set.insert(ClusterConnectionIndex(0));
-                set
-            },
+            disabled_connections: hashset! {ClusterConnectionIndex(0)},
         });
         self
     }
@@ -69,12 +65,7 @@ impl GenomeStubBuilder {
         self.genome.hox_genes.push(HoxGene {
             placement_target: HoxPlacement::Standalone,
             cluster_gene: ClusterGeneIndex(0),
-            disabled_connections: {
-                let mut set = HashSet::new();
-                set.insert(ClusterConnectionIndex(10));
-                set.insert(ClusterConnectionIndex(0));
-                set
-            },
+            disabled_connections: hashset! {ClusterConnectionIndex(10), ClusterConnectionIndex(0)},
         });
         self
     }
