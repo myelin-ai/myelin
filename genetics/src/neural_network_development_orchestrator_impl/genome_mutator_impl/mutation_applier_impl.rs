@@ -25,7 +25,11 @@ impl MutationApplier for MutationApplierImpl {
         mutation: Mutation,
     ) -> Result<(), Box<dyn Error>> {
         match mutation {
-            Mutation::AddNeuron { .. } => unimplemented!(),
+            Mutation::AddNeuron {
+                cluster_gene,
+                connection,
+                new_connection_weight,
+            } => self.add_neuron(genome, cluster_gene, connection, new_connection_weight),
             Mutation::AddConnection { .. } => unimplemented!(),
             Mutation::DisableConnection {
                 hox_gene,
@@ -65,6 +69,35 @@ impl fmt::Display for MutationApplierError {
 }
 
 impl MutationApplierImpl {
+    fn add_neuron(
+        &self,
+        genome: &mut Genome,
+        cluster_gene_index: ClusterGeneIndex,
+        connection_index: ClusterConnectionIndex,
+        new_connection_weight: Weight,
+    ) -> Result<(), Box<dyn Error>> {
+        let cluster_gene = get_cluster_gene_mut(genome, cluster_gene_index)?;
+
+        let existing_connection = get_connection(cluster_gene, connection_index)?;
+
+        let to_neuron = existing_connection.to.clone();
+
+        let new_neuron_index = ClusterNeuronIndex(cluster_gene.neurons.len());
+        let new_neuron = Neuron::new();
+
+        cluster_gene.neurons.push(new_neuron);
+        cluster_gene.connections.push(Connection {
+            from: new_neuron_index,
+            to: to_neuron,
+            weight: new_connection_weight,
+        });
+
+        let existing_connection = get_connection_mut(cluster_gene, connection_index)?;
+        existing_connection.to = new_neuron_index;
+
+        Ok(())
+    }
+
     fn disable_connection(
         &self,
         genome: &mut Genome,
@@ -133,6 +166,46 @@ fn get_hox_gene_mut(
 ) -> Result<&mut HoxGene, Box<dyn Error>> {
     genome
         .hox_genes
+        .get_mut(index.0)
+        .ok_or_else(|| box MutationApplierError::IndexOutOfBounds as Box<dyn Error>)
+}
+
+fn get_cluster_gene(
+    genome: &Genome,
+    index: ClusterGeneIndex,
+) -> Result<&ClusterGene, Box<dyn Error>> {
+    genome
+        .cluster_genes
+        .get(index.0)
+        .ok_or_else(|| box MutationApplierError::IndexOutOfBounds as Box<dyn Error>)
+}
+
+fn get_cluster_gene_mut(
+    genome: &mut Genome,
+    index: ClusterGeneIndex,
+) -> Result<&mut ClusterGene, Box<dyn Error>> {
+    genome
+        .cluster_genes
+        .get_mut(index.0)
+        .ok_or_else(|| box MutationApplierError::IndexOutOfBounds as Box<dyn Error>)
+}
+
+fn get_connection(
+    cluster_gene: &ClusterGene,
+    index: ClusterConnectionIndex,
+) -> Result<&Connection, Box<dyn Error>> {
+    cluster_gene
+        .connections
+        .get(index.0)
+        .ok_or_else(|| box MutationApplierError::IndexOutOfBounds as Box<dyn Error>)
+}
+
+fn get_connection_mut(
+    cluster_gene: &mut ClusterGene,
+    index: ClusterConnectionIndex,
+) -> Result<&mut Connection, Box<dyn Error>> {
+    cluster_gene
+        .connections
         .get_mut(index.0)
         .ok_or_else(|| box MutationApplierError::IndexOutOfBounds as Box<dyn Error>)
 }
