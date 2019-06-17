@@ -16,7 +16,11 @@ fn adds_single_bridge() {
 
     let expected_genome = base_genome
         .add_cluster_gene(bridge_cluster.clone())
-        .add_hox_gene(hox_placed_on_hox_on_shared_neuron())
+        .add_hox_gene(hox_placed_on_hox_gene(
+            ClusterGeneIndex(1),
+            HoxGeneIndex(2),
+            ClusterNeuronIndex(1),
+        ))
         .add_hox_gene(bridge_hox);
 
     let mutation = Mutation::Bridge {
@@ -34,11 +38,10 @@ fn adds_single_bridge() {
 
 #[test]
 fn adds_bridge_to_neuron_with_multiple_attached_clusters() {
-    let base_genome = genome();
+    let base_genome = genome().add_hox_gene(hox_placed_on_hox_on_shared_neuron());
 
     let genome = base_genome
         .clone()
-        .add_hox_gene(hox_placed_on_hox_on_shared_neuron())
         .add_hox_gene(hox_placed_on_hox_on_shared_neuron());
 
     let bridge_cluster = cluster_gene();
@@ -55,7 +58,7 @@ fn adds_bridge_to_neuron_with_multiple_attached_clusters() {
         .add_hox_gene(bridge_hox);
 
     let mutation = Mutation::Bridge {
-        target_hox_gene: HoxGeneIndex(1),
+        target_hox_gene: HoxGeneIndex(2),
         bridge_cluster_gene: bridge_cluster,
     };
 
@@ -95,10 +98,10 @@ fn adds_multiple_bridges() {
 
     let expected_genome = base_genome
         .add_cluster_gene(bridge_cluster.clone())
-        .add_hox_gene(hox_placed_on_cluster_gene(
+        .add_hox_gene(hox_placed_on_hox_gene(
             ClusterGeneIndex(1),
-            ClusterGeneIndex(2),
-            new_target_neuron(),
+            HoxGeneIndex(3),
+            ClusterNeuronIndex(1),
         ))
         .add_hox_gene(bridge_hox);
 

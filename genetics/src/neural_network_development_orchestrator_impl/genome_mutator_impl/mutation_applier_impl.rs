@@ -241,7 +241,30 @@ impl MutationApplierImpl {
         hox_gene_index: HoxGeneIndex,
         bridge_cluster_gene: ClusterGene,
     ) -> Result<(), Box<dyn Error>> {
-        unimplemented!()
+        let _ = get_hox_gene(genome, hox_gene_index)?;
+
+        let bridge_cluster_gene_index = ClusterGeneIndex(genome.cluster_genes.len());
+        genome.cluster_genes.push(bridge_cluster_gene);
+
+        let existing_hox_gene = get_hox_gene(genome, hox_gene_index).unwrap();
+
+        let bridge_hox_gene = HoxGene {
+            placement_target: existing_hox_gene.placement_target.clone(),
+            cluster_gene: bridge_cluster_gene_index,
+            disabled_connections: vec![],
+        };
+
+        let bridge_hox_gene_index = HoxGeneIndex(genome.hox_genes.len());
+        genome.hox_genes.push(bridge_hox_gene);
+
+        let existing_hox_gene = get_hox_gene_mut(genome, hox_gene_index).unwrap();
+
+        existing_hox_gene.placement_target = HoxPlacement::HoxGene {
+            hox_gene: bridge_hox_gene_index,
+            target_neuron: ClusterNeuronIndex(1),
+        };
+
+        Ok(())
     }
 
     fn add_hox_with_existing_cluster(
