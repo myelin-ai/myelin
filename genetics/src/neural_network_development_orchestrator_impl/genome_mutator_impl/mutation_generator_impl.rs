@@ -28,6 +28,10 @@ mod tests {
     #[test]
     fn picks_mutation() {}
 
+    fn mutation_generator() -> Box<dyn MutationGenerator> {
+        box MutationGeneratorImpl::new(mock_random())
+    }
+
     fn mock_random() -> Box<dyn Random> {
         let mut random = box RandomMock::new();
         random
