@@ -148,10 +148,10 @@ impl Genome {
     ) -> Result<(), Box<dyn Error>> {
         let gene = self.get_hox_gene_mut(hox_gene_index)?;
 
-        if !gene
+        if gene
             .disabled_connections
             .iter()
-            .any(|disabled_connection| *disabled_connection == connection_index)
+            .all(|disabled_connection| *disabled_connection != connection_index)
         {
             gene.disabled_connections.push(connection_index);
         }
