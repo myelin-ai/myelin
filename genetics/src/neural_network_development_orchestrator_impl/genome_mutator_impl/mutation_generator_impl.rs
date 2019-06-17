@@ -47,7 +47,8 @@ mod tests {
         let mut random = box RandomMock::new();
         random
             .expect_flip_coin_with_probability(|arg| arg.any())
-            .times(..);
+            .times(..)
+            .returns(false);
         random
     }
 }
