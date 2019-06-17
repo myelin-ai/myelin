@@ -47,7 +47,11 @@ impl MutationApplier for MutationApplierImpl {
                 weight_delta,
             } => self.nudge_weight(genome, cluster_gene, connection, weight_delta),
 
-            Mutation::ChangePlacementNeuron { .. } => unimplemented!(),
+            Mutation::ChangePlacementNeuron {
+                cluster_gene,
+                new_placement_neuron,
+            } => self.change_placement_neuron(genome, cluster_gene, new_placement_neuron),
+
             Mutation::AddNewCluster { .. } => unimplemented!(),
             Mutation::CopyCluster { .. } => unimplemented!(),
             Mutation::DesyncCluster { .. } => unimplemented!(),
@@ -148,12 +152,25 @@ impl MutationApplierImpl {
         genome: &mut Genome,
         cluster_gene_index: ClusterGeneIndex,
         connection_index: ClusterConnectionIndex,
-        weigth_delta: Weight,
+        weight_delta: Weight,
     ) -> Result<(), Box<dyn Error>> {
         let cluster_gene = get_cluster_gene_mut(genome, cluster_gene_index)?;
         let connection = get_connection_mut(cluster_gene, connection_index)?;
 
-        connection.weight += weigth_delta;
+        connection.weight += weight_delta;
+
+        Ok(())
+    }
+
+    fn change_placement_neuron(
+        &self,
+        genome: &mut Genome,
+        cluster_gene_index: ClusterGeneIndex,
+        new_placement_neuron_index: ClusterNeuronIndex,
+    ) -> Result<(), Box<dyn Error>> {
+        let cluster_gene = get_cluster_gene_mut(genome, cluster_gene_index)?;
+
+        cluster_gene.placement_neuron = new_placement_neuron_index;
 
         Ok(())
     }
