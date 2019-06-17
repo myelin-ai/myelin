@@ -29,56 +29,56 @@ impl MutationApplier for MutationApplierImpl {
                 cluster_gene,
                 connection,
                 new_connection_weight,
-            } => self.add_neuron(genome, cluster_gene, connection, new_connection_weight),
+            } => genome.add_neuron(cluster_gene, connection, new_connection_weight),
 
             Mutation::AddConnection {
                 cluster_gene,
                 connection,
-            } => self.add_connection(genome, cluster_gene, connection),
+            } => genome.add_connection(cluster_gene, connection),
 
             Mutation::DisableConnection {
                 hox_gene,
                 connection,
-            } => self.disable_connection(genome, hox_gene, connection),
+            } => genome.disable_connection(hox_gene, connection),
 
             Mutation::NudgeWeight {
                 cluster_gene,
                 connection,
                 weight_delta,
-            } => self.nudge_weight(genome, cluster_gene, connection, weight_delta),
+            } => genome.nudge_weight(cluster_gene, connection, weight_delta),
 
             Mutation::ChangePlacementNeuron {
                 cluster_gene,
                 new_placement_neuron,
-            } => self.change_placement_neuron(genome, cluster_gene, new_placement_neuron),
+            } => genome.change_placement_neuron(cluster_gene, new_placement_neuron),
 
             Mutation::AddNewCluster {
                 cluster_gene,
                 hox_gene,
-            } => self.add_new_cluster(genome, cluster_gene, hox_gene),
+            } => genome.add_new_cluster(cluster_gene, hox_gene),
 
             Mutation::CopyCluster {
                 source_cluster_gene,
                 new_hox_gene,
-            } => self.copy_cluster(genome, source_cluster_gene, new_hox_gene),
+            } => genome.copy_cluster(source_cluster_gene, new_hox_gene),
 
-            Mutation::DesyncCluster { hox_gene } => self.desync_cluster(genome, hox_gene),
+            Mutation::DesyncCluster { hox_gene } => genome.desync_cluster(hox_gene),
 
             Mutation::Bridge {
                 target_hox_gene,
                 bridge_cluster_gene,
-            } => self.bridge(genome, target_hox_gene, bridge_cluster_gene),
+            } => genome.bridge(target_hox_gene, bridge_cluster_gene),
 
             Mutation::AddHoxWithExistingCluster { new_hox_gene } => {
-                self.add_hox_with_existing_cluster(genome, new_hox_gene)
+                genome.add_hox_with_existing_cluster(new_hox_gene)
             }
 
             Mutation::ChangeTargetNeuron {
                 hox_gene,
                 new_target_neuron,
-            } => self.change_target_neuron(genome, hox_gene, new_target_neuron),
+            } => genome.change_target_neuron(hox_gene, new_target_neuron),
 
-            Mutation::DuplicateHox { hox_gene } => self.duplicate_hox(genome, hox_gene),
+            Mutation::DuplicateHox { hox_gene } => genome.duplicate_hox(hox_gene),
         }
     }
 }
@@ -100,15 +100,14 @@ impl fmt::Display for MutationApplierError {
     }
 }
 
-impl MutationApplierImpl {
+impl Genome {
     fn add_neuron(
-        &self,
-        genome: &mut Genome,
+        &mut self,
         cluster_gene_index: ClusterGeneIndex,
         connection_index: ClusterConnectionIndex,
         new_connection_weight: Weight,
     ) -> Result<(), Box<dyn Error>> {
-        let cluster_gene = get_cluster_gene_mut(genome, cluster_gene_index)?;
+        let cluster_gene = self.get_cluster_gene_mut(cluster_gene_index)?;
 
         let existing_connection = get_connection(cluster_gene, connection_index)?;
 
@@ -131,12 +130,11 @@ impl MutationApplierImpl {
     }
 
     fn add_connection(
-        &self,
-        genome: &mut Genome,
+        &mut self,
         cluster_gene_index: ClusterGeneIndex,
         connection: Connection,
     ) -> Result<(), Box<dyn Error>> {
-        let cluster_gene = get_cluster_gene_mut(genome, cluster_gene_index)?;
+        let cluster_gene = self.get_cluster_gene_mut(cluster_gene_index)?;
 
         cluster_gene.connections.push(connection);
 
@@ -144,12 +142,11 @@ impl MutationApplierImpl {
     }
 
     fn disable_connection(
-        &self,
-        genome: &mut Genome,
+        &mut self,
         hox_gene_index: HoxGeneIndex,
         connection_index: ClusterConnectionIndex,
     ) -> Result<(), Box<dyn Error>> {
-        let gene = get_hox_gene_mut(genome, hox_gene_index)?;
+        let gene = self.get_hox_gene_mut(hox_gene_index)?;
 
         if !gene
             .disabled_connections
@@ -163,13 +160,12 @@ impl MutationApplierImpl {
     }
 
     fn nudge_weight(
-        &self,
-        genome: &mut Genome,
+        &mut self,
         cluster_gene_index: ClusterGeneIndex,
         connection_index: ClusterConnectionIndex,
         weight_delta: Weight,
     ) -> Result<(), Box<dyn Error>> {
-        let cluster_gene = get_cluster_gene_mut(genome, cluster_gene_index)?;
+        let cluster_gene = self.get_cluster_gene_mut(cluster_gene_index)?;
         let connection = get_connection_mut(cluster_gene, connection_index)?;
 
         connection.weight += weight_delta;
@@ -178,12 +174,11 @@ impl MutationApplierImpl {
     }
 
     fn change_placement_neuron(
-        &self,
-        genome: &mut Genome,
+        &mut self,
         cluster_gene_index: ClusterGeneIndex,
         new_placement_neuron_index: ClusterNeuronIndex,
     ) -> Result<(), Box<dyn Error>> {
-        let cluster_gene = get_cluster_gene_mut(genome, cluster_gene_index)?;
+        let cluster_gene = self.get_cluster_gene_mut(cluster_gene_index)?;
 
         cluster_gene.placement_neuron = new_placement_neuron_index;
 
@@ -191,62 +186,55 @@ impl MutationApplierImpl {
     }
 
     fn add_new_cluster(
-        &self,
-        genome: &mut Genome,
+        &mut self,
         cluster_gene: ClusterGene,
         hox_gene: HoxGene,
     ) -> Result<(), Box<dyn Error>> {
-        genome.cluster_genes.push(cluster_gene);
-        genome.hox_genes.push(hox_gene);
+        self.cluster_genes.push(cluster_gene);
+        self.hox_genes.push(hox_gene);
 
         Ok(())
     }
 
     fn copy_cluster(
-        &self,
-        genome: &mut Genome,
+        &mut self,
         cluster_gene_index: ClusterGeneIndex,
         hox_gene: HoxGene,
     ) -> Result<(), Box<dyn Error>> {
-        let new_cluster_gene = get_cluster_gene(genome, cluster_gene_index)?.clone();
+        let new_cluster_gene = self.get_cluster_gene(cluster_gene_index)?.clone();
 
-        genome.cluster_genes.push(new_cluster_gene);
-        genome.hox_genes.push(hox_gene);
+        self.cluster_genes.push(new_cluster_gene);
+        self.hox_genes.push(hox_gene);
 
         Ok(())
     }
 
-    fn desync_cluster(
-        &self,
-        genome: &mut Genome,
-        hox_gene_index: HoxGeneIndex,
-    ) -> Result<(), Box<dyn Error>> {
-        let hox_gene = get_hox_gene(genome, hox_gene_index)?;
+    fn desync_cluster(&mut self, hox_gene_index: HoxGeneIndex) -> Result<(), Box<dyn Error>> {
+        let hox_gene = self.get_hox_gene(hox_gene_index)?;
         let cluster_gene_index = hox_gene.cluster_gene;
 
-        let new_cluster_gene = get_cluster_gene(genome, cluster_gene_index)?.clone();
+        let new_cluster_gene = self.get_cluster_gene(cluster_gene_index)?.clone();
 
-        let new_cluster_gene_index = ClusterGeneIndex(genome.cluster_genes.len());
-        genome.cluster_genes.push(new_cluster_gene);
+        let new_cluster_gene_index = ClusterGeneIndex(self.cluster_genes.len());
+        self.cluster_genes.push(new_cluster_gene);
 
-        let hox_gene = get_hox_gene_mut(genome, hox_gene_index).unwrap();
+        let hox_gene = self.get_hox_gene_mut(hox_gene_index).unwrap();
         hox_gene.cluster_gene = new_cluster_gene_index;
 
         Ok(())
     }
 
     fn bridge(
-        &self,
-        genome: &mut Genome,
+        &mut self,
         hox_gene_index: HoxGeneIndex,
         bridge_cluster_gene: ClusterGene,
     ) -> Result<(), Box<dyn Error>> {
-        let _ = get_hox_gene(genome, hox_gene_index)?;
+        let _ = self.get_hox_gene(hox_gene_index)?;
 
-        let bridge_cluster_gene_index = ClusterGeneIndex(genome.cluster_genes.len());
-        genome.cluster_genes.push(bridge_cluster_gene);
+        let bridge_cluster_gene_index = ClusterGeneIndex(self.cluster_genes.len());
+        self.cluster_genes.push(bridge_cluster_gene);
 
-        let existing_hox_gene = get_hox_gene(genome, hox_gene_index).unwrap();
+        let existing_hox_gene = self.get_hox_gene(hox_gene_index).unwrap();
 
         let bridge_hox_gene = HoxGene {
             placement_target: existing_hox_gene.placement_target.clone(),
@@ -254,10 +242,10 @@ impl MutationApplierImpl {
             disabled_connections: vec![],
         };
 
-        let bridge_hox_gene_index = HoxGeneIndex(genome.hox_genes.len());
-        genome.hox_genes.push(bridge_hox_gene);
+        let bridge_hox_gene_index = HoxGeneIndex(self.hox_genes.len());
+        self.hox_genes.push(bridge_hox_gene);
 
-        let existing_hox_gene = get_hox_gene_mut(genome, hox_gene_index).unwrap();
+        let existing_hox_gene = self.get_hox_gene_mut(hox_gene_index).unwrap();
 
         existing_hox_gene.placement_target = HoxPlacement::HoxGene {
             hox_gene: bridge_hox_gene_index,
@@ -267,23 +255,18 @@ impl MutationApplierImpl {
         Ok(())
     }
 
-    fn add_hox_with_existing_cluster(
-        &self,
-        genome: &mut Genome,
-        hox_gene: HoxGene,
-    ) -> Result<(), Box<dyn Error>> {
-        genome.hox_genes.push(hox_gene);
+    fn add_hox_with_existing_cluster(&mut self, hox_gene: HoxGene) -> Result<(), Box<dyn Error>> {
+        self.hox_genes.push(hox_gene);
 
         Ok(())
     }
 
     fn change_target_neuron(
-        &self,
-        genome: &mut Genome,
+        &mut self,
         hox_gene_index: HoxGeneIndex,
         new_target_neuron_index: ClusterNeuronIndex,
     ) -> Result<(), Box<dyn Error>> {
-        let gene = get_hox_gene_mut(genome, hox_gene_index)?;
+        let gene = self.get_hox_gene_mut(hox_gene_index)?;
 
         gene.placement_target = match gene.placement_target {
             HoxPlacement::ClusterGene { cluster_gene, .. } => HoxPlacement::ClusterGene {
@@ -300,54 +283,40 @@ impl MutationApplierImpl {
         Ok(())
     }
 
-    fn duplicate_hox(
-        &self,
-        genome: &mut Genome,
-        hox_gene_index: HoxGeneIndex,
-    ) -> Result<(), Box<dyn Error>> {
-        let gene = get_hox_gene(genome, hox_gene_index)?.clone();
+    fn duplicate_hox(&mut self, hox_gene_index: HoxGeneIndex) -> Result<(), Box<dyn Error>> {
+        let gene = self.get_hox_gene(hox_gene_index)?.clone();
 
-        genome.hox_genes.push(gene);
+        self.hox_genes.push(gene);
 
         Ok(())
     }
-}
 
-fn get_hox_gene(genome: &Genome, index: HoxGeneIndex) -> Result<&HoxGene, Box<dyn Error>> {
-    genome
-        .hox_genes
-        .get(index.0)
-        .ok_or_else(|| box MutationApplierError::IndexOutOfBounds as Box<dyn Error>)
-}
+    fn get_hox_gene(&self, index: HoxGeneIndex) -> Result<&HoxGene, Box<dyn Error>> {
+        self.hox_genes
+            .get(index.0)
+            .ok_or_else(|| box MutationApplierError::IndexOutOfBounds as Box<dyn Error>)
+    }
 
-fn get_hox_gene_mut(
-    genome: &mut Genome,
-    index: HoxGeneIndex,
-) -> Result<&mut HoxGene, Box<dyn Error>> {
-    genome
-        .hox_genes
-        .get_mut(index.0)
-        .ok_or_else(|| box MutationApplierError::IndexOutOfBounds as Box<dyn Error>)
-}
+    fn get_hox_gene_mut(&mut self, index: HoxGeneIndex) -> Result<&mut HoxGene, Box<dyn Error>> {
+        self.hox_genes
+            .get_mut(index.0)
+            .ok_or_else(|| box MutationApplierError::IndexOutOfBounds as Box<dyn Error>)
+    }
 
-fn get_cluster_gene(
-    genome: &Genome,
-    index: ClusterGeneIndex,
-) -> Result<&ClusterGene, Box<dyn Error>> {
-    genome
-        .cluster_genes
-        .get(index.0)
-        .ok_or_else(|| box MutationApplierError::IndexOutOfBounds as Box<dyn Error>)
-}
+    fn get_cluster_gene(&self, index: ClusterGeneIndex) -> Result<&ClusterGene, Box<dyn Error>> {
+        self.cluster_genes
+            .get(index.0)
+            .ok_or_else(|| box MutationApplierError::IndexOutOfBounds as Box<dyn Error>)
+    }
 
-fn get_cluster_gene_mut(
-    genome: &mut Genome,
-    index: ClusterGeneIndex,
-) -> Result<&mut ClusterGene, Box<dyn Error>> {
-    genome
-        .cluster_genes
-        .get_mut(index.0)
-        .ok_or_else(|| box MutationApplierError::IndexOutOfBounds as Box<dyn Error>)
+    fn get_cluster_gene_mut(
+        &mut self,
+        index: ClusterGeneIndex,
+    ) -> Result<&mut ClusterGene, Box<dyn Error>> {
+        self.cluster_genes
+            .get_mut(index.0)
+            .ok_or_else(|| box MutationApplierError::IndexOutOfBounds as Box<dyn Error>)
+    }
 }
 
 fn get_connection(
