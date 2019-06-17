@@ -57,7 +57,11 @@ impl MutationApplier for MutationApplierImpl {
                 hox_gene,
             } => self.add_new_cluster(genome, cluster_gene, hox_gene),
 
-            Mutation::CopyCluster { .. } => unimplemented!(),
+            Mutation::CopyCluster {
+                source_cluster_gene,
+                new_hox_gene,
+            } => self.copy_cluster(genome, source_cluster_gene, new_hox_gene),
+
             Mutation::DesyncCluster { .. } => unimplemented!(),
             Mutation::Bridge { .. } => unimplemented!(),
             Mutation::AddHoxWithExistingCluster { .. } => unimplemented!(),
@@ -186,6 +190,20 @@ impl MutationApplierImpl {
         hox_gene: HoxGene,
     ) -> Result<(), Box<dyn Error>> {
         genome.cluster_genes.push(cluster_gene);
+        genome.hox_genes.push(hox_gene);
+
+        Ok(())
+    }
+
+    fn copy_cluster(
+        &self,
+        genome: &mut Genome,
+        cluster_gene_index: ClusterGeneIndex,
+        hox_gene: HoxGene,
+    ) -> Result<(), Box<dyn Error>> {
+        let new_cluster_gene = get_cluster_gene(genome, cluster_gene_index)?.clone();
+
+        genome.cluster_genes.push(new_cluster_gene);
         genome.hox_genes.push(hox_gene);
 
         Ok(())
