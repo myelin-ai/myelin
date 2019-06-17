@@ -5,7 +5,6 @@ use crate::genome::{
 };
 use crate::neural_network_development_orchestrator_impl::NeuralNetworkConfiguratorMock;
 use crate::GenomeOrigin;
-use maplit::hashset;
 use myelin_neural_network::Connection;
 use myelin_neural_network::Handle;
 use std::cmp::Ordering;
