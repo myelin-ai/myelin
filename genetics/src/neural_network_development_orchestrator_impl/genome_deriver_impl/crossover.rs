@@ -74,12 +74,13 @@ mod tests {
     use super::*;
     use crate::genome::*;
     use myelin_random::RandomMock;
+    use std::collections::HashSet;
 
     fn hox_gene(cluster_gene: usize) -> HoxGene {
         HoxGene {
             placement_target: HoxPlacement::Standalone,
             cluster_gene: ClusterGeneIndex(cluster_gene),
-            disabled_connections: Vec::new(),
+            disabled_connections: HashSet::new(),
         }
     }
 

@@ -60,7 +60,11 @@ fn hox_gene() -> HoxGene {
 
 fn hox_gene_with_disabled_connection() -> HoxGene {
     HoxGene {
-        disabled_connections: vec![CONNECTION],
+        disabled_connections: {
+            let mut set = HashSet::new();
+            set.insert(CONNECTION);
+            set
+        },
         ..hox_gene()
     }
 }

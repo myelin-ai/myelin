@@ -93,7 +93,7 @@ fn adds_multiple_bridges() {
             target_neuron: initial_target_neuron_on_mutation_target(),
         },
         cluster_gene: ClusterGeneIndex(2),
-        disabled_connections: Vec::new(),
+        disabled_connections: HashSet::new(),
     };
 
     let expected_genome = base_genome
@@ -167,7 +167,7 @@ fn bridge_hox() -> HoxGene {
             target_neuron: initial_target_neuron_on_mutation_target(),
         },
         cluster_gene: ClusterGeneIndex(2),
-        disabled_connections: Vec::new(),
+        disabled_connections: HashSet::new(),
     }
 }
 

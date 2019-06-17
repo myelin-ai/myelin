@@ -8,6 +8,7 @@ use matches::matches;
 #[cfg(any(test, feature = "use-mocks"))]
 use mockiato::mockable;
 use myelin_random::Random;
+use std::collections::HashSet;
 use std::fmt::Debug;
 use std::iter;
 use std::num::NonZeroUsize;
@@ -114,7 +115,7 @@ fn corpus_callosum_hox_gene() -> HoxGene {
     HoxGene {
         placement_target: HoxPlacement::Standalone,
         cluster_gene: CORPUS_CALLOSUM_CLUSTER_GENE,
-        disabled_connections: Vec::new(),
+        disabled_connections: HashSet::new(),
     }
 }
 
@@ -245,7 +246,7 @@ impl GenomeGeneratorImpl {
                     .expect("Corpus callosum does not contain enough neurons");
                 HoxGene {
                     cluster_gene,
-                    disabled_connections: Vec::new(),
+                    disabled_connections: HashSet::new(),
                     placement_target: HoxPlacement::HoxGene {
                         hox_gene: PLACEMENT_TARGET_HOX_GENE,
                         target_neuron,
