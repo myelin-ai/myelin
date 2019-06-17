@@ -30,7 +30,9 @@ mod tests {
 
     fn mock_random() -> Box<dyn Random> {
         let mut random = box RandomMock::new();
-        // random.expect_flip_coin_with_probability(ADD_NEURON_PROBABILITY);
+        random
+            .expect_flip_coin_with_probability(|arg| arg.any())
+            .times(..);
         random
     }
 }
