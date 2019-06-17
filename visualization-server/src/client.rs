@@ -125,8 +125,6 @@ mod tests {
     use crate::controller::{PresenterMock, Snapshot};
     use crate::fixed_interval_sleeper::FixedIntervalSleeperMock;
     use maplit::hashmap;
-    use mockiato::partial_eq;
-    use mockiato::partial_eq_owned;
     use myelin_engine::prelude::*;
     use myelin_object_data::{AdditionalObjectDescription, Kind};
     use myelin_visualization_core::view_model_delta::{
@@ -168,13 +166,13 @@ mod tests {
         let mut sleeper = FixedIntervalSleeperMock::new();
         sleeper.expect_register_work_started();
         sleeper
-            .expect_sleep_until_interval_passed(partial_eq(interval))
+            .expect_sleep_until_interval_passed(|arg| arg.partial_eq(interval))
             .returns(Ok(()));
         let mut presenter = box PresenterMock::new();
         presenter
             .expect_calculate_deltas(
-                partial_eq_owned(Snapshot::new()),
-                partial_eq_owned(snapshot()),
+                |arg| arg.partial_eq_owned(Snapshot::new()),
+                |arg| arg.partial_eq_owned(snapshot()),
             )
             .returns(delta());
         let mut serializer = box SerializerMock::default();
@@ -208,13 +206,13 @@ mod tests {
         let mut sleeper = FixedIntervalSleeperMock::new();
         sleeper.expect_register_work_started();
         sleeper
-            .expect_sleep_until_interval_passed(partial_eq(interval))
+            .expect_sleep_until_interval_passed(|arg| arg.partial_eq(interval))
             .returns(Ok(()));
         let mut presenter = box PresenterMock::new();
         presenter
             .expect_calculate_deltas(
-                partial_eq_owned(Snapshot::new()),
-                partial_eq_owned(snapshot()),
+                |arg| arg.partial_eq_owned(Snapshot::new()),
+                |arg| arg.partial_eq_owned(snapshot()),
             )
             .returns(ViewModelDelta::default());
         let serializer = box SerializerMock::default();
@@ -245,13 +243,13 @@ mod tests {
         let mut sleeper = FixedIntervalSleeperMock::new();
         sleeper.expect_register_work_started();
         sleeper
-            .expect_sleep_until_interval_passed(partial_eq(interval))
+            .expect_sleep_until_interval_passed(|arg| arg.partial_eq(interval))
             .returns(Ok(()));
         let mut presenter = box PresenterMock::new();
         presenter
             .expect_calculate_deltas(
-                partial_eq_owned(Snapshot::new()),
-                partial_eq_owned(snapshot()),
+                |arg| arg.partial_eq_owned(Snapshot::new()),
+                |arg| arg.partial_eq_owned(snapshot()),
             )
             .returns(delta());
         let mut serializer = box SerializerMock::default();
@@ -283,13 +281,13 @@ mod tests {
         let mut sleeper = FixedIntervalSleeperMock::new();
         sleeper.expect_register_work_started();
         sleeper
-            .expect_sleep_until_interval_passed(partial_eq(interval))
+            .expect_sleep_until_interval_passed(|arg| arg.partial_eq(interval))
             .returns(Ok(()));
         let mut presenter = box PresenterMock::new();
         presenter
             .expect_calculate_deltas(
-                partial_eq_owned(Snapshot::new()),
-                partial_eq_owned(snapshot()),
+                |arg| arg.partial_eq_owned(Snapshot::new()),
+                |arg| arg.partial_eq_owned(snapshot()),
             )
             .returns(delta());
         let mut serializer = box SerializerMock::default();

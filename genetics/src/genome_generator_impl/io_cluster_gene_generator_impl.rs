@@ -85,7 +85,6 @@ const MAX_CONNECTION_WEIGHT: f64 = 1.0;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockiato::partial_eq;
     use myelin_random::RandomMock;
 
     #[test]
@@ -97,8 +96,8 @@ mod tests {
             let mut random = RandomMock::new();
             random
                 .expect_usize_in_range(
-                    partial_eq(MIN_NEURONS_PER_CLUSTER),
-                    partial_eq(MAX_NEURONS_PER_CLUSTER),
+                    |arg| arg.partial_eq(MIN_NEURONS_PER_CLUSTER),
+                    |arg| arg.partial_eq(MAX_NEURONS_PER_CLUSTER),
                 )
                 .returns(NEURON_COUNT);
 
@@ -106,8 +105,8 @@ mod tests {
             for index in 0..CONNECTION_COUNT {
                 random
                     .expect_f64_in_range(
-                        partial_eq(MIN_CONNECTION_WEIGHT),
-                        partial_eq(MAX_CONNECTION_WEIGHT),
+                        |arg| arg.partial_eq(MIN_CONNECTION_WEIGHT),
+                        |arg| arg.partial_eq(MAX_CONNECTION_WEIGHT),
                     )
                     .returns(connection_weight(index));
             }

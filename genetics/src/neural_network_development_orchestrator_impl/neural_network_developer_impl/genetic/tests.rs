@@ -5,7 +5,6 @@ use crate::genome::{
 };
 use crate::neural_network_development_orchestrator_impl::NeuralNetworkConfiguratorMock;
 use crate::GenomeOrigin;
-use mockiato::partial_eq;
 use myelin_neural_network::Connection;
 use myelin_neural_network::Handle;
 use std::cmp::Ordering;
@@ -329,7 +328,7 @@ fn expect_connections(
         })
         .for_each(|connection| {
             configurator
-                .expect_add_connection(partial_eq(connection))
+                .expect_add_connection(|arg| arg.partial_eq(connection))
                 .returns(Ok(()));
         })
 }

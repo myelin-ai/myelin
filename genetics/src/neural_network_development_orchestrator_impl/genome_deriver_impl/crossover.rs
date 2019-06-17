@@ -73,7 +73,6 @@ impl GenomeDeriver for ChromosomalCrossoverGenomeDeriver {
 mod tests {
     use super::*;
     use crate::genome::*;
-    use mockiato::any;
     use myelin_random::RandomMock;
 
     fn hox_gene(cluster_gene: usize) -> HoxGene {
@@ -149,10 +148,10 @@ mod tests {
         random.expect_flip_coin().returns(false);
         random.expect_flip_coin().returns(false);
         random
-            .expect_flip_coin_with_probability(any())
+            .expect_flip_coin_with_probability(|arg| arg.any())
             .returns(false);
         random
-            .expect_flip_coin_with_probability(any())
+            .expect_flip_coin_with_probability(|arg| arg.any())
             .returns(true);
 
         let deriver = ChromosomalCrossoverGenomeDeriver::new(box random);
@@ -186,10 +185,10 @@ mod tests {
         random.expect_flip_coin().returns(false);
         random.expect_flip_coin().returns(false);
         random
-            .expect_flip_coin_with_probability(any())
+            .expect_flip_coin_with_probability(|arg| arg.any())
             .returns(true);
         random
-            .expect_flip_coin_with_probability(any())
+            .expect_flip_coin_with_probability(|arg| arg.any())
             .returns(false);
 
         let deriver = ChromosomalCrossoverGenomeDeriver::new(box random);

@@ -136,7 +136,6 @@ const PLACEMENT_NEURON: ClusterNeuronIndex = ClusterNeuronIndex('✌' as usize);
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockiato::partial_eq;
     use myelin_random::RandomMock;
     use std::num::NonZeroUsize;
 
@@ -229,16 +228,16 @@ mod tests {
             for index in 0..connection_count {
                 random
                     .expect_f64_in_range(
-                        partial_eq(MIN_CONNECTION_WEIGHT),
-                        partial_eq(MAX_CONNECTION_WEIGHT),
+                        |arg| arg.partial_eq(MIN_CONNECTION_WEIGHT),
+                        |arg| arg.partial_eq(MAX_CONNECTION_WEIGHT),
                     )
                     .returns(connection_weight(index));
             }
 
             random
                 .expect_usize_in_range(
-                    partial_eq(MIN_STEM_NEURONS),
-                    partial_eq(output_neuron_count + 1),
+                    |arg| arg.partial_eq(MIN_STEM_NEURONS),
+                    |arg| arg.partial_eq(output_neuron_count + 1),
                 )
                 .returns(stem_neuron_count);
             box random
