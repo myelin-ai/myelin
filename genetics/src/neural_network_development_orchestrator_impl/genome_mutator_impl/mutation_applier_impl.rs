@@ -30,25 +30,35 @@ impl MutationApplier for MutationApplierImpl {
                 connection,
                 new_connection_weight,
             } => self.add_neuron(genome, cluster_gene, connection, new_connection_weight),
+
             Mutation::AddConnection {
                 cluster_gene,
                 connection,
             } => self.add_connection(genome, cluster_gene, connection),
+
             Mutation::DisableConnection {
                 hox_gene,
                 connection,
             } => self.disable_connection(genome, hox_gene, connection),
-            Mutation::NudgeWeight { .. } => unimplemented!(),
+
+            Mutation::NudgeWeight {
+                cluster_gene,
+                connection,
+                weight_delta,
+            } => self.nudge_weight(genome, cluster_gene, connection, weight_delta),
+
             Mutation::ChangePlacementNeuron { .. } => unimplemented!(),
             Mutation::AddNewCluster { .. } => unimplemented!(),
             Mutation::CopyCluster { .. } => unimplemented!(),
             Mutation::DesyncCluster { .. } => unimplemented!(),
             Mutation::Bridge { .. } => unimplemented!(),
             Mutation::AddHoxWithExistingCluster { .. } => unimplemented!(),
+
             Mutation::ChangeTargetNeuron {
                 hox_gene,
                 new_target_neuron,
             } => self.change_target_neuron(genome, hox_gene, new_target_neuron),
+
             Mutation::DuplicateHox { hox_gene } => self.duplicate_hox(genome, hox_gene),
         }
     }
@@ -129,6 +139,21 @@ impl MutationApplierImpl {
         {
             gene.disabled_connections.push(connection_index);
         }
+
+        Ok(())
+    }
+
+    fn nudge_weight(
+        &self,
+        genome: &mut Genome,
+        cluster_gene_index: ClusterGeneIndex,
+        connection_index: ClusterConnectionIndex,
+        weigth_delta: Weight,
+    ) -> Result<(), Box<dyn Error>> {
+        let cluster_gene = get_cluster_gene_mut(genome, cluster_gene_index)?;
+        let connection = get_connection_mut(cluster_gene, connection_index)?;
+
+        connection.weight += weigth_delta;
 
         Ok(())
     }

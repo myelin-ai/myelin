@@ -43,7 +43,7 @@ fn nudges_weight_of_connection_with_negative_delta() {
 }
 
 fn test_nudges_weight_of_connection(weight_delta: Weight) {
-    let expected_weight = WEIGHT + POSITIVE_WEIGHT_DELTA;
+    let expected_weight = WEIGHT + weight_delta;
     let genome = empty_genome().add_cluster_gene(cluster_gene());
 
     let expected_cluster_gene = ClusterGene {
@@ -68,7 +68,7 @@ fn test_nudges_weight_of_connection(weight_delta: Weight) {
         expected_genome,
         genome,
         mutation,
-        result_test_fn: Result::is_err,
+        result_test_fn: Result::is_ok,
     });
 }
 
