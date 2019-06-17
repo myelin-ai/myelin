@@ -2,8 +2,8 @@
 
 pub use self::mutation::*;
 use crate::genome::Genome;
-
 mod mutation;
+mod mutation_generator_impl;
 
 /// Generates a random [`Mutation`].
 pub trait MutationGenerator {
