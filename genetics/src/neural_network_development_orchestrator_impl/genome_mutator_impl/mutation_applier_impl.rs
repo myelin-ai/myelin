@@ -64,8 +64,14 @@ impl MutationApplier for MutationApplierImpl {
 
             Mutation::DesyncCluster { hox_gene } => self.desync_cluster(genome, hox_gene),
 
-            Mutation::Bridge { .. } => unimplemented!(),
-            Mutation::AddHoxWithExistingCluster { .. } => unimplemented!(),
+            Mutation::Bridge {
+                target_hox_gene,
+                bridge_cluster_gene,
+            } => self.bridge(genome, target_hox_gene, bridge_cluster_gene),
+
+            Mutation::AddHoxWithExistingCluster { new_hox_gene } => {
+                self.add_hox_with_existing_cluster(genome, new_hox_gene)
+            }
 
             Mutation::ChangeTargetNeuron {
                 hox_gene,
@@ -229,14 +235,21 @@ impl MutationApplierImpl {
         Ok(())
     }
 
-    fn duplicate_hox(
+    fn bridge(
         &self,
         genome: &mut Genome,
         hox_gene_index: HoxGeneIndex,
+        bridge_cluster_gene: ClusterGene,
     ) -> Result<(), Box<dyn Error>> {
-        let gene = get_hox_gene(genome, hox_gene_index)?.clone();
+        unimplemented!()
+    }
 
-        genome.hox_genes.push(gene);
+    fn add_hox_with_existing_cluster(
+        &self,
+        genome: &mut Genome,
+        hox_gene: HoxGene,
+    ) -> Result<(), Box<dyn Error>> {
+        genome.hox_genes.push(hox_gene);
 
         Ok(())
     }
@@ -260,6 +273,18 @@ impl MutationApplierImpl {
             },
             HoxPlacement::Standalone => Err(MutationApplierError::InvalidTarget)?,
         };
+
+        Ok(())
+    }
+
+    fn duplicate_hox(
+        &self,
+        genome: &mut Genome,
+        hox_gene_index: HoxGeneIndex,
+    ) -> Result<(), Box<dyn Error>> {
+        let gene = get_hox_gene(genome, hox_gene_index)?.clone();
+
+        genome.hox_genes.push(gene);
 
         Ok(())
     }
