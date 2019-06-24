@@ -55,3 +55,10 @@ pub trait Shuffler<T>: Debug {
     /// Shuffles a [`Vec`] randomly
     fn shuffle(&self, values: Vec<T>) -> Vec<T>;
 }
+
+#[cfg_attr(any(test, feature = "use-mocks"), mockable)]
+pub trait Roulette<T> {
+    fn spin(&self) -> T;
+}
+
+pub type RouletteFactory<T> = dyn Fn(Vec<T>) -> Box<dyn Roulette<T>>;

@@ -1,12 +1,6 @@
 use crate::genome::Genome;
 use crate::neural_network_development_orchestrator_impl::{Mutation, MutationGenerator};
-use myelin_random::Random;
-
-pub trait Roulette<T> {
-    fn spin(&self) -> T;
-}
-
-pub type RouletteFactory<T> = dyn Fn(Vec<T>) -> Box<dyn Roulette<T>>;
+use myelin_random::{Random, Roulette, RouletteFactory};
 
 pub struct MutationGeneratorImpl {
     random: Box<dyn Random>,
