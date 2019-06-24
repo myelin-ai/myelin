@@ -10,7 +10,7 @@ pub struct MutationGeneratorImpl {
 impl MutationGeneratorImpl {
     fn new(
         random: Box<dyn Random>,
-        roulette_factory: Box<RouletteFactory<MutationMarker>>,
+        roulette_factory: Box<dyn RouletteFactory<'static, MutationMarker>>,
     ) -> Self {
         Self {
             random,
@@ -25,6 +25,7 @@ impl MutationGenerator for MutationGeneratorImpl {
     }
 }
 
+#[derive(Debug, Clone)]
 enum MutationMarker {
     AddNeuron,
     AddConnection,
@@ -60,7 +61,7 @@ mod tests {
         ClusterConnectionIndex, ClusterGene, ClusterGeneIndex, ClusterNeuronIndex, Connection,
         Neuron,
     };
-    use myelin_random::RandomMock;
+    use myelin_random::{RandomMock, RouletteMock};
 
     #[test]
     fn picks_mutation() {
@@ -80,17 +81,18 @@ mod tests {
             .expect_f64_in_range(|arg| arg.partial_eq(-1.0), |arg| arg.partial_eq(1.0))
             .returns(0.5);
 
-        let mutation_generator = mutation_generator(random);
+        let mutation_generator = box MutationGeneratorImpl::new(box random, box |_| {
+            let mut roulette = RouletteMock::new();
+            roulette.expect_spin().returns(MutationMarker::AddNeuron);
+            box roulette
+        });
+
         let mutation = mutation_generator.generate_mutation(&genome);
         let expected_mutation = Mutation::AddNeuron {
             cluster_gene: ClusterGeneIndex(1),
             connection: ClusterConnectionIndex(1),
             new_connection_weight: 0.5,
         };
-    }
-
-    fn mutation_generator(random: RandomMock<'_>) -> Box<dyn MutationGenerator> {
-        box MutationGeneratorImpl::new(box random, box |_| unimplemented!())
     }
 
     fn mock_random<'a>() -> RandomMock<'a> {

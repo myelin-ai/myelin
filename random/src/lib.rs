@@ -61,4 +61,4 @@ pub trait Roulette<T> {
     fn spin(&self) -> T;
 }
 
-pub type RouletteFactory<T> = dyn Fn(Vec<T>) -> Box<dyn Roulette<T>>;
+pub trait RouletteFactory<'a, T> = Fn(Vec<T>) -> Box<dyn Roulette<T> + 'a>;
