@@ -34,18 +34,45 @@ const DESYNC_PROBABILITY: f64 = 2.0 / 1_000.0;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::genome::{ClusterGene, ClusterNeuronIndex, Connection, Neuron};
+    use crate::genome::{
+        ClusterConnectionIndex, ClusterGene, ClusterGeneIndex, ClusterNeuronIndex, Connection,
+        Neuron,
+    };
     use myelin_random::RandomMock;
 
     #[test]
-    fn picks_mutation() {}
+    fn picks_mutation() {
+        let genome = genome();
+        let mut random = mock_random();
+        random
+            .expect_flip_coin_with_probability(|arg| arg.partial_eq(ADD_NEURON_PROBABILITY))
+            .times(..)
+            .returns(true);
+        random
+            .expect_usize_in_range(|arg| arg.partial_eq(0), |arg| arg.partial_eq(2))
+            .returns(1);
+        random
+            .expect_usize_in_range(|arg| arg.partial_eq(0), |arg| arg.partial_eq(3))
+            .returns(1);
+        random
+            .expect_f64_in_range(|arg| arg.partial_eq(-1.0), |arg| arg.partial_eq(1.0))
+            .returns(0.5);
 
-    fn mutation_generator() -> Box<dyn MutationGenerator> {
-        box MutationGeneratorImpl::new(mock_random())
+        let mutation_generator = mutation_generator(random);
+        let mutation = mutation_generator.generate_mutation(&genome);
+        let expected_mutation = Mutation::AddNeuron {
+            cluster_gene: ClusterGeneIndex(1),
+            connection: ClusterConnectionIndex(1),
+            new_connection_weight: 0.5,
+        };
     }
 
-    fn mock_random() -> Box<dyn Random> {
-        let mut random = box RandomMock::new();
+    fn mutation_generator(random: RandomMock<'_>) -> Box<dyn MutationGenerator> {
+        box MutationGeneratorImpl::new(box random)
+    }
+
+    fn mock_random<'a>() -> RandomMock<'a> {
+        let mut random = RandomMock::new();
         random
             .expect_flip_coin_with_probability(|arg| arg.any())
             .times(..)

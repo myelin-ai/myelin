@@ -7,6 +7,7 @@ use std::error::Error;
 
 mod mutation;
 mod mutation_applier_impl;
+mod mutation_generator_impl;
 
 /// Generates a random [`Mutation`].
 pub trait MutationGenerator {
