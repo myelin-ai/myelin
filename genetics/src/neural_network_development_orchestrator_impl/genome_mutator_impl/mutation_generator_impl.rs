@@ -2,13 +2,26 @@ use crate::genome::Genome;
 use crate::neural_network_development_orchestrator_impl::{Mutation, MutationGenerator};
 use myelin_random::Random;
 
+pub trait Roulette<T> {
+    fn spin(&self) -> T;
+}
+
+pub type RouletteFactory<T> = dyn Fn(Vec<T>) -> Box<dyn Roulette<T>>;
+
 pub struct MutationGeneratorImpl {
     random: Box<dyn Random>,
+    roulette: Box<dyn Roulette<MutationMarker>>,
 }
 
 impl MutationGeneratorImpl {
-    fn new(random: Box<dyn Random>) -> Self {
-        Self { random }
+    fn new(
+        random: Box<dyn Random>,
+        roulette_factory: Box<RouletteFactory<MutationMarker>>,
+    ) -> Self {
+        Self {
+            random,
+            roulette: roulette_factory(Vec::new()),
+        }
     }
 }
 
@@ -16,6 +29,21 @@ impl MutationGenerator for MutationGeneratorImpl {
     fn generate_mutation(&self, genome: &Genome) -> Mutation {
         unimplemented!()
     }
+}
+
+enum MutationMarker {
+    AddNeuron,
+    AddConnection,
+    DisableConnection,
+    NudgeWeight,
+    ChangePlacementNeuron,
+    AddNewCluster,
+    CopyCluster,
+    DesyncCluster,
+    Bridge,
+    AddHoxWithExistingCluster,
+    ChangeTargetNeuron,
+    DuplicateHox,
 }
 
 const ADD_NEURON_PROBABILITY: f64 = 5.0 / 100.0;
@@ -68,7 +96,7 @@ mod tests {
     }
 
     fn mutation_generator(random: RandomMock<'_>) -> Box<dyn MutationGenerator> {
-        box MutationGeneratorImpl::new(box random)
+        box MutationGeneratorImpl::new(box random, box |_| unimplemented!())
     }
 
     fn mock_random<'a>() -> RandomMock<'a> {
