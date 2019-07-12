@@ -7,12 +7,12 @@ edition = "2018"
 publish = false
 
 [dependencies]
-mockiato = { git = "https://github.com/myelin-ai/mockiato", branch = "release-0.9.0", optional = true }
+mockiato = { version = "0.9.0", optional = true }
 slab = "0.4"
 
 [dev-dependencies]
 maplit = "1.0"
-mockiato = { git = "https://github.com/myelin-ai/mockiato", branch = "release-0.9.0" }
+mockiato = { version = "0.9.0" }
 nearly_eq = "0.2"
 
 [features]
