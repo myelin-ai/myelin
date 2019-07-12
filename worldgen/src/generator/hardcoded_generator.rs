@@ -338,7 +338,7 @@ impl<'a> fmt::Debug for HardcodedGenerator<'a> {
 mod tests {
     use super::*;
     use crate::NameProviderMock;
-    use mockiato::{any, partial_eq};
+    use mockiato::{partial_eq};
 
     #[test]
     fn generates_simulation() {
@@ -367,7 +367,7 @@ mod tests {
                     .unwrap();
                 let mut simulation = SimulationMock::new();
                 simulation
-                    .expect_add_object(any(), any())
+                    .expect_add_object(|arg| arg.any(), |arg| arg.any())
                     .times(1..)
                     .returns(Object {
                         id: 1,

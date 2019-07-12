@@ -249,12 +249,12 @@ mod tests {
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
         let mut world_interactor = WorldInteractorMock::new();
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((34.0, 34.0), (44.0, 44.0)).unwrap(),
             ))
             .returns(Vec::new());
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((23.0, 23.0), (55.0, 55.0)).unwrap(),
             ))
             .returns(Vec::new());
@@ -294,7 +294,7 @@ mod tests {
         let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((34.0, 34.0), (44.0, 44.0)).unwrap(),
             ))
             .returns(vec![Object {
@@ -303,7 +303,7 @@ mod tests {
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((45.0, 34.0), (55.0, 44.0)).unwrap(),
             ))
             .returns(vec![Object {
@@ -312,7 +312,7 @@ mod tests {
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap(),
             ))
             .returns(vec![Object {
@@ -321,7 +321,7 @@ mod tests {
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
             ))
             .returns(vec![Object {
@@ -330,7 +330,7 @@ mod tests {
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((56.0, 56.0), (66.0, 66.0)).unwrap(),
             ))
             .returns(vec![Object {
@@ -339,7 +339,7 @@ mod tests {
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((45.0, 56.0), (55.0, 66.0)).unwrap(),
             ))
             .returns(vec![Object {
@@ -348,7 +348,7 @@ mod tests {
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((34.0, 56.0), (44.0, 66.0)).unwrap(),
             ))
             .returns(vec![Object {
@@ -357,7 +357,7 @@ mod tests {
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((34.0, 45.0), (44.0, 55.0)).unwrap(),
             ))
             .returns(vec![Object {
@@ -392,7 +392,7 @@ mod tests {
         let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((34.0, 34.0), (44.0, 44.0)).unwrap(),
             ))
             .returns(vec![Object {
@@ -401,7 +401,7 @@ mod tests {
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((45.0, 34.0), (55.0, 44.0)).unwrap(),
             ))
             .returns(vec![Object {
@@ -410,7 +410,7 @@ mod tests {
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap(),
             ))
             .returns(vec![Object {
@@ -419,12 +419,12 @@ mod tests {
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
             ))
             .returns(Vec::new());
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
             ))
             .returns(Vec::new());
@@ -461,7 +461,7 @@ mod tests {
         let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((45.0, 34.0), (55.0, 44.0)).unwrap(),
             ))
             .returns(vec![Object {
@@ -470,7 +470,7 @@ mod tests {
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap(),
             ))
             .returns(vec![Object {
@@ -479,7 +479,7 @@ mod tests {
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
             ))
             .returns(vec![Object {
@@ -488,7 +488,7 @@ mod tests {
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((56.0, 56.0), (66.0, 66.0)).unwrap(),
             ))
             .returns(vec![Object {
@@ -497,13 +497,13 @@ mod tests {
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((45.0, 56.0), (55.0, 66.0)).unwrap(),
             ))
             .returns(Vec::new());
 
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((34.0, 45.0), (66.0, 77.0)).unwrap(),
             ))
             .returns(Vec::new());
@@ -540,7 +540,7 @@ mod tests {
         let mock_behavior = mock_behavior();
         let mut world_interactor = WorldInteractorMock::new();
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((45.0, 34.0), (55.0, 44.0)).unwrap(),
             ))
             .returns(vec![Object {
@@ -549,7 +549,7 @@ mod tests {
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap(),
             ))
             .returns(vec![Object {
@@ -558,13 +558,13 @@ mod tests {
                 behavior: mock_behavior.as_ref(),
             }]);
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
             ))
             .returns(Vec::new());
 
         world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
             ))
             .returns(Vec::new());
@@ -602,13 +602,13 @@ mod tests {
 
         let mut first_world_interactor = WorldInteractorMock::new();
         first_world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
             ))
             .returns(Vec::new());
 
         first_world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
             ))
             .returns(Vec::new());
@@ -642,7 +642,7 @@ mod tests {
         let mut second_world_interactor = WorldInteractorMock::new();
 
         second_world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((56.0, 34.0), (66.0, 44.0)).unwrap(),
             ))
             .returns(vec![Object {
@@ -654,12 +654,12 @@ mod tests {
                 behavior: mock_behavior.as_ref(),
             }]);
         second_world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((56.0, 45.0), (66.0, 55.0)).unwrap(),
             ))
             .returns(Vec::new());
         second_world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((67.0, 34.0), (77.0, 44.0)).unwrap(),
             ))
             .returns(Vec::new());
@@ -670,12 +670,12 @@ mod tests {
             behavior: &first_object,
         }];
         second_world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((56.0, 23.0), (88.0, 55.0)).unwrap(),
             ))
             .returns(other_spreaders.clone());
         second_world_interactor
-            .expect_find_objects_in_area(partial_eq(
+            .expect_find_objects_in_area(|arg| arg.partial_eq(
                 Aabb::try_new((45.0, 34.0), (77.0, 66.0)).unwrap(),
             ))
             .returns(other_spreaders);

@@ -936,7 +936,7 @@ mod tests {
 
         let mut connect_ray_to_expectation = |ray, expectation| {
             world_interactor
-                .expect_find_objects_in_ray(partial_eq(own_description.location), partial_eq(ray))
+                .expect_find_objects_in_ray(|arg| arg.partial_eq(own_description.location), |arg| arg.partial_eq(ray))
                 .returns(expectation);
         };
 
