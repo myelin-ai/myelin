@@ -214,7 +214,9 @@ mod tests {
 
         let mut genome_deriver = GenomeDeriverMock::new();
         genome_deriver
-            .expect_derive_genome_from_parents(|arg| arg.partial_eq((parent_genome_one, parent_genome_two)))
+            .expect_derive_genome_from_parents(|arg| {
+                arg.partial_eq((parent_genome_one, parent_genome_two))
+            })
             .times(1)
             .returns(merged_genome.clone());
 

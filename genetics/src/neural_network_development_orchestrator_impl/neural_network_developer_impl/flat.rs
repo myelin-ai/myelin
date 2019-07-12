@@ -84,11 +84,13 @@ mod tests {
             configurator.expect_add_connection_calls_in_order();
             for i in 0..connection_count {
                 configurator
-                    .expect_add_connection(|arg| arg.partial_eq(Connection {
-                        from: Handle(1),
-                        to: Handle(2),
-                        weight: connection_weight(i),
-                    }))
+                    .expect_add_connection(|arg| {
+                        arg.partial_eq(Connection {
+                            from: Handle(1),
+                            to: Handle(2),
+                            weight: connection_weight(i),
+                        })
+                    })
                     .returns(Ok(()));
             }
             box configurator

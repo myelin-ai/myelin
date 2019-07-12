@@ -774,32 +774,34 @@ mod tests {
 
         let mut network = NeuralNetworkMock::new();
         network
-            .expect_normalized_potential_of_neuron(|arg| arg.partial_eq(
-                mapping.output.axial_acceleration.forward,
-            ))
+            .expect_normalized_potential_of_neuron(|arg| {
+                arg.partial_eq(mapping.output.axial_acceleration.forward)
+            })
             .returns(Ok(Some(0.5)));
         network
-            .expect_normalized_potential_of_neuron(|arg| arg.partial_eq(
-                mapping.output.axial_acceleration.backward,
-            ))
+            .expect_normalized_potential_of_neuron(|arg| {
+                arg.partial_eq(mapping.output.axial_acceleration.backward)
+            })
             .returns(Ok(Some(0.0)));
         network
-            .expect_normalized_potential_of_neuron(|arg| arg.partial_eq(
-                mapping.output.lateral_acceleration.left,
-            ))
+            .expect_normalized_potential_of_neuron(|arg| {
+                arg.partial_eq(mapping.output.lateral_acceleration.left)
+            })
             .returns(Ok(Some(0.2)));
         network
-            .expect_normalized_potential_of_neuron(|arg| arg.partial_eq(
-                mapping.output.lateral_acceleration.right,
-            ))
+            .expect_normalized_potential_of_neuron(|arg| {
+                arg.partial_eq(mapping.output.lateral_acceleration.right)
+            })
             .returns(Ok(Some(0.0)));
         network
-            .expect_normalized_potential_of_neuron(|arg| arg.partial_eq(
-                mapping.output.torque.counterclockwise,
-            ))
+            .expect_normalized_potential_of_neuron(|arg| {
+                arg.partial_eq(mapping.output.torque.counterclockwise)
+            })
             .returns(Ok(Some(0.0)));
         network
-            .expect_normalized_potential_of_neuron(|arg| arg.partial_eq(mapping.output.torque.clockwise))
+            .expect_normalized_potential_of_neuron(|arg| {
+                arg.partial_eq(mapping.output.torque.clockwise)
+            })
             .returns(Ok(Some(0.4)));
 
         let object_description = object_description().build().unwrap();
@@ -935,7 +937,10 @@ mod tests {
 
         let mut connect_ray_to_expectation = |ray, expectation| {
             world_interactor
-                .expect_find_objects_in_ray(|arg| arg.partial_eq(own_description.location), |arg| arg.partial_eq(ray))
+                .expect_find_objects_in_ray(
+                    |arg| arg.partial_eq(own_description.location),
+                    |arg| arg.partial_eq(ray),
+                )
                 .returns(expectation);
         };
 
