@@ -23,7 +23,7 @@ matches = "0.1"
 maplit = "0.1"
 
 [dev-dependencies]
-mockiato = { version = "0.9.0" }
+mockiato = "0.9.0"
 pretty_assertions = "0.6"
 
 [features]

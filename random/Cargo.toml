@@ -19,7 +19,7 @@ myelin-clone-box = { path = "../clone-box" }
 paste = "0.1"
 
 [dev-dependencies]
-mockiato = { version = "0.9.0" }
+mockiato = "0.9.0"
 
 [features]
 use-mocks = ["mockiato"]

@@ -26,7 +26,7 @@ maplit = "1.0"
 itertools = "0.8"
 
 [dev-dependencies]
-mockiato = { version = "0.9.0" }
+mockiato = "0.9.0"
 nearly_eq = "0.2"
 myelin-genetics = { path = "../genetics", features = ["use-mocks"] }
 
