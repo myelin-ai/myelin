@@ -20,8 +20,6 @@ myelin-neural-network = { path = "../neural-network" }
 myelin-genetics = { path = "../genetics" }
 myelin-random = { path = "../random" }
 myelin-object-data = { path = "../object-data" }
-log = "0.4"
-maplit = "1.0"
 itertools = "0.8"
 
 [dev-dependencies]

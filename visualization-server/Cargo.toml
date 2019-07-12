@@ -21,8 +21,6 @@ myelin-genetics = { path = "../genetics" }
 myelin-neural-network = { path = "../neural-network" }
 myelin-random = { path = "../random" }
 
-serde = "1.0"
-serde_json = "1.0"
 log = "0.4"
 simple_logger = "1.0"
 clap = "2.32"
