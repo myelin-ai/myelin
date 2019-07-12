@@ -218,7 +218,6 @@ impl ObjectBehavior<AdditionalObjectDescription> for StochasticSpreading {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockiato::partial_eq;
     use myelin_object_data::Kind;
     use myelin_random::RandomMock;
 
@@ -229,7 +228,7 @@ mod tests {
     fn does_nothing_when_chance_is_not_hit() {
         let mut random = RandomMock::new();
         random
-            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .expect_flip_coin_with_probability(|arg| arg.partial_eq(SPREADING_CHANGE))
             .returns(false);
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
         let action = object.step(box WorldInteractorMock::new());
@@ -241,10 +240,10 @@ mod tests {
         let object_behavior = ObjectBehaviorMock::new();
         let mut random = RandomMock::new();
         random
-            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .expect_flip_coin_with_probability(|arg| arg.partial_eq(SPREADING_CHANGE))
             .returns(true);
         random
-            .expect_i32_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(|arg| arg.partial_eq(0), |arg| arg.partial_eq(8))
             .returns(0);
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
         let mut world_interactor = WorldInteractorMock::new();
@@ -283,10 +282,10 @@ mod tests {
         let object_behavior = ObjectBehaviorMock::new();
 
         random
-            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .expect_flip_coin_with_probability(|arg| arg.partial_eq(SPREADING_CHANGE))
             .returns(true);
         random
-            .expect_i32_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(|arg| arg.partial_eq(0), |arg| arg.partial_eq(8))
             .returns(0);
 
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
@@ -381,10 +380,10 @@ mod tests {
         let object_behavior = ObjectBehaviorMock::new();
 
         random
-            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .expect_flip_coin_with_probability(|arg| arg.partial_eq(SPREADING_CHANGE))
             .returns(true);
         random
-            .expect_i32_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(|arg| arg.partial_eq(0), |arg| arg.partial_eq(8))
             .returns(0);
 
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
@@ -451,10 +450,10 @@ mod tests {
         let object_behavior = ObjectBehaviorMock::new();
 
         random
-            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .expect_flip_coin_with_probability(|arg| arg.partial_eq(SPREADING_CHANGE))
             .returns(true);
         random
-            .expect_i32_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(|arg| arg.partial_eq(0), |arg| arg.partial_eq(8))
             .returns(1);
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
 
@@ -530,10 +529,10 @@ mod tests {
         let object_behavior = ObjectBehaviorMock::new();
 
         random
-            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .expect_flip_coin_with_probability(|arg| arg.partial_eq(SPREADING_CHANGE))
             .returns(true);
         random
-            .expect_i32_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(|arg| arg.partial_eq(0), |arg| arg.partial_eq(8))
             .returns(1);
         let mut object = StochasticSpreading::new(SPREADING_CHANGE, box random);
 
@@ -592,10 +591,10 @@ mod tests {
 
         let mut first_random = RandomMock::new();
         first_random
-            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .expect_flip_coin_with_probability(|arg| arg.partial_eq(SPREADING_CHANGE))
             .returns(true);
         first_random
-            .expect_i32_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(|arg| arg.partial_eq(0), |arg| arg.partial_eq(8))
             .returns(3);
         let mut first_object = StochasticSpreading::new(SPREADING_CHANGE, box first_random);
         let first_description = object_description_at_location(50.0, 50.0);
@@ -632,10 +631,10 @@ mod tests {
 
         let mut second_random = RandomMock::new();
         second_random
-            .expect_flip_coin_with_probability(partial_eq(SPREADING_CHANGE))
+            .expect_flip_coin_with_probability(|arg| arg.partial_eq(SPREADING_CHANGE))
             .returns(true);
         second_random
-            .expect_i32_in_range(partial_eq(0), partial_eq(8))
+            .expect_i32_in_range(|arg| arg.partial_eq(0), |arg| arg.partial_eq(8))
             .returns(7);
         let mut second_object = StochasticSpreading::new(SPREADING_CHANGE, box second_random);
 

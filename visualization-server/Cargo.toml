@@ -33,7 +33,7 @@ wonderbox = "0.5"
 
 [dev-dependencies]
 maplit = "1.0"
-mockiato = "0.5"
+mockiato = { git = "https://github.com/myelin-ai/mockiato", branch = "release-0.9.0" }
 
 [dev-dependencies.myelin-engine]
 version = "0.14.0"

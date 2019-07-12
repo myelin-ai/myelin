@@ -12,3 +12,6 @@ members = [
     "genetics",
     "associate-lists",
 ]
+
+[patch.crates-io]
+mockiato = { git = "https://github.com/myelin-ai/mockiato", branch = "release-0.9.0" }

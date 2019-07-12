@@ -1,5 +1,4 @@
 use super::*;
-use mockiato::{partial_eq, partial_eq_owned};
 use myelin_random::RandomMock;
 use pretty_assertions::assert_eq;
 
@@ -139,7 +138,7 @@ fn mock_corpus_callosum_cluster_gene_generator(
     let mut corpus_callosum_cluster_gene_generator = CorpusCallosumClusterGeneGeneratorMock::new();
 
     corpus_callosum_cluster_gene_generator
-        .expect_generate(partial_eq_owned(configuration))
+        .expect_generate(|arg| arg.partial_eq_owned(configuration))
         .returns(corpus_callosum_stub(
             input_cluster_neurons,
             output_cluster_neurons,
@@ -181,12 +180,12 @@ fn register_cluster_gene_selection_expectations(
     for &selection in cluster_gene_selections {
         let coin_toss_result = selection == DetailedClusterGeneSelection::New;
         random
-            .expect_flip_coin_with_probability(partial_eq(PROBABILITY_FOR_NEW_CLUSTER_GENE))
+            .expect_flip_coin_with_probability(|arg| arg.partial_eq(PROBABILITY_FOR_NEW_CLUSTER_GENE))
             .returns(coin_toss_result);
 
         if let DetailedClusterGeneSelection::Existing(cluster_gene_index) = selection {
             random
-                .expect_usize_in_range(partial_eq(0), partial_eq(generated_cluster_gene_count))
+                .expect_usize_in_range(|arg| arg.partial_eq(0), |arg| arg.partial_eq(generated_cluster_gene_count))
                 .returns(cluster_gene_index);
         }
     }
