@@ -22,6 +22,7 @@ impl GenomeMutator for GenomeMutatorStub {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashSet;
 
     #[test]
     fn mutate_genome_does_not_mutate_genome() {
@@ -48,7 +49,7 @@ mod tests {
             hox_genes: vec![HoxGene {
                 placement_target: HoxPlacement::Standalone,
                 cluster_gene: ClusterGeneIndex(1),
-                disabled_connections: Vec::new(),
+                disabled_connections: HashSet::new(),
             }],
         }
     }

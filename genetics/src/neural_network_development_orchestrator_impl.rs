@@ -179,6 +179,7 @@ mod tests {
         GenomeDeriverMock, GenomeMutatorMock,
     };
     use myelin_neural_network::NeuralNetworkMock;
+    use std::collections::HashSet;
 
     #[test]
     fn orchestrates_neural_network_development() {
@@ -303,7 +304,7 @@ mod tests {
             hox_genes: vec![HoxGene {
                 placement_target: HoxPlacement::Standalone,
                 cluster_gene: ClusterGeneIndex(cluster_gene),
-                disabled_connections: Vec::new(),
+                disabled_connections: HashSet::new(),
             }],
             ..Genome::default()
         }

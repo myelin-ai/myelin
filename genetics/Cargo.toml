@@ -20,6 +20,7 @@ myelin-associate-lists = { path = "../associate-lists" }
 nameof = "1.0"
 itertools = "0.8"
 matches = "0.1"
+maplit = "0.1"
 
 [dev-dependencies]
 mockiato = { git = "https://github.com/myelin-ai/mockiato", branch = "release-0.9.0" }
