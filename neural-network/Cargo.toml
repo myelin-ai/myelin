@@ -7,12 +7,12 @@ edition = "2018"
 publish = false
 
 [dependencies]
-mockiato = { version = "0.8", optional = true }
+mockiato = { version = "0.9.0", optional = true }
 slab = "0.4"
 
 [dev-dependencies]
 maplit = "1.0"
-mockiato = "0.8"
+mockiato = "0.9.0"
 nearly_eq = "0.2"
 
 [features]

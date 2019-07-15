@@ -16,9 +16,8 @@ crate-type = ["cdylib"]
 
 [dependencies]
 wasm-bindgen = "=0.2.43"
-js-sys = "0.3.0"
 myelin-visualization-core = { path = "../visualization-core" }
-myelin-engine = "0.14"
+myelin-engine = "0.14.0"
 myelin-object-data = { path = "../object-data" }
 
 [dependencies.web-sys]
@@ -39,4 +38,4 @@ features = [
 [dev-dependencies]
 maplit = "1.0"
 nameof = "1.0"
-mockiato = "0.8"
+mockiato = "0.9.0"
