@@ -3,7 +3,6 @@
 //! [`myelin_visualization_client`]: ../myelin_visualization_client/index.html
 //! [`myelin_visualization_server`]: ../myelin_visualization_server/index.html
 
-#![feature(duration_float)]
 #![warn(missing_docs, clippy::dbg_macro, clippy::unimplemented)]
 #![deny(
     rust_2018_idioms,
