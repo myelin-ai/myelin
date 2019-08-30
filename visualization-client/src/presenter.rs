@@ -160,12 +160,10 @@ fn translate_kind_into_view_model(kind: Kind) -> view_model::Kind {
 fn translate_name_into_view_model(
     business_object: &ObjectDescription,
 ) -> Option<view_model::Label> {
-    business_object.name.clone().and_then(|name| {
-        Some(view_model::Label {
-            text: name,
-            location: calculate_name_position(business_object),
-            font_color: String::from(constant::color::LABEL),
-        })
+    business_object.name.clone().map(|name| view_model::Label {
+        text: name,
+        location: calculate_name_position(business_object),
+        font_color: String::from(constant::color::LABEL),
     })
 }
 
