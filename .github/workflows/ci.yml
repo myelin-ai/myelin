@@ -11,12 +11,18 @@ jobs:
       run: ./scripts/install-wasm-bindgen-linux.sh
     - name: Build
       run: cargo build --all-features
-    - name: Build tests
-      run: cargo build --all-features --tests
     - name: Build WASM
       run: |
         rustup target add wasm32-unknown-unknown
         visualization-client/scripts/build.py --webpack
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Run tests
+      run: cargo test --all-features
+
   rust_lints:
     name: 'Rust Style Checks'
     runs-on: ubuntu-latest
@@ -35,6 +41,7 @@ jobs:
       run: cargo fmt --all -- --check
     - name: Run additional lints
       run: ./scripts/additional-lints.py
+
   typescript_lints:
     name: 'Typescript Style Checks'
     runs-on: ubuntu-latest
