@@ -19,4 +19,5 @@ jobs:
     - name: Install geckodriver
       run: ./scripts/install-geckodriver-linux.sh
     - name: Run smoke test
-      run: ./visualization-client/scripts/wasm-loading-test.sh
+      run: |
+        PATH="$PATH:$HOME/.poetry/bin" ./visualization-client/scripts/wasm-loading-test.sh
