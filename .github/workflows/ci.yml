@@ -16,6 +16,7 @@ jobs:
         rustup target add wasm32-unknown-unknown
         visualization-client/scripts/build.py --webpack
   rust_lints:
+    name: 'Rust Style Checks'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -30,6 +31,7 @@ jobs:
     - name: Run additional lints
       run: ./scripts/additional-lints.py
   typescript_lints:
+    name: 'Typescript Style Checks'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
