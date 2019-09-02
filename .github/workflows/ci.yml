@@ -35,5 +35,7 @@ jobs:
     - uses: actions/checkout@v1
     - name: Install yarn dependencies
       run: yarn install
+      working-directory: visualization-client
     - name: Run yarn lint
       run: yarn lint
+      working-directory: visualization-client
