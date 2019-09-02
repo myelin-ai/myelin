@@ -3,7 +3,8 @@ name: WASM Smoke Test
 on: [push]
 
 jobs:
-  build:
+  smoke_test:
+    name: 'Smoke Test'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -18,6 +19,8 @@ jobs:
       run: sudo apt-get install -y firefox
     - name: Install geckodriver
       run: ./scripts/install-geckodriver-linux.sh
+    - name: Build client
+      run: ./visualization-client/scripts/build.py --webpack
     - name: Run smoke test
       run: |
         PATH="$PATH:$HOME/.poetry/bin" ./visualization-client/scripts/wasm-loading-test.sh
