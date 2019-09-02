@@ -7,6 +7,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+    - name: Install poetry
+      run: curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
     - name: Install wasm-bindgen
       run: ./scripts/install-wasm-bindgen-linux.sh
     - name: Install Mozilla Firefox
