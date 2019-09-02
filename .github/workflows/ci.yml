@@ -1,0 +1,39 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build
+      run: cargo build --all-features
+    - name: Build tests
+      run: cargo build --all-features --tests
+    - name: Build WASM
+      run: |
+        rustup target add wasm32-unknown-unknown
+        visualization-client/scripts/build.py --webpack
+  rust_lints:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install components
+      run: rustup component add rustfmt clippy
+    - name: Run clippy
+      run: cargo clippy --all-features -- -Dwarnings
+    - name: Run clippy for tests
+      run: cargo clippy --all-features --tests -- -Dwarnings
+    - name: Run rustfmt
+      run: cargo fmt --all -- --check
+    - name: Run additional lints
+      run: ./scripts/additional-lints.py
+  typescript_lints:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install yarn dependencies
+      run: yarn install
+    - name: Run yarn lint
+      run: yarn lint
