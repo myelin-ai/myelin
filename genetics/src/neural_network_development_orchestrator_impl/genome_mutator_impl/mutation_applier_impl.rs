@@ -271,7 +271,7 @@ impl Genome {
                 hox_gene,
                 target_neuron: new_target_neuron_index,
             },
-            HoxPlacement::Standalone => Err(MutationApplierError::InvalidTarget)?,
+            HoxPlacement::Standalone => return Err(box MutationApplierError::InvalidTarget),
         };
 
         Ok(())

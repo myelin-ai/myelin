@@ -464,7 +464,7 @@ mod tests {
         let sensor_membrane_potential = neural_network
             .membrane_potential_of_neuron(sensor_handle)
             .unwrap();
-        assert!(sensor_membrane_potential.is_none());;
+        assert!(sensor_membrane_potential.is_none());
     }
 
     #[test]

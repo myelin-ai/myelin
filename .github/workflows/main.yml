@@ -1,0 +1,56 @@
+name: Main
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install wasm-bindgen
+      run: ./scripts/install-wasm-bindgen-linux.sh
+    - name: Build
+      run: cargo build --all-features
+    - name: Build WASM
+      run: |
+        rustup target add wasm32-unknown-unknown
+        visualization-client/scripts/build.py --webpack
+
+  test:
+    name: 'Test'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Run tests
+      run: cargo test --all-features
+
+  rust_lints:
+    name: 'Rust Style Checks'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+    - name: Install components
+      run: rustup component add rustfmt clippy
+    - name: Run clippy
+      run: cargo clippy --all-features -- -Dwarnings
+    - name: Run clippy for tests
+      run: cargo clippy --all-features --tests -- -Dwarnings
+    - name: Run rustfmt
+      run: cargo fmt --all -- --check
+    - name: Run additional lints
+      run: ./scripts/additional-lints.py
+
+  typescript_lints:
+    name: 'Typescript Style Checks'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install yarn dependencies
+      run: yarn install
+      working-directory: visualization-client
+    - name: Run yarn lint
+      run: yarn lint
+      working-directory: visualization-client

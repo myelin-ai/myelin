@@ -1,6 +1,5 @@
 //! In-browser visualization for myelin using a canvas with WASM
 
-#![feature(duration_float)]
 #![feature(box_syntax)]
 #![warn(missing_docs, clippy::dbg_macro, clippy::unimplemented)]
 #![deny(

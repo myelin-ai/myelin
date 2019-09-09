@@ -265,5 +265,4 @@ mod tests {
 
         controller.on_message(&data).unwrap();
     }
-
 }
