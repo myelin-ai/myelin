@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 version="v0.24.0"
 archive_file="geckodriver-$version-linux64.tar.gz"
 download_url="https://github.com/mozilla/geckodriver/releases/download/$version/$archive_file"

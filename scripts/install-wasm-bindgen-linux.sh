@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 version=0.2.50
 archive_name="wasm-bindgen-$version-x86_64-unknown-linux-musl"
 archive_file="$archive_name.tar.gz"
