@@ -1,7 +1,7 @@
 language: rust
 
 install:
-  script: scripts/install-tarpaulin.sh
+  - ./scripts/install-tarpaulin.sh
 
 script:
   - cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
