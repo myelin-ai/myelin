@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 version=0.8.6
 archive_name="cargo-tarpaulin-$version-travis"
 archive_file="$archive_name.tar.gz"
