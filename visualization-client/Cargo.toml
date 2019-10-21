@@ -15,7 +15,7 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-wasm-bindgen = "=0.2.50"
+wasm-bindgen = "=0.2.51"
 myelin-visualization-core = { path = "../visualization-core" }
 myelin-engine = "0.14.0"
 myelin-object-data = { path = "../object-data" }

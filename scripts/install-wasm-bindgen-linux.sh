@@ -2,7 +2,7 @@
 
 set -e
 
-version=0.2.50
+version=0.2.51
 archive_name="wasm-bindgen-$version-x86_64-unknown-linux-musl"
 archive_file="$archive_name.tar.gz"
 download_url="https://github.com/rustwasm/wasm-bindgen/releases/download/$version/$archive_file"
