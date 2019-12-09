@@ -5,14 +5,14 @@
         "lint": "tslint --project tsconfig.json 'src/**/*.ts'"
     },
     "devDependencies": {
-        "ts-loader": "^6.0.2",
-        "tslint": "^5.17.0",
-        "tslint-config-standard": "^8.0.1",
-        "tslint-consistent-codestyle": "^1.15.1",
+        "ts-loader": "^6.2.1",
+        "tslint": "^5.20.1",
+        "tslint-config-standard": "^9.0.0",
+        "tslint-consistent-codestyle": "^1.16.0",
         "tslint-immutable": "^6.0.0",
-        "typescript": "^3.5.1",
-        "webpack": "^4.33.0",
-        "webpack-cli": "^3.3.2",
-        "webpack-dev-server": "^3.6.0"
+        "typescript": "^3.7.3",
+        "webpack": "^4.41.2",
+        "webpack-cli": "^3.3.10",
+        "webpack-dev-server": "^3.9.0"
     }
 }
